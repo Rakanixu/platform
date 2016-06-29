@@ -1,0 +1,101 @@
+{
+  "services": {
+    "api": {
+      "Args": [
+        "--registry_address=registry:8500", 
+        "--register_interval=5", 
+        "--register_ttl=10", 
+        "--api_cors=*", 
+        "--enable_stats", 
+        "api"
+      ], 
+      "Image": "microhq/micro@sha256:685af1c03c7f0a5e0e19bfb2a58d6fbee2a2c50d7f295a1dcc3ef2b7e01c7e37", 
+      "Networks": [], 
+      "Ports": [
+        {
+          "Port": 8080, 
+          "Protocol": "tcp"
+        }
+      ]
+    }, 
+    "consul": {
+      "Args": [
+        "-server", 
+        "-bootstrap", 
+        "-rejoin", 
+        "-log-level", 
+        "err"
+      ], 
+      "Image": "progrium/consul@sha256:8cc8023462905929df9a79ff67ee435a36848ce7a10f18d6d0faba9306b97274", 
+      "Networks": [], 
+      "Ports": [
+        {
+          "Port": 8300, 
+          "Protocol": "tcp"
+        }, 
+        {
+          "Port": 8400, 
+          "Protocol": "tcp"
+        }, 
+        {
+          "Port": 8500, 
+          "Protocol": "tcp"
+        }, 
+        {
+          "Port": 53, 
+          "Protocol": "udp"
+        }
+      ]
+    }, 
+    "elastic-api": {
+      "Args": [
+        "--registry_address=registry:8500"
+      ], 
+      "Image": "kazoup/elastic-api@sha256:a5015153a90dd97c7adb2c458a63131cac35287884e307bae1ddbbd776cbca81", 
+      "Networks": []
+    }, 
+    "elastic-srv": {
+      "Args": [
+        "--registry_address=registry:8500", 
+        "--elasticsearch_hosts=elasticsearch:9200"
+      ], 
+      "Image": "kazoup/elastic-srv@sha256:784a0b4675c369a8c43366ac08f7116f00f20a131e30da4b065ed0cd9798767e", 
+      "Networks": []
+    }, 
+    "elasticsearch": {
+      "Env": [
+        "ES_HEAP_SIZE=512m", 
+        "ES_CLUSTER_NAME=Kazoup"
+      ], 
+      "Image": "elasticsearch@sha256:f42865c6b2fac4faa44f779502bb2b9aec17b6132047237743000bb4a1acf804", 
+      "Networks": [], 
+      "Ports": [
+        {
+          "Port": 9200, 
+          "Protocol": "tcp"
+        }, 
+        {
+          "Port": 9300, 
+          "Protocol": "tcp"
+        }
+      ]
+    }, 
+    "web": {
+      "Args": [
+        "--registry_address=registry:8500", 
+        "--register_interval=5", 
+        "--register_ttl=10", 
+        "web"
+      ], 
+      "Image": "microhq/micro@sha256:685af1c03c7f0a5e0e19bfb2a58d6fbee2a2c50d7f295a1dcc3ef2b7e01c7e37", 
+      "Networks": [], 
+      "Ports": [
+        {
+          "Port": 8082, 
+          "Protocol": "tcp"
+        }
+      ]
+    }
+  }, 
+  "version": "0.1"
+}
