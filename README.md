@@ -14,7 +14,7 @@ Repo | Description |   CI
 [flag](https://github.com/kazoup/flag) | Flag micro service | [![CircleCI](https://circleci.com/gh/kazoup/flag.svg?style=svg)](https://circleci.com/gh/kazoup/flag) 
 [policy](https://github.com/kazoup/policy) | Policy service |
 [elastic](https://github.com/kazoup/elastic) | Microservice for supporting agnostic CRUD, Search and QueryDSL operations over Elastic search | [![CircleCI](https://circleci.com/gh/kazoup/elastic.svg?style=svg)](https://circleci.com/gh/kazoup/elastic)
-
+[web-proxy](https://github.com/kazoup/web-proxy) | Entry point for Kazoup platform frontend | [![CircleCI](https://circleci.com/gh/kazoup/web-proxy.svg?style=svg&circle-token=1644b35cf078b8382f46748e39299d525ce15fc0)](https://circleci.com/gh/kazoup/web-proxy)
 
 
 
