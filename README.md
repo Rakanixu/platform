@@ -24,7 +24,7 @@ Repo | Description |   CI
 Running everything with Docker is the fastes way to start
 
 ```
-docker-compose -f docker-compose-prod.yml up -d
+docker-compose -f docker-compose-all.yml up -d
 
 ```
 
