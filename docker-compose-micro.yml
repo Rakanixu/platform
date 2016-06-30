@@ -1,0 +1,28 @@
+version: "2"
+services:
+        # Micro
+        registry:
+          command: -server -bootstrap -rejoin -log-level err
+          image: progrium/consul:latest
+          ports:
+          - "8300:8300"
+          - "8400:8400"
+          - "8500:8500"
+          - "8600:53/udp"
+
+        api:
+          command: --registry_address=registry:8500 --register_interval=5 --register_ttl=10 --api_cors=* --enable_stats api
+          image: microhq/micro
+          links:
+          - registry
+          ports:
+          - "8080:8080"
+
+        web:
+          command: --registry_address=registry:8500 --register_interval=5 --register_ttl=10 web
+          image: microhq/micro
+          links:
+          - registry
+          ports:
+          - "8082:8082"
+

@@ -1,0 +1,14 @@
+version: "2"
+services:
+        smtp-api:
+          command: --registry_address=registry:8500
+          image: kazoup/smtp-api
+          links:
+          - registry
+
+        smtp-srv:
+          command: --registry_address=registry:8500 --email_host=SERVER_ADDRESS --email_host_port=SMPT_SERVER_PORT --email_host_user=USERNAME --email_host_password=PASSWORD --default_from_email=noreply@company.com
+          image: kazoup/smtp-srv
+          links:
+          - registry
+
