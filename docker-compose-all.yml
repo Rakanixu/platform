@@ -73,4 +73,13 @@ services:
           image: kazoup/smtp-srv
           links:
           - registry
-
+        auth-api:
+          command: --registry_address=registry:8500
+          image: kazoup/auth-api
+          links:
+          - registry
+        web-proxy:
+          command: --registry_address=registry:8500
+          image: kazoup/web-proxy
+          links:
+          - registry
