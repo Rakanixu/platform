@@ -16,6 +16,7 @@ Repo | Description |   CI
 [elastic](https://github.com/kazoup/elastic) | Microservice for supporting agnostic CRUD, Search and QueryDSL operations over Elastic search | [![CircleCI](https://circleci.com/gh/kazoup/elastic.svg?style=svg)](https://circleci.com/gh/kazoup/elastic)
 [web-proxy](https://github.com/kazoup/web-proxy) | Entry point for Kazoup platform frontend | [![CircleCI](https://circleci.com/gh/kazoup/web-proxy.svg?style=svg&circle-token=1644b35cf078b8382f46748e39299d525ce15fc0)](https://circleci.com/gh/kazoup/web-proxy)
 [auth](https://github.com/kazoup/auth) | Microservices for Kazoup auth | [![CircleCI](https://circleci.com/gh/kazoup/auth.svg?style=svg&circle-token=fb3082b3ae297e36628bbba40e69eb0a3d8fe247)](https://circleci.com/gh/kazoup/auth)
+[kazoup-web](https://github.com/kazoup/kazoup-web) | Web frontend  as micro services | [![CircleCI](https://circleci.com/gh/kazoup/kazoup-web.svg?style=svg&circle-token=1084085b649711ccdac2e6355412dcd9fb259f64)](https://circleci.com/gh/kazoup/kazoup-web)
 
 
 

@@ -1,0 +1,54 @@
+version: "2"
+services:
+        web-proxy:
+          command: --registry_address=registry:8500
+          image: kazoup/web-proxy
+          links:
+          - registry
+        web-dashboard:
+           command: --registry_address=registry:8500 --environment=prod
+           image: kazoup/web-dashboard
+           links: 
+           - registry
+
+        web-login:
+           command: --registry_address=registry:8500 --environment=prod
+           image: kazoup/web-login
+           links: 
+           - registry
+
+        web-analytics:
+           command: --registry_address=registry:8500 --environment=prod
+           image: kazoup/web-analytics
+           links: 
+           - registry
+
+        web-search:
+           command: --registry_address=registry:8500 --environment=prod
+           image: kazoup/web-search
+           links: 
+           - registry
+
+        web-docs:
+           command: --registry_address=registry:8500 --environment=prod
+           image: kazoup/web-docs
+           links: 
+           - registry
+
+        web-logs:
+           command: --registry_address=registry:8500 --environment=prod
+           image: kazoup/web-logs
+           links: 
+           - registry
+
+        web-settings:
+           command: --registry_address=registry:8500 --environment=prod
+           image: kazoup/web-settings
+           links: 
+           - registry
+
+        web-static:
+           command: --registry_address=registry:8500 --environment=prod
+           image: kazoup/web-static
+           links: 
+           - registry
