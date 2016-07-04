@@ -4,7 +4,7 @@ Kazoup Analytics Platform is build on go-micro library which simplifies developi
 
 ## Services
 
-Docker images for this services are stored and pulicly available at [DockerHub](https://hub.docker.com/u/kazoup/)
+Docker images for this services are stored and publicly available at [DockerHub](https://hub.docker.com/u/kazoup/)
 
 Repo | Description |   CI     
 -----|------------ | -------- 
