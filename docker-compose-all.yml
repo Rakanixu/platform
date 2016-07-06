@@ -83,50 +83,59 @@ services:
           image: kazoup/web-proxy
           links:
           - registry
+          ports:
+          - "8000:8000"
+
         web-dashboard:
            command: --registry_address=registry:8500 --environment=prod
-           image: kazoup/web-dashboard
+           image: kazoup/dashboard-web
            links: 
            - registry
 
         web-login:
            command: --registry_address=registry:8500 --environment=prod
-           image: kazoup/web-login
+           image: kazoup/login-web
            links: 
            - registry
 
         web-analytics:
            command: --registry_address=registry:8500 --environment=prod
-           image: kazoup/web-analytics
+           image: kazoup/analytics-web
            links: 
            - registry
 
         web-search:
            command: --registry_address=registry:8500 --environment=prod
-           image: kazoup/web-search
+           image: kazoup/search-web
            links: 
            - registry
 
         web-docs:
            command: --registry_address=registry:8500 --environment=prod
-           image: kazoup/web-docs
+           image: kazoup/docs-web
            links: 
            - registry
 
         web-logs:
            command: --registry_address=registry:8500 --environment=prod
-           image: kazoup/web-logs
+           image: kazoup/logs-web
            links: 
            - registry
 
         web-settings:
            command: --registry_address=registry:8500 --environment=prod
-           image: kazoup/web-settings
+           image: kazoup/settings-web
            links: 
            - registry
 
         web-static:
            command: --registry_address=registry:8500 --environment=prod
-           image: kazoup/web-static
+           image: kazoup/static-web
+           links: 
+           - registry
+
+        ldap-srv:
+           command: --registry_address=registry:8500
+           image: kazoup/ldap-srv
            links: 
            - registry

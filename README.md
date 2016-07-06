@@ -17,6 +17,7 @@ Repo | Description |   CI
 [web-proxy](https://github.com/kazoup/web-proxy) | Entry point for Kazoup platform frontend | [![CircleCI](https://circleci.com/gh/kazoup/web-proxy.svg?style=svg&circle-token=1644b35cf078b8382f46748e39299d525ce15fc0)](https://circleci.com/gh/kazoup/web-proxy)
 [auth](https://github.com/kazoup/auth) | Microservices for Kazoup auth | [![CircleCI](https://circleci.com/gh/kazoup/auth.svg?style=svg&circle-token=fb3082b3ae297e36628bbba40e69eb0a3d8fe247)](https://circleci.com/gh/kazoup/auth)
 [kazoup-web](https://github.com/kazoup/kazoup-web) | Web frontend  as micro services | [![CircleCI](https://circleci.com/gh/kazoup/kazoup-web.svg?style=svg&circle-token=1084085b649711ccdac2e6355412dcd9fb259f64)](https://circleci.com/gh/kazoup/kazoup-web)
+[ldap](https://github.com/kazoup/ldap) | LDAP/AD authetication service | [![CircleCI](https://circleci.com/gh/kazoup/ldap.svg?style=svg&circle-token=c5e2408d51b764c10b2736213c754339996feee1)](https://circleci.com/gh/kazoup/ldap)
 
 
 

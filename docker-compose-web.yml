@@ -5,6 +5,9 @@ services:
           image: kazoup/web-proxy
           links:
           - registry
+          ports:
+          - "8000:8000"
+
         web-dashboard:
            command: --registry_address=registry:8500 --environment=prod
            image: kazoup/web-dashboard
