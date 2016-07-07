@@ -18,6 +18,8 @@ Repo | Description |   CI
 [auth](https://github.com/kazoup/auth) | Microservices for Kazoup auth | [![CircleCI](https://circleci.com/gh/kazoup/auth.svg?style=svg&circle-token=fb3082b3ae297e36628bbba40e69eb0a3d8fe247)](https://circleci.com/gh/kazoup/auth)
 [kazoup-web](https://github.com/kazoup/kazoup-web) | Web frontend  as micro services | [![CircleCI](https://circleci.com/gh/kazoup/kazoup-web.svg?style=svg&circle-token=1084085b649711ccdac2e6355412dcd9fb259f64)](https://circleci.com/gh/kazoup/kazoup-web)
 [ldap](https://github.com/kazoup/ldap) | LDAP/AD authetication service | [![CircleCI](https://circleci.com/gh/kazoup/ldap.svg?style=svg&circle-token=c5e2408d51b764c10b2736213c754339996feee1)](https://circleci.com/gh/kazoup/ldap)
+[crawler](https://github.com/kazoup/crawler) | Crawler service | [![CircleCI](https://circleci.com/gh/kazoup/crawler.svg?style=svg&circle-token=642c934dc7fa61ed1b32ef4cc9a3c7218f6df459)](https://circleci.com/gh/kazoup/crawler)
+[publish](https://github.com/kazoup/publish) | Publish service | [![CircleCI](https://circleci.com/gh/kazoup/publish.svg?style=svg)](https://circleci.com/gh/kazoup/publish) 
 
 
 
