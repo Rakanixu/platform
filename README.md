@@ -30,14 +30,6 @@ docker-compose -f docker-compose-all.yml up -d
 
 ```
 
-## Build
-
-
-```
-
-make 
-
-```
 
 
 
