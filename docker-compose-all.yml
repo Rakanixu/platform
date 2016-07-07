@@ -25,6 +25,7 @@ services:
           - registry
           ports:
           - "8082:8082"
+
         # Elastic service
         elastic-api:
           command: --registry_address=registry:8500
@@ -73,11 +74,13 @@ services:
           image: kazoup/smtp-srv
           links:
           - registry
+
         auth-api:
           command: --registry_address=registry:8500
           image: kazoup/auth-api
           links:
           - registry
+
         web-proxy:
           command: --registry_address=registry:8500
           image: kazoup/web-proxy
@@ -86,25 +89,25 @@ services:
           ports:
           - "8000:8000"
 
-        web-dashboard:
+        dashboard-web:
            command: --registry_address=registry:8500 --environment=prod
            image: kazoup/dashboard-web
-           links: 
+           links:
            - registry
 
-        web-login:
+        login-web:
            command: --registry_address=registry:8500 --environment=prod
            image: kazoup/login-web
-           links: 
+           links:
            - registry
 
-        web-analytics:
+        analytics-web:
            command: --registry_address=registry:8500 --environment=prod
            image: kazoup/analytics-web
-           links: 
+           links:
            - registry
 
-        web-search:
+        search-web:
            command: --registry_address=registry:8500 --environment=prod
            image: kazoup/search-web
            links: 
@@ -113,22 +116,22 @@ services:
         web-docs:
            command: --registry_address=registry:8500 --environment=prod
            image: kazoup/docs-web
-           links: 
+           links:
            - registry
 
-        web-logs:
+        logs-web:
            command: --registry_address=registry:8500 --environment=prod
            image: kazoup/logs-web
-           links: 
+           links:
            - registry
 
-        web-settings:
+        settings-web:
            command: --registry_address=registry:8500 --environment=prod
            image: kazoup/settings-web
-           links: 
+           links:
            - registry
 
-        web-static:
+        static-web:
            command: --registry_address=registry:8500 --environment=prod
            image: kazoup/static-web
            links: 
@@ -137,7 +140,7 @@ services:
         ldap-srv:
            command: --registry_address=registry:8500
            image: kazoup/ldap-srv
-           links: 
+           links:
            - registry
 
         crawler-srv:

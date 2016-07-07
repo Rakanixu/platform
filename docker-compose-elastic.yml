@@ -4,15 +4,16 @@ services:
         elastic-api:
           command: --registry_address=registry:8500
           image : kazoup/elastic-api
-          links:
+          external_links:
           - registry
 
         elastic-srv:
           command: --registry_address=registry:8500 --elasticsearch_hosts=elasticsearch:9200
           image: kazoup/elastic-srv
+          external_links:
+          - registry
           links:
           - elasticsearch
-          - registry
 
         elasticsearch:
          image: elasticsearch:latest
