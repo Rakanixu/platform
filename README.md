@@ -20,7 +20,7 @@ Repo | Description |   CI
 [ldap](https://github.com/kazoup/ldap) | LDAP/AD authetication service | [![CircleCI](https://circleci.com/gh/kazoup/ldap.svg?style=svg&circle-token=c5e2408d51b764c10b2736213c754339996feee1)](https://circleci.com/gh/kazoup/ldap)
 [crawler](https://github.com/kazoup/crawler) | Crawler service | [![CircleCI](https://circleci.com/gh/kazoup/crawler.svg?style=svg&circle-token=642c934dc7fa61ed1b32ef4cc9a3c7218f6df459)](https://circleci.com/gh/kazoup/crawler)
 [publish](https://github.com/kazoup/publish) | Publish service | [![CircleCI](https://circleci.com/gh/kazoup/publish.svg?style=svg)](https://circleci.com/gh/kazoup/publish) 
-
+[indexer](https://github.com/kazoup/indexer) | Index files from files topic | [![CircleCI](https://circleci.com/gh/kazoup/indexer.svg?style=svg&circle-token=8217dd85c48bff50dea4d5f825a0ff2eb101b91b)](https://circleci.com/gh/kazoup/indexer)
 ## Run
 
 Running everything with Docker is the fastes way to start

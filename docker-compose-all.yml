@@ -155,3 +155,9 @@ services:
            image: kazoup/publish-srv
            links: 
            - registry
+
+        indexer-srv:
+           command: --registry_address=registry:8500
+           image: kazoup/indexer-srv
+           links: 
+           - registry
