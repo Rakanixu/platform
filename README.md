@@ -1,6 +1,6 @@
 # Kazoup Analytics Platform 
 
-Kazoup Analytics Platform is build on go-micro library which simplifies developing RPC micro services.
+Kazoup Analytics Platform is build on go-micro library which simplifies developing RPC micro services..
 
 ## Services
 
