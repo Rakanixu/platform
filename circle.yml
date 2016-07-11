@@ -1,10 +1,11 @@
 machine:
-        environment:
-                    IMPORT_PATH: "github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME"
         services:
                 - docker
 dependencies:
         override:
+                - mkdir -p $HOME/.go_project/src/github.com/$CIRCLE_PROJECT_USERNAME
+                - ln -fs $HOME/$CIRCLE_PROJECT_REPONAME $HOME/.go_project/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+                - echo 'export GOPATH=$GOPATH:$HOME/.go_project' >> ~/.circlerc
                 - make
                 - docker images
 test:
