@@ -1,0 +1,44 @@
+consul:
+  container_name: consul
+  command: -server -bootstrap -rejoin -log-level err
+  image: progrium/consul:latest
+  hostname: "registry"
+  ports:
+  - "8300:8300"
+  - "8400:8400"
+  - "8500:8500"
+  - "8600:53/udp"
+
+api:
+  container_name: api
+  command: --registry_address=registry:8500 --register_interval=5 --register_ttl=10 --api_cors=* --enable_stats api
+  image: microhq/micro
+  links:
+  - consul
+  ports:
+  - "8080:8080"
+
+web:
+  container_name: web
+  command: --registry_address=registry:8500 --register_interval=5 --register_ttl=10 web
+  image: microhq/micro
+  links:
+  - consul
+  ports:
+  - "8082:8082"
+
+smtp-api:
+  container_name: smtp-api
+  command: --registry_address=registry:8500
+  build: api
+  links:
+    - consul
+
+smtp-srv:
+  container_name: smtp-srv
+  command: --registry_address=registry:8500 --email_host=SERVER_ADDRESS --email_host_port=SMPT_SERVER_PORT --email_host_user=USERNAME --email_host_password=PASSWORD --default_from_email=noreply@company.com
+  build: srv
+  links:
+    - consul
+
+
