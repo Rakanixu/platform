@@ -10,7 +10,9 @@ dependencies:
                 - docker images
 test:
         override:
-                - sleep 10
+                - go vet -v ./...
+                - go test v ./...
+
 deployment:
         hub: 
                 branch: master
