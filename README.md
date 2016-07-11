@@ -1,6 +1,6 @@
-# Kazoup Analytics Platform 
+# Kazoup Analytics Platform  [![CircleCI](https://circleci.com/gh/kazoup/platform/tree/master.svg?style=svg&circle-token=fc062cf6f23c5dc606a8af94b020065a2d073113)](https://circleci.com/gh/kazoup/platform/tree/master)
 
-Kazoup Analytics Platform is build on go-micro library which simplifies developing RPC micro services.
+Kazoup Analytics Platform is build on go-micro library which simplifies developing RPC micro services..
 
 ## Services
 
