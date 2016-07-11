@@ -1,6 +1,6 @@
 default: dep build
 
 dep:
-	go get -u  -v -t ./...
+	go get -d  -v -t ./...
 build:
 	cd smtp && make && cd ..
