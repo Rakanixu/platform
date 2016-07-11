@@ -30,6 +30,8 @@ find * -type d -maxdepth 1 -print | while read dir; do
 	# build docker image
 	docker build -t $REGISTRY/$IMAGE .
 
+	# push docker image
+	docker push $REGISTRY/$IMAGE
 	
 	# remove binary
 	rm ${dir#*/}
