@@ -11,6 +11,8 @@ test:
         override:
                 - go vet -v ./...
                 - go test -v ./...
+                - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+                - ./deploy.sh
 deployment:
         hub: 
                 branch: master
