@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/kazoup/smtp/srv/handler"
-	"github.com/kazoup/smtp/srv/smtp"
+	"github.com/kazoup/platform/smtp/srv/handler"
+	"github.com/kazoup/platform/smtp/srv/smtp"
 	"github.com/micro/cli"
 	"github.com/micro/go-micro"
 )

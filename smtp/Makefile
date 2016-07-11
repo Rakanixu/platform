@@ -1,4 +1,4 @@
-default: dependencies build
+default:  build
 
 dependencies:
 	go get -t -d -v ./...

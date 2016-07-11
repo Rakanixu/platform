@@ -1,8 +1,8 @@
 package handler
 
 import (
-	proto "github.com/kazoup/smtp/srv/proto/smtp"
-	smtp "github.com/kazoup/smtp/srv/smtp"
+	proto "github.com/kazoup/platform/smtp/srv/proto/smtp"
+	smtp "github.com/kazoup/platform/smtp/srv/smtp"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
 )

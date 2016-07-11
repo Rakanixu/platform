@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	smtp "github.com/kazoup/smtp/srv/proto/smtp"
+	smtp "github.com/kazoup/platform/smtp/srv/proto/smtp"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	api "github.com/micro/micro/api/proto"
