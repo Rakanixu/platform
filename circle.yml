@@ -6,18 +6,13 @@ dependencies:
                 - mkdir -p $HOME/.go_project/src/github.com/$CIRCLE_PROJECT_USERNAME
                 - ln -fs $HOME/$CIRCLE_PROJECT_REPONAME $HOME/.go_project/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
                 - echo 'export GOPATH=$GOPATH:$HOME/.go_project' >> ~/.circlerc
-                - make dep
+                  #- go get -d  -v -t ./...
 test:
         override:
-                - make vet
-                - make test
-
+                - ./build.sh
 deployment:
         hub: 
                 branch: master
                 commands:
-                        - make build
-                        - docker images
                         - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
-                        - docker push kazoup/smtp-api
-                        - docker push kazoup/smtp-srv 
+                        - ./deploy.sh
