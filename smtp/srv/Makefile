@@ -1,4 +1,4 @@
-default: clean dependencies build docker
+default: clean build docker
 
 clean:
 	rm -rf srv
