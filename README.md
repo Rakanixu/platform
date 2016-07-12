@@ -10,9 +10,9 @@ Repo | Description
 -----|------------  
 [meta](https://github.com/kazoup/meta) | Meta data handling service 
 [smtp](https://github.com/kazoup/platform/tree/master/smtp) | Email sending service  
-[flag](https://github.com/kazoup/flag) | Flag micro service 
+[flag](https://github.com/kazoup/platform/tree/master/flag) | Flag micro service 
 [policy](https://github.com/kazoup/policy) | Policy service 
-[elastic](https://github.com/kazoup/elastic) | Microservice for supporting agnostic CRUD, Search and QueryDSL operations over Elastic search 
+[elastic](https://github.com/kazoup/platform/tree/master/elastic) | Microservice for supporting agnostic CRUD, Search and QueryDSL operations over Elastic search 
 [web-proxy](https://github.com/kazoup/web-proxy) | Entry point for Kazoup platform frontend 
 [auth](https://github.com/kazoup/auth) | Microservices for Kazoup auth 
 [kazoup-web](https://github.com/kazoup/kazoup-web) | Web frontend  as micro services 
