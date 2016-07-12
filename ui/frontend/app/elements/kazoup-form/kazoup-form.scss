@@ -1,0 +1,41 @@
+@import '../../styles/guide-style.scss';
+
+:host {
+  display: block;
+}
+
+form {
+  paper-dropdown-menu {
+    width: 100%;
+  }
+
+  .paper-dropdown-menu-error[visible] {
+    display: block;
+    margin-top: -8px;
+    font-size: 0.75em;
+    color: red;
+    border-top: 2px solid red;
+    margin-bottom: -8px;
+  }
+
+  .slider-container {
+    margin-top: 15px;
+
+    span {
+      color:#444;
+      margin-left: 10px;
+    }
+
+    paper-slider {
+      width: 100%;
+    }
+  }
+
+  paper-checkbox {
+    margin-top: 15px;
+  }
+
+  kazoup-spinner-button {
+    margin-top: 20px;
+  }
+}

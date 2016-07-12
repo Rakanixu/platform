@@ -1,0 +1,152 @@
+@import '../../styles/guide-style.scss';
+
+:host {
+  display: block;
+}
+
+paper-progress {
+  width: 100%;
+}
+
+:host::content #filtersPanel {
+  .heading {
+    padding: 15px 15px 5px 12px;
+
+    span {
+      font-weight: 600;
+      opacity: 0.8;
+      font-size: 0.95em;
+      text-transform: uppercase;
+    }
+
+    span.clear-filters {
+      margin-top: 3px;
+      font-size: 0.75em;
+      color: $accent-color;
+    }
+  }
+
+  .filters-container {
+    > div {
+      border-bottom: 1px solid $divider-color;
+
+      paper-item {
+        min-height: 38px;
+        padding: 0 12px;
+        cursor: pointer;
+
+        span {
+          text-transform: uppercase;
+          font-size: 0.8em;
+          font-weight: 500;
+          color: #444;
+        }
+
+        iron-icon {
+          -o-transform: rotate(0deg);
+          -moz-transform: rotate(0deg);
+          -ms-transform: rotate(0deg);
+          -webkit-transform: rotate(0deg);
+          transform: rotate(0deg);
+          -webkit-transition: -webkit-transform 0.3s ease-in;
+          -moz-transition: -moz-transform 0.3s ease-in;
+          -o-transition: -o-transform 0.3s ease-in;
+          -ms-transition: -ms-transition 0.3s ease-in;
+          transition: transform 0.3s ease-in;
+        }
+
+        iron-icon.rotate {
+          -o-transform: rotate(-180deg);
+          -moz-transform: rotate(-180deg);
+          -ms-transform: rotate(-180deg);
+          -webkit-transform: rotate(-180deg);
+          transform: rotate(-180deg);
+          -webkit-transition: -webkit-transform 0.3s ease-in;
+          -moz-transition: -moz-transform 0.3s ease-in;
+          -o-transition: -o-transform 0.3s ease-in;
+          -ms-transition: -ms-transition 0.3s ease-in;
+          transition: transform 0.3s ease-in;
+        }
+      }
+
+      .filters {
+        height: auto;
+        -webkit-transform: scaleY(1);
+        -moz-transform: scaleY(1);
+        -o-transform: scaleY(1);
+        -ms-transform: scaleY(1);
+        transform: scaleY(1);
+        transform-origin: top;
+        -webkit-transition: 0.3s ease-in;
+        -moz-transition: 0.3s ease-in;
+        -o-transition: 0.3s ease-in;
+        -ms-transition: 0.3s ease-in;
+        transition: 0.3s ease-in;
+
+        .filter {
+          height: 25px;
+          padding: 5px 18px;
+          -webkit-transition: height 0.3s ease-in;
+          -moz-transition: height 0.3s ease-in;
+          -o-transition: height 0.3s ease-in;
+          -ms-transition: height 0.3s ease-in;
+          transition: height 0.3s ease-in;
+
+          paper-checkbox {
+            line-height: 14px;
+
+            span {
+              font-size: 0.78em;
+            }
+          }
+
+          paper-checkbox.iron-selected {
+            font-weight: normal;
+          }
+        }
+
+        .filter.collapsable-filter {
+          height: 0;
+          padding: 0 18px 0 18px;
+          overflow: hidden;
+        }
+
+        .show-more {
+          display: block;
+          margin: 5px 0 10px 44px;
+          font-size: 0.72em;
+          color: $accent-color;
+
+          iron-icon {
+            width: 16px;
+            height: 16px;
+          }
+        }
+
+        .show-more.hidden {
+          display: none;
+        }
+      }
+
+      .filters.collapse {
+        overflow: hidden;
+        height: 0;
+        -webkit-transform: scaleY(0);
+        -moz-transform: scaleY(0);
+        -o-transform: scaleY(0);
+        -ms-transform: scaleY(0);
+        transform: scaleY(0);
+      }
+    }
+
+    #range {
+      div {
+        cursor: pointer;
+        padding-left: 12px;
+        font-size: 0.85em;
+        color: #444;
+        line-height: 40px;
+      }
+    }
+  }
+}

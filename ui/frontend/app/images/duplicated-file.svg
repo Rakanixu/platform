@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="35px"
+     height="35px"
+     viewBox="0 0 37 46"
+     version="1.1"
+     xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+  <title>file-icon</title>
+  <desc>Created for Kazoup.</desc>
+  <defs></defs>
+  <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+    <g id="file" sketch:type="MSLayerGroup">
+      <g id="Group-2" transform="translate(3.083333, 0.000000)" sketch:type="MSShapeGroup">
+        <g id="file-icon">
+          <path d="M2.75419898e-14,0 L0,41 L33.9166667,41 L33.9166667,10.25 L24.2261904,0 L2.75419898e-14,0 L2.75419898e-14,0 Z"
+                id="Path-3"
+                stroke-opacity="0.1"
+                fill-opacity="0.5"
+                stroke="#020000"
+                fill="black"></path>
+          <path d="M24.2261904,0 L24.2261904,10.1652893 L33.9166667,10.1652894"
+                id="Shape"
+                stroke-opacity="0.8"
+                stroke="#F9F9F9"
+                fill-opacity="1"
+                fill="black"></path>
+        </g>
+      </g>
+      <g id="Group" transform="translate(0.000000, 3.000000)" sketch:type="MSShapeGroup">
+        <g id="file-icon">
+          <path d="M2.75419898e-14,0 L0,41 L33.9166667,41 L33.9166667,10.25 L24.2261904,0 L2.75419898e-14,0 L2.75419898e-14,0 Z"
+                id="Path-3"
+                stroke-opacity="0.1"
+                fill-opacity="1"
+                stroke="#020000"
+                fill="black"></path>
+          <path d="M24.2261904,0 L24.2261904,10.1652893 L33.9166667,10.1652894"
+                id="Shape"
+                stroke-opacity="0.2"
+                stroke="black"
+                fill="black"></path>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

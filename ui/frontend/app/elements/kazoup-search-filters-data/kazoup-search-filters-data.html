@@ -1,0 +1,972 @@
+<dom-module id='kazoup-search-filters-data'>
+  <script>
+    (function() {
+      /**
+       * makes requests to elasticsearch, sets filters
+       */
+      Polymer({
+        is: 'kazoup-search-filters-data',
+        behaviors: [
+          KazoupBehaviors.NetworkError,
+          KazoupBehaviors.APIUrls
+        ],
+        properties: {
+          target: {
+            type: String,
+            notify: false
+          },
+          requestInProgress: {
+            type:Boolean,
+            notify: true
+          },
+          archiveStatusData: {
+            type: Array,
+            notify: true
+          },
+          categoryData: {
+            type: Array,
+            notify: true
+          },
+          duplicatesData: {
+            type: Array,
+            notify: true
+          },
+          extensionsData: {
+            type: Array,
+            notify: true
+          },
+          fileSizeData: {
+            type: Array,
+            notify: true
+          },
+          permissionsData: {
+            type: Array,
+            notify: true
+          },
+          placesLocationsData: {
+            type: Array,
+            notify: true
+          },
+          placesOrganisationsData: {
+            type: Array,
+            notify: true
+          },
+          placesPersonsData: {
+            type: Array,
+            notify: true
+          },
+          _requestCounter: {
+            type: Number,
+            notify: false,
+            value: 0,
+            observer: '_requestCounterChanged'
+          }
+        },
+        _requestCounterChanged: function() {
+          if (this._requestCounter === 0) {
+            this.requestInProgress = false;
+          } else if (this._requestCounter > 0){
+            this.requestInProgress = true;
+          }
+        },
+        fetchFilterData: function(type, size) {
+          this.size = size;
+          this._requestCounter = 0;
+
+          switch (type) {
+            case 'doc_type':
+              return this._makeDocTypeRequest().catch(this.handleNetworkError);
+            case 'extension':
+              return this._makeExtensionRequest().catch(this.handleNetworkError);
+            case 'allow':
+              return this._makePermissionsRequest().catch(this.handleNetworkError);
+            case 'places_person':
+              return this._makePlacesPersonRequest().catch(this.handleNetworkError);
+            case 'places_organisation':
+              return this._makePlacesOrganisationRequest().catch(this.handleNetworkError);
+            case 'places_location':
+              return this._makePlacesLocationRequest().catch(this.handleNetworkError);
+          }
+        },
+        _fetchAllData: function(noFetch) {
+          var promises = [];
+
+          this.size = 4;
+          this._requestCounter = 0;
+
+          if (noFetch !== 'doc_type') {
+            promises.push(this._makeDocTypeRequest().catch(this.handleNetworkError));
+          }
+          if (noFetch !== 'extension') {
+            promises.push(this._makeExtensionRequest().catch(this.handleNetworkError));
+          }
+          if (noFetch !== 'unique') {
+            promises.push(this._makeDuplicatesRequest().catch(this.handleNetworkError));
+          }
+          if (noFetch !== 'allow') {
+            promises.push(this._makePermissionsRequest().catch(this.handleNetworkError));
+          }
+          if (noFetch !== 'archive_status') {
+            promises.push(this._makeArchiveStatusRequest().catch(this.handleNetworkError));
+          }
+          if (noFetch !== 'file_size') {
+            promises.push(this._makeFileSizeRequest().catch(this.handleNetworkError));
+          }
+          if (noFetch !== 'places_person') {
+            promises.push(this._makePlacesPersonRequest().catch(this.handleNetworkError));
+          }
+          if (noFetch !== 'places_organisation') {
+            promises.push(this._makePlacesOrganisationRequest().catch(this.handleNetworkError));
+          }
+          if (noFetch !== 'places_location') {
+            promises.push(this._makePlacesLocationRequest().catch(this.handleNetworkError));
+          }
+        },
+        _makeDocTypeRequest: function() {
+          var query = {
+            'query':{
+              'constant_score':{
+                'filter':{
+                  'bool':{
+                    'should':[
+                      {
+                        'term':{
+                          'exists_on_disk':true
+                        }
+                      },
+                      {
+                        'exists':{
+                          'field':'archive_complete'
+                        }
+                      }
+                    ],
+                    'must':[
+                    ]
+                  }
+                }
+              }
+            },
+            'facets':{
+              'totals':{
+                'terms_stats':{
+                  'value_field': 'size',
+                  'size':  this.size,
+                  'key_field': 'doc_type',
+                  'order': 'total'
+                }
+              }
+            },
+            'size':0
+          };
+
+          this._requestCounter++;
+
+          query.query.constant_score.filter.bool.must.push(
+            this._filterConverter.asElasticsearchFilters('doc_type')
+          );
+
+          var _self = this;
+
+          return qwest.post(
+            this.endpointList.ESFiles,
+            query,
+            {
+              dataType: 'json',
+              cache: true,
+              headers: {
+                Accept: 'application/json',
+                Authorization: 'JWT ' + localStorage.getItem('authToken')
+              }
+            }
+            )
+            .then(function(xhr, response) {
+              var results = [];
+              _.forEach(response.facets.totals.terms, function(item) {
+                var size = filesize(item.total, {output: 'array'});
+                results.push({
+                  filterType: 'doc_type',
+                  term: item.term,
+                  count: item.count,
+                  total: item.total,
+                  size_human: size[0],
+                  size_human_measure: size[1]
+                });
+              });
+
+              results = _.sortByOrder(results, ['count'], ['desc']);
+              _self.set('categoryData', _self._setSelectedItems(results, 'doc_type'));
+
+              _self._requestCounter--;
+
+              return _self.categoryData;
+            });
+        },
+        _makeExtensionRequest: function() {
+          var query = {
+            'query':{
+              'constant_score':{
+                'filter':{
+                  'bool':{
+                    'should':[
+                      {
+                        'term':{
+                          'exists_on_disk':true
+                        }
+                      },
+                      {
+                        'exists':{
+                          'field':'archive_complete'
+                        }
+                      }
+                    ],
+                    'must':[
+                    ]
+                  }
+                }
+              }
+            },
+            'facets':{
+              'totals':{
+                'terms_stats':{
+                  'value_field':'size',
+                  'size': this.size,
+                  'key_field':'extension',
+                  'order':'total'
+                }
+              }
+            },
+            'size':0
+          };
+
+          this._requestCounter++;
+
+          query.query.constant_score.filter.bool.must.push(
+            this._filterConverter.asElasticsearchFilters('extension')
+          );
+
+          var _self = this;
+
+          return qwest.post(
+            this.endpointList.ESFiles,
+            query,
+            {
+              dataType: 'json',
+              cache: true,
+              headers: {
+                Accept: 'application/json',
+                Authorization: 'JWT ' + localStorage.getItem('authToken')
+              }
+            }
+            )
+            .then(function(xhr, response) {
+              var results = [];
+              _.forEach(response.facets.totals.terms, function(item) {
+                var size = filesize(item.total, {output: 'array'});
+                results.push({
+                  filterType: 'extension',
+                  term: item.term,
+                  count: item.count,
+                  total: item.total,
+                  size_human: size[0],
+                  size_human_measure: size[1]
+                });
+              });
+
+              results = _.sortByOrder(results, ['count'], ['desc']);
+              _self.set('extensionsData', _self._setSelectedItems(results, 'extension'));
+
+              _self._requestCounter--;
+
+              return _self.extensionsData;
+            });
+        },
+        _makeDuplicatesRequest: function() {
+          var query = {
+            'query':{
+              'constant_score':{
+                'filter':{
+                  'bool':{
+                    'should':[
+                      {
+                        'term':{
+                          'exists_on_disk':true
+                        }
+                      },
+                      {
+                        'exists':{
+                          'field':'archive_complete'
+                        }
+                      }
+                    ],
+                    'must':[
+                    ]
+                  }
+                }
+              }
+            },
+            'aggs':{
+              'known':{
+                'terms':{
+                  'field':'content.unique'
+                },
+                'aggs':{
+                  'total_size':{
+                    'sum':{
+                      'field': 'metadata.size'
+                    }
+                  }
+                }
+              },
+              'unknown':{
+                'aggs':{
+                  'total_size':{
+                    'sum':{
+                      'field': 'metadata.size'
+                    }
+                  }
+                },
+                'missing':{
+                  'field':'content.unique'
+                }
+              }
+            },
+            'size':0
+          };
+
+          this._requestCounter++;
+
+          query.query.constant_score.filter.bool.must.push(
+            this._filterConverter.asElasticsearchFilters('unique')
+          );
+
+          var _self = this;
+
+          return qwest.post(
+            this.endpointList.ESFiles,
+            query,
+            {
+              dataType: 'json',
+              cache: true,
+              headers: {
+                Accept: 'application/json',
+                Authorization: 'JWT ' + localStorage.getItem('authToken')
+              }
+            }
+            )
+            .then(function(xhr, response) {
+              var results = [];
+
+              // true and false
+              response.aggregations.known.buckets;
+              var size;
+
+              _.forEach(response.aggregations.known.buckets, function(item) {
+                size = filesize(item.total_size.value, {output: 'array'});
+                var term;
+                if (item.key === 'T') {
+                  term = 'unique';
+                } else if (item.key === 'F') {
+                  term = 'not_unique';
+                }
+                results.push({
+                  filterType: 'unique',
+                  term: term,
+                  count: item.doc_count,
+                  total: item.total_size.value,
+                  size_human: size[0],
+                  size_human_measure: size[1]
+                });
+              });
+
+              // unknown
+              var item = response.aggregations.unknown;
+              size = filesize(item.total_size.value, {output: 'array'});
+              results.push({
+                filterType: 'unique',
+                term: 'unknown',
+                count: item.doc_count,
+                total: item.total_size.value,
+                size_human: size[0],
+                size_human_measure: size[1]
+              });
+
+              results = _.sortByOrder(results, ['count'], ['desc']);
+              _self.set('duplicatesData', _self._setSelectedItems(results, 'unique'));
+
+              _self._requestCounter--;
+
+              return _self.duplicatesData;
+            });
+        },
+        _makePermissionsRequest: function() {
+          var query = {
+            'query':{
+              'constant_score':{
+                'filter':{
+                  'bool':{
+                    'should':[
+                      {
+                        'term':{
+                          'exists_on_disk':true
+                        }
+                      },
+                      {
+                        'exists':{
+                          'field':'archive_complete'
+                        }
+                      }
+                    ],
+                    'must':[
+                    ]
+                  }
+                }
+              }
+            },
+            'facets':{
+              'totals':{
+                'terms_stats':{
+                  'value_field':'size',
+                  'size': this.size,
+                  'key_field':'allow',
+                  'order':'total'
+                }
+              }
+            },
+            'size':0
+          };
+
+          this._requestCounter++;
+
+          query.query.constant_score.filter.bool.must.push(
+            this._filterConverter.asElasticsearchFilters('allow')
+          );
+
+          var _self = this;
+
+          return qwest.post(
+            this.endpointList.ESFiles,
+            query,
+            {
+              dataType: 'json',
+              cache: true,
+              headers: {
+                Accept: 'application/json',
+                Authorization: 'JWT ' + localStorage.getItem('authToken')
+              }
+            }
+            )
+            .then(function(xhr, response) {
+              var results = [];
+              _.forEach(response.facets.totals.terms, function(item) {
+                var size = filesize(item.total, {output: 'array'});
+                results.push({
+                  filterType: 'allow',
+                  term: item.term,
+                  count: item.count,
+                  total: item.total,
+                  size_human: size[0],
+                  size_human_measure: size[1]
+                });
+              });
+
+              results = _.sortByOrder(results, ['count'], ['desc']);
+              _self.set('permissionsData', _self._setSelectedItems(results, 'allow'));
+
+              _self._requestCounter--;
+
+              return _self.permissionsData;
+            });
+        },
+        _makeArchiveStatusRequest: function() {
+          var query = {
+            'query':{
+              'constant_score':{
+                'filter':{
+                  'bool':{
+                    'should':[
+                      {
+                        'term':{
+                          'exists_on_disk':true
+                        }
+                      },
+                      {
+                        'exists':{
+                          'field':'archive_complete'
+                        }
+                      }
+                    ],
+                    'must':[
+                    ]
+                  }
+                }
+              }
+            },
+            'aggs':{
+              'archived':{
+                'filter': {
+                  'exists': {
+                    'field': 'archive_complete'
+                  }
+                },
+                'aggs': {
+                  'total_size': {
+                    'sum': {
+                      'field': 'metadata.size'
+                    }
+                  }
+                }
+              },
+              'not_archived':{
+                'filter': {
+                  'missing': {
+                    'field': 'archive_complete'
+                  }
+                },
+                'aggs': {
+                  'total_size': {
+                    'sum': {
+                      'field': 'metadata.size'
+                    }
+                  }
+                }
+              }
+            },
+            'size':0
+          };
+
+          this._requestCounter++;
+
+          query.query.constant_score.filter.bool.must.push(
+            this._filterConverter.asElasticsearchFilters('archive_status')
+          );
+
+          var _self = this;
+
+          return qwest.post(
+            this.endpointList.ESFiles,
+            query,
+            {
+              dataType: 'json',
+              cache: true,
+              headers: {
+                Accept: 'application/json',
+                Authorization: 'JWT ' + localStorage.getItem('authToken')
+              }
+            }
+            )
+            .then(function(xhr, response) {
+              var results = [];
+
+              var item = response.aggregations.archived;
+              var size = filesize(item.total_size.value, {output: 'array'});
+              results.push({
+                filterType: 'archive_status',
+                term: 'archived',
+                count: item.doc_count,
+                total: item.total_size.value,
+                size_human: size[0],
+                size_human_measure: size[1]
+              });
+
+              item = response.aggregations.not_archived;
+              size = filesize(item.total_size.value, {output: 'array'});
+              results.push({
+                filterType: 'archive_status',
+                term: 'not_archived',
+                count: item.doc_count,
+                total: item.total_size.value,
+                size_human: size[0],
+                size_human_measure: size[1]
+              });
+
+              results = _.sortByOrder(results, ['count'], ['desc']);
+              _self.set('archiveStatusData', _self._setSelectedItems(results, 'archive_status'));
+
+              _self._requestCounter--;
+
+              return _self.archiveStatusData;
+            });
+        },
+        _makeFileSizeRequest: function() {
+          var query = {
+            'query':{
+              'constant_score':{
+                'filter':{
+                  'bool':{
+                    'should':[
+                      {
+                        'term':{
+                          'exists_on_disk':true
+                        }
+                      },
+                      {
+                        'exists':{
+                          'field':'archive_complete'
+                        }
+                      }
+                    ],
+                    'must':[
+                    ]
+                  }
+                }
+              }
+            },
+            'aggs':{
+              'file_size': {
+                'range' : {
+                  'field': 'metadata.size',
+                  'ranges' : [
+                    {
+                      'key':'small',
+                      'to': (1024 * 1024 * 1024) - 1
+                    },
+                    {
+                      'key': 'medium',
+                      'from' : 1024 * 1024 * 1024,
+                      'to': (1024 * 1024 * 1024 * 10) - 1
+                    },
+                    {
+                      'key': 'large',
+                      'from': 1024 * 1024 * 1024 * 10
+                    }
+                  ]
+                },
+                'aggs': {
+                  'total_size': {
+                    'sum': {
+                      'field': 'metadata.size'
+                    }
+                  }
+                }
+              }
+            },
+            'size':0
+          };
+
+          this._requestCounter++;
+
+          query.query.constant_score.filter.bool.must.push(
+            this._filterConverter.asElasticsearchFilters('file_size')
+          );
+
+          var _self = this;
+
+          return qwest.post(
+            this.endpointList.ESFiles,
+            query,
+            {
+              dataType: 'json',
+              cache: true,
+              headers: {
+                Accept: 'application/json',
+                Authorization: 'JWT ' + localStorage.getItem('authToken')
+              }
+            }
+            )
+            .then(function(xhr, response) {
+              var results = [];
+
+              _.forEach(response.aggregations.file_size.buckets, function(item) {
+                var size = filesize(item.total_size.value, {output: 'array'});
+
+                results.push({
+                  filterType: 'file_size',
+                  term: item.key,
+                  count: item.doc_count,
+                  total: item.total_size.value,
+                  size_human: size[0],
+                  size_human_measure: size[1]
+                });
+              });
+
+              results = _.sortByOrder(results, ['count'], ['desc']);
+              _self.set('fileSizeData', _self._setSelectedItems(results, 'file_size'));
+
+              _self._requestCounter--;
+
+              return _self.fileSizeData;
+            });
+        },
+        _makePlacesPersonRequest: function() {
+          var query = {
+            'query':{
+              'constant_score':{
+                'filter':{
+                  'bool':{
+                    'should':[
+                      {
+                        'term':{
+                          'exists_on_disk':true
+                        }
+                      },
+                      {
+                        'exists':{
+                          'field':'archive_complete'
+                        }
+                      }
+                    ],
+                    'must':[
+                    ]
+                  }
+                }
+              }
+            },
+            'aggs':{
+              'places_person': {
+                'terms' : {
+                  'field': 'content.person.value',
+                  'size': this.size
+                },
+                'aggs': {
+                  'total_size': {
+                    'sum': {
+                      'field': 'metadata.size'
+                    }
+                  }
+                }
+              }
+            },
+            'size':0
+          };
+
+          this._requestCounter++;
+
+          query.query.constant_score.filter.bool.must.push(
+            this._filterConverter.asElasticsearchFilters('places_person')
+          );
+
+          var _self = this;
+
+          return qwest.post(
+            this.endpointList.ESFiles,
+            query,
+            {
+              dataType: 'json',
+              cache: true,
+              headers: {
+                Accept: 'application/json',
+                Authorization: 'JWT ' + localStorage.getItem('authToken')
+              }
+            }
+            )
+            .then(function(xhr, response) {
+              var results = [];
+
+              _.forEach(response.aggregations.places_person.buckets, function(item) {
+                var size = filesize(item.total_size.value, {output: 'array'});
+
+                results.push({
+                  filterType: 'places_person',
+                  term: item.key,
+                  count: item.doc_count,
+                  total: item.total_size.value,
+                  size_human: size[0],
+                  size_human_measure: size[1]
+                });
+              });
+
+              results = _.sortByOrder(results, ['count'], ['desc']);
+              _self.set('placesPersonsData', _self._setSelectedItems(results, 'places_person'));
+
+              _self._requestCounter--;
+
+              return _self.placesPersonsData;
+            });
+        },
+        _makePlacesOrganisationRequest: function() {
+          var query = {
+            'query':{
+              'constant_score':{
+                'filter':{
+                  'bool':{
+                    'should':[
+                      {
+                        'term':{
+                          'exists_on_disk':true
+                        }
+                      },
+                      {
+                        'exists':{
+                          'field':'archive_complete'
+                        }
+                      }
+                    ],
+                    'must':[
+                    ]
+                  }
+                }
+              }
+            },
+            'aggs':{
+              'places_organisation': {
+                'terms' : {
+                  'field': 'content.organisation.value',
+                  'size': this.size
+                },
+                'aggs': {
+                  'total_size': {
+                    'sum': {
+                      'field': 'metadata.size'
+                    }
+                  }
+                }
+              }
+            },
+            'size':0
+          };
+
+          this._requestCounter++;
+
+          query.query.constant_score.filter.bool.must.push(
+            this._filterConverter.asElasticsearchFilters('places_organisation')
+          );
+
+          var _self = this;
+
+          return qwest.post(
+            this.endpointList.ESFiles,
+            query,
+            {
+              dataType: 'json',
+              cache: true,
+              headers: {
+                Accept: 'application/json',
+                Authorization: 'JWT ' + localStorage.getItem('authToken')
+              }
+            }
+            )
+            .then(function(xhr, response) {
+              var results = [];
+
+              _.forEach(response.aggregations.places_organisation.buckets, function(item) {
+                var size = filesize(item.total_size.value, {output: 'array'});
+
+                results.push({
+                  filterType: 'places_organisation',
+                  term: item.key,
+                  count: item.doc_count,
+                  total: item.total_size.value,
+                  size_human: size[0],
+                  size_human_measure: size[1]
+                });
+              });
+
+              results = _.sortByOrder(results, ['count'], ['desc']);
+              _self.set('placesOrganisationsData', _self._setSelectedItems(results, 'places_organisation'));
+
+              _self._requestCounter--;
+
+              return _self.placesOrganisationsData;
+            });
+        },
+        _makePlacesLocationRequest: function() {
+          var query = {
+            'query':{
+              'constant_score':{
+                'filter':{
+                  'bool':{
+                    'should':[
+                      {
+                        'term':{
+                          'exists_on_disk':true
+                        }
+                      },
+                      {
+                        'exists':{
+                          'field':'archive_complete'
+                        }
+                      }
+                    ],
+                    'must':[
+                    ]
+                  }
+                }
+              }
+            },
+            'aggs':{
+              'places_location': {
+                'terms' : {
+                  'field': 'content.location.value',
+                  'size': this.size
+                },
+                'aggs': {
+                  'total_size': {
+                    'sum': {
+                      'field': 'metadata.size'
+                    }
+                  }
+                }
+              }
+            },
+            'size':0
+          };
+
+          this._requestCounter++;
+
+          query.query.constant_score.filter.bool.must.push(
+            this._filterConverter.asElasticsearchFilters('places_location')
+          );
+
+          var _self = this;
+
+          return qwest.post(
+            this.endpointList.ESFiles,
+            query,
+            {
+              dataType: 'json',
+              cache: true,
+              headers: {
+                Accept: 'application/json',
+                Authorization: 'JWT ' + localStorage.getItem('authToken')
+              }
+            }
+            )
+            .then(function(xhr, response) {
+              var results = [];
+
+              _.forEach(response.aggregations.places_location.buckets, function(item) {
+                var size = filesize(item.total_size.value, {output: 'array'});
+
+                results.push({
+                  filterType: 'places_location',
+                  term: item.key,
+                  count: item.doc_count,
+                  total: item.total_size.value,
+                  size_human: size[0],
+                  size_human_measure: size[1]
+                });
+              });
+
+              results = _.sortByOrder(results, ['count'], ['desc']);
+              _self.set('placesLocationsData', _self._setSelectedItems(results, 'places_location'));
+
+              _self._requestCounter--;
+
+              return _self.placesLocationsData;
+            });
+        },
+        _setSelectedItems: function(array, field) {
+          var selectedValues = this._filterConverter.getValue(field);
+          array = _.chain(array);
+          return array.forEach(function(item) {
+            if (_.contains(selectedValues, item.term)) {
+              item.selected = true;
+            } else {
+              item.selected = false;
+            }
+          }).value();
+        },
+        attached: function() {
+          Polymer.dom.flush();
+
+          // Selects its filter converter, if not,
+          // the one from kazoup-analytics can be selected erroneously
+          // trigerring observer in the wrong place,
+          this._filterConverter = Polymer.dom(document)
+            .querySelector(this.target)
+            .querySelector('#filterConverter');
+        }
+      });
+    }());
+  </script>
+</dom-module>

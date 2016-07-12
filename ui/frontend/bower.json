@@ -1,0 +1,43 @@
+{
+  "name": "polymer-starter-kit",
+  "private": true,
+  "dependencies": {
+    "iron-elements": "PolymerElements/iron-elements#^1.0.0",
+    "neon-elements": "PolymerElements/neon-elements#^1.0.0",
+    "page": "visionmedia/page.js#~1.6.4",
+    "paper-elements": "PolymerElements/paper-elements#^1.0.1",
+    "platinum-elements": "PolymerElements/platinum-elements#^1.1.0",
+    "polymer": "Polymer/polymer#^1.2.0",
+    "paper-menu": "PolymerElements/paper-menu#4fecb43601",
+    "paper-input": "PolymerElements/paper-input#~1.1.3",
+    "lib-d3": "Polymoar/lib-d3#6bc0a27b69c32",
+    "d3.layout.cloud": "~1.2.1",
+    "PinkySwear.js": "timjansen/PinkySwear.js#~2.2.2",
+    "qwest": "~2.2.6",
+    "lodash": "~3.10.1",
+    "js-md5": "~1.1.1",
+    "filesize.js": "avoidwork/filesize.js#~3.1.3",
+    "draggabilly": "~1.2.4",
+    "date-utils": "JerrySievert/date-utils#~1.2.16",
+    "neon-animation": "PolymerElements/neon-animation#~1.0.9",
+    "Chart.js": "chartjs#~1.0.2",
+    "paper-audio-player": "~0.2.1",
+    "d3-tip": "~0.6.7",
+    "d3-plugins-sankey": "~1.1.0",
+    "google-youtube": "GoogleWebComponents/google-youtube#~1.1.3",
+    "iron-list": "PolymerElements/iron-list#~1.1.7",
+    "paper-date-picker": "bendavis78/paper-date-picker#~1.1.2",
+    "moment-duration-format": "~1.3.0",
+    "moment": "~2.11.2",
+    "left-swipe-action": "~0.2.1"
+  },
+  "devDependencies": {
+    "web-component-tester": "*"
+  },
+  "ignore": [],
+  "resolutions": {
+    "paper-menu": "4fecb43601",
+    "web-animations-js": "2.1.3",
+    "polymer": "^1.2.0"
+  }
+}

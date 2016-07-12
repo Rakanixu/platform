@@ -1,0 +1,45 @@
+<dom-module id="kazoup-empty-state">
+  <link rel="import" type="css" href="kazoup-empty-state.css">
+  <template>
+
+    <div class="container">
+      <iron-icon class="icon-size" icon="{{icon}}"></iron-icon>
+
+      <h3 id="header"></h3>
+
+      <p id="description"></p>
+    </div>
+
+  </template>
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'kazoup-empty-state',
+        properties: {
+          description: {
+            type: String,
+            notify: true,
+            observer: 'descriptionChanged'
+          },
+          header: {
+            type: String,
+            notify: true,
+            observer: 'headerChanged'
+          },
+          icon: {
+            type: String,
+            notify: true
+          }
+        },
+        headerChanged: function () {
+          this.set('$.header.innerHTML', this.header);
+        },
+        descriptionChanged: function () {
+          this.set('$.description.innerHTML', this.description);
+        }
+      });
+    }());
+  </script>
+</dom-module>

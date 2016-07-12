@@ -1,0 +1,236 @@
+<link rel="import" href="../kazoup-ajax/kazoup-ajax.html">
+<link rel="import" href="../kazoup-form/kazoup-form.html">
+
+<dom-module id="kazoup-restore-appliance">
+  <link rel="import" type="css" href="kazoup-restore-appliance.css">
+  <template>
+    <div class="container box vertical layout center-justified">
+      <h2 class="horizontal layout center-justified">Restore appliance</h2>
+
+      <kazoup-form 
+        id="restoreApplianceStep1" 
+        url="[[endpointList.restoreApplianceStep1]]"
+        fields="{{setupFieldsStep1}}"
+        method="POST" 
+        is-authorize="{{false}}"
+        keyboard-target="[[restoreApplianceStep1Element]]"
+        label="Retrieve snapshots"
+        hidden$="{{_computeHidden1(customStep)}}"></kazoup-form>
+
+      <kazoup-form 
+        id="restoreApplianceStep2" 
+        url="[[endpointList.restoreApplianceStep2]]"
+        fields="{{setupFieldsStep2}}" 
+        method="POST" 
+        is-authorize="{{false}}"
+        keyboard-target="[[restoreApplianceStep2Element]]"
+        label="Restore"
+        hidden$="{{_computeHidden2(customStep)}}"></kazoup-form>
+
+      <div hidden$="{{_computeHidden3(customStep)}}">
+        <p class="progress-info">{{progressMessage}}</p>
+        <paper-progress indeterminate="true"></paper-progress>
+      </div>
+
+      <p id="connectAppliance">You can also simply <a href="/">connect your appliance</a></p>
+    </div>
+    <iron-a11y-keys id="a11y" keys="enter"></iron-a11y-keys>
+
+    <kazoup-ajax id="backups"
+                 method="GET"
+                 url="[[endpointList.restoreApplianceStep2Values]]"
+                 handleas="json"></kazoup-ajax>
+
+    <kazoup-ajax id="restoreState"
+                 method="GET"
+                 url="[[endpointList.restoreApplianceState]]"
+                 handleas="json"></kazoup-ajax>
+
+  </template>
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'kazoup-restore-appliance',
+        behaviors: [KazoupBehaviors.APIUrls],
+        properties: {
+          customStep: {
+            type: Number,
+            value: 1
+          },
+          error: {
+            notify: true
+          },
+          identification: {
+            notify: true
+          },
+          progressMessage: {
+            type: String,
+            value: ''
+          },
+          setupFieldsStep1: {
+            type: Array,
+            value: function() {
+              return [
+                {
+                  'attr': 'type',
+                  'type': 'choice',
+                  'required': true,
+                  'read_only': false,
+                  'label': 'Provider',
+                  'max_length': 256,
+                  'choices': [
+                    {
+                      'display_name': 'Amazon S3',
+                      'value': 's3'
+                    },
+                    {
+                      'display_name': 'Microsoft Azure',
+                      'value': 'azure'
+                    }
+                  ]
+                },
+                {
+                  'attr': 'access_key',
+                  'type': 'password',
+                  'required': true,
+                  'read_only': false,
+                  'label': 'Access key',
+                  'max_length': 256
+                },
+                {
+                  'attr': 'secret_key',
+                  'type': 'password',
+                  'required': true,
+                  'read_only': false,
+                  'label': 'Secret key',
+                  'max_length': 256
+                },
+                {
+                  'attr': 'container_name',
+                  'type': 'string',
+                  'required': true,
+                  'read_only': false,
+                  'label': 'Container name',
+                  'max_length': 128
+                },
+                {
+                  'attr': 'encryption_key',
+                  'type': 'password',
+                  'required': true,
+                  'read_only': false,
+                  'label': 'Encryption key',
+                  'max_length': 128
+                }
+              ];
+            }
+          },
+          setupFieldsStep2: {
+            type: Array,
+            value: function() {
+              return [
+                {
+                  'attr': 'snapshot',
+                  'type': 'choice',
+                  'required': true,
+                  'read_only': false,
+                  'label': 'Snapshot',
+                  'max_length': 256
+                },
+                {
+                  'attr': 'name',
+                  'type': 'string',
+                  'required': true,
+                  'read_only': false,
+                  'label': 'Appliance name',
+                  'max_length': 256
+                },
+                {
+                  'attr': 'username',
+                  'type': 'string',
+                  'required': true,
+                  'read_only': false,
+                  'label': 'Kazoup username',
+                  'max_length': 256
+                },
+                {
+                  'attr': 'password',
+                  'type': 'password',
+                  'required': true,
+                  'read_only': false,
+                  'label': 'Password',
+                  'max_length': 128
+                }
+              ];
+            }
+          },
+          restoreApplianceStep1Element: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return this.$.restoreApplianceStep1;
+            }
+          },
+          restoreApplianceStep2Element: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return this.$.restoreApplianceStep2;
+            }
+          }
+        },
+        poolRestoreState: function() {
+          this.restoreState = this.$.restoreState;
+
+          this.restoreState.generateRequest().then(
+            function(e) {
+              if (e.response.state === 'IN_PROGRESS') {
+                this.set('progressMessage', e.response.message);
+
+                this.async(function () {
+                  this.poolRestoreState();
+                }, 4000);
+              } else if (e.response.state === 'SUCCESS') {
+                document.location = '/';
+              }
+            }.bind(this)
+          ).bind(this);
+        },
+        setBackupsList: function(e) {
+          this.customStep = 2;
+          this.setupFieldsStep2[0].choices = e.response;
+          this.notifyPath('setupFieldsStep2.0.choices', this.setupFieldsStep2[0].choices);
+        },
+        ready: function() {
+          this.restoreApplianceStep1 = this.$.restoreApplianceStep1;
+          this.restoreApplianceStep2 = this.$.restoreApplianceStep2;
+          this.backups = this.$.backups;
+
+          this.restoreApplianceStep1.addEventListener('request-success', function(e) {
+            // jshint unused:false
+            this.backups.generateRequest().then(
+              this.setBackupsList.bind(this)
+            ).bind(this);
+          }.bind(this));
+
+          this.restoreApplianceStep2.addEventListener('request-success', function(e) {
+            // jshint unused:false
+            this.customStep = 3;
+            this.$.connectAppliance.style.display = 'none';
+            this.poolRestoreState();
+          }.bind(this));
+        },
+        _computeHidden1: function(customStep) {
+          return parseInt(customStep) !== 1;
+        },
+        _computeHidden2: function(customStep) {
+          return parseInt(customStep) !== 2;
+        },
+        _computeHidden3: function(customStep) {
+          return parseInt(customStep) !== 3;
+        }
+      });
+    }());
+  </script>
+</dom-module>

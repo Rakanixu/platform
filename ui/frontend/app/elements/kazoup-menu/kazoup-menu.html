@@ -1,0 +1,169 @@
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html">
+
+<dom-module id="kazoup-menu">
+  <link rel="import" type="css" href="kazoup-menu.css">
+
+  <template>
+
+    <paper-toolbar id="side-toolbar" class="medium-tall">
+      <span class="kazoup-logo">Kazoup</span>
+      <span class="bottom email">[[currentUser.username]]</span>
+    </paper-toolbar>
+
+    <paper-menu selected="[[selected]]" class="kazoup-menu vertical layout">
+      <paper-item on-tap="menuRedirect" data-section$="[[sections.dashboard.val]]">
+        <div class="paper-item-background">
+          <span>Dashboard</span>
+          <paper-ripple class="dark-background"></paper-ripple>
+        </div>
+      </paper-item>
+      <paper-item on-tap="menuRedirect" data-section$="[[sections.analytics.val]]">
+        <div class="paper-item-background">
+          <span>Analytics</span>
+          <paper-ripple class="dark-background"></paper-ripple>
+        </div>
+      </paper-item>
+      <paper-item on-tap="menuRedirect" data-section$="[[sections.search.val]]">
+        <div class="paper-item-background">
+          <span>Search</span>
+          <paper-ripple class="dark-background"></paper-ripple>
+        </div>
+      </paper-item>
+      <paper-item on-tap="menuRedirect" data-section$="[[sections.settings.val]]">
+        <div class="paper-item-background">
+          <span>Settings</span>
+          <paper-ripple class="dark-background"></paper-ripple>
+        </div>
+      </paper-item>
+      <paper-item on-tap="menuRedirect" data-section$="[[sections.logs.val]]">
+        <div class="paper-item-background">
+          <span>Logs</span>
+          <paper-ripple class="dark-background"></paper-ripple>
+        </div>
+      </paper-item>
+      <paper-item on-tap="menuRedirect" data-section$="[[sections.docs.val]]">
+        <div class="paper-item-background">
+          <span>Docs</span>
+          <paper-ripple class="dark-background"></paper-ripple>
+        </div>
+      </paper-item>
+      <div class="divider-menu"></div>
+      <paper-item on-tap="openIntercom">
+        <div class="paper-item-background">
+          <span>Support</span>
+          <paper-ripple class="dark-background"></paper-ripple>
+        </div>
+      </paper-item>
+      <paper-item on-tap="logout">
+        <div class="paper-item-background">
+          <span>Logout</span>
+          <paper-ripple class="dark-background"></paper-ripple>
+        </div>
+      </paper-item>
+    </paper-menu>
+
+    <iron-media-query query="max-width: 1024px"
+                      query-matches="{{phoneScreen}}"></iron-media-query>
+
+  </template>
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'kazoup-menu',
+        behaviors: [
+          KazoupBehaviors.Routing,
+          KazoupBehaviors.PanelActions,
+          KazoupBehaviors.Util
+        ],
+        properties: {
+          selected: {
+            type: Number,
+            notify: true,
+            value: 0,
+            observer: 'selectedChanged'
+          },
+          sections: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                dashboard: {
+                  val: 'dashboard',
+                  index: 0
+                },
+                analytics: {
+                  val: 'analytics',
+                  index: 1
+                },
+                search: {
+                  val: 'search',
+                  index: 2
+                },
+                settings: {
+                  val: 'settings',
+                  index: 3
+                },
+                'settings/scan': {
+                  val: 'settings/scan',
+                  index: 3
+                },
+                logs: {
+                  val: 'logs',
+                  index: 4
+                },
+                docs: {
+                  val: 'docs',
+                  index: 5
+                }
+              };
+            }
+          }
+        },
+        selectedChanged: function(newVal, oldVal) {
+          if (newVal > 5) {
+            this.selected = oldVal;
+          }
+
+          this.closeDrawerPanel();
+        },
+        openIntercom: function() {
+          if (!Polymer.dom(document).querySelector('#intercom-launcher')) {
+            try {
+              window.Intercom('reattach_activator');
+              Polymer.dom(document).querySelector('#intercom-launcher').click();
+            } catch (e) {
+              console.log('Error opening Intercom', e);
+            }
+          }
+          Intercom('show');
+        },
+        _handleSelected: function() {
+          var map = document.location.pathname.substring(1, document.location.pathname.length);
+
+          if (this.sections[map]) {
+            this.selected = this.sections[map].index;
+          }
+        },
+        attached: function() {
+          window.addEventListener('user-ready', function() {
+            this.currentUser = Kazoup.SharedData.currentUser;
+          }.bind(this));
+
+          window.addEventListener('kazoup-dashboard-initialized', this._handleSelected.bind(this));
+          window.addEventListener('kazoup-analytics-initialized', this._handleSelected.bind(this));
+          window.addEventListener('kazoup-mobile-analytics-initialized', this._handleSelected.bind(this));
+          window.addEventListener('kazoup-search-initialized', this._handleSelected.bind(this));
+          window.addEventListener('kazoup-mobile-search-initialized', this._handleSelected.bind(this));
+          window.addEventListener('kazoup-settings-initialized', this._handleSelected.bind(this));
+          window.addEventListener('kazoup-settings-scan-initialized', this._handleSelected.bind(this));
+          window.addEventListener('kazoup-logs-initialized', this._handleSelected.bind(this));
+          window.addEventListener('kazoup-docs-initialized', this._handleSelected.bind(this));
+        }
+      });
+    }());
+  </script>
+</dom-module>

@@ -1,0 +1,105 @@
+@import '../../styles/guide-style.scss';
+
+:host {
+  display: block;
+}
+
+:host::content #filters.fit {
+  padding-left: 10px;
+  padding-right: 10px;
+
+  .filters-box {
+    width: calc(100% - 20px);
+  }
+}
+
+:host::content #filters.mobile {
+  .filters-box {
+    position: absolute;
+    width: calc(100% - 80px);
+    height: 40px;
+    overflow: hidden;
+
+    .filters-container {
+      .filter {
+        .label {
+          iron-icon {
+            width: 18px;
+            height: 18px;
+            margin-right: 3px;
+          }
+        }
+      }
+    }
+  }
+}
+
+:host::content #filters {
+  width: 100%;
+  height: 40px;
+  line-height: 40px;
+  overflow: hidden;
+  padding-left: 40px;
+  padding-right: 40px;
+  display: inline-flex;
+  background-color: rgba(30, 179, 218, 0.04);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.02);
+  font-size: 0.78em;
+
+  .arrow {
+    display: inline-block;
+    cursor: pointer;
+    color: $accent-color;
+  }
+
+  .arrow-right {
+    position: absolute;
+    right: 5px;
+  }
+
+  .arrow-left {
+    position: absolute;
+    left: 5px;
+  }
+
+  .filters-box {
+    position: absolute;
+    width: calc(100% - 100px);
+    height: 40px;
+    overflow: hidden;
+
+    .filters-container {
+      overflow: hidden;
+      width: 100000px;
+      position: absolute;
+      -webkit-transition: all 500ms ease;
+      -moz-transition: all 500ms ease;
+      -ms-transition: all 500ms ease;
+      -o-transition: all 500ms ease;
+      transition: all 500ms ease;
+
+      .filter {
+        display: inline;
+
+        > * {
+          display: inline-block;
+        }
+
+        .label {
+          padding-left: 12px;
+          line-height: 24px;
+          border-radius: 40px;
+          background-color: $accent-color;
+          color: $primary-color-text;
+
+          iron-icon {
+            width: 20px;
+            height: 18px;
+            margin-right: 2px;
+            margin-bottom: 2px;
+          }
+        }
+      }
+    }
+  }
+}

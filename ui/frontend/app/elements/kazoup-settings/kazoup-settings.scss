@@ -1,0 +1,32 @@
+@import '../../styles/guide-style.scss';
+
+:host {
+  display: block;
+}
+
+:host::content paper-toolbar {
+  position: fixed !important;
+  width: 100%;
+  z-index: 1;
+
+
+  #middleBar {
+    padding: 0;
+
+    paper-tabs {
+      width: 100%;
+      margin-top: 15px;
+    }
+  }
+}
+
+.container {
+  position: relative;
+  top: 128px;
+}
+
+@media (max-width: 600px) {
+  .container {
+    top: 112px;
+  }
+}

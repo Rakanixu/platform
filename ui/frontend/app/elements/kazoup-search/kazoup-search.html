@@ -1,0 +1,802 @@
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../../bower_components/iron-input/iron-input.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../../bower_components/iron-a11y-keys/iron-a11y-keys.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
+<link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../../bower_components/left-swipe-action/left-swipe-action.html">
+<link rel="import" href="../kazoup-filters-converter/kazoup-filters-converter.html">
+<link rel="import" href="../kazoup-search-data/kazoup-search-data.html">
+<link rel="import" href="../kazoup-search-filters/kazoup-search-filters.html">
+<link rel="import" href="../kazoup-empty-state/kazoup-empty-state.html">
+<link rel="import" href="../kazoup-breadcrumbs/kazoup-breadcrumbs.html">
+<link rel="import" href="../kazoup-checksum-icon/kazoup-checksum-icon.html">
+<link rel="import" href="../kazoup-search-sorting/kazoup-search-sorting.html">
+<link rel="import" href="../kazoup-file-preview/kazoup-file-preview.html">
+<link rel="import" href="../kazoup-timestamp-data/kazoup-timestamp-data.html">
+<link rel="import" href="../kazoup-time-range-selector/kazoup-time-range-selector.html">
+
+<dom-module id="kazoup-search">
+  <link rel="import" type="css" href="kazoup-search.css">
+
+  <template>
+
+    <neon-animated-pages id="neonPages"
+                         class="fit"
+                         entry-animation="fade-in-animation"
+                         exit-animation="fade-out-animation"
+                         selected="[[selected]]">
+      <!-- Search / browse view-->
+      <neon-animatable>
+        <paper-toolbar class$="medium-tall [[computeIsWiderDevice(tabletScreen)]]">
+          <template is="dom-if" if="[[!checksum]]">
+            <paper-icon-button icon="menu" on-tap="openDrawerPanel" paper-drawer-toggle></paper-icon-button>
+            <div class="search-box horizontal layout flex">
+              <iron-icon icon="search"></iron-icon>
+              <input id="searchInput"
+                     class="flex"
+                     is="iron-input"
+                     placeholder="[[placeholder]]"
+                     bind-value="{{q}}"
+                     on-keyup="searchAsYouTypeCallback">
+              <paper-ripple class="light-background"></paper-ripple>
+            </div>
+
+            <paper-menu-button id="advancedSearchMenu">
+              <paper-icon-button on-tap="toggleRightDrawer"
+                                 icon="icons:more-vert"
+                                 class="dropdown-trigger"></paper-icon-button>
+            </paper-menu-button>
+            <paper-tooltip for="advancedSearchMenu"
+                           animation-delay="100"
+                           position="left">Advanced options</paper-tooltip>
+
+            <template is="dom-if" if="[[tookStats.took]]">
+              <div class="search-statistics bottom">
+                <span>{{searchStatistics}}</span>
+              </div>
+            </template>
+
+            <kazoup-breadcrumbs id="breadcrumbs"
+                                target="kazoup-search"
+                                class="bottom"></kazoup-breadcrumbs>
+          </template>
+
+          <template is="dom-if" if="[[checksum]]">
+            <paper-icon-button icon="arrow-back" on-tap="removeChecksum" paper-drawer-toggle></paper-icon-button>
+            <div class="horizontal layout flex">
+              <span class="duplicates horizontal layout">Duplicates</span>
+            </div>
+
+            <paper-menu-button id="advancedSearchMenu">
+              <paper-icon-button on-tap="toggleRightDrawer"
+                                 icon="icons:more-vert"
+                                 class="dropdown-trigger"></paper-icon-button>
+            </paper-menu-button>
+            <paper-tooltip for="advancedSearchMenu"
+                           animation-delay="100"
+                           position="left">Advanced options</paper-tooltip>
+          </template>
+
+          <paper-progress id="progressBar"
+                          class="middle fit"
+                          hidden$="[[!requestInProgress]]"
+                          indeterminate></paper-progress>
+
+        </paper-toolbar>
+
+        <div class="container box vertical layout center-justified">
+          <paper-drawer-panel id="rightDrawer"
+                              edge-swipe-sensitivity="15"
+                              force-narrow
+                              right-drawer>
+            <!-- Search filters -->
+            <paper-header-panel drawer>
+              <paper-toolbar class="medium-tall" id="right-toolbar">
+                <div class="actions">
+
+                  <paper-icon-button id="mail-share"
+                                     on-tap="shareByMail"
+                                     icon="social:share"></paper-icon-button>
+
+                  <paper-tooltip for="mail-share"
+                                 animation-delay="100"
+                                 position="left">Share by mail</paper-tooltip>
+
+                  <template is="dom-if" if="[[browser]]">
+                    <paper-icon-button id="fileIcon"
+                                       icon="editor:insert-drive-file"
+                                       class="cursor-pointer"
+                                       on-tap="toggleSearchExplorer"></paper-icon-button>
+                    <paper-tooltip for="fileIcon"
+                                   animation-delay="100"
+                                   position="bottom">Show files</paper-tooltip>
+                  </template>
+
+                  <template is="dom-if" if="[[!browser]]">
+                    <kazoup-search-sorting hidden$="[[browser]]"
+                                           target="kazoup-search"></kazoup-search-sorting>
+
+                    <paper-icon-button id="download-icon"
+                                       class="cursor-pointer"
+                                       icon="icons:file-download"
+                                       on-tap="generateCSV"></paper-icon-button>
+                    <paper-tooltip for="download-icon"
+                                   animation-delay="100"
+                                   position="bottom">Generate CSV</paper-tooltip>
+
+                    <paper-icon-button id="folderIcon"
+                               icon="icons:folder"
+                               class="cursor-pointer"
+                               on-tap="toggleSearchExplorer"></paper-icon-button>
+                    <paper-tooltip for="folderIcon"
+                                   animation-delay="100"
+                                   position="bottom">Show folders</paper-tooltip>
+                  </template>
+
+
+                  <paper-icon-button id="analyticsIcon"
+                             icon="editor:insert-chart"
+                             class="cursor-pointer"
+                             on-tap="switchToAnalytics"></paper-icon-button>
+                  <paper-tooltip for="analyticsIcon"
+                                 animation-delay="100"
+                                 position="bottom">Analyze</paper-tooltip>
+                </div>
+              </paper-toolbar>
+
+              <kazoup-search-filters id="kazoupSearchFilters"
+                                     target="kazoup-search"></kazoup-search-filters>
+
+            </paper-header-panel>
+            <!-- Search results -->
+            <paper-scroll-header-panel main>
+              <kazoup-empty-state id="noResults"
+                                  icon="search"
+                                  header="Nope, nothing. Nada."
+                                  description="<span>Try another search.</span>"></kazoup-empty-state>
+
+              <iron-list id="results"
+                         class$="[[computeIsWiderDevice(tabletScreen)]]"
+                         items="[[results]]"
+                         as="item">
+                <template>
+                  <div>
+                    <template is="dom-if" if="[[item.size_data]]">
+                      <div on-tap="setDirpath"
+                           class="center horizontal layout row cursor-pointer">
+                        <iron-image src="/static/images/directory-icon.svg"></iron-image>
+
+                        <div class="info flex center-justify">
+                          <h4>[[customDirectoryName(item.key)]]</h4>
+                          <p>
+                            <span>[[bytesToSize(item.size_data.sum)]]</span>,
+                            <span>[[item.doc_count]]</span> files
+                          </p>
+                        </div>
+                      </div>
+                    </template>
+
+                    <template is="dom-if" if="[[item._type]]">
+                      <div class="center horizontal layout row cursor-pointer">
+                        <kazoup-checksum-icon id$="[[_computeId(index)]]"
+                                              on-tap="showDetails"
+                                              class="icon"
+                                              model="[[item]]"></kazoup-checksum-icon>
+
+                        <left-swipe-action on-mousedown="swipeConstraints"
+                                           offset$="[[_computeSwipeOffset(item)]]"
+                                           class="horizontal layout flex">
+                          <div>
+                            <div class="info flex center-justify">
+                              <h4>[[item._source.metadata.filename]]</h4>
+                              <kazoup-text-to-html text="[[item.highlight]]"
+                                                   expression="escapeCharacters"
+                                                   replacewith=" "
+                                                   unescape="true"></kazoup-text-to-html>
+                              <p>
+                                <span>[[bytesToSize(item._source.metadata.size)]]</span>, modified
+                                <span>[[timeSince(item._source.metadata.modified)]]</span> ago
+                              </p>
+                            </div>
+                          </div>
+                          <left-swipe-action-button>
+                            <div class="horizontal layout center">
+                              <div class="action">
+                                <paper-icon-button id="duplicatesIcon"
+                                                   src="/static/images/duplicated-file.svg"
+                                                   on-tap="setChecksumEvent"></paper-icon-button>
+                                <paper-tooltip for$="duplicatesIcon"
+                                               animation-delay="100"
+                                               position="left">View file duplicates</paper-tooltip>
+                              </div>
+
+                              <div class="action"
+                                   hidden$="[[!_computeArchive(item._source.archive_complete)]]">
+                                <paper-icon-button id="archiveIcon"
+                                                   icon="icons:cloud-done"
+                                                   class="archive-icon"
+                                                   on-tap="downloadFromArchive"></paper-icon-button>
+                                <paper-tooltip for$="archiveIcon"
+                                               animation-delay="100"
+                                               position="left">Download from Archive</paper-tooltip>
+                              </div>
+                            </div>
+                          </left-swipe-action-button>
+                        </left-swipe-action>
+                      </div>
+                    </template>
+                    <paper-ripple class="light-background"></paper-ripple>
+                  </div>
+                </template>
+              </iron-list>
+            </paper-scroll-header-panel>
+          </paper-drawer-panel>
+        </div>
+      </neon-animatable>
+
+      <!-- File details view -->
+      <neon-animatable>
+        <kazoup-file-preview search-results-details="{{searchResultsDetails}}"
+                             selected="{{selected}}"></kazoup-file-preview>
+      </neon-animatable>
+    </neon-animated-pages>
+
+    <kazoup-filters-converter id="filterConverter"
+                              filters="{{filters}}"></kazoup-filters-converter>
+
+    <kazoup-search-data id="searchData"
+                        target="kazoup-search"
+                        request-in-progress="{{requestInProgress}}"
+                        results="{{results}}"
+                        took-stats="{{tookStats}}"
+                        browser="{{browser}}"
+                        scroll="{{scroll}}"></kazoup-search-data>
+
+    <kazoup-timestamp-data target="kazoup-search"
+                           date-range-data="{{dateRangeData}}"></kazoup-timestamp-data>
+
+    <kazoup-time-range-selector id="timeRangeSelector"
+                                target="kazoup-search"
+                                date-range-data="[[dateRangeData]]"
+                                period="{{period}}"></kazoup-time-range-selector>
+
+    <iron-a11y-keys keys="enter"
+                    target="[[searchInputElem]]"
+                    on-keys-pressed="search"></iron-a11y-keys>
+
+    <iron-media-query query="max-width: 900px"
+                      query-matches="{{tabletScreen}}"></iron-media-query>
+    <iron-media-query query="max-width: 360px"
+                      query-matches="{{phoneScreen}}"></iron-media-query>
+
+  </template>
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'kazoup-search',
+        behaviors: [
+          KazoupBehaviors.Devices,
+          KazoupBehaviors.PanelActions,
+          KazoupBehaviors.Util,
+          KazoupBehaviors.EmailTo,
+          KazoupBehaviors.APIUrls
+        ],
+        properties: {
+          selected: {
+            type: Number,
+            notify: true,
+            value: 0
+          },
+          checksum: {
+            type: String,
+            notify: true,
+            value: false,
+            observer: 'checksumChanged'
+          },
+          numFiltersApplied: {
+            type: Number,
+            value: 0
+          },
+          placeholder: {
+            type: String,
+            notify: true,
+            value: 'Search all files'
+          },
+          q: {
+            type: String,
+            value: ''
+          },
+          results: {
+            type: Array,
+            notify:true,
+            value: function() {
+              return [];
+            }
+          },
+          tookStats: {
+            type: Object,
+            notify: true,
+            value: function() {
+              return {};
+            },
+            observer: 'tookStatsChanged'
+          },
+          requestInProgress: {
+            type: Boolean,
+            notify: true,
+            value: true,
+            observer: 'requestInProgressChanged'
+          },
+          searchAsYouType: {
+            type: Boolean,
+            value: true
+          },
+          searchResultsDetails: {
+            type: Object,
+            notify: true,
+            value: function() {
+              return {};
+            }
+          },
+          dateRangeData: {
+            type: Array,
+            notify: true
+          },
+          timestampType: {
+            type: String,
+            value: 'accessed'
+          },
+          searchInputElem: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return this.$.searchInput;
+            }
+          },
+          filters: {
+            type: Object,
+            notify: true
+          },
+          browser: {
+            type: Boolean,
+            notify: true
+          }
+        },
+        requestInProgressChanged: function() {
+          if (this.results.length || this.requestInProgress) {
+            this.set('$.noResults.hidden', true);
+          } else {
+            this.set('$.noResults.hidden', false);
+          }
+        },
+        tookStatsChanged: function() {
+          if (this.tookStats.fileResults && this.tookStats.directoryResults) {
+            this.searchStatistics = this.tookStats.directoryResults + ' directories and ' + this.tookStats.fileResults + ' files ';
+          } else if (this.tookStats.fileResults) {
+            this.searchStatistics = this.tookStats.fileResults + ' files ';
+          } else if (this.tookStats.directoryResults) {
+            this.searchStatistics = this.tookStats.directoryResults + ' directories ';
+          } else if (!this.tookStats.fileResults && !this.tookStats.directoryResults) {
+            this.searchStatistics = 'No results found ';
+          }
+          this.searchStatistics += 'in ' + this.tookStats.took / 1000 + ' seconds';
+        },
+        checksumChanged: function(newValue, oldValue) {
+          if (this.checksum === undefined || this.checksum === '') {
+            this.$.filterConverter.removeValue('checksum', oldValue);
+          } else if (typeof this.checksum === 'string') {
+            this.$.filterConverter.setValue('checksum', this.checksum);
+          }
+        },
+        showDetails: function(e, details) {
+          var elemIndex = parseInt(e.model.index, 10);
+          if (!isNaN(elemIndex) && elemIndex > -1) {
+            this.results[elemIndex].numberOfDuplicates = 
+              Polymer.dom(this.root).querySelector('#kazoupChecksumIcon' + elemIndex).numberOfDuplicates;
+
+            this.set('searchResultsDetails', this.results[elemIndex]);
+          }
+          this.selected = this.selected ? 0 : 1;
+        },
+        downloadFromArchive: function(e, details) {
+          e.stopPropagation(); // Do not buble showDetails event, user may remain in the list
+
+          var message, elemIndex, downloadURL;
+
+          if (Kazoup.SharedData.config.APPLIANCE_IS_DEMO) {
+            message = 'Action not allowed in demo.';
+          } else {
+            elemIndex = parseInt(e.model.index, 10);
+            downloadURL = this.downloadFileEndpoint(
+              this.results[elemIndex].id_b64,
+              this.results[elemIndex]._source.metadata.filename_b64,
+              true
+            );
+
+            message = 'Download forced from Archive.';
+
+            window.open(downloadURL, '_blank');
+          }
+
+          Polymer.dom(document).querySelector('paper-toast').text = message;
+          Polymer.dom(document).querySelector('paper-toast').show();
+        },
+        searchAsYouTypeCallback: function() {
+          var input = Polymer.dom(this.root).querySelector('#searchInput');
+
+          if (this.searchAsYouType) {
+            clearTimeout(this.searchAsYouTypeTimeout);
+            this.searchAsYouTypeTimeout = setTimeout(function() {
+              this.search();
+            }.bind(this), 650);
+          }
+        },
+        toggleSearchExplorer: function() {
+          this.browser = !this.browser;
+          this.goToNewUrl();
+        },
+        setQ: function() {
+          // keep this.q in sync with the value in filter converter
+          this.q = this.$.filterConverter.getValue('q');
+        },
+        setChecksum: function() {
+          this.checksum = this.$.filterConverter.getValue('checksum')[0];
+        },
+        goToNewUrl: function() {
+          var routeUrl = '';
+
+          routeUrl = '/search' + '?browser=' + this.browser + '&filters=' + this.$.filterConverter.asQuerystring();
+          // Push new state, clear results and make request with updated values
+          history.pushState({}, 'Search', routeUrl);
+        },
+        search: function() {
+          // we don't want q to be an empty string, set to undefined to explicitly unset
+          this.$.filterConverter.setValue('q', this.q || undefined);
+        },
+        bytesToSize: function(bytes) {
+          if (typeof bytes === 'number') {
+            return filesize(bytes);
+          }
+        },
+        updatePlaceholder: function() {
+          var customPath = this.$.filterConverter.getValue('dirpath');
+          this.placeholder = 'Search all files ';
+          if (customPath[0] !== undefined) {
+            this.placeholder += 'in ' + this.customDirectoryName(customPath[0]);
+          }
+        },
+        updateNumFiltersApplied: function() {
+          var attr;
+          var customFilters = this.$.filterConverter.asObj();
+          
+          this.numFiltersApplied = 0;
+          for (attr in customFilters) {
+            // Do not count as filters dirpath, term or data related with date range
+            if (attr !== 'timestampType' && attr !== 'from' && attr !== 'to' && attr !== 'dirpath' && attr !== 'q' && attr !== 'sort') {
+              this.numFiltersApplied += typeof customFilters[attr] !== 'string' ? customFilters[attr].length : 1;
+            }
+          }
+        },
+        switchToAnalytics: function() {
+          document.location =
+            '/analytics?dimension=location&secondDimension=none&visualisation=bubble&fromSearch=true&filters=' +
+            this.$.filterConverter.asQuerystring();
+        },
+        setDirpath: function(e, detail) {
+          this.$.filterConverter.setValue('dirpath', e.model.__data__.item.key);
+        },
+        toggleRightDrawer: function() {
+          // We do filters request now, so search is decoupled from filters and lighter-weight
+          this.$.kazoupSearchFilters.$.searchFiltersData._fetchAllData();
+
+          this.$.rightDrawer.togglePanel();
+
+          // Fix to get the focus on the filtes and be able to scroll them
+          this.async(function() {
+            Polymer.dom(this.$.kazoupSearchFilters).node.querySelector('#filtersPanel span').click();
+          }, 100);
+        },
+        setChecksumEvent: function(e, detail) {
+          if (e.model.__data__.item._source.content.checksum) {
+            this.resetSwipeElements();
+            this.setCheckumSearch(e.model.__data__.item._source.content.checksum);
+          }
+        },
+        setCheckumSearch: function(checksum) {
+          this.$.filterConverter.saveValues();
+          this.checksum = checksum;
+          this.$.filterConverter.setValues([{
+            field: 'checksum',
+            val: checksum
+          }], true);
+        },
+        removeChecksum: function() {
+          this.checksum = undefined;
+          this.$.filterConverter.setStoredValues();
+          this.resetSwipeElements();
+        },
+        swipeConstraints: function(e, detail) {
+          var elemIndex = parseInt(e.model.index, 10);
+          var event = e;
+          var el = e.currentTarget;
+          var openNow = el.open;
+          var openDelayed;
+
+          this.async(function() {
+            // When openNow and openDelayed are not equal, an open / close swipe action had happen
+            // In a (false, false) case, user click with itention of opening detail view
+            openDelayed = el.open;
+
+            if (openNow === openDelayed) {
+              this.showDetails(event);
+            }
+          }, 150);
+
+          // Get if we have duplicates for given file from our kazoup-cheksum-icon element
+          try {
+            this.results[elemIndex].numberOfDuplicates =
+              Polymer.dom(this.root).querySelector('#kazoupChecksumIcon' + elemIndex).numberOfDuplicates;
+          } catch(e) {}
+
+          // Update / overwrite  swipe offset
+          e.currentTarget.set('offset', this._computeSwipeOffset(this.results[elemIndex]));
+
+          this.resetSwipeElements(e.currentTarget);
+        },
+        resetSwipeElements: function(el) {
+          // Closes all swipe elements except the one pass as argument if exists
+          _.forEach(
+            this.$.results.querySelector('#items').querySelectorAll('left-swipe-action'),
+            function(swipeEl) {
+              if (!el || !el.isEqualNode(swipeEl)) {
+                swipeEl.open = false;
+              }
+
+              // offset for swipe could have been updated, so force an UI update to reflect changes
+              // if you want more info about the swipe, have a look on its source code
+              swipeEl.transition();
+            }
+          );
+        },
+        generateCSV: function(e, detail) {
+          var csvWorker = new Worker('/scripts/workers/generate-csv.js');
+          var q = this.$.filterConverter.getValue('q');
+          var sort = this.$.filterConverter.getValue('sort');
+          var checksum = this.$.filterConverter.getValue('checksum');
+          var searchQuery = {};
+          var query = {
+            size: 1000,
+            from: 0,
+            query: {
+              filtered: {
+                filter: {
+                  bool: {
+                    must: [
+                      {
+                        'bool': {
+                          'should': [
+                            {
+                              'term': {
+                                'exists_on_disk': true
+                              }
+                            },
+                            {
+                              'exists': {
+                                'field': 'archive_complete'
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          };
+
+          // Content search is enabled by default, so, if user do not set the flag,
+          // value in localStorage is null, but by default, enabled.
+          if ((localStorage.getItem('advance_content_search_enabled') === 'true' ||
+            localStorage.getItem('advance_content_search_enabled') === null) && q) {
+            searchQuery = {
+              multi_match: {
+                query: q,
+                type: 'most_fields',
+                operator: 'or',
+                fields: [
+                  'metadata.filename',
+                  'content.text'
+                ]
+              }
+            };
+            var highlight = {
+              fields: {
+                'content.text': {
+                  fragment_size: 150,
+                  number_of_fragments: 1
+                }
+              }
+            };
+            query.query.filtered.query = searchQuery;
+            query['highlight'] = highlight;
+          } else if (localStorage.getItem('advance_content_search_enabled') === 'false' && q) {
+            searchQuery = {
+              bool: {
+                must: [{
+                  bool: {
+                    should: [
+                      {
+                        match: {
+                          'metadata.filename': {
+                            type: 'phrase',
+                            boost: 2,
+                            query: q
+                          }
+                        }
+                      },
+                      {
+                        match: {
+                          'metadata.filename': q
+                        }
+                      }
+                    ]
+                  }
+                }]
+              }
+            };
+            query.query.filtered.query = searchQuery;
+          }
+
+          if (sort && sort.length) {
+            var sortBy = {};
+            query.sort = [];
+            if (sort === '_score') {
+              query.sort.push(sort);
+            } else {
+              sortBy[sort] = 'desc';
+              query.sort.push(sortBy);
+            }
+          }
+
+          query.query.filtered.filter.bool.must.push(this.$.filterConverter.asElasticsearchFilters('q'));
+
+          Polymer.dom(document).querySelector('#paperToast').text = 'Generating CSV file';
+          Polymer.dom(document).querySelector('#paperToast').show();
+
+          csvWorker.postMessage({
+            params: query,
+            type: 'search',
+            url: this.endpointList.ESFiles,
+            authToken: localStorage.getItem('authToken')
+          });
+
+          // CSV file has been generated in memory.
+          // Workers does not have the document object, DOM, etc, so we force to write
+          // the file into the hard drive by "interacting with the DOM" in the main thread
+          csvWorker.addEventListener('message', function(e) {
+            var linkHelper = document.createElement('a');
+
+            Polymer.dom(document).querySelector('#paperToast').text = 'Search results (CSV) ready!';
+            Polymer.dom(document).querySelector('#paperToast').show();
+
+            linkHelper.href = e.data.href;
+            linkHelper.target = '_blank';
+            linkHelper.download = 'kazoup-search-' + new Date().toString().replace(/ /g, '-') + '.csv';
+            linkHelper.click();
+          });
+        },
+        init: function(e) {
+          this.$.searchData.firstLoad = true;
+          this.$.kazoupSearchFilters.$.searchFiltersData.firstLoad = true;
+
+          if (e.data.browser !== undefined && e.data.browser !== 'undefined') {
+            if (e.data.browser === 'true') {
+              e.data.browser = true;
+            } else if (e.data.browser === 'false') {
+              e.data.browser = false;
+            }
+
+            this.set('browser', e.data.browser);
+          } else {
+            // Default value if not defined in URL
+            this.set('browser', false);
+          }
+
+          if (e.data.filters) {
+            this.set('filters', JSON.parse(e.data.filters));
+          } else {
+            this.set('filters', {});
+          }
+
+          // Updates UI elements with current filters when page loads first time
+          if (this.filters) {
+            if (this.filters.q) {
+              this.q = this.filters.q;
+            }
+            if (this.filters.checksum) {
+              if (this.filters.checksum instanceof Array) {
+                this.checksum = this.filters.checksum[0];
+              } else {
+                this.checksum = this.filters.checksum;
+              }
+            }
+          }
+
+          this.$.rightDrawer.closeDrawer();
+        },
+        attached: function() {
+          Polymer.dom.flush();
+
+          this.$.rightDrawer.querySelector('#drawer').style['z-index'] = 9999;
+          this.$.rightDrawer.querySelector('#scrim').style['z-index'] = 9999;
+
+          // kazoup-search initialized with URL params
+          window.addEventListener('kazoup-search-initialized', this.init.bind(this));
+
+          // filters changed
+          this.$.filterConverter.addEventListener('filters-changed', this.goToNewUrl.bind(this));
+          this.$.filterConverter.addEventListener('filters-changed', this.setQ.bind(this));
+          this.$.filterConverter.addEventListener('filters-changed', this.setChecksum.bind(this));
+          this.$.filterConverter.addEventListener('filters-changed', this.updateNumFiltersApplied.bind(this));
+          this.$.filterConverter.addEventListener('filters-changed', this.updatePlaceholder.bind(this));
+
+          // Infinite scroll
+          this.async(function() {
+            Polymer.dom(this.$.results).node._scroller.addEventListener('scroll', function(e) {
+              var totalHeight = 0,
+                viewportPosition = 0;
+
+              this.resetSwipeElements();
+
+              if (!this.requestInProgress) {
+                totalHeight =
+                  this.results.length *
+                  (Polymer.dom(this.$.results).querySelector('.row').offsetHeight || 61);
+                viewportPosition =
+                  Polymer.dom(this.$.results).node._scroller.scrollTop +
+                  Polymer.dom(this.$.results).node._scroller.offsetHeight;
+
+                if (totalHeight - 350 < viewportPosition) {
+                  this.scroll = Date.now();
+                }
+              }
+            }.bind(this));
+          }, 1000);
+        },
+        _computeLabel: function(browser) {
+          return browser ? 'Show files' : 'Show folders';
+        },
+        _computeId: function(index) {
+          return 'kazoupChecksumIcon' + index;
+        },
+        _computeArchive: function(archive) {
+          return !!archive;
+        },
+        _computeSwipeOffset: function(model) {
+          var offset = this.$.results.getBoundingClientRect().width - 67;
+
+          if (model && model._source && !!model._source.archive_complete) {
+            offset -= 50;
+          }
+
+          if (model && model.numberOfDuplicates > 1) {
+            offset -= 50;
+          }
+
+          return offset;
+        }
+      });
+    }());
+  </script>
+</dom-module>

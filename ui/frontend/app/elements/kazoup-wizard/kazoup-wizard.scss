@@ -1,0 +1,28 @@
+@import '../../styles/guide-style.scss';
+
+:host {
+  display: block;
+  height: 100%;
+  background: #1EB3DA url('/static/images/kazoup-background-alt.png');
+}
+
+.container {
+  a {
+    color: $accent-color;
+  }
+
+  p {
+    margin-top: 18px;
+  }
+
+  paper-progress {
+    width: 100%;
+    margin: 20px 0;
+  }
+
+  .progress-info {
+    opacity: 0.85;
+    line-height: 24px;
+    text-align: center;
+  }
+}

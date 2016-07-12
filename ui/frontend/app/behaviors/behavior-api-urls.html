@@ -1,0 +1,86 @@
+<script>
+  'use strict';
+
+  /*
+  * This This element stores all kazoup API urls.
+  * Third party urls are stored where they belong, as we do not have control over them
+  * and they are component-specific.
+  * e.g) Youtube API url is stored in kazoup-docs component.
+  * */
+  (function(window) {
+    window.KazoupBehaviors = window.KazoupBehaviors || {};
+    KazoupBehaviors.APIUrls = KazoupBehaviors.APIUrls || {};
+
+    KazoupBehaviors.APIUrls = {
+      properties: {
+        endpointList: {
+          type: Object,
+          notify: false,
+          value: function() {
+            return {
+              setElasticSettings: 'http://localhost:8080/config/setElasticSettings',
+              setElasticMapping: 'http://localhost:8080/config/setElasticMapping',
+              setFlags: 'http://localhost:8080/config/setFlags',
+              flipFlag: 'http://localhost:8080/flag/flip',
+              listFlags: 'http://localhost:8080/flag/list',
+              ESFiles: 'http://localhost:8080/elastic/query',
+              ESAuditTrail: 'http://localhost:8080/v2/esproxy/call?index=audit-trail',
+              restoreApplianceStep1: '/api/restore/step_1/?format=json',
+              restoreApplianceStep2: '/api/restore/step_2/?format=json',
+              restoreApplianceStep2Values: '/api/restore/step_2_values/?format=json',
+              restoreApplianceState: '/api/restore/state/?format=json',
+              hostname: '/api/v1/appliance-settings/?format=json',
+              networkCredentials: '/api/v1/smb-user/?format=json',
+              archiveEndpoint: '/api/v1/archive-endpoint/?format=json',
+              activeDirectory: '/api/v1/ldap-settings/?format=json',
+              email: '/api/v1/smtp-settings/?format=json',
+              auditTrail: '/api/v1/settings/audit-trail-retention/?format=json',
+              shares: '/api/v1/shares/?format=json',
+              scanShares: '/api/v1/servers/list_shares/?format=json',
+              addShare: '/api/v1/servers/select_shares/?format=json',
+              policies: '/api/v1/filters/?format=json',
+              users: 'http://localhost:8080/v2/settings/user/read',
+              login: 'http://localhost:8080/v2/auth/read',
+              config: '/api/public/config/?format=json',
+              userRegisterDemo: '/api/demo/registration/?format=json',
+              registerAppliance: '/api/setup/?format=json',
+              pdfTokenDownload: '/api/v1/pdf-report-download-token/?format=json'
+            };
+          }
+        }
+      },
+      ESDinamicIndex: function(index) {
+        //TODO: ... well, remove index everywhere, will be created in req body
+        //return 'http://localhost:8080/v2/esproxy/call?index=' + index;
+        return 'http://localhost:8080/elastic/query'
+      },
+      deleteShareEndpoint: function(shareId) {
+        return '/api/v1/shares/' + shareId + '/?format=json';
+      },
+      deletePolicyEndpoint: function(policyId) {
+        return '/api/v1/filters/' + policyId + '/?format=json';
+      },
+      deleteEditUserEndpoint: function(userId) {
+        return '/api/v1/users/' + userId + '/?format=json';
+      },
+      downloadFileEndpoint: function(id_b64, filename_b64, fromArchive) {
+        var endpoint = '/download/' +
+          id_b64 + '/' +
+          localStorage.getItem('authToken') + '/' +
+          filename_b64 + '/';
+
+        if (fromArchive === true) {
+          endpoint += '?archive=true';
+        }
+
+        return endpoint;
+      },
+      downloadCSVReportEndpoint: function() {
+        return '/csv-download/' + localStorage.getItem('authToken') + '/';
+      },
+      userLoginDemo: function(userId) {
+        return '/api/demo/login/?' + userId + '&format=json';
+      }
+    };
+  }(window));
+</script>

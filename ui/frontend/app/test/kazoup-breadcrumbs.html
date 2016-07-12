@@ -1,0 +1,223 @@
+<!doctype html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>kazoup-breadcrumbs</title>
+
+  <script src="/app/bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+  <script src="/app/bower_components/web-component-tester/browser.js"></script>
+
+  <!-- Tests dependencies -->
+  <link rel="import" href="/app/bower_components/polymer/polymer.html">
+  <link rel="import" href="../behaviors/behaviors.html">
+  <link rel="import" href="../elements/kazoup-breadcrumbs/kazoup-breadcrumbs.html">
+
+</head>
+<body>
+
+<kazoup-breadcrumbs id="fixture"></kazoup-breadcrumbs>
+
+<script>
+  // Please refer to
+  // http://stackoverflow.com/questions/25578112/spying-on-a-method-with-sinon-method-bound-to-event-listener-method-was-execut
+  // To see an explanation why we do not spy bind callbacks
+  suite('<kazoup-breadcrumbs>', function() {
+    var el = document.querySelector('#fixture');
+    var crumbs = [{"label":"10.17.57.20","value":"//10.17.57.20","width":82.47923278808594},{"label":"Administration","value":"//10.17.57.20/Administration","width":107.89617919921875},{"label":"Human Resources","value":"//10.17.57.20/Administration/Human Resources","width":130.9228515625},{"label":"New Starter","value":"//10.17.57.20/Administration/Human Resources/New Starter","width":85.51435852050781}];
+
+    suite('crumbHovered', function() {
+      var event = {
+        model: {
+          __data__: {
+            index: 1
+          }
+        }
+      };
+      el.crumbs = crumbs;
+
+      setup(function() {
+        sinon.stub(Polymer,'dom', function(param) {
+          return {
+            querySelectorAll: function(param) {
+              return [{}];
+            },
+            classList: {
+              remove: function(param) {}
+            }
+          }
+        });
+      });
+
+      teardown(function() {
+        Polymer.dom.restore();
+      });
+
+      suite('when crumbs are collapsable', function() {
+        test('should remove "collapse" class', function() {
+          el.collapsable = true;
+
+          el.crumbHovered(event);
+
+          assert(Polymer.dom.calledTwice);
+        });
+      });
+
+      suite('when crumbs are not collapsable', function() {
+        test('should do nothing', function() {
+          el.collapsable = false;
+
+          el.crumbHovered(event);
+
+          assert(Polymer.dom.notCalled);
+        });
+      });
+    });
+
+    suite('crumbUnhovered', function() {
+      var event = {
+        model: {
+          __data__: {
+            index: 1
+          }
+        }
+      };
+      el.crumbs = crumbs;
+
+      setup(function() {
+        sinon.stub(Polymer,'dom', function(param) {
+          return {
+            querySelectorAll: function(param) {
+              return [{}];
+            },
+            classList: {
+              add: function(param) {}
+            }
+          }
+        });
+      });
+
+      teardown(function() {
+        Polymer.dom.restore();
+      });
+
+      suite('when crumbs are collapsable', function() {
+        test('should add "collapse" class', function() {
+          el.collapsable = true;
+
+          el.crumbUnhovered(event);
+
+          assert(Polymer.dom.calledTwice);
+        });
+      });
+
+      suite('when crumbs are not collapsable', function() {
+        test('should do nothing', function() {
+          el.collapsable = false;
+
+          el.crumbUnhovered(event);
+
+          assert(Polymer.dom.notCalled);
+        });
+      });
+    });
+
+    suite('_setDirpathFilter', function() {
+      var event = {
+        model: {
+          __data__: {
+            crumb: {
+              value: ''
+            }
+          }
+        }
+      };
+
+      el._filterConverter = {
+        setValue: function(p1, p2) {}
+      };
+
+      setup(function() {
+        sinon.spy(el._filterConverter, 'setValue');
+      });
+
+      teardown(function() {
+        el._filterConverter.setValue.restore();
+      });
+
+      test('should set dirpath from crumb value', function() {
+        event.model.__data__.crumb.value = '//10.17.57.20/Administration & Ad';
+
+        el._setDirpathFilter(event);
+
+        assert(el._filterConverter.setValue.calledWith('dirpath', event.model.__data__.crumb.value));
+      });
+
+      test('should set root dirpath', function() {
+        event.model.__data__.crumb.value = '/';
+
+        el._setDirpathFilter(event);
+
+        assert(el._filterConverter.setValue.calledWith('dirpath'));
+      });
+    });
+
+    suite('_setBreadcrumbs', function() {
+      var event = {
+        detail: {}
+      };
+
+      setup(function() {
+        el._filterConverter = {
+          getValue: function(param) {}
+        };
+
+        sinon.mock(el._filterConverter).expects('getValue').once().withArgs('dirpath').returns('');
+      });
+
+      teardown(function() {
+        el._filterConverter.getValue.restore();
+      });
+
+      test('should call "generateBreadcrumbs"', function() {
+        el._setBreadcrumbs(event);
+
+        assert.deepEqual(el.crumbs, []);
+      });
+
+      test('should call "generateBreadcrumbs" on dirpath changed', function() {
+        event.detail.fieldsChanged = [{
+          field: 'dirpath',
+          newValue: ["//10.17.57.20/Managed Services"],
+          oldValue: []
+        }];
+
+        el._setBreadcrumbs(event);
+
+        assert.deepEqual(el.crumbs, []);
+      });
+    });
+
+    suite('goHome', function() {
+      setup(function() {
+        el._filterConverter = {
+          setValue: function(param) {}
+        };
+
+        sinon.spy(el._filterConverter, 'setValue');
+      });
+
+      teardown(function() {
+        el._filterConverter.setValue.restore();
+      });
+
+      test('should reset breadcrumbs', function() {
+        el.goHome();
+
+        assert.deepEqual(el.crumbs, []);
+        assert(el._filterConverter.setValue.calledWith('dirpath'));
+      });
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,433 @@
+<!doctype html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>kazoup-dashboard</title>
+
+  <script src="../../bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+  <script src="../../bower_components/web-component-tester/browser.js"></script>
+
+  <!-- Tests dependencies -->
+  <script src="../bower_components/PinkySwear.js/pinkyswear.min.js"></script>
+  <script src="../bower_components/filesize.js/lib/filesize.min.js"></script>
+  <script src="../scripts/kazoup-shared-data.js"></script>
+  <script src="../scripts/queries/utils.js"></script>
+  <script src="../scripts/queries/accessed-past-year.js"></script>
+  <script src="../scripts/queries/total-file-size.js"></script>
+  <script src="../scripts/queries/top-file-category.js"></script>
+  <script src="../scripts/queries/top-share.js"></script>
+  <script src="../scripts/queries/total-number-of-files.js"></script>
+  <script src="../scripts/queries/archive-size.js"></script>
+  <script src="../scripts/queries/next-year-size.js"></script>
+  <script src="../scripts/queries/search-statistics.js"></script>
+  <script src="../scripts/queries/duplicates.js"></script>
+  <link rel="import" href="../behaviors/behaviors.html">
+  <link rel="import" href="../elements/kazoup-dashboard/kazoup-dashboard.html">
+</head>
+<body>
+
+<kazoup-dashboard id="fixture"></kazoup-dashboard>
+
+<script>
+
+  suite('<kazoup-dashboard>', function() {
+    var el = document.querySelector('#fixture');
+    var setParamsAsObj = function() {};
+    var generateRequest = function() {
+      var promise = pinkySwear();
+
+      promise(true, []);
+
+      return promise;
+    };
+
+    suite('dataLoadedCounterChanged', function() {
+      suite('', function() {
+        setup(function() {
+          el.dataLoadedCounter = 8;
+        });
+
+        test('should set dataLoaded = true', function() {
+          el.dataLoadedCounterChanged();
+
+          assert.isTrue(el.dataLoaded);
+        });
+      });
+
+      suite('', function() {
+        setup(function() {
+          el.dataLoadedCounter = 7;
+        });
+
+        test('should set dataLoaded = false', function () {
+          el.dataLoadedCounterChanged();
+
+          assert.isFalse(el.dataLoaded);
+        });
+      });
+    });
+
+    suite('loadCards', function() {
+      setup(function() {
+        sinon.stub(el, 'makeCardsRequest', function() {});
+      });
+
+      teardown(function() {
+        el.makeCardsRequest.restore();
+      });
+
+      suite('when appliance is configured', function() {
+        test('should call "makeCardsRequest"', function() {
+          el.applianceIsConfigured = true;
+
+          el.loadCards();
+
+          assert(el.makeCardsRequest.calledOnce);
+        });
+      });
+
+      suite('when appliance is not configured', function() {
+        test('should not call for data', function() {
+          el.applianceIsConfigured = false;
+
+          el.loadCards();
+
+          assert.equal(el.dataLoaded, true);
+          assert(el.makeCardsRequest.notCalled);
+        });
+      });
+    });
+
+    suite('makeCardsRequest', function() {
+      setup(function() {
+        sinon.stub(el.$.accessedPastYear, 'setParamsAsObj', setParamsAsObj);
+        sinon.stub(el.$.accessedPastYear, 'generateRequest', generateRequest);
+        sinon.stub(el.$.totalFileSizeAndCount, 'setParamsAsObj', setParamsAsObj);
+        sinon.stub(el.$.totalFileSizeAndCount, 'generateRequest', generateRequest);
+        sinon.stub(el.$.archiveSize, 'setParamsAsObj', setParamsAsObj);
+        sinon.stub(el.$.archiveSize, 'generateRequest', generateRequest);
+        sinon.stub(el.$.nextYearSize, 'setParamsAsObj', setParamsAsObj);
+        sinon.stub(el.$.nextYearSize, 'generateRequest', generateRequest);
+        sinon.stub(el.$.topShare, 'setParamsAsObj', setParamsAsObj);
+        sinon.stub(el.$.topShare, 'generateRequest', generateRequest);
+        sinon.stub(el.$.topFileCategory, 'setParamsAsObj', setParamsAsObj);
+        sinon.stub(el.$.topFileCategory, 'generateRequest', generateRequest);
+        sinon.stub(el.$.duplicates, 'setParamsAsObj', setParamsAsObj);
+        sinon.stub(el.$.duplicates, 'generateRequest', generateRequest);
+        sinon.stub(el.$.searchStatistics, 'setParamsAsObj', setParamsAsObj);
+        sinon.stub(el.$.searchStatistics, 'generateRequest', generateRequest);
+      });
+
+      teardown(function() {
+        el.$.accessedPastYear.setParamsAsObj.restore();
+        el.$.accessedPastYear.generateRequest.restore();
+        el.$.totalFileSizeAndCount.setParamsAsObj.restore();
+        el.$.totalFileSizeAndCount.generateRequest.restore();
+        el.$.archiveSize.setParamsAsObj.restore();
+        el.$.archiveSize.generateRequest.restore();
+        el.$.nextYearSize.setParamsAsObj.restore();
+        el.$.nextYearSize.generateRequest.restore();
+        el.$.topShare.setParamsAsObj.restore();
+        el.$.topShare.generateRequest.restore();
+        el.$.topFileCategory.setParamsAsObj.restore();
+        el.$.topFileCategory.generateRequest.restore();
+        el.$.duplicates.setParamsAsObj.restore();
+        el.$.duplicates.generateRequest.restore();
+        el.$.searchStatistics.setParamsAsObj.restore();
+        el.$.searchStatistics.generateRequest.restore();
+      });
+
+      test('should request mini-cards data', function() {
+        el.makeCardsRequest();
+
+        assert(el.$.accessedPastYear.setParamsAsObj.calledOnce);
+        assert(el.$.accessedPastYear.generateRequest.calledOnce);
+        assert(el.$.totalFileSizeAndCount.setParamsAsObj.calledOnce);
+        assert(el.$.totalFileSizeAndCount.generateRequest.calledOnce);
+        assert(el.$.archiveSize.setParamsAsObj.calledOnce);
+        assert(el.$.archiveSize.generateRequest.calledOnce);
+        assert(el.$.nextYearSize.setParamsAsObj.calledOnce);
+        assert(el.$.nextYearSize.generateRequest.calledOnce);
+        assert(el.$.topShare.setParamsAsObj.calledOnce);
+        assert(el.$.topShare.generateRequest.calledOnce);
+        assert(el.$.topFileCategory.setParamsAsObj.calledOnce);
+        assert(el.$.topFileCategory.generateRequest.calledOnce);
+        assert(el.$.duplicates.setParamsAsObj.calledOnce);
+        assert(el.$.duplicates.generateRequest.calledOnce);
+        assert(el.$.searchStatistics.setParamsAsObj.calledOnce);
+        assert(el.$.searchStatistics.generateRequest.calledOnce);
+      });
+    });
+
+    suite('onError', function() {
+      test('should increment dataLoadedCounter value by 1', function() {
+        var dataLoadedCounter = el.dataLoadedCounter;
+
+        el.onError();
+
+        assert.equal(el.dataLoadedCounter, dataLoadedCounter + 1);
+      });
+    });
+
+    suite('accessedPastYearCallback', function() {
+      test('should add a new item to items Array', function() {
+        var dataLoadedCounter = el.dataLoadedCounter;
+        var itemsLength = el.items.length;
+        var e = {
+          response: {"hits":{"hits":[],"total":97765,"max_score":0},"_shards":{"successful":5,"failed":0,"total":5},"took":67,"aggregations":{"total_size":{"value":31405853520}},"timed_out":false}
+        };
+
+        el.accessedPastYearCallback(e);
+
+        assert.equal(el.dataLoadedCounter, dataLoadedCounter + 1);
+        assert.equal(el.items.length, itemsLength + 1);
+      });
+    });
+
+    suite('totalFileSizeAndCountCallback', function() {
+      test('should add two new items to items Array', function() {
+        var dataLoadedCounter = el.dataLoadedCounter;
+        var itemsLength = el.items.length;
+        var e = {
+          response: {"hits":{"hits":[],"total":245473,"max_score":0},"_shards":{"successful":5,"failed":0,"total":5},"took":61,"aggregations":{"total_size":{"count":245473,"max":13745169408,"sum":158914758687,"avg":647381.824832059,"min":0}},"timed_out":false}
+        };
+
+        el.totalFileSizeAndCountCallback(e);
+
+        assert.equal(el.dataLoadedCounter, dataLoadedCounter + 1);
+        assert.equal(el.items.length, itemsLength + 2);
+      });
+    });
+
+    suite('archiveSizeCallback', function() {
+      test('should add a new item to items Array', function() {
+        var dataLoadedCounter = el.dataLoadedCounter;
+        var itemsLength = el.items.length;
+        var e = {
+          response: {"hits":{"hits":[],"total":11,"max_score":0},"_shards":{"successful":5,"failed":0,"total":5},"took":82,"aggregations":{"total_size":{"count":11,"max":218103,"sum":248504,"avg":22591.272727272728,"min":786}},"timed_out":false}
+        };
+
+        el.archiveSizeCallback(e);
+
+        assert.equal(el.dataLoadedCounter, dataLoadedCounter + 1);
+        assert.equal(el.items.length, itemsLength + 1);
+      });
+    });
+
+    suite('nextYearSizeCallback', function() {
+      test('should add a new item to items Array', function() {
+        var dataLoadedCounter = el.dataLoadedCounter;
+        var itemsLength = el.items.length;
+        var e = {
+          response: {"hits":{"hits":[],"total":245473,"max_score":0},"_shards":{"successful":5,"failed":0,"total":5},"took":1394,"aggregations":{"buckets":{"buckets":[{"from":0,"total_size":{"value":44509566556},"from_as_string":"1970-01-01T00:00:00.000Z","to_as_string":"2013-04-13T13:39:44.249Z","doc_count":116561,"to":1365860384249,"key":"all_data_except_last_3_year"},{"from":0,"total_size":{"value":56048313663},"from_as_string":"1970-01-01T00:00:00.000Z","to_as_string":"2014-04-13T13:39:44.249Z","doc_count":129801,"to":1397396384249,"key":"all_data_except_last_2_year"},{"from":0,"total_size":{"value":129792833109},"from_as_string":"1970-01-01T00:00:00.000Z","to_as_string":"2015-04-13T13:39:44.249Z","doc_count":148044,"to":1428932384249,"key":"all_data_except_last_1_year"},{"from":0,"total_size":{"value":158914758687},"from_as_string":"1970-01-01T00:00:00.000Z","to_as_string":"2016-04-13T13:39:44.249Z","doc_count":245473,"to":1460554784249,"key":"all_data"}]}},"timed_out":false}
+        };
+
+        el.nextYearSizeCallback(e);
+
+        assert.equal(el.dataLoadedCounter, dataLoadedCounter + 1);
+        assert.equal(el.items.length, itemsLength + 1);
+      });
+    });
+
+    suite('topShareCallback', function() {
+      test('should add a new item to items Array', function() {
+        var dataLoadedCounter = el.dataLoadedCounter;
+        var itemsLength = el.items.length;
+        var e = {
+          response: {"hits":{"hits":[],"total":245473,"max_score":0},"_shards":{"successful":5,"failed":0,"total":5},"took":240,"aggregations":{"top_shares":{"buckets":[{"total_size":{"value":59924762899},"key":"//10.17.57.20/Technical/","doc_count":188062}],"sum_other_doc_count":57411,"doc_count_error_upper_bound":0}},"timed_out":false}
+        };
+
+        el.topShareCallback(e);
+
+        assert.equal(el.dataLoadedCounter, dataLoadedCounter + 1);
+        assert.equal(el.items.length, itemsLength + 1);
+      });
+    });
+
+    suite('topFileCategoryCallback', function() {
+      test('should add a new item to items Array', function() {
+        var dataLoadedCounter = el.dataLoadedCounter;
+        var itemsLength = el.items.length;
+        var e = {
+          response: {"hits":{"hits":[],"total":245473,"max_score":0},"_shards":{"successful":5,"failed":0,"total":5},"took":98,"aggregations":{"top_categories":{"buckets":[{"total_size":{"value":64950881069},"key":"Data Files","doc_count":23513}],"sum_other_doc_count":221960,"doc_count_error_upper_bound":-1}},"timed_out":false}
+        };
+
+        el.topFileCategoryCallback(e);
+
+        assert.equal(el.dataLoadedCounter, dataLoadedCounter + 1);
+        assert.equal(el.items.length, itemsLength + 1);
+      });
+    });
+
+    suite('duplicatesCallback', function() {
+      test('should add a new item to items Array', function() {
+        var dataLoadedCounter = el.dataLoadedCounter;
+        var itemsLength = el.items.length;
+        var e = {
+          response: {"hits":{"hits":[],"total":114844,"max_score":0},"_shards":{"successful":5,"failed":0,"total":5},"took":114,"aggregations":{"known":{"buckets":[{"total_size":{"value":14966123339},"key":"F","doc_count":114844}],"sum_other_doc_count":0,"doc_count_error_upper_bound":0}},"timed_out":false}
+        };
+
+        el.duplicatesCallback(e);
+
+        assert.equal(el.dataLoadedCounter, dataLoadedCounter + 1);
+        assert.equal(el.items.length, itemsLength + 1);
+      });
+    });
+
+    suite('searchStatisticsCallback', function() {
+      test('should add a new item to items Array', function() {
+        var dataLoadedCounter = el.dataLoadedCounter;
+        var itemsLength = el.items.length;
+        var e = {
+          response: {"hits":{"hits":[],"total":10,"max_score":0},"_shards":{"successful":40,"failed":0,"total":40},"took":120,"timed_out":false}
+        };
+
+        el.searchStatisticsCallback(e);
+
+        assert.equal(el.dataLoadedCounter, dataLoadedCounter + 1);
+        assert.equal(el.items.length, itemsLength + 1);
+      });
+    });
+
+    suite('transformDataFormat', function() {
+      test('should return data as an Array (pie chart)', function() {
+        var data = {"hits":{"hits":[],"total":97763,"max_score":0},"_shards":{"successful":5,"failed":0,"total":5},"took":32,"aggregations":{"top_categories":{"buckets":[{"total_size":{"value":6318684103},"stats":{"count":555,"max":1552739840,"sum":6318684103,"avg":11385016.401801802,"min":108},"key":"System Files","doc_count":555},{"total_size":{"value":4079517696},"stats":{"count":4,"max":3720347648,"sum":4079517696,"avg":1019879424,"min":3702784},"key":"CAD Files","doc_count":4},{"total_size":{"value":3499544008},"stats":{"count":374,"max":634799666,"sum":3499544008,"avg":9357069.540106952,"min":63},"key":"Compressed Files","doc_count":374},{"total_size":{"value":2897273675},"stats":{"count":4027,"max":198311860,"sum":2897273675,"avg":719462.0499130867,"min":0},"key":"Data Files","doc_count":4027},{"total_size":{"value":2782583865},"stats":{"count":26300,"max":996342608,"sum":2782583865,"avg":105801.66787072243,"min":0},"key":"Executable Files","doc_count":26300},{"total_size":{"value":1858190876},"stats":{"count":6253,"max":263177958,"sum":1858190876,"avg":297167.8995682073,"min":0},"key":"Misc Files","doc_count":6253},{"total_size":{"value":1706907379},"stats":{"count":2345,"max":28135355,"sum":1706907379,"avg":727892.2724946695,"min":0},"key":"PDF Files","doc_count":2345},{"total_size":{"value":1488779954},"stats":{"count":7900,"max":7857885,"sum":1488779954,"avg":188453.1587341772,"min":0},"key":"Text Files","doc_count":7900},{"total_size":{"value":1476803675},"stats":{"count":21731,"max":363806301,"sum":1476803675,"avg":67958.38548617183,"min":37},"key":"Image Files","doc_count":21731},{"total_size":{"value":1435932620},"stats":{"count":1140,"max":42011359,"sum":1435932620,"avg":1259590.0175438595,"min":0},"key":"Spreadsheet Files","doc_count":1140},{"total_size":{"value":1231233962},"stats":{"count":40,"max":200128730,"sum":1231233962,"avg":30780849.05,"min":657},"key":"Video Files","doc_count":40},{"total_size":{"value":880065212},"stats":{"count":1249,"max":17219072,"sum":880065212,"avg":704615.8622898319,"min":0},"key":"Document Files","doc_count":1249},{"total_size":{"value":504754030},"stats":{"count":18429,"max":14520034,"sum":504754030,"avg":27389.116609691246,"min":0},"key":"Web Files","doc_count":18429},{"total_size":{"value":501797733},"stats":{"count":23,"max":273351782,"sum":501797733,"avg":21817292.739130434,"min":0},"key":"Backup Files","doc_count":23},{"total_size":{"value":403971289},"stats":{"count":166,"max":208534183,"sum":403971289,"avg":2433561.981927711,"min":87},"key":"Database Files","doc_count":166},{"total_size":{"value":150887853},"stats":{"count":3682,"max":698236,"sum":150887853,"avg":40979.862303096146,"min":2580},"key":"Font Files","doc_count":3682},{"total_size":{"value":76143616},"stats":{"count":469,"max":20246528,"sum":76143616,"avg":162353.12579957355,"min":25600},"key":"Email Files","doc_count":469},{"total_size":{"value":59166265},"stats":{"count":1964,"max":603079,"sum":59166265,"avg":30125.38951120163,"min":0},"key":"Developer Files","doc_count":1964},{"total_size":{"value":31980216},"stats":{"count":19,"max":9296316,"sum":31980216,"avg":1683169.2631578948,"min":5408},"key":"Plugin Files","doc_count":19},{"total_size":{"value":10312234},"stats":{"count":619,"max":1307215,"sum":10312234,"avg":16659.5056542811,"min":28},"key":"Settings Files","doc_count":619},{"total_size":{"value":5029454},"stats":{"count":462,"max":501773,"sum":5029454,"avg":10886.264069264069,"min":18},"key":"Game Files","doc_count":462},{"total_size":{"value":2903668},"stats":{"count":5,"max":2040398,"sum":2903668,"avg":580733.6,"min":15847},"key":"Audio Files","doc_count":5},{"total_size":{"value":323394},"stats":{"count":6,"max":321382,"sum":323394,"avg":53899,"min":272},"key":"Page Layout Files","doc_count":6},{"total_size":{"value":34833},"stats":{"count":1,"max":34833,"sum":34833,"avg":34833,"min":34833},"key":"Encoded Files","doc_count":1}],"sum_other_doc_count":0,"doc_count_error_upper_bound":0}},"timed_out":false};
+        var entity = {"priority":2,"label":"Accessed past year","detailedLabel":"Files accessed last year by type","value":29.25,"valueInfo":"GB","color":"#972ff8","iconPath":"/images/accessed-last-year.svg","type":"renderPieChart","options":{"elasticSearchEndpoint":"files"},"query":"{\"query\":{\"constant_score\":{\"filter\":{\"bool\":{\"should\":[{\"term\":{\"exists_on_disk\":true}},{\"exists\":{\"field\":\"archive_complete\"}}],\"must\":[{\"range\":{\"accessed\":{\"lt\":1460557448484,\"gt\":1428935048484}}}]}}}},\"aggs\":{\"top_categories\":{\"terms\":{\"field\":\"doc_type\",\"order\":{\"total_size\":\"desc\"},\"size\":0},\"aggs\":{\"total_size\":{\"sum\":{\"field\":\"metadata.size\"}},\"stats\":{\"stats\":{\"field\":\"metadata.size\"}}}}},\"size\":0}"};
+        var result = el.transformDataFormat(data, entity);
+
+        assert.equal(result.length, data.aggregations.top_categories.buckets.length);
+      });
+
+      test('should return data as an Object (bar chart)', function() {
+        var data = {"hits":{"hits":[],"total":245473,"max_score":0},"_shards":{"successful":5,"failed":0,"total":5},"took":50,"aggregations":{"total_size":{"buckets":[{"total_size":{"value":368188},"key_as_string":"1990-01-01T00:00:00.000Z","key":631152000000,"doc_count":1},{"total_size":{"value":4765},"key_as_string":"1994-01-01T00:00:00.000Z","key":757382400000,"doc_count":1},{"total_size":{"value":30067},"key_as_string":"1996-01-01T00:00:00.000Z","key":820454400000,"doc_count":2},{"total_size":{"value":544},"key_as_string":"1997-01-01T00:00:00.000Z","key":852076800000,"doc_count":1},{"total_size":{"value":61780},"key_as_string":"1998-01-01T00:00:00.000Z","key":883612800000,"doc_count":1},{"total_size":{"value":484736},"key_as_string":"2000-01-01T00:00:00.000Z","key":946684800000,"doc_count":7},{"total_size":{"value":2238539},"key_as_string":"2001-01-01T00:00:00.000Z","key":978307200000,"doc_count":61},{"total_size":{"value":7599107},"key_as_string":"2002-01-01T00:00:00.000Z","key":1009843200000,"doc_count":21},{"total_size":{"value":28988513},"key_as_string":"2003-01-01T00:00:00.000Z","key":1041379200000,"doc_count":120},{"total_size":{"value":15122918},"key_as_string":"2004-01-01T00:00:00.000Z","key":1072915200000,"doc_count":125},{"total_size":{"value":99586449},"key_as_string":"2005-01-01T00:00:00.000Z","key":1104537600000,"doc_count":252},{"total_size":{"value":485408750},"key_as_string":"2006-01-01T00:00:00.000Z","key":1136073600000,"doc_count":772},{"total_size":{"value":695155908},"key_as_string":"2007-01-01T00:00:00.000Z","key":1167609600000,"doc_count":2222},{"total_size":{"value":2533871697},"key_as_string":"2008-01-01T00:00:00.000Z","key":1199145600000,"doc_count":4530},{"total_size":{"value":5852716473},"key_as_string":"2009-01-01T00:00:00.000Z","key":1230768000000,"doc_count":4527},{"total_size":{"value":3039808701},"key_as_string":"2010-01-01T00:00:00.000Z","key":1262304000000,"doc_count":5492},{"total_size":{"value":9083372200},"key_as_string":"2011-01-01T00:00:00.000Z","key":1293840000000,"doc_count":32897},{"total_size":{"value":12500162192},"key_as_string":"2012-01-01T00:00:00.000Z","key":1325376000000,"doc_count":34651},{"total_size":{"value":16303396237},"key_as_string":"2013-01-01T00:00:00.000Z","key":1356998400000,"doc_count":40249},{"total_size":{"value":68294849661},"key_as_string":"2014-01-01T00:00:00.000Z","key":1388534400000,"doc_count":17918},{"total_size":{"value":31067303584},"key_as_string":"2015-01-01T00:00:00.000Z","key":1420070400000,"doc_count":90352},{"total_size":{"value":8904227678},"key_as_string":"2016-01-01T00:00:00.000Z","key":1451606400000,"doc_count":11271}]}},"timed_out":false};
+        var entity = {"priority":1,"label":"Total file size","detailedLabel":"Total file size by year","value":148,"valueInfo":"GB","color":"#FDA43A","iconPath":"/images/total-file-size.svg","type":"renderBarChart","options":{"elasticSearchEndpoint":"files","yAxis":"size"},"query":"{\"query\":{\"constant_score\":{\"filter\":{\"bool\":{\"must\":[{\"range\":{\"modified\":{\"lt\":1460556843805}}},{\"bool\":{\"should\":[{\"term\":{\"exists_on_disk\":true}},{\"exists\":{\"field\":\"archive_complete\"}}]}}]}}}},\"aggs\":{\"total_size\":{\"date_histogram\":{\"field\":\"modified\",\"interval\":\"year\"},\"aggs\":{\"total_size\":{\"sum\":{\"field\":\"metadata.size\"}}}}},\"size\":0}"};
+        var result = el.transformDataFormat(data, entity);
+
+        assert.equal(result.datasets[0].data.length, result.labels.length);
+      });
+
+      test('should return data as an Object (line chart)', function() {
+        var data = {"hits":{"hits":[],"total":245473,"max_score":0},"_shards":{"successful":5,"failed":0,"total":5},"took":1678,"aggregations":{"total_size":{"buckets":[{"total_size":{"value":368188},"key_as_string":"1990-01-01T00:00:00.000Z","key":631152000000,"doc_count":1},{"total_size":{"value":4765},"key_as_string":"1994-01-01T00:00:00.000Z","key":757382400000,"doc_count":1},{"total_size":{"value":30067},"key_as_string":"1996-01-01T00:00:00.000Z","key":820454400000,"doc_count":2},{"total_size":{"value":544},"key_as_string":"1997-01-01T00:00:00.000Z","key":852076800000,"doc_count":1},{"total_size":{"value":61780},"key_as_string":"1998-01-01T00:00:00.000Z","key":883612800000,"doc_count":1},{"total_size":{"value":484736},"key_as_string":"2000-01-01T00:00:00.000Z","key":946684800000,"doc_count":7},{"total_size":{"value":2238539},"key_as_string":"2001-01-01T00:00:00.000Z","key":978307200000,"doc_count":61},{"total_size":{"value":7599107},"key_as_string":"2002-01-01T00:00:00.000Z","key":1009843200000,"doc_count":21},{"total_size":{"value":28988513},"key_as_string":"2003-01-01T00:00:00.000Z","key":1041379200000,"doc_count":120},{"total_size":{"value":15122918},"key_as_string":"2004-01-01T00:00:00.000Z","key":1072915200000,"doc_count":125},{"total_size":{"value":99586449},"key_as_string":"2005-01-01T00:00:00.000Z","key":1104537600000,"doc_count":252},{"total_size":{"value":485408750},"key_as_string":"2006-01-01T00:00:00.000Z","key":1136073600000,"doc_count":772},{"total_size":{"value":695155908},"key_as_string":"2007-01-01T00:00:00.000Z","key":1167609600000,"doc_count":2222},{"total_size":{"value":2533871697},"key_as_string":"2008-01-01T00:00:00.000Z","key":1199145600000,"doc_count":4530},{"total_size":{"value":5852716473},"key_as_string":"2009-01-01T00:00:00.000Z","key":1230768000000,"doc_count":4527},{"total_size":{"value":3039808701},"key_as_string":"2010-01-01T00:00:00.000Z","key":1262304000000,"doc_count":5492},{"total_size":{"value":9083372200},"key_as_string":"2011-01-01T00:00:00.000Z","key":1293840000000,"doc_count":32897},{"total_size":{"value":12500162192},"key_as_string":"2012-01-01T00:00:00.000Z","key":1325376000000,"doc_count":34651},{"total_size":{"value":16303396237},"key_as_string":"2013-01-01T00:00:00.000Z","key":1356998400000,"doc_count":40249},{"total_size":{"value":68294849661},"key_as_string":"2014-01-01T00:00:00.000Z","key":1388534400000,"doc_count":17918},{"total_size":{"value":31067303584},"key_as_string":"2015-01-01T00:00:00.000Z","key":1420070400000,"doc_count":90352},{"total_size":{"value":8904227678},"key_as_string":"2016-01-01T00:00:00.000Z","key":1451606400000,"doc_count":11271}]}},"timed_out":false};
+        var entity = {"priority":3,"label":"Next year size","detailedLabel":"Data storage growth prediction","value":226.2,"valueInfo":"GB","color":"#EA4A3E","iconPath":"/images/next-year-size.svg","type":"renderLineChart","options":{"elasticSearchEndpoint":"files","accumulateXAxisValues":true,"yAxis":"size","prediction":true,"predictedValue":242885276287.45334},"query":"{\"query\":{\"constant_score\":{\"filter\":{\"bool\":{\"must\":[{\"range\":{\"modified\":{\"lt\":1460557448487}}},{\"prefix\":{\"dirpath\":\"//\"}}],\"should\":[{\"term\":{\"exists_on_disk\":true}},{\"exists\":{\"field\":\"archive_complete\"}}]}}}},\"aggs\":{\"total_size\":{\"date_histogram\":{\"field\":\"modified\",\"interval\":\"year\"},\"aggs\":{\"total_size\":{\"sum\":{\"field\":\"metadata.size\"}}}}},\"size\":0}"};
+        var result = el.transformDataFormat(data, entity);
+
+        assert.equal(result.datasets[0].data.length, result.labels.length);
+      });
+
+      test('should return data as an Object (radar chart)', function() {
+        var data = {"hits":{"hits":[],"total":343970,"max_score":0},"_shards":{"successful":5,"failed":0,"total":5},"took":234,"aggregations":{"top_categories":{"buckets":[{"total_size":{"value":210599096868},"stats":{"count":161,"max":6073581568,"sum":210599096868,"avg":1308068924.6459627,"min":3460},"key":"CAD Files","doc_count":161},{"total_size":{"value":197531850752},"stats":{"count":45470,"max":13745169408,"sum":197531850752,"avg":4344223.680492632,"min":0},"key":"Data Files","doc_count":45470},{"total_size":{"value":107788904679},"stats":{"count":2917,"max":7338968221,"sum":107788904679,"avg":36951972.80733631,"min":3},"key":"Compressed Files","doc_count":2917},{"total_size":{"value":97010337936},"stats":{"count":68,"max":9509641728,"sum":97010337936,"avg":1426622616.7058823,"min":29},"key":"Disk Image Files","doc_count":68},{"total_size":{"value":96615345674},"stats":{"count":39862,"max":3763906438,"sum":96615345674,"avg":2423745.5640459587,"min":0},"key":"Executable Files","doc_count":39862},{"total_size":{"value":65181720771},"stats":{"count":23203,"max":4614410070,"sum":65181720771,"avg":2809193.6719820714,"min":0},"key":"Misc Files","doc_count":23203},{"total_size":{"value":25997313514},"stats":{"count":4365,"max":1552739840,"sum":25997313514,"avg":5955856.475143185,"min":0},"key":"System Files","doc_count":4365},{"total_size":{"value":14314019234},"stats":{"count":19291,"max":124882765,"sum":14314019234,"avg":742005.0403815251,"min":0},"key":"PDF Files","doc_count":19291},{"total_size":{"value":13102143834},"stats":{"count":895,"max":3428327344,"sum":13102143834,"avg":14639266.853631284,"min":0},"key":"Game Files","doc_count":895},{"total_size":{"value":12598239412},"stats":{"count":184,"max":5893240450,"sum":12598239412,"avg":68468692.45652173,"min":0},"key":"Backup Files","doc_count":184}],"sum_other_doc_count":207554,"doc_count_error_upper_bound":0}},"timed_out":false};
+        var entity = {"priority":6,"label":"Top file category","detailedLabel":"Top 10 file categories by size","value":"Data Files","valueInfo":"","color":"#8983F2","iconPath":"/images/top-file-category.svg","type":"renderRadarChart","options":{"elasticSearchEndpoint":"files","yAxis":"size"},"query":"{\"query\":{\"constant_score\":{\"filter\":{\"range\":{\"modified\":{\"lt\":1460557448485}}}}},\"aggs\":{\"top_categories\":{\"terms\":{\"field\":\"doc_type\",\"order\":{\"total_size\":\"desc\"},\"size\":10},\"aggs\":{\"total_size\":{\"sum\":{\"field\":\"metadata.size\"}},\"stats\":{\"stats\":{\"field\":\"metadata.size\"}}}}},\"size\":0}"};
+        var result = el.transformDataFormat(data, entity);
+
+        assert.equal(result.datasets[0].data.length, result.labels.length);
+      });
+    });
+
+    suite('growthRate', function() {
+      test('should return a growth rate', function() {
+        var result = el.growthRate(100, 100, 10);
+
+        assert.isNumber(result);
+      });
+    });
+
+    suite('toFixedTwoDecimals', function() {
+      test('should return a float with maximun two decimal digits', function() {
+        var result = el.toFixedTwoDecimals('3.14159');
+
+        assert.equal(result, 3.14);
+      });
+    });
+
+    suite('sortByPriority', function() {
+      test('should return -1', function() {
+        var result = el.sortByPriority({priority: 3}, {priority: 7});
+
+        assert.equal(result, -1);
+      });
+
+      test('should return 1', function() {
+        var result = el.sortByPriority({priority: 7}, {priority: 3});
+
+        assert.equal(result, 1);
+      });
+
+      test('should return 0', function() {
+        var result = el.sortByPriority({priority: 7}, {priority: 7});
+
+        assert.equal(result, 0);
+      });
+    });
+
+    suite('hexToRgba', function() {
+      test('should convert a hexadecimal color format to RGBA color format', function() {
+        var opacity = 0.5;
+        var result = el.hexToRgba('#ffffff', opacity);
+
+        assert.equal(result, 'rgba(255,255,255,' + opacity + ')');
+      });
+    });
+
+    suite('toggleCard', function() {
+      var e = {
+        model: {
+          __data__: {
+            item: {"data": {},"priority":8,"label":"Search queries last 30 days","detailedLabel":"Search queries last 30 days","value":10,"valueInfo":"","color":"#17A085","iconPath":"images/number-of-searches.svg","type":"renderBarChart","options":{"elasticSearchEndpoint":"audit-trail","yAxis":"numberOfSearch"},"query":"{\"query\":{\"constant_score\":{\"filter\":{\"bool\":{\"must\":[{\"range\":{\"timestamp\":{\"gt\":\"now-1M/d\"}}},{\"term\":{\"category\":\"Search\"}}]}}}},\"size\":0,\"aggs\":{\"searches\":{\"date_histogram\":{\"field\":\"timestamp\",\"interval\":\"day\",\"min_doc_count\":0,\"extended_bounds\":{\"min\":\"now-1M/d\",\"max\":\"now-0M/d\"}}}}}"}
+          }
+        }
+      };
+      var eNoData = {
+        model: {
+          __data__: {
+            item: {"data": undefined,"priority":8,"label":"Search queries last 30 days","detailedLabel":"Search queries last 30 days","value":10,"valueInfo":"","color":"#17A085","iconPath":"images/number-of-searches.svg","type":"renderBarChart","options":{"elasticSearchEndpoint":"audit-trail","yAxis":"numberOfSearch"},"query":"{\"query\":{\"constant_score\":{\"filter\":{\"bool\":{\"must\":[{\"range\":{\"timestamp\":{\"gt\":\"now-1M/d\"}}},{\"term\":{\"category\":\"Search\"}}]}}}},\"size\":0,\"aggs\":{\"searches\":{\"date_histogram\":{\"field\":\"timestamp\",\"interval\":\"day\",\"min_doc_count\":0,\"extended_bounds\":{\"min\":\"now-1M/d\",\"max\":\"now-0M/d\"}}}}}"}
+          }
+        }
+      }
+
+      el.phoneScreen = false;
+
+      setup(function() {
+        sinon.stub(el.$.elasticSearchQuery, 'setParamsAsObj', setParamsAsObj);
+        sinon.stub(el.$.elasticSearchQuery, 'generateRequest', generateRequest);
+      });
+
+      teardown(function() {
+        el.$.elasticSearchQuery.setParamsAsObj.restore();
+        el.$.elasticSearchQuery.generateRequest.restore();
+      });
+
+      test('should toggle view to dashboard', function() {
+        el.$.neonPages.selected = 1;
+
+        el.toggleCard(e);
+
+        assert.equal(el.$.neonPages.selected, 0);
+      });
+
+      suite('should toggle view to mini chart', function() {
+        test('should not query for mini chart data', function() {
+          el.$.neonPages.selected = 0;
+
+          el.toggleCard(e);
+
+          assert.equal(el.selectedCard, e.model.__data__.item);
+          assert(el.$.elasticSearchQuery.setParamsAsObj.notCalled);
+          assert(el.$.elasticSearchQuery.generateRequest.notCalled);
+          assert.equal(el.$.neonPages.selected, 1);
+        });
+
+        test('should query for mini chart data', function() {
+          el.$.neonPages.selected = 0;
+
+          el.toggleCard(eNoData);
+
+          assert(el.$.elasticSearchQuery.setParamsAsObj.calledOnce);
+          assert(el.$.elasticSearchQuery.generateRequest.calledOnce);
+          assert.equal(el.$.neonPages.selected, 1);
+        });
+      });
+    });
+  });
+</script>
+</body>
+</html>

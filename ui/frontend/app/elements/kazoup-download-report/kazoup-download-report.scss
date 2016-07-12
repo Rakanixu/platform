@@ -1,0 +1,27 @@
+@import '../../styles/guide-style.scss';
+
+:host {
+  display: inline;
+}
+
+iron-icon {
+  margin: 0 5px;
+}
+
+iron-dropdown {
+  margin-top: 40px;
+
+  .dropdown-content {
+    background-color: #fff;
+    border: 1px solid $divider-color;
+
+    paper-item {
+      cursor: pointer;
+      color: #444;
+    }
+
+    paper-item.active {
+      background-color: $divider-color;
+    }
+  }
+}

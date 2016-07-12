@@ -1,0 +1,188 @@
+registry:
+  command: -server -bootstrap -rejoin -log-level err
+  image: progrium/consul:latest
+  ports:
+  - "8300:8300"
+  - "8400:8400"
+  - "8500:8500"
+  - "8600:53/udp"
+
+web:
+  command: --registry_address=registry:8500 --register_interval=5 --register_ttl=10 web
+  image: microhq/micro
+  links:
+  - registry
+  ports:
+  - "8082:8082"
+
+static-web:
+  command: --registry_address=registry:8500
+  image: kazoup/static-web
+  volumes:
+    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/kazoup-web/frontend/app:/frontend/app"
+  links:
+  - registry
+
+dashboard-web:
+  command: --registry_address=registry:8500
+  image: kazoup/dashboard-web
+  volumes:
+    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/kazoup-web/frontend/app/sections/dashboard:/frontend/app/sections/dashboard"
+  links:
+  - registry
+
+analytics-web:
+  command: --registry_address=registry:8500
+  image: kazoup/analytics-web
+  volumes:
+    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/kazoup-web/frontend/app/sections/analytics:/frontend/app/sections/analytics"
+  links:
+  - registry
+
+search-web:
+  command: --registry_address=registry:8500
+  image: kazoup/search-web
+  volumes:
+    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/kazoup-web/frontend/app/sections/search:/frontend/app/sections/search"
+  links:
+  - registry
+
+settings-web:
+  command: --registry_address=registry:8500
+  image: kazoup/settings-web
+  volumes:
+    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/kazoup-web/frontend/app/sections/settings:/frontend/app/sections/settings"
+  links:
+  - registry
+
+logs-web:
+  command: --registry_address=registry:8500
+  image: kazoup/logs-web
+  volumes:
+    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/kazoup-web/frontend/app/sections/logs:/frontend/app/sections/logs"
+  links:
+  - registry
+
+docs-web:
+  command: --registry_address=registry:8500
+  image: kazoup/docs-web
+  volumes:
+    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/kazoup-web/frontend/app/sections/docs:/frontend/app/sections/docs"
+  links:
+  - registry
+
+login-web:
+  command: --registry_address=registry:8500
+  image: kazoup/login-web
+  volumes:
+    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/kazoup-web/frontend/app/sections/login:/frontend/app/sections/login"
+  links:
+  - registry
+
+login-web:
+  command: --registry_address=registry:8500
+  image: kazoup/wizard-web
+  volumes:
+    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/kazoup-web/frontend/app/sections/wizard:/frontend/app/sections/wizard"
+  links:
+  - registry
+
+api:
+  command: --registry_address=registry:8500 --register_interval=5 --register_ttl=10 --api_cors=* --enable_stats api
+  image: microhq/micro
+  links:
+  - registry
+  ports:
+  - "8080:8080"
+
+elastic-api:
+  command: --registry_address=registry:8500
+  image : kazoup/elastic-api
+  links:
+  - registry
+
+elastic-srv:
+  command: --registry_address=registry:8500 --elasticsearch_hosts=elasticsearch:9200
+  image: kazoup/elastic-srv
+  links:
+  - elasticsearch
+  - registry
+
+elasticsearch:
+ image: elasticsearch:1.7
+ hostname: "elasticsearch"
+ ports:
+   - "9200:9200"
+   - "9300:9300"
+ environment:
+   ES_HEAP_SIZE: 512m
+   ES_CLUSTER_NAME: Kazoup
+
+flag-api:
+  command: --registry_address=registry:8500
+  image: kazoup/flag-api:latest
+  links:
+  - registry
+
+flag-srv:
+  command: --registry_address=registry:8500
+  image: kazoup/flag-srv:latest
+  links:
+  - elasticsearch
+  - registry
+
+smtp-api:
+  command: --registry_address=registry:8500
+  image: kazoup/smtp-api
+  links:
+  - registry
+
+smtp-srv:
+  command: --registry_address=registry:8500 --email_host=SERVER_ADDRESS --email_host_port=SMPT_SERVER_PORT --email_host_user=USERNAME --email_host_password=PASSWORD --default_from_email=noreply@company.com
+  image: kazoup/smtp-srv
+  links:
+  - registry
+
+crawler-srv:
+   command: --registry_address=registry:8500
+   image: kazoup/crawler-srv
+   links:
+   - registry
+
+publish-srv:
+   command: --registry_address=registry:8500
+   image: kazoup/publish-srv
+   links:
+   - registry
+
+indexer-srv:
+   command: --registry_address=registry:8500
+   image: kazoup/indexer-srv
+   links:
+   - registry
+
+auth-api:
+  command: --registry_address=registry:8500
+  image: kazoup/auth-api
+  links:
+  - registry
+
+web-proxy:
+  command: --registry_address=registry:8500
+  image: kazoup/web-proxy
+  links:
+  - registry
+  ports:
+  - "8000:8000"
+
+config-srv:
+  command: --registry_address=registry:8500
+  image: kazoup/config-srv
+  links:
+  - registry
+
+config-api:
+  command: --registry_address=registry:8500
+  image: kazoup/config-api
+  links:
+  - registry

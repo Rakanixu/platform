@@ -1,0 +1,399 @@
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html">
+
+<dom-module id="kazoup-analytics-filters-menu">
+  <link rel="import" type="css" href="kazoup-analytics-filters-menu.css">
+
+  <template>
+
+    <div id="filtersPanel">
+      <div class="draggies-container" hidden$="{{_computeDraggies(visualisation)}}">
+        <div id="draggieParentDimension" class="draggable-item cursor-pointer horizontal layout">
+          <span id="draggieParent">1</span>
+          <paper-tooltip for="draggieParent" position="left">Parent dimension</paper-tooltip>
+        </div>
+        <div id="draggieChildDimension" class="draggable-item cursor-pointer horizontal layout">
+          <span id="draggieChild">2</span>
+          <paper-tooltip for="draggieChild" position="left">Child dimension</paper-tooltip>
+        </div>
+      </div>
+
+      <div>
+        <iron-icon icon="icons:filter-list"></iron-icon>
+        <span>Filter files by</span>
+      </div>
+      <paper-menu id="dimensions" selected="[[dimensionSelected]]">
+        <paper-item id="location"
+                    data-dimension="location"
+                    on-tap="setDimension">Data source
+          <paper-ripple class="light-background"></paper-ripple>
+        </paper-item>
+        <paper-item id="doc_type"
+                    data-dimension="doc_type"
+                    on-tap="setDimension">Category
+          <paper-ripple class="light-background"></paper-ripple>
+        </paper-item>
+        <paper-item id="extension"
+                    data-dimension="extension"
+                    on-tap="setDimension">Extension
+          <paper-ripple class="light-background"></paper-ripple>
+        </paper-item>
+        <paper-item id="duplicates"
+                    data-dimension="duplicates"
+                    on-tap="setDimension">Duplicates
+          <paper-ripple class="light-background"></paper-ripple>
+        </paper-item>
+        <paper-item id="allow"
+                    data-dimension="allow"
+                    on-tap="setDimension">Permissions
+          <paper-ripple class="light-background"></paper-ripple>
+        </paper-item>
+        <paper-item id="archive_status"
+                    data-dimension="archive_status"
+                    on-tap="setDimension">Archive
+          <paper-ripple class="light-background"></paper-ripple>
+        </paper-item>
+        <paper-item id="file_size"
+                    data-dimension="file_size"
+                    on-tap="setDimension">Size
+          <paper-ripple class="light-background"></paper-ripple>
+        </paper-item>
+
+        <template is="dom-if" if="[[advance_anlytics_enabled]]">
+          <paper-item id="place_person"
+                      data-dimension="places_person"
+                      on-tap="setDimension">People
+            <paper-ripple class="light-background"></paper-ripple>
+          </paper-item>
+          <paper-item id="places_organisation"
+                      data-dimension="places_organisation"
+                      on-tap="setDimension">Organisations
+            <paper-ripple class="light-background"></paper-ripple>
+          </paper-item>
+          <paper-item id="places_location"
+                      data-dimension="places_location"
+                      on-tap="setDimension">Places
+            <paper-ripple class="light-background"></paper-ripple>
+          </paper-item>
+        </template>
+      </paper-menu>
+
+      <div class="divide-line">
+        <iron-icon icon="editor:insert-chart"></iron-icon>
+        <span>Views</span>
+      </div>
+      <paper-menu id="visualisations" selected="[[visualisationSelected]]">
+        <paper-item data-visualisation="bubble" on-tap="setVisualisation">Bubble
+          <paper-ripple class="light-background"></paper-ripple>
+        </paper-item>
+        <paper-item data-visualisation="treemap" on-tap="setVisualisation">Treemap
+          <paper-ripple class="light-background"></paper-ripple>
+        </paper-item>
+        <paper-item data-visualisation="word_cloud" on-tap="setVisualisation">Word cloud
+          <paper-ripple class="light-background"></paper-ripple>
+        </paper-item>
+        <paper-item data-visualisation="pie" on-tap="setVisualisation">Pie
+          <paper-ripple class="light-background"></paper-ripple>
+        </paper-item>
+        <paper-item data-visualisation="table" on-tap="setVisualisation">Table
+          <paper-ripple class="light-background"></paper-ripple>
+        </paper-item>
+        <template is="dom-if" if="[[advance_anlytics_enabled]]">
+          <paper-item data-visualisation="chord" on-tap="setVisualisation">Chord
+            <paper-ripple class="light-background"></paper-ripple>
+          </paper-item>
+          <paper-item data-visualisation="force_directed" on-tap="setVisualisation">Force directed
+            <paper-ripple class="light-background"></paper-ripple>
+          </paper-item>
+          <paper-item data-visualisation="sankey" on-tap="setVisualisation">Sankey
+            <paper-ripple class="light-background"></paper-ripple>
+          </paper-item>
+          <paper-item data-visualisation="matrix" on-tap="setVisualisation">Matrix
+            <paper-ripple class="light-background"></paper-ripple>
+          </paper-item>
+        </template>
+      </paper-menu>
+    </div>
+
+  </template>
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'kazoup-analytics-filters-menu',
+        behaviors: [KazoupBehaviors.Devices],
+        properties: {
+          dimensionSelected: {
+            type: Number,
+            notify: true,
+            value: 0
+          },
+          visualisationSelected: {
+            type: Number,
+            notify: true,
+            value: 0
+          },
+          dimension: {
+            type: String,
+            notify: true,
+            observer: 'dimensionChanged'
+          },
+          secondDimension: {
+            type: String,
+            notify: true,
+            observer: 'secondDimensionChanged'
+          },
+          visualisation: {
+            type: String,
+            notify: true,
+            observer: 'visualisationChanged'
+          },
+          advance_anlytics_enabled: {
+            type: Boolean,
+            notify: true,
+            value: false
+          },
+          dimensionMap: {
+            type: Array,
+            notify: false,
+            value: function() {
+              return [
+                'location',
+                'doc_type',
+                'extension',
+                'duplicates',
+                'allow',
+                'archive_status',
+                'file_size',
+                'places_person',
+                'places_organisation',
+                'places_location'
+              ];
+            }
+          },
+          visualisationMap: {
+            type: Array,
+            notify: false,
+            value: function() {
+              return [
+                'bubble',
+                'treemap',
+                'word_cloud',
+                'pie',
+                'table',
+                'chord',
+                'force_directed',
+                'sankey',
+                'matrix'
+              ];
+            }
+          }
+        },
+        dimensionChanged: function() {
+          _.forEach(this.$.dimensions.querySelectorAll('paper-item'), function(el, index) {
+            if (el.attributes['data-dimension'].value === this.dimension) {
+              this.dimensionSelected = index;
+            }
+          }, this);
+
+          this.analytics.buildQuery();
+        },
+        secondDimensionChanged: function() {
+          this.analytics.buildQuery();
+        },
+        visualisationChanged: function() {
+          _.forEach(this.$.visualisations.querySelectorAll('paper-item'), function(el, index) {
+            if (el.attributes['data-visualisation'].value === this.visualisation) {
+              this.visualisationSelected = index;
+            }
+          }, this);
+
+          this.analytics.buildQuery();
+        },
+        dragNodes: function() {
+          var _self = this;
+          var draggies = [];
+          var singleElementHeight = 40;
+          var targetHeight = Polymer.dom(this.root)
+            .querySelector('#dimensions paper-item')
+            .getBoundingClientRect()
+            .height;
+
+          var dragEnd = function(event, pointer) {
+            var yPosition = this.element.offsetTop - singleElementHeight;
+            var index = 0;
+
+            if (yPosition < 0) {
+              yPosition = 0;
+            }
+
+            index = Math.round(yPosition / targetHeight);
+
+            if (this.element.id === 'draggieParentDimension') {
+              _self.setDimension(
+                undefined,
+                undefined,
+                {
+                  dimension: _self.dimensionMap[index]
+                }
+              );
+            } else if (this.element.id === 'draggieChildDimension') {
+              _self.setSecondDimension.call(
+                _self,
+                undefined,
+                undefined,
+                {
+                  secondDimension: _self.dimensionMap[index]
+                }
+              );
+            }
+
+            _.forEach(
+              Polymer.dom(_self.root).querySelectorAll('#dimensions paper-item'),
+              function(item) {
+                Polymer.dom(item).removeAttribute('active');
+                if (item.id === _self.dimension || item.id === _self.secondDimension) {
+                  Polymer.dom(Polymer.dom(_self.root).querySelector('#' + item.id)).setAttribute('active', '');
+                }
+              }
+            );
+
+            setTimeout(function() {
+              this.element.style['top'] = (index + 1) * singleElementHeight + 'px';
+            }.bind(this), 50);
+          };
+
+          _.forEach(Polymer.dom(_self.root).querySelectorAll('.draggable-item'), function(item) {
+            var draggie = new Draggabilly(item, {
+              axis: 'y',
+              containment: '#dimensions'
+            });
+            draggie.on('dragEnd', dragEnd);
+            draggies.push(draggie);
+          });
+
+          // Init Draggabilly items position, required on borwser refresh
+          if (this.visualisation === 'chord' ||
+              this.visualisation === 'force_directed' ||
+              this.visualisation === 'sankey' ||
+              this.visualisation === 'matrix') {
+            draggies[0].element.style['top'] =
+              this.dimensionMap.indexOf(this.dimension) * targetHeight + targetHeight + 'px';
+            draggies[1].element.style['top'] =
+              this.dimensionMap.indexOf(this.secondDimension) * targetHeight + targetHeight + 'px';
+
+            dragEnd.call(draggies[0], undefined, undefined);
+            dragEnd.call(draggies[1], undefined, undefined);
+          }
+        },
+        setDimension: function(e, detail, data) {
+          var dimension = null;
+
+          if (data) {
+            dimension = data.dimension;
+          } else {
+            dimension = e.target.dataset.dimension;
+          }
+
+          if (this.visualisation === 'chord' ||
+              this.visualisation === 'force_directed' ||
+              this.visualisation === 'sankey' ||
+              this.visualisation === 'matrix') {
+            // When user clicks a dimension link instead of using the dragging nodes
+            // When using dragging nodes --> e === undefined
+            if (e) {
+              e.stopPropagation();
+              return;
+            }
+          }
+
+          if (dimension) {
+            this.set('dimension', dimension);
+          }
+        },
+        setSecondDimension: function(e, detail, data) {
+          if (data) {
+            this.set('secondDimension', data.secondDimension);
+          }
+        },
+        setVisualisation: function(e, detail, sender) {
+          this.set('visualisation', e.target.dataset.visualisation);
+
+          // Bidimensional visualisations
+          if (this.visualisation === 'chord' ||
+              this.visualisation === 'force_directed' ||
+              this.visualisation === 'sankey' ||
+              this.visualisation === 'matrix') {
+            if (this.secondDimension === 'none') {
+              this.secondDimension = this.dimension;
+            }
+            var parentIndex = this.dimensionMap.indexOf(this.dimension);
+            var childIndex = this.dimensionMap.indexOf(this.secondDimension);
+            var height = Polymer.dom(this.root)
+              .querySelector('#dimensions paper-item')
+              .getBoundingClientRect()
+              .height;
+
+            Polymer.dom(this.root).querySelector('#draggieParentDimension').style['top'] =
+              parentIndex * height + height + 'px';
+            Polymer.dom(this.root).querySelector('#draggieChildDimension').style['top'] =
+              childIndex * height + height + 'px';
+          } else {
+            this.resetDimensionHighlighing();
+            this.secondDimension = 'none';
+          }
+
+          _.forEach(Polymer.dom(this.root).querySelectorAll('#dimensions paper-item'), function(item) {
+            Polymer.dom(item).removeAttribute('active');
+            if (item.id === this.dimension || item.id === this.secondDimension) {
+              Polymer.dom(Polymer.dom(this.root).querySelector('#' + item.id))
+                .setAttribute('active', '');
+            }
+          }, this);
+        },
+        resetDimensionHighlighing: function() {
+          _.forEach(
+            Polymer.dom(this.root).querySelectorAll('#dimensions paper-item'),
+            function(item) {
+              Polymer.dom(item).removeAttribute('active');
+            }
+          );
+        },
+        init: function(e) {
+          this.advance_anlytics_enabled =
+            localStorage.getItem('advance_anlytics_enabled') === 'true' ? true : false;
+
+          this.visualisationSelected =
+            this.visualisationMap.indexOf(e.data.visualisation) === -1 ?
+              0 : this.visualisationMap.indexOf(e.data.visualisation);
+
+          this.async(function() {
+            this.resetDimensionHighlighing();
+            this.dragNodes();
+          }, 800);
+        },
+        attached: function() {
+          Polymer.dom.flush();
+
+          if (this.isMobileDevice().any()) {
+            window.addEventListener('kazoup-mobile-analytics-initialized', this.init.bind(this));
+            this.analytics = Polymer.dom(document).querySelector('kazoup-mobile-analytics');
+          } else {
+            window.addEventListener('kazoup-analytics-initialized', this.init.bind(this));
+            this.analytics = Polymer.dom(document).querySelector('kazoup-analytics');
+          }
+        },
+        _computeDraggies: function(visualisation) {
+          return !(visualisation === 'chord' ||
+            visualisation === 'force_directed' ||
+            visualisation === 'sankey' ||
+            visualisation === 'matrix');
+        }
+      });
+    }());
+  </script>
+</dom-module>

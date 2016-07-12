@@ -1,0 +1,153 @@
+@import '../../styles/guide-style.scss';
+
+:host {
+  display: block;
+}
+
+:host::content neon-animated-pages {
+  neon-animatable {
+    paper-toolbar {
+      #topBar {
+        padding-right: 0;
+
+        paper-icon-button {
+          margin: 0 5px;
+        }
+      }
+
+      .search {
+        max-height: 42px;
+
+        .search-box {
+          background: #fff;
+          min-height: 42px;
+
+          iron-icon {
+            position: absolute;
+            margin: 9px;
+            color: #333;
+          }
+
+          input {
+            font: inherit;
+            margin: 0 0 0 45px;
+            padding: 0;
+            background-color: transparent;
+            border: 0;
+            outline: none;
+            color: #333;
+            width: 100%;
+          }
+        }
+
+        iron-image {
+          padding: 10px 0 10px 15px;
+        }
+
+        iron-dropdown {
+          margin-top: 43px;
+
+          .dropdown-content {
+            background-color: #fff;
+            border: 1px solid $divider-color;
+
+            paper-item {
+              cursor: pointer;
+              color: #444;
+            }
+
+            paper-item.active {
+              background-color: $divider-color;
+            }
+          }
+        }
+      }
+
+      #middleBar {
+        padding: 0;
+
+        paper-tabs {
+          width: 100%;
+          margin-top: 15px;
+        }
+      }
+    }
+
+    > .container {
+      position: relative;
+      top: 128px;
+      height: calc(100% - 128px);
+
+      kazoup-empty-state {
+        margin-top: 40px;
+      }
+
+      iron-list {
+        height: 100%;
+
+        .row {
+          min-height: 60px;
+          border-bottom: 1px solid $divider-color;
+
+          .log-icon {
+            display: flex;
+            justify-content: center;
+
+            iron-icon {
+              align-self: center;
+              margin-left: 15px;
+              height: 28px;
+              width: 28px;
+            }
+
+            iron-icon.warning {
+              color: #FFA528;
+            }
+
+            iron-icon.error {
+              color: #ED4937;
+            }
+          }
+
+          div {
+            h4 {
+              padding: 0;
+              margin: 8px 0 0 15px;
+              font-weight: 500;
+              font-size: .95em;
+              word-wrap: break-word;
+              word-break: break-all;
+            }
+
+            p {
+              padding: 0;
+              margin: 8px 0 8px 15px;
+              font-size: .85em;
+              font-weight: 400;
+              color: #6F757C;
+              word-wrap: break-word;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/* paper-toolbar breakpoints, fit our container  */
+@media (max-width: 600px) {
+  neon-animated-pages {
+    neon-animatable {
+      > .container {
+        position: relative;
+        top: 112px;
+        height: calc(100% - 112px);
+
+        kazoup-empty-state {
+          margin-top: 20px;
+        }
+      }
+    }
+  }
+}
+

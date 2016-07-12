@@ -1,0 +1,188 @@
+@import '../../styles/guide-style.scss';
+
+:host {
+  display: block;
+}
+
+:host::content neon-animated-pages {
+  neon-animatable {
+    paper-toolbar {
+      position: absolute;
+      width: 100%;
+      z-index: 9998;
+
+      #topBar {
+        padding-right: 0px;
+      }
+
+      paper-icon-button {
+        iron-icon {
+          width: 24px !important;
+          height: 24px !important;
+        }
+      }
+
+      .search-box {
+        background: #fff;
+        min-height: 42px;
+
+        iron-icon {
+          position: absolute;
+          margin: 9px;
+          color: #333;
+        }
+
+        input {
+          font: inherit;
+          margin: 0 0 0 45px;
+          padding: 0;
+          background-color: transparent;
+          border: 0;
+          outline: none;
+          color: #333;
+        }
+      }
+
+      .duplicates {
+        font-size: 1.25em;
+        margin-left: 12px;
+      }
+
+      .search-statistics {
+        font-size: 0.75em;
+        opacity: 0.7;
+        position: absolute;
+        top: 0;
+        margin-left: 63px;
+      }
+
+      kazoup-breadcrumbs {
+        margin-top: 15px;
+      }
+    }
+
+    .container {
+      paper-drawer-panel {
+        paper-header-panel {
+          paper-toolbar {
+            background-color: #06AFDB;
+
+            #topBar {
+              float: right;
+
+              kazoup-search-sorting {
+                display: inline;
+              }
+            }
+          }
+
+          kazoup-search-filters {
+            height: calc(100% - 128px);
+            overflow-y: scroll;
+            border-left: 1px solid $divider-color;
+          }
+        }
+
+        paper-scroll-header-panel {
+          top: 128px;
+
+          kazoup-empty-state {
+            position: absolute;
+            top: 72px;
+            width: 100%;
+          }
+
+          iron-list {
+            margin-bottom: 128px;
+
+            .row {
+              min-height: 60px;
+              border-bottom: 1px solid $divider-color;
+              overflow: hidden;
+
+              left-swipe-action {
+                background-color: #EBEBEB;
+                width: calc(100% - 67px);
+
+                left-swipe-action-button {
+                  padding: 0 !important;
+
+                  div.action {
+                    width: 50px;
+                    text-align: center;
+
+                    paper-icon-button {
+                      opacity: 0.65;
+                      height: 50px;
+                    }
+
+                  }
+                }
+              }
+
+              iron-image,
+              .icon {
+                margin: 0 16px 0 16px;
+              }
+
+              .info {
+                padding: 10px 15px 10px 0;
+
+                h4 {
+                  margin: 0 0 5px;
+                  padding: 0;
+                  font-size: 1em;
+                  font-weight: 400;
+                  color: #191817;
+                }
+
+                kazoup-text-to-html::content {
+                  p {
+                    em {
+                      background-color: #1EB3DA;
+                      padding: 1px;
+                      border-radius: 3px;
+                      color: #101010;
+                    }
+                  }
+                }
+
+                p {
+                  margin: 0;
+                  font-size: .875em;
+                  font-weight: 400;
+                  color: #6F757C;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/* paper-toolbar breakpoints, fit our container  */
+@media (max-width: 600px) {
+  neon-animated-pages {
+    neon-animatable {
+      .container {
+        paper-drawer-panel {
+          paper-header-panel {
+            kazoup-search-filters {
+              height: calc(100% - 112px);
+              overflow-y: scroll;
+            }
+          }
+
+          paper-scroll-header-panel {
+            top: 112px;
+          }
+        }
+      }
+    }
+  }
+}
+
+
+

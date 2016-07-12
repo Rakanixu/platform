@@ -1,0 +1,264 @@
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../../bower_components/iron-a11y-keys/iron-a11y-keys.html">
+<link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html">
+<link rel="import" href="../kazoup-ajax/kazoup-ajax.html">
+
+<dom-module id="kazoup-settings-scan">
+  <link rel="import" type="css" href="kazoup-settings-scan.css">
+
+  <template>
+    <paper-toolbar class="medium-tall">
+      <paper-icon-button on-tap="goDataSource"
+                         icon="arrow-back"></paper-icon-button>
+
+      <div class="horizontal layout flex search">
+        <div class="search-box horizontal layout flex">
+          <iron-icon icon="search"></iron-icon>
+          <input id="searchInput"
+                 class="flex"
+                 is="iron-input"
+                 placeholder="Scan server IP, name or FQDN"
+                 bind-value="{{server}}">
+          <paper-ripple class="light-background"></paper-ripple>
+        </div>
+      </div>
+
+      <paper-progress id="progressBar"
+                      class="middle fit"
+                      hidden$="[[!requestInProgress]]"
+                      indeterminate></paper-progress>
+    </paper-toolbar>
+
+    <div class="container">
+      <iron-list id="list" items="{{shares}}" as="item">
+        <template>
+
+          <div class="horizontal layout row">
+            <div class="icon">
+              <iron-icon icon="folder-open"></iron-icon>
+            </div>
+
+            <div class="horizontal layout flex">
+              <h4>[[item.name]]</h4>
+            </div>
+
+            <template is="dom-if" if="[[item.pending_delete]]">
+              <div class="horizontal layout">
+                <h4>Deleting</h4>
+              </div>
+            </template>
+
+            <template is="dom-if" if="[[!item.pending_delete]]">
+              <div class="horizontal layout checkbox">
+                <paper-checkbox id="checkbox"
+                                on-tap="toggleShare"
+                                role="checkbox"
+                                checked$="[[_computeChecked(item)]]"
+                                disabled$="[[_computeDisabled(item)]]"
+                                hidden$="[[item.pending_delete]]">
+                </paper-checkbox>
+
+                <paper-tooltip for$="checkbox"
+                               animation-delay="100"
+                               position="left">[[dataSourceAvailability(item.availability)]]</paper-tooltip>
+
+              </div>
+            </template>
+          </div>
+        </template>
+      </iron-list>
+    </div>
+
+    <iron-a11y-keys keys="enter"
+                    target="[[searchInputTarget]]"
+                    on-keys-pressed="scanShares"></iron-a11y-keys>
+
+    <kazoup-ajax id="getShares"
+                 method="GET"
+                 url="[[endpointList.shares]]"
+                 is-authorize="true"
+                 handle-as="json"></kazoup-ajax>
+
+    <kazoup-ajax id="scanShares"
+                 method="POST"
+                 url="[[endpointList.scanShares]]"
+                 is-authorize="true"
+                 handle-as="json"></kazoup-ajax>
+
+    <kazoup-ajax id="addShare"
+                 method="POST"
+                 url="[[endpointList.addShare]]"
+                 is-authorize="true"
+                 handle-as="json"></kazoup-ajax>
+
+    <kazoup-ajax id="deleteShare"
+                 method="DELETE"
+                 url="[[deleteShareEndpoint(shareId)]]"
+                 is-authorize="true"></kazoup-ajax>
+
+  </template>
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'kazoup-settings-scan',
+        behaviors: [
+          KazoupBehaviors.Util,
+          KazoupBehaviors.APIUrls
+        ],
+        properties: {
+          shares: {
+            type: Array,
+            notify: true,
+            value: function () {
+              return [];
+            }
+          },
+          server: {
+            type: String,
+            notify: true,
+            value: ''
+          },
+          requestInProgress: {
+            type: Boolean,
+            notify: false,
+            value: false
+          },
+          searchInputTarget: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return this.$.searchInput;
+            }
+          }
+        },
+        goDataSource: function() {
+          Polymer.dom(document)
+            .querySelector('kazoup-settings')
+            .querySelector('kazoup-settings-data-sources')
+            .init();
+          document.location = '/settings?section=sources';
+        },
+        _handleShares: function(e) {
+          this.set('requestInProgress', false);
+
+          if (e.response && e.response.shares) {
+            this.getSharesInfo();
+            this.set('shares', e.response.shares);
+          } else if (e.status === 400) {
+            Polymer.dom(document).querySelector('paper-toast').text = e.response.non_field_errors[0];
+            Polymer.dom(document).querySelector('paper-toast').show();
+          }
+
+          this.$.list.fire('iron-resize');
+        },
+        _handleSharesInfo: function(e) {
+          this.set('requestInProgress', false);
+
+          // We don't know if shares is in pending delete status
+          // We retrieve that value from after scan a server, which contains the value
+          if (e.response) {
+            // Map the require attributes to the correct model
+            _.forEach(this.shares, function(share, index) {
+              _.forEach(e.response.results, function(shareInfo) {
+                if (shareInfo.share === share.name) {
+                  this.set('shares.' + index + '.pending_delete', shareInfo.pending_delete);
+                  this.set('shares.' + index + '.id', shareInfo.id);
+                }
+              }, this);
+            }, this);
+          }
+
+          this.$.list.fire('iron-resize');
+        },
+        _handleAddedShare: function(e) {
+          this.set('requestInProgress', false);
+
+          if (e.response) {
+            this.scanShares();
+            Polymer.dom(document).querySelector('paper-toast').text = 'Share added successfully';
+            Polymer.dom(document).querySelector('paper-toast').show();
+          }
+        },
+        _handleDeletedShare: function(e) {
+          this.set('requestInProgress', false);
+
+          if (e.status === 204) {
+            this.set('shareId', null);
+            this.scanShares();
+
+            Polymer.dom(document).querySelector('paper-toast').text = 'Share deleted successfully';
+            Polymer.dom(document).querySelector('paper-toast').show();
+          }
+        },
+        toggleShare: function (e, detail) {
+          this.set('requestInProgress', true);
+
+          if (e.currentTarget.checked) {
+            this.$.addShare.setParamsAsObj({
+              server: this.server,
+              shares: [{
+                name: e.model.__data__.item.name,
+                availability: e.model.__data__.item.availability,
+                selected: e.currentTarget.checked
+              }]
+            });
+
+            this.$.addShare.generateRequest().then(this._handleAddedShare.bind(this));
+          } else {
+            _.find(this.shares, function(share) {
+              if (share.name === e.model.__data__.item.name) {
+                this.set('shareId', share.id);
+                this.$.deleteShare.generateRequest().then(this._handleDeletedShare.bind(this));
+
+                return share; // Breaks the find
+              }
+            }, this);
+          }
+        },
+        scanShares: function() {
+          this.set('shares', []);
+
+          if (this.server) {
+            this.set('requestInProgress', true);
+
+            this.$.scanShares.setParamsAsObj({
+              server: this.server
+            });
+            this.$.scanShares.generateRequest().then(this._handleShares.bind(this));
+
+            history.replaceState(
+              {},
+              'Scan',
+              location.origin + '/settings/scan?server=' + this.server
+            );
+          }
+        },
+        getSharesInfo: function() {
+          this.set('requestInProgress', true);
+          this.$.getShares.generateRequest().then(this._handleSharesInfo.bind(this));
+        },
+        init: function(e) {
+          if (e.data && e.data.server) {
+            this.set('server', e.data.server);
+          }
+
+          this.scanShares();
+        },
+        attached: function() {
+          Polymer.dom.flush();
+
+          window.addEventListener('kazoup-settings-scan-initialized', this.init.bind(this));
+        },
+        _computeChecked: function (share) {
+          return share.availability === 'already_added';
+        },
+        _computeDisabled: function (share) {
+          return share.availability === 'access_denied';
+        }
+      });
+    }());
+  </script>
+</dom-module>

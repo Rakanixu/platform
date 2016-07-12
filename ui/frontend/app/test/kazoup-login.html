@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>kazoup-login</title>
+
+  <script src="../../bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+  <script src="../../bower_components/web-component-tester/browser.js"></script>
+
+  <!-- Import the element to test -->
+  <link rel="import" href="../behaviors/behaviors.html">
+  <link rel="import" href="../elements/kazoup-login/kazoup-login.html">
+</head>
+<body>
+
+  <kazoup-login id="fixture"></kazoup-login>
+
+  <script>
+
+    suite('<kazoup-login>', function() {
+      var el = document.querySelector('#fixture');
+
+      suite('reset', function() {
+        setup(function() {
+          for (var i = 0; i < el.setupFields.length; i++) {
+            el.setupFields[i].value = 'value';
+          }
+        });
+
+        test('should clean up login form', function() {
+          el.reset();
+
+          for (var i = 0; i < el.setupFields.length; i++) {
+            assert.equal(el.setupFields[i].value, '');
+          }
+        });
+      });
+/*
+      suite('attached', function() {
+        setup(function() {
+          sinon.stub(el, 'authSuccessful', function() {});
+        });
+
+        teardown(function() {
+          el.authSuccessful.restore();
+        });
+
+        test('should register "request-success" event to "loginAppliance"', function() {
+          var tokenValue = 'some value';
+          var event = document.createEvent('Event');
+          event.initEvent('request-success', true, true);
+
+          el.loginAppliance.dispatchEvent(event, {
+            detail: {
+              response: {
+                token: tokenValue
+              }
+            }
+          });
+
+          assert(el.authSuccessful.calledOnce);
+        });
+      });*/
+    });
+  </script>
+</body>
+</html>
