@@ -18,7 +18,7 @@ Repo | Description
 [ldap](https://github.com/kazoup/platform/tree/master/ldap) | LDAP/AD authetication service 
 [crawler](https://github.com/kazoup/platform/tree/master/crawler) | Crawler service 
 [publish](https://github.com/kazoup/platform/tree/master/publish) | Publish service 
-[indexer](https://github.com/kazoup/indexer) | Index files from files topic 
+[indexer](https://github.com/kazoup/platform/tree/master/indexer) | Index files from files topic 
 [kazoup-web](https://github.com/kazoup/kazoup-web) | Web frontend  as micro services 
 ## Run
 

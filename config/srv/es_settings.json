@@ -1,0 +1,39 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "split_on_bar": {
+          "type": "custom",
+          "tokenizer": "split_on_bar"
+        },
+        "filename_index": {
+          "type": "custom",
+          "filter": [
+            "lowercase",
+            "asciifolding",
+            "ngram_3_20"
+          ],
+          "tokenizer": "filename"
+        }
+      },
+      "filter": {
+        "ngram_3_20": {
+          "type": "nGram",
+          "min_gram": "3",
+          "max_gram": "20"
+        }
+      },
+      "tokenizer": {
+        "split_on_bar": {
+          "pattern": "[|]",
+          "type": "pattern"
+        },
+        "filename": {
+          "pattern": "[^\\p{L}\\d]+",
+          "type": "pattern"
+        }
+      }
+    }
+  }
+}
+
