@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package go.micro.srv.config;
+
+service Config {
+  rpc Status(StatusRequest) returns (StatusResponse) {}
+  rpc SetElasticSettings(SetElasticSettingsRequest) returns (SetElasticSettingsResponse) {}
+  rpc SetElasticMapping(SetElasticMappingRequest) returns (SetElasticMappingResponse) {}
+  rpc SetFlags(SetFlagsRequest) returns (SetFlagsResponse) {}
+}
+
+message StatusRequest {
+
+}
+
+message StatusResponse {
+  bool APPLIANCE_IS_CONFIGURED = 1;
+  bool APPLIANCE_IS_DEMO = 2;
+  bool APPLIANCE_IS_REGISTERED = 3;
+  string GIT_COMMIT_STRING = 4;
+  bool SMB_USER_EXISTS = 5;
+}
+
+message SetElasticSettingsRequest {
+
+}
+
+message SetElasticSettingsResponse {
+
+}
+
+message SetElasticMappingRequest {
+
+}
+
+message SetElasticMappingResponse {
+
+}
+
+message SetFlagsRequest {
+
+}
+
+message SetFlagsResponse {
+
+}
