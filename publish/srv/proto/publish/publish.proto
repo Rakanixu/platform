@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package go.micro.srv.publish;
+
+service Publish {
+	rpc Send(SendRequest) returns (SendResponse) {}
+}
+
+message SendRequest {
+	string topic = 1;
+	string id = 2;
+	string publisher = 3;
+	string data = 4;
+}
+
+message SendResponse {
+
+}
