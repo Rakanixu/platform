@@ -13,7 +13,7 @@ Repo | Description
 [flag](https://github.com/kazoup/platform/tree/master/flag) | Flag micro service 
 [policy](https://github.com/kazoup/platfrom/tree/master/policy) | Policy service 
 [elastic](https://github.com/kazoup/platform/tree/master/elastic) | Microservice for supporting agnostic CRUD, Search and QueryDSL operations over Elastic search 
-[web-proxy](https://github.com/kazoup/web-proxy) | Entry point for Kazoup platform frontend 
+[proxy](https://github.com/kazoup/platform/tree/master/proxy) | Entry point for Kazoup platform frontend 
 [auth](https://github.com/kazoup/auth) | Microservices for Kazoup auth 
 [kazoup-web](https://github.com/kazoup/kazoup-web) | Web frontend  as micro services 
 [ldap](https://github.com/kazoup/ldap) | LDAP/AD authetication service 
