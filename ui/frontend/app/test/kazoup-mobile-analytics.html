@@ -1,0 +1,249 @@
+<!doctype html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>kazoup-mobile-analytics</title>
+
+  <script src="../bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+  <script src="../bower_components/web-component-tester/browser.js"></script>
+
+  <!-- Import the element to test -->
+  <script src="/app/bower_components/page/page.js"></script>
+  <link rel="import" href="../behaviors/behaviors.html">
+  <link rel="import" href="../elements/kazoup-mobile-analytics/kazoup-mobile-analytics.html">
+</head>
+<body>
+
+<kazoup-mobile-analytics id="fixture"></kazoup-mobile-analytics>
+
+<script>
+  suite('<kazoup-mobile-analytics>', function() {
+    var el = document.querySelector('#fixture');
+
+    suite('dateRangeDataChanged', function() {
+      suite('', function() {
+        setup(function() {
+          el.$.filterConverter.setValues([{field: 'from', val: undefined}]);
+          el.$.filterConverter.setValues([{field: 'to', val: undefined}]);
+
+          sinon.spy(el.$.filterConverter, 'setValues');
+          sinon.stub(el.$.timeRangeSelector, 'dateRangeDataChanged', function() {});
+
+          el.dateRangeData = [1420521930956];
+        });
+
+        teardown(function() {
+          el.$.filterConverter.setValues.restore();
+          el.$.timeRangeSelector.dateRangeDataChanged.restore();
+        });
+
+        test('should set new range when from and to are undefined', function () {
+          el.dateRangeDataChanged();
+
+          assert(el.$.filterConverter.setValues.calledOnce);
+        });
+      });
+
+      suite('', function() {
+        setup(function() {
+          el.$.filterConverter.setValues([{field: 'from', val: 'now-7y/d'}]);
+          el.$.filterConverter.setValues([{field: 'to', val: 'now-0y/d'}]);
+
+          sinon.spy(el.$.filterConverter, 'setValues');
+          sinon.stub(el.$.timeRangeSelector, 'dateRangeDataChanged', function() {});
+
+          el.dateRangeData = [1420521930956];
+        });
+
+        teardown(function() {
+          el.$.filterConverter.setValues.restore();
+          el.$.timeRangeSelector.dateRangeDataChanged.restore();
+        });
+
+        test('should not set new range when from and to are defined', function () {
+          el.dateRangeDataChanged();
+
+          assert(el.$.filterConverter.setValues.notCalled);
+        });
+      });
+    });
+
+    suite('buildQuery', function() {
+      var url;
+
+      setup(function() {
+        url = '/analytics?' +
+          'dimension=' + el.dimension +
+          '&secondDimension=' + el.secondDimension +
+          '&visualisation=' + el.visualisation +
+          '&filters=' + el.$.filterConverter.asQuerystring() +
+          '&period=' + el.period;
+
+        sinon.spy(window.history, 'pushState');
+      });
+
+      teardown(function() {
+        window.history.pushState.restore();
+      });
+
+      test('should push new state into history API', function() {
+        el.buildQuery();
+
+        assert(window.history.pushState.calledWith({}, 'Analytics', url));
+      });
+    });
+
+    suite('setDirectory', function() {
+      var mock;
+      var e = {
+        detail: {
+          fieldsChanged: [
+            {
+              field: 'dirpath'
+            }
+          ]
+        }
+      };
+
+      suite('', function() {
+        setup(function() {
+          mock = sinon.mock(el.$.filterConverter);
+          mock.expects('getValue').withArgs('dirpath').returns(['//1.1.1.1/path1/path2']);
+        });
+
+        teardown(function() {
+          mock.restore();
+        });
+
+        test('should set directory name', function() {
+          el.setDirectory(e);
+
+          assert.equal(el.directory, 'path2');
+        });
+      });
+
+      suite('', function() {
+        setup(function () {
+          mock = sinon.mock(el.$.filterConverter);
+          mock.expects('getValue').withArgs('dirpath').returns([]);
+        });
+
+        teardown(function () {
+          mock.restore();
+        });
+
+        test('should set empty string', function () {
+          el.setDirectory(e);
+
+          assert.equal(el.directory, '');
+        });
+      });
+    });
+
+    suite('goPreviousDirectory', function() {
+      suite('', function() {
+        setup(function () {
+          sinon.stub(el.$.filterConverter, 'getValue', function() {
+            return '//127.0.0.1';
+          });
+        });
+
+        teardown(function () {
+          el.$.filterConverter.getValue.restore();
+        });
+
+        test('should set root directory', function () {
+          el.goPreviousDirectory();
+
+          assert.equal(el.isRootDirectory, true);
+        });
+      });
+
+      suite('', function() {
+        setup(function () {
+          el.isRootDirectory = false;
+          sinon.stub(el.$.filterConverter, 'getValue', function() {
+            return '//127.0.0.1/path1/path2';
+          });
+        });
+
+        teardown(function () {
+          el.$.filterConverter.getValue.restore();
+        });
+
+        test('should set parent directory', function() {
+          el.goPreviousDirectory();
+
+          assert.equal(el.isRootDirectory, false);
+        });
+      });
+    });
+
+    suite('dirPathEncode', function() {
+      test('should return enconded dirpath', function() {
+        var dirpath = el.dirPathEncode();
+
+        assert.equal(dirpath, encodeURIComponent(el.dirpath));
+      });
+    });
+
+    suite('switchToSearch', function() {
+      var pageParam;
+
+      setup(function() {
+        pageParam = '/search?q=&browser=false&filters=' +
+          el.$.filterConverter.asQuerystring();
+
+        sinon.spy(window, 'page');
+      });
+
+
+      teardown(function() {
+        window.page.restore();
+      });
+
+      test('should call page global with param', function() {
+        el.switchToSearch();
+
+        assert(window.page.calledOnce);
+      });
+    });
+
+    suite('toggleRightDrawer', function() {
+      setup(function() {
+        sinon.spy(el, 'toggleRightDrawer');
+        sinon.spy(el.$.rightDrawer, 'openDrawer');
+      });
+
+      teardown(function() {
+        el.toggleRightDrawer.restore();
+        el.$.rightDrawer.openDrawer.restore();
+      });
+
+      test('should open right drawer', function() {
+        el.toggleRightDrawer();
+
+        assert(el.toggleRightDrawer.calledOnce);
+        assert(el.$.rightDrawer.openDrawer.calledOnce);
+      });
+    });
+
+    suite('openTimeRangeSelector', function() {
+      setup(function() {
+        sinon.spy(el.$.timeRangeSelector, 'open');
+      });
+
+      teardown(function() {
+        el.$.timeRangeSelector.open.restore();
+      });
+
+      test('should open kazoup-time-range-selector', function() {
+        el.openTimeRangeSelector();
+
+        assert(el.$.timeRangeSelector.open.calledOnce);
+      });
+    });
+  });
+</script>
+</body>
+</html>

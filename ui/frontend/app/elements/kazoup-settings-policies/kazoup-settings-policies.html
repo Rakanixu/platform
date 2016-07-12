@@ -1,0 +1,309 @@
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
+<link rel="import" href="../../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html">
+<link rel="import" href="../kazoup-ajax/kazoup-ajax.html">
+<link rel="import" href="../kazoup-empty-state/kazoup-empty-state.html">
+
+<dom-module id="kazoup-settings-policies">
+
+  <link rel="import" type="css" href="kazoup-settings-policies.css">
+  <template>
+
+    <kazoup-empty-state icon="cloud"
+                        header="No policies"
+                        description="<span>Just go to </span><a href='/analytics'>analytics</a>
+                                    <span>and add policies from the actions menu.</span>"
+                        hidden$="[[!emptyStateVisible]]"></kazoup-empty-state>
+
+    <paper-progress id="archiveCompleteProgressBar[[index]]"
+                    class="horizontal layout"
+                    value="200"
+                    max="400"></paper-progress>
+
+    <iron-list id="list" items="{{policies}}" as="item">
+      <template>
+        <div class="horizontal layout flex row">
+          <div class="policy-icon" class="policy-icon">
+            <iron-icon icon="cloud-upload"></iron-icon>
+          </div>
+
+          <div class="layout horizontal flex policy">
+            <div class="layout vertical">
+              <h4>[[item.name]]</h4>
+              <p>
+                <template is="dom-if" if="[[_computeMirrorPolicy(item)]]">
+                  <span>
+                    Mirror policy matching
+                    <span>[[item.data.count]]</span> files,
+                    <span>[[fileSize(item.data.sum)]]</span>.
+                  </span>
+                </template>
+                <template is="dom-if" if="[[_computeArchivePolicy(item)]]">
+                  <span>
+                    Archive policy matching
+                    <span>[[item.data.count]]</span> files,
+                    <span>[[fileSize(item.data.sum)]]</span>.
+                  </span>
+                </template>
+                <template is="dom-if" if="[[_computeDeletionPolicy(item)]]">
+                  <span>
+                    Local deletion policy matching
+                    <span>[[item.data.count]]</span> files,
+                    <span>[[fileSize(item.data.sum)]]</span>.
+                  </span>
+                </template>
+              </p>
+            </div>
+          </div>
+
+          <div class="actions horizontal layout">
+            <paper-progress id="archiveCompleteProgressBar"
+                            class="horizontal layout progress"
+                            value="[[_computeValue(item)]]"
+                            max="[[item.data.sum]]"
+                            hidden$="[[phoneScreen]]"></paper-progress>
+            <paper-tooltip for$="archiveCompleteProgressBar"
+                           animation-delay="100"
+                           position="left">
+              [[archiveCompletePercentage(item.data.archive_complete.sum, item.data.sum)]]
+            </paper-tooltip>
+          </div>
+
+          <div class="actions horizontal layout">
+            <iron-icon id="policy-analytics"
+                       icon="editor:insert-chart"
+                       class="cursor-pointer"
+                       on-tap="viewPolicyInAnalytics"></iron-icon>
+            <paper-tooltip for$="policy-analytics"
+                           animation-delay="100"
+                           position="left">View policy in analytics</paper-tooltip>
+            <paper-ripple class="light-background"></paper-ripple>
+          </div>
+
+          <div class="actions horizontal layout">
+            <iron-icon id="policy-search"
+                       icon="search"
+                       class="cursor-pointer"
+                       on-tap="viewPolicyInSearch"></iron-icon>
+            <paper-tooltip for$="policy-search"
+                           animation-delay="100"
+                           position="left">View policy in search</paper-tooltip>
+            <paper-ripple class="light-background"></paper-ripple>
+          </div>
+
+          <div class="actions horizontal layout">
+            <iron-icon id="delete-policy"
+                       icon="icons:delete"
+                       class="cursor-pointer"
+                       on-tap="openDeletionDialog"></iron-icon>
+            <paper-tooltip for$="delete-policy"
+                           animation-delay="100"
+                           position="left">Delete policy</paper-tooltip>
+            <paper-ripple class="light-background"></paper-ripple>
+          </div>
+        </div>
+      </template>
+    </iron-list>
+
+
+    <paper-dialog id="deletePolicyDialog" with-backdrop>
+      <h2>Delete policy</h2>
+      <section>
+        <p>Are you sure you want to delete this policy?</p>
+      </section>
+      <paper-button dialog-dismiss>Cancel</paper-button>
+      <paper-button on-tap="deletePolicy">OK</paper-button>
+    </paper-dialog>
+
+    <kazoup-ajax id="filters"
+                 url="[[endpointList.policies]]"
+                 method="GET"
+                 is-authorize="true"
+                 handle-as="json"></kazoup-ajax>
+
+    <kazoup-ajax id="deletePolicy"
+                 url="[[deletePolicyEndpoint(policyId)]]"
+                 is-authorize="true"
+                 method="DELETE"
+                 handle-as="json"></kazoup-ajax>
+
+    <iron-media-query query="max-width: 1024px"
+                      query-matches="{{phoneScreen}}"></iron-media-query>
+
+  </template>
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'kazoup-settings-policies',
+        behaviors: [
+          KazoupBehaviors.NetworkError,
+          KazoupBehaviors.Util,
+          KazoupBehaviors.APIUrls
+        ],
+        properties: {
+          emptyStateVisible: {
+            type: Boolean,
+            notify: false,
+            value: false
+          },
+          policies: {
+            type: Array,
+            notify: true,
+            value: function() {
+              return [];
+            }
+          },
+          policyId: {
+            type: Number,
+            notify: true,
+            value: null
+          }
+        },
+        viewPolicyInAnalytics: function(e, detail) {
+          document.location = '/analytics?fromSearch=true&filters=' + e.model.__data__.item.filter_raw;
+        },
+        viewPolicyInSearch: function(e, detail) {
+          document.location = '/search?browser=false&filters=' + e.model.__data__.item.filter_raw;
+        },
+        getMatchingFiles: function(policy) {
+          var _self = this;
+          var query = {
+            'query': {
+              'constant_score': {
+                'filter': {
+                  'bool': {
+                    'should': [
+                      {
+                        'term': {
+                          'exists_on_disk': true
+                        }
+                      },
+                      {
+                        'exists': {
+                          'field': 'archive_complete'
+                        }
+                      }
+                    ],
+                    'must': []
+                  }
+                }
+              }
+            },
+            'aggs': {
+              'total_size': {
+                'stats': {
+                  'field': 'metadata.size'
+                }
+              },
+              'archive_complete': {
+                'aggs': {
+                  'archive_complete': {
+                    'stats': {
+                      'field': 'metadata.size'
+                    }
+                  }
+                },
+                'filter': {
+                  'exists': {
+                    'field': 'archive_complete'
+                  }
+                }
+              }
+            },
+            'size': 0
+          };
+
+          query.query.constant_score.filter.bool.must.push(JSON.parse(policy.filter));
+
+          return qwest.post(
+            this.endpointList.ESFiles,
+            query,
+            {
+              dataType: 'json',
+              cache: true,
+              headers: {
+                Accept: 'application/json',
+                Authorization: 'JWT ' + localStorage.getItem('authToken')
+              }
+            }
+          );
+        },
+        openDeletionDialog: function(e, detail) {
+          this.set('policyId', e.model.__data__.item.id);
+          this.$.deletePolicyDialog.open();
+        },
+        deletePolicy: function() {
+          this.$.deletePolicy.generateRequest().then(this._handlePolicyDeletion.bind(this));
+        },
+        fileSize: function(val) {
+          if (typeof val === 'number') {
+            return filesize(val);
+          }
+        },
+        _handlePolicyDeletion: function(e) {
+          if (e && e.status === 204) {
+            this.getPolicies();
+            Polymer.dom(document).querySelector('paper-toast').text = 'Policy deleted successfully';
+            Polymer.dom(document).querySelector('paper-toast').show();
+            this.$.deletePolicyDialog.close();
+          }
+        },
+        _handleFilters: function(e) {
+          if (e && e.response && e.response.results && e.response.results.length > 0) {
+            this.set('emptyStateVisible', false);
+
+            // Once we retieved all policies, we need to request some data about them
+            // Pushes into the policies model every policy with its data aggregated, policy['data']
+            // Sorting / order depends on network
+            _.forEach(e.response.results, function(policy) {
+              this.getMatchingFiles(policy)
+                .then(
+                  function(xhr, response) {
+                    policy.data = response.aggregations.total_size;
+                    policy.data.archive_complete = response.aggregations.archive_complete.archive_complete;
+                    this.push('policies', policy);
+                  }.bind(this)
+                )
+                .catch(this.handleNetworkError);
+            }, this);
+          } else {
+            this.set('emptyStateVisible', true);
+          }
+
+          this.$.list.fire('iron-resize');
+        },
+        getPolicies: function() {
+          this.set('policies', []);
+          this.$.filters.generateRequest().then(this._handleFilters.bind(this));
+        },
+        init: function(e) {
+          this.getPolicies();
+        },
+        attached: function() {
+          Polymer.dom.flush();
+
+          window.addEventListener('kazoup-settings-policies-initialized', this.init.bind(this));
+        },
+        _computeMirrorPolicy: function(model) {
+          return model.is_archive_policy && !model.is_deletion_policy;
+        },
+        _computeArchivePolicy: function(model) {
+          return model.is_archive_policy && model.is_deletion_policy;
+        },
+        _computeDeletionPolicy: function(model) {
+          return !model.is_archive_policy && model.is_deletion_policy;
+        },
+        _computeValue: function(policy) {
+          if (policy && policy.data && policy.data.archive_complete) {
+            return policy.data.archive_complete.sum || 0;
+          }
+        }
+      });
+    }());
+  </script>
+</dom-module>

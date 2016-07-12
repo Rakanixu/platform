@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>kazoup-menu</title>
+
+  <script src="../../bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+  <script src="../../bower_components/web-component-tester/browser.js"></script>
+
+  <!-- Import the element to test -->
+  <script src="../scripts/intercom.min.js"></script>
+  <link rel="import" href="../behaviors/behaviors.html">
+  <link rel="import" href="../elements/kazoup-menu/kazoup-menu.html">
+</head>
+<body>
+<div id="intercom-launcher"></div>
+
+<kazoup-menu id="fixture"></kazoup-menu>
+
+<script>
+  suite('<kazoup-menu>', function() {
+    var el = document.querySelector('#fixture');
+
+    suite('selectedChanged', function() {
+      setup(function() {
+        el.selected = 3;
+
+        sinon.spy(el, 'closeDrawerPanel');
+      });
+
+      teardown(function() {
+        el.closeDrawerPanel.restore();
+      });
+
+
+      test('should set selected section and close menu panel', function() {
+        el.selectedChanged(3, undefined);
+
+        assert(el.closeDrawerPanel.calledOnce);
+      });
+
+      test('should set last selected section', function() {
+        el.selectedChanged(7, 3);
+
+        assert.equal(el.selected, 3);
+        assert(el.closeDrawerPanel.calledOnce);
+      });
+    });
+
+    suite('openIntercom', function() {
+      setup(function() {
+        sinon.spy(window, 'Intercom');
+      });
+
+      teardown(function() {
+        window.Intercom.restore();
+      });
+
+      test('should open Intercom', function() {
+        el.openIntercom();
+
+        assert(window.Intercom.calledOnce);
+      });
+    });
+
+    suite('_handleSelected', function() {
+      setup(function() {
+        // We have to "mock" document.location.pathname.substring
+        // to ensure the map works as designed, cannot mock a method's primitive
+        // so history API will help us
+        history.pushState({}, '', '/search');
+      });
+
+      test('should update selected section', function() {
+        el._handleSelected();
+
+        assert.equal(el.selected, 2);
+      });
+    });
+  });
+</script>
+</body>
+</html>

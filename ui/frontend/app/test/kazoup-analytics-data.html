@@ -1,0 +1,1418 @@
+<!doctype html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>kazoup-analytics</title>
+
+  <script src="/app/bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+  <script src="/app/bower_components/web-component-tester/browser.js"></script>
+
+  <!-- Tests dependencies -->
+  <link rel="import" href="/app/bower_components/polymer/polymer.html">
+  <script src="/app/bower_components/date-utils/lib/date-utils.js"></script>
+  <script src="/app/bower_components/lodash/lodash.min.js"></script>
+  <script src="/app/bower_components/qwest/qwest.min.js"></script>
+  <script src="/app/bower_components/filesize.js/lib/filesize.min.js"></script>
+  <link rel="import" href="../behaviors/behaviors.html">
+  <link rel="import" href="../elements/kazoup-analytics-data/kazoup-analytics-data.html">
+
+</head>
+<body>
+
+<kazoup-analytics-data id="fixture"></kazoup-analytics-data>
+
+<script>
+  suite('<kazoup-analytics-data>', function() {
+    var el = document.querySelector('#fixture');
+    var from = 'now-7y/d';
+    var to = 'now-0y/d';
+    var mock;
+    var server;
+
+    function setFilterConverterMockObj() {
+      el._filterConverter = {
+        getValue: function() {},
+        setValue: function() {},
+        asElasticsearchFilters: function() {}
+      };
+
+      mock = sinon.mock(el._filterConverter);
+    }
+
+    function restoreFilterConverterMock() {
+      mock.restore();
+    }
+
+    function setFetchChartDataStub() {
+      // Stub '_fetchChartData' to do nothing.
+      // Avoid calls to the mock expectetions outside the system under test
+      // We will test '_fetchChartData' when it becomes the system under test
+      sinon.stub(el, '_fetchChartData', function() {});
+    }
+
+    function restoreFetchChartDataStub() {
+      el._fetchChartData.restore();
+    }
+
+    function setFetchHistogramDataStub() {
+      // Stub '_fetchHistogramData' to do nothing.
+      // Avoid calls to the mock expectetions outside the system under test
+      // We will test '_fetchHistogramData' when it becomes the system under test
+      sinon.stub(el, '_fetchHistogramData', function() {});
+    }
+
+    function restoreFetchHistogramDataStub() {
+      el._fetchHistogramData.restore();
+    }
+
+    // This is a helper to replace all observers by dummy methods which do not nothing
+    // The idea is to be able to set dimension, secondDimension, visualisation and period
+    // inside the test without impacting the test results.
+    // This approach avoids to write setup and teardown many times;
+    // refer to  _makeChartRequest & _makeHistogramRequest tests to see it working
+    // Please bear in mind we do not want to spy these observers when we used them
+    function setObserversStub() {
+      sinon.stub(el, 'dimensionChanged', function() {});
+      sinon.stub(el, 'secondDimensionChanged', function() {});
+      sinon.stub(el, 'visualisationChanged', function() {});
+    }
+
+    function restoreObserversStub() {
+      el.dimensionChanged.restore();
+      el.secondDimensionChanged.restore();
+      el.visualisationChanged.restore();
+    }
+
+    function setMethodsMapStub() {
+      sinon.stub(el._methodsMap.location, 'buildAggs', function() {});
+      sinon.stub(el._methodsMap.doc_type, 'buildAggs', function() {});
+      sinon.stub(el._methodsMap.extension, 'buildAggs', function() {});
+      sinon.stub(el._methodsMap.duplicates, 'buildAggs', function() {});
+      sinon.stub(el._methodsMap.allow, 'buildAggs', function() {});
+      sinon.stub(el._methodsMap.archive_status, 'buildAggs', function() {});
+      sinon.stub(el._methodsMap.file_size, 'buildAggs', function() {});
+      sinon.stub(el._methodsMap.places_person, 'buildAggs', function() {});
+      sinon.stub(el._methodsMap.places_organisation, 'buildAggs', function() {});
+      sinon.stub(el._methodsMap.places_location, 'buildAggs', function() {});
+    }
+
+    function restoreMethodsMapStub() {
+      el._methodsMap.location.buildAggs.restore();
+      el._methodsMap.doc_type.buildAggs.restore();
+      el._methodsMap.extension.buildAggs.restore();
+      el._methodsMap.duplicates.buildAggs.restore();
+      el._methodsMap.allow.buildAggs.restore();
+      el._methodsMap.archive_status.buildAggs.restore();
+      el._methodsMap.file_size.buildAggs.restore();
+      el._methodsMap.places_person.buildAggs.restore();
+      el._methodsMap.places_organisation.buildAggs.restore();
+      el._methodsMap.places_location.buildAggs.restore();
+    }
+
+    function setMakeChartRequestStub() {
+      sinon.stub(el, '_makeChartRequest', function() {
+        return qwest.post().then(function() {})
+      });
+    }
+
+    function restoreMakeChartRequestStub() {
+      el._makeChartRequest.restore();
+    }
+
+    function setMakeHistogramRequestStub() {
+      sinon.stub(el, '_makeHistogramRequest', function() {
+        return qwest.post().then(function() {})
+      });
+    }
+
+    function restoreMakeHistogramRequestStub() {
+      el._makeHistogramRequest.restore();
+    }
+
+    function runHistogramFakeServer() {
+      var fakeHistogramResponse = {facets: {histogram: {_type: 'date_histogram',entries: [{count: 1,max: 368188,mean: 368188,min: 368188,time: 631152000000,total: 368188,total_count: 1},{count: 1,max: 4765,mean: 4765,min: 4765,time: 757382400000,total: 4765,total_count: 1}]}}};
+
+      server = sinon.fakeServer.create();
+
+      server.respondWith(
+        'POST',
+        '/api/v1/elasticsearch/files/?search_type=count&query_cache=true&format=json',
+        [
+          200,
+          {
+            'Content-Type': 'application/json',// Required by fake server to handle response as JSON
+            dataType: 'json',
+            cache: true,
+            headers: {
+              Accept: 'application/json',
+              Authorization: 'JWT null'
+            }
+          },
+          JSON.stringify(fakeHistogramResponse)
+        ]
+      );
+    }
+
+    function runChartDataFakeServer(index) {
+      var fakeChartDataResponseBidimensional = {
+        aggregations: {
+          buckets: {
+            buckets: [
+              {
+                doc_count: 4,
+                key: '//10.17.57.20/Technical/Training/Microsoft/Windows Server 2008/MCITP 2008',
+                nested_extension_totals: {
+                  buckets: [
+                    {
+                      doc_count: 3,
+                      key: ".pdf",
+                      total_size: {
+                        avg: 12491047.333333334,
+                        count: 3,
+                        max: 13513771,
+                        min: 11163922,
+                        sum: 37473142
+                      }
+                    },
+                    {
+                      doc_count: 1,
+                      key: ".db",
+                      total_size: {
+                        avg: 61952,
+                        count: 1,
+                        max: 61952,
+                        min: 61952,
+                        sum: 61952
+                      }
+                    }
+                  ]
+                },
+                total_size: {
+                  avg: 9383773.5,
+                  count: 4,
+                  max: 13513771,
+                  min: 61952,
+                  sum: 37535094
+                }
+              }
+            ]
+          }
+        }
+      };
+      var fakeChartDataResponseLocationDimension = {"hits":{"hits":[],"total":215550,"max_score":0},"_shards":{"successful":5,"failed":0,"total":5},"took":52,"aggregations":{"files_in_dir":{"total_size":{"count":0,"max":null,"sum":null,"avg":null,"min":null},"doc_count":0},"buckets":{"buckets":[{"total_size":{"count":158405,"max":2364587458,"sum":51902060433,"avg":327654.1803162779,"min":0},"key":"//10.17.57.20/Technical","doc_count":158405},{"total_size":{"count":43773,"max":1060503552,"sum":31794973973,"avg":726360.4041989354,"min":0},"key":"//10.17.57.20/Sales","doc_count":43773},{"total_size":{"count":8551,"max":1498927289,"sum":13517715601,"avg":1580834.475616887,"min":0},"key":"//10.17.57.20/Administration","doc_count":8551},{"total_size":{"count":4461,"max":13745169408,"sum":54688151113,"avg":12259168.597399686,"min":0},"key":"//10.17.57.20/Managed Services","doc_count":4461},{"total_size":{"count":351,"max":16486264,"sum":111820444,"avg":318576.7635327635,"min":42},"key":"//10.17.57.20/print$","doc_count":351},{"total_size":{"count":7,"max":299520,"sum":683520,"avg":97645.71428571429,"min":3584},"key":"//10.17.57.20/prnproc$","doc_count":7},{"total_size":{"count":2,"max":287238,"sum":308174,"avg":154087,"min":20936},"key":"//rds2.databarracks.com/KazoupTest","doc_count":2}],"sum_other_doc_count":0,"doc_count_error_upper_bound":0}},"timed_out":false};
+      var fakeChartDataResponseContentExtraction = {"hits":{"hits":[],"total":215550,"max_score":0},"_shards":{"successful":5,"failed":0,"total":5},"took":32,"aggregations":{"places_person":{"buckets":[{"total_size":{"value":1042480315},"key":"Peter Port","doc_count":1046},{"total_size":{"value":533760968},"key":"Databarracks","doc_count":597},{"total_size":{"value":100901053},"key":"Parkhill","doc_count":512}]}}};
+      var fakeChartDataResponseVisualizeDimension = {"hits":{"hits":[],"total":215550,"max_score":0},"_shards":{"successful":5,"failed":0,"total":5},"took":58,"aggregations":{"totals":{"buckets":[{"total_size":{"count":48860,"max":363806301,"sum":7590172726,"avg":155345.32799836266,"min":0},"key":"Image Files","doc_count":48860},{"total_size":{"count":40837,"max":27873901,"sum":3903433193,"avg":95585.69907192007,"min":0},"key":"Web Files","doc_count":40837},{"total_size":{"count":22003,"max":13745169408,"sum":64388384237,"avg":2926345.6909057857,"min":0},"key":"Data Files","doc_count":22003},{"total_size":{"count":20927,"max":1370532464,"sum":10897189524,"avg":520723.9223969035,"min":0},"key":"Executable Files","doc_count":20927},{"total_size":{"count":17061,"max":124882765,"sum":8571730426,"avg":502416.64767598617,"min":0},"key":"PDF Files","doc_count":17061},{"total_size":{"count":16150,"max":263177958,"sum":7720504317,"avg":478049.80291021673,"min":0},"key":"Misc Files","doc_count":16150},{"total_size":{"count":12945,"max":46478928,"sum":212077698,"avg":16382.981691772886,"min":0},"key":"Developer Files","doc_count":12945},{"total_size":{"count":10276,"max":51960070,"sum":6057180663,"avg":589449.2665434021,"min":0},"key":"Text Files","doc_count":10276},{"total_size":{"count":8138,"max":63242752,"sum":6097351737,"avg":749244.4995084788,"min":0},"key":"Document Files","doc_count":8138},{"total_size":{"count":7837,"max":46676143,"sum":3922014126,"avg":500448.40193951764,"min":0},"key":"Spreadsheet Files","doc_count":7837},{"total_size":{"count":2378,"max":2364587458,"sum":3183793962,"avg":1338853.6425567705,"min":304},"key":"Audio Files","doc_count":2378},{"total_size":{"count":2259,"max":1520496128,"sum":4950601392,"avg":2191501.2802124834,"min":0},"key":"System Files","doc_count":2259},{"total_size":{"count":1732,"max":698236,"sum":87782958,"avg":50683.00115473441,"min":2580},"key":"Font Files","doc_count":1732},{"total_size":{"count":1129,"max":2747744,"sum":25305033,"avg":22413.669619131975,"min":28},"key":"Settings Files","doc_count":1129},{"total_size":{"count":774,"max":938455779,"sum":11139775146,"avg":14392474.34883721,"min":3},"key":"Compressed Files","doc_count":774},{"total_size":{"count":622,"max":70512072,"sum":460307875,"avg":740044.8151125401,"min":0},"key":"Game Files","doc_count":622},{"total_size":{"count":565,"max":1498927289,"sum":5669597256,"avg":10034685.408849558,"min":2},"key":"Video Files","doc_count":565},{"total_size":{"count":527,"max":20246528,"sum":104356864,"avg":198020.614800759,"min":16384},"key":"Email Files","doc_count":527},{"total_size":{"count":326,"max":48541696,"sum":451869837,"avg":1386103.7944785275,"min":24},"key":"Database Files","doc_count":326},{"total_size":{"count":126,"max":34245088,"sum":128156005,"avg":1017111.1507936508,"min":0},"key":"Backup Files","doc_count":126},{"total_size":{"count":44,"max":7139328,"sum":51128884,"avg":1162020.0909090908,"min":6200},"key":"Page Layout Files","doc_count":44},{"total_size":{"count":10,"max":2094465024,"sum":4203277783,"avg":420327778.3,"min":3045},"key":"Disk Image Files","doc_count":10},{"total_size":{"count":9,"max":214535254,"sum":363415172,"avg":40379463.55555555,"min":1414},"key":"eBook Files","doc_count":9},{"total_size":{"count":7,"max":923781120,"sum":1641314516,"avg":234473502.2857143,"min":3460},"key":"CAD Files","doc_count":7},{"total_size":{"count":6,"max":50115642,"sum":194956770,"avg":32492795,"min":698216},"key":"Plugin Files","doc_count":6},{"total_size":{"count":2,"max":34833,"sum":35158,"avg":17579,"min":325},"key":"Encoded Files","doc_count":2}],"sum_other_doc_count":0,"doc_count_error_upper_bound":0}},"timed_out":false};
+
+      var responseDataMap = [
+        fakeChartDataResponseBidimensional,
+        fakeChartDataResponseLocationDimension,
+        fakeChartDataResponseContentExtraction,
+        fakeChartDataResponseVisualizeDimension
+      ];
+
+      server = sinon.fakeServer.create();
+
+      server.respondWith(
+        'POST',
+        '/api/v1/elasticsearch/files/?search_type=count&query_cache=true&format=json',
+        [
+          200,
+          {
+            'Content-Type': 'application/json',// Required by fake server to handle response as JSON
+            dataType: 'json',
+            cache: true,
+            headers: {
+              Accept: 'application/json',
+              Authorization: 'JWT null'
+            }
+          },
+          JSON.stringify(responseDataMap[index])
+        ]
+      );
+    }
+
+    function restoreFakeServer() {
+      server.restore();
+    }
+
+    suite('dimensionChanged', function() {
+      setup(function() {
+        sinon.spy(el, 'dataQueryParamsChanged');
+      });
+
+      teardown(function() {
+        el.dataQueryParamsChanged.restore();
+      });
+
+      test('should call dataQueryParamsChanged', function() {
+        el.dimensionChanged('doc_type', 'location');
+
+        assert(el.dataQueryParamsChanged.calledOnce);
+      });
+
+      test('should not call dataQueryParamsChanged', function() {
+        el.dimensionChanged('location', undefined);
+
+        assert(el.dataQueryParamsChanged.notCalled);
+      });
+    });
+
+    suite('secondDimensionChanged', function() {
+      setup(function() {
+        sinon.spy(el, 'dataQueryParamsChanged');
+      });
+
+      teardown(function() {
+        el.dataQueryParamsChanged.restore();
+      });
+
+      test('should call dataQueryParamsChanged', function() {
+        el.secondDimensionChanged('none', 'location');
+
+        assert(el.dataQueryParamsChanged.calledOnce);
+      });
+    });
+
+    suite('visualisationChanged', function() {
+      setup(function() {
+        sinon.spy(el, 'dataQueryParamsChanged');
+      });
+
+      teardown(function() {
+        el.dataQueryParamsChanged.restore();
+      });
+
+      test('should call dataQueryParamsChanged', function() {
+        el.visualisationChanged('pie', 'bubble');
+
+        assert(el.dataQueryParamsChanged.calledOnce);
+      });
+
+      test('should not call dataQueryParamsChanged', function() {
+        el.visualisationChanged('bubble', undefined);
+
+        assert(el.dataQueryParamsChanged.notCalled);
+      });
+    });
+
+    suite('dataQueryParamsChanged', function() {
+      setup(function () {
+        setObserversStub();
+        setFetchChartDataStub();
+        setFilterConverterMockObj();
+        mock.expects('getValue').once().withArgs('from').returns(from);
+        mock.expects('getValue').once().withArgs('to').returns(to);
+      });
+
+      teardown(function () {
+        restoreObserversStub();
+        restoreFilterConverterMock();
+        restoreFetchChartDataStub();
+      });
+
+      test('should call _fetchChartData on bidimensional view', function () {
+        el.visualisation = 'chord';
+        el.dimension = 'location';
+        el.secondDimension = 'location';
+        el.period = 'year';
+
+        el.dataQueryParamsChanged();
+
+        assert(el._fetchChartData.calledOnce);
+      });
+
+      test('should call _fetchChartData on unidimensional view', function () {
+        el.visualisation = 'pie';
+        el.dimension = 'location';
+        el.secondDimension = 'none';
+        el.period = 'year';
+
+        el.dataQueryParamsChanged();
+
+        assert(el._fetchChartData.calledOnce);
+      });
+
+      test('should not call _fetchChartData', function () {
+        el.visualisation = 'chord';
+        el.dimension = 'location';
+        el.secondDimension = 'none';
+        el.period = 'year';
+
+        el.dataQueryParamsChanged();
+
+        assert(el._fetchChartData.notCalled);
+      });
+    });
+
+    suite('_handleFilterChanged', function() {
+      suite('should call _fetchChartData & _fetchHistogramData', function() {
+        setup(function() {
+          setObserversStub();
+          setFetchChartDataStub();
+          setFetchHistogramDataStub();
+          setFilterConverterMockObj();
+          mock.expects('getValue').once().withArgs('from').returns(from);
+          mock.expects('getValue').once().withArgs('to').returns(to);
+        });
+
+        teardown(function() {
+          restoreObserversStub();
+          restoreFilterConverterMock();
+          restoreFetchChartDataStub();
+          restoreFetchHistogramDataStub();
+        });
+
+        test('on first load', function() {
+          el.firstLoad = true;
+          el.dimension = 'location';
+          el.period = 'year';
+
+          el._handleFilterChanged({
+            detail: {}
+          });
+
+          assert.equal(el.firstLoad, false);
+          assert(el._fetchChartData.calledOnce);
+          assert(el._fetchHistogramData.calledOnce);
+        });
+
+        test('on filter changed', function() {
+          el.firstLoad = false;
+          el.dimension = 'location';
+          el.period = 'year';
+          el.visualisation = 'bubble';
+
+          el._handleFilterChanged({
+            detail: {
+              fieldsChanged: [
+                {
+                  field: 'doc_type',
+                  newValue: ['Compressed Files', 'Web Files'],
+                  oldValue: ['Web Files']
+                }
+              ]
+            }
+          });
+
+          assert(el._fetchChartData.calledOnce);
+          assert(el._fetchHistogramData.calledOnce);
+        });
+
+        test('on bidimensional view and filter changed', function() {
+          el.firstLoad = false;
+          el.dimension = 'doc_type';
+          el.period = 'year';
+          el.visualisation = 'chord';
+
+          el._handleFilterChanged({
+            detail: {
+              fieldsChanged: [
+                {
+                  field: 'doc_type',
+                  newValue: ['Compressed Files', 'Web Files'],
+                  oldValue: ['Web Files']
+                }
+              ]
+            }
+          });
+
+          assert(el._fetchChartData.calledOnce);
+          assert(el._fetchHistogramData.calledOnce);
+        });
+      });
+
+      suite('should call _fetchHistogramData', function() {
+        setup(function() {
+          setObserversStub();
+          setFetchChartDataStub();
+          setFetchHistogramDataStub();
+          setFilterConverterMockObj();
+          mock.expects('getValue').once().withArgs('from').returns(from);
+          mock.expects('getValue').once().withArgs('to').returns(to);
+        });
+
+        teardown(function() {
+          restoreObserversStub();
+          restoreFilterConverterMock();
+          restoreFetchChartDataStub();
+          restoreFetchHistogramDataStub();
+        });
+
+        test('on timestamp changed', function() {
+          el.firstLoad = false;
+          el.dimension = 'doc_type';
+          el.period = 'year';
+          el.visualisation = 'bubble';
+
+          el._handleFilterChanged({
+            detail: {
+              fieldsChanged: [
+                {
+                  field: 'timestampType',
+                  newValue: 'accessed',
+                  oldValue: 'modified'
+                }
+              ]
+            }
+          });
+
+          assert(el._fetchChartData.notCalled);
+          assert(el._fetchHistogramData.calledOnce);
+        });
+      });
+    });
+
+    suite('_fetchChartData', function() {
+      suite('should call _makeChartRequest for bidimensional view', function() {
+        setup(function() {
+          setObserversStub();
+          setMethodsMapStub();
+          setMakeChartRequestStub();
+        });
+
+        teardown(function() {
+          restoreObserversStub();
+          restoreMethodsMapStub();
+          restoreMakeChartRequestStub();
+        });
+
+        test('should generate nested agg when secondDimension is not equal to dimension', function() {
+          el.visualisation = 'chord';
+          el.dimension = 'location';
+          el.secondDimension = 'doc_type';
+
+          el._fetchChartData();
+
+          assert(el._methodsMap.doc_type.buildAggs.calledOnce);
+          assert(el._methodsMap.location.buildAggs.calledOnce);
+          assert(el._makeChartRequest.calledOnce);
+        });
+
+        test('should not generate nested agg when secondDimension is equal to dimension', function () {
+          el.visualisation = 'chord';
+          el.dimension = 'location';
+          el.secondDimension = 'location';
+
+          el._fetchChartData();
+
+          assert(el._methodsMap.location.buildAggs.calledOnce);
+          assert(el._makeChartRequest.calledOnce);
+        });
+      });
+
+      suite('should call _makeChartRequest for unidimensional view', function() {
+        setup(function() {
+          setObserversStub();
+          setMethodsMapStub();
+          setMakeChartRequestStub();
+        });
+
+        teardown(function() {
+          restoreObserversStub();
+          restoreMethodsMapStub();
+          restoreMakeChartRequestStub();
+        });
+
+        test('should not generate nested agg', function () {
+          el.visualisation = 'bubble';
+          el.dimension = 'location';
+          el.secondDimension = undefined;
+
+          el._fetchChartData();
+
+          assert(el._methodsMap.location.buildAggs.calledOnce);
+          assert(el._makeChartRequest.calledOnce);
+        });
+      });
+    });
+
+    suite('_fetchHistogramData', function() {
+      setup(function() {
+        setMakeHistogramRequestStub();
+      });
+
+      teardown(function() {
+        restoreMakeHistogramRequestStub();
+      });
+
+      test('should call _makeHistogramRequest', function() {
+        el._fetchHistogramData();
+
+        assert(el._makeHistogramRequest.calledOnce);
+      });
+    });
+
+    suite('_fetchAllData', function() {
+      setup(function() {
+        setFetchChartDataStub();
+        setFetchHistogramDataStub();
+      });
+
+      teardown(function() {
+        restoreFetchChartDataStub();
+        restoreFetchHistogramDataStub();
+      });
+
+      test('should call _fetchChartData & _fetchHistogramData', function() {
+        el._fetchAllData();
+
+        assert(el._fetchChartData.calledOnce);
+        assert(el._fetchHistogramData.calledOnce);
+      });
+    });
+
+    suite('_makeHistogramRequest', function() {
+      setup(function() {
+        el.histogramData = [];
+
+        sinon.spy(qwest, 'post');
+        setObserversStub();
+        setFilterConverterMockObj();
+        mock.expects('getValue').once().withArgs('timestampType').returns('accessed');
+        mock.expects('asElasticsearchFilters').once().returns({
+          bool: {
+            must: [
+              {
+                range: {
+                  modified: {
+                    gte: from,
+                    lte: to
+                  }
+                }
+              }
+            ]
+          }
+        });
+        runHistogramFakeServer();
+      });
+
+      teardown(function() {
+        qwest.post.restore();
+        restoreObserversStub()
+        restoreFilterConverterMock();
+        restoreFakeServer();
+      });
+
+      test('should call API & set histogramData', function(done) {
+        el.period = 'year';
+        el._makeHistogramRequest();
+
+        setTimeout(function() {
+          assert(qwest.post.calledOnce);
+          //assert.isAbove(el.histogramData.length, 0);
+          done();
+        }, 200);
+
+        server.respond();
+      });
+
+      test('should call API & set histogramData', function(done) {
+        el.period = 'month';
+        el._makeHistogramRequest();
+
+        setTimeout(function() {
+          assert(qwest.post.calledOnce);
+          //assert.isAbove(el.histogramData.length, 0);
+          done();
+        }, 200);
+
+        server.respond();
+      });
+    });
+
+    suite('_makeChartRequest', function() {
+      // We do not mock _getESBasicQuery() as returns a constant
+      var agg = {
+        totals: {
+          aggs: {
+            total_size: {
+              stats: {
+                field: 'metadata.size'
+              }
+            }
+          },
+          terms: {
+            field: 'metadata.doc_type',
+            size: 0
+          }
+        }
+      };
+
+      setup(function() {
+        el.chartData = [];
+
+        sinon.spy(qwest, 'post');
+        setObserversStub();
+        setFilterConverterMockObj();
+      });
+
+      teardown(function() {
+        qwest.post.restore();
+        restoreObserversStub();
+        restoreFakeServer();
+        restoreFilterConverterMock();
+      });
+
+      suite('with all filters applied', function() {
+        test('(multidimensional) should call API & set chartData as matrix format', function(done) {
+          var agg = {"files_in_dir":{"filter":{"term":{"dirpath":""}},"aggs":{"total_size":{"stats":{"field":"metadata.size"}},"nested_extension_totals":{"terms":{"field":"extension","size":10},"aggs":{"total_size":{"stats":{"field":"metadata.size"}}}}}},"buckets":{"terms":{"field":"metadata.dirpath_split.1","size":20},"aggs":{"total_size":{"stats":{"field":"metadata.size"}},"nested_extension_totals":{"terms":{"field":"extension","size":10},"aggs":{"total_size":{"stats":{"field":"metadata.size"}}}}}}};
+          var matrixData = {"data":[[{"count":0,"total":0},{"count":3,"total":37473142},{"count":1,"total":61952}],[{"count":3,"total":37473142},{"count":0,"total":0},{"count":0,"total":0}],[{"count":1,"total":61952},{"count":0,"total":0},{"count":0,"total":0}]],"labels":[{"term":"//10.17.57.20/Technical/Training/Microsoft/Windows Server 2008/MCITP 2008","group":1},{"term":".pdf","group":2},{"term":".db","group":2}]};
+
+          runChartDataFakeServer(0);
+          sinon.mock(el._methodsMap.location).expects('postProcess').once().returns(agg);
+          sinon.mock(el).expects('_buildTwoDimensionMatrix').once().returns(matrixData);
+          mock.expects('asElasticsearchFilters').once().withArgs().returns({
+            bool: {
+              must: []
+            }
+          });
+
+          el.dimension = 'location';
+          el.secondDimension = 'extension';
+          el._makeChartRequest(agg);
+
+          setTimeout(function() {
+            assert(qwest.post.calledOnce);
+            assert.isAbove(el.chartData.data.length, 0);// Asserts data follows my data syntax
+            assert.isAbove(el.chartData.labels.length, 0);
+
+            el._methodsMap.location.postProcess.restore();
+            el._buildTwoDimensionMatrix.restore();
+            done();
+          }, 200);
+
+          server.respond();
+        });
+
+        test('(location dimension) should call API & set chartData as Array', function(done) {
+          var postProcessData = [{"filterType":"dirpath","term":"//10.17.57.20/Technical","count":158405,"total":51902060433,"size_human":48.34,"size_human_measure":"GB","nestedDimension":{"term":"//10.17.57.20/Technical","count":158405,"total":51902060433},"percent":0.34142562844744995},{"filterType":"dirpath","term":"//10.17.57.20/Sales","count":43773,"total":31794973973,"size_human":29.61,"size_human_measure":"GB","nestedDimension":{"term":"//10.17.57.20/Sales","count":43773,"total":31794973973},"percent":0.20915583850886385},{"filterType":"dirpath","term":"//10.17.57.20/Administration","count":8551,"total":13517715601,"size_human":12.59,"size_human_measure":"GB","nestedDimension":{"term":"//10.17.57.20/Administration","count":8551,"total":13517715601},"percent":0.08892314689901713},{"filterType":"dirpath","term":"//10.17.57.20/Managed Services","count":4461,"total":54688151113,"size_human":50.93,"size_human_measure":"GB","nestedDimension":{"term":"//10.17.57.20/Managed Services","count":4461,"total":54688151113},"percent":0.3597532777429637},{"filterType":"dirpath","term":"//10.17.57.20/print$","count":351,"total":111820444,"size_human":106.64,"size_human_measure":"MB","nestedDimension":{"term":"//10.17.57.20/print$","count":351,"total":111820444},"percent":0.0007355847734649584},{"filterType":"dirpath","term":"//10.17.57.20/prnproc$","count":7,"total":683520,"size_human":667.5,"size_human_measure":"KB","nestedDimension":{"term":"//10.17.57.20/prnproc$","count":7,"total":683520},"percent":0.000004496377284629351},{"filterType":"dirpath","term":"//rds2.databarracks.com/KazoupTest","count":2,"total":308174,"size_human":300.95,"size_human_measure":"KB","nestedDimension":{"term":"//rds2.databarracks.com/KazoupTest","count":2,"total":308174},"percent":0.000002027250955807241}];
+
+          el.dimension = 'location';
+          el.secondDimension = undefined;
+
+          runChartDataFakeServer(1);
+          sinon.spy(el, '_buildSingleDimensionMatrix');
+          sinon.spy(el, '_buildTwoDimensionMatrix');
+          sinon.mock(el._methodsMap.location).expects('postProcess').once().returns(postProcessData);
+          mock.expects('asElasticsearchFilters').once().withArgs().returns({
+            bool: {
+              must: []
+            }
+          });
+
+          el._makeChartRequest(agg);
+
+          setTimeout(function() {
+            assert(qwest.post.calledOnce);
+            assert(el._buildSingleDimensionMatrix.notCalled);
+            assert(el._buildTwoDimensionMatrix.notCalled);
+            assert.isAbove(el.chartData.length, 0);// Asserts data follows my data syntax
+
+            el._buildSingleDimensionMatrix.restore();
+            el._buildTwoDimensionMatrix.restore();
+            el._methodsMap.location.postProcess.restore();
+            done();
+          }, 200);
+
+          server.respond();
+        });
+
+        test('(content extraction dimension) should call API & set chartData as Array', function(done) {
+          var postProcessData = [{"filterType":"places_person","term":"Peter Port","count":1046,"total":1042480315,"size_human":994.19,"size_human_measure":"MB","nestedDimension":{"term":"Peter Port","count":1046,"total":1042480315},"percent":0.17605768788278314},{"filterType":"places_person","term":"Databarracks","count":597,"total":533760968,"size_human":509.03,"size_human_measure":"MB","nestedDimension":{"term":"Databarracks","count":597,"total":533760968},"percent":0.09014340180433641},{"filterType":"places_person","term":"Parkhill","count":512,"total":100901053,"size_human":96.23,"size_human_measure":"MB","nestedDimension":{"term":"Parkhill","count":512,"total":100901053},"percent":0.01704051946162471},{"filterType":"places_person","term":"Thomas Rose","count":375,"total":5101076,"size_human":4.86,"size_human_measure":"MB","nestedDimension":{"term":"Thomas Rose","count":375,"total":5101076},"percent":0.0008614873905550493}];
+          el.dimension = 'places_person';
+          el.secondDimension = undefined;
+
+          runChartDataFakeServer(2);
+          sinon.spy(el, '_buildSingleDimensionMatrix');
+          sinon.spy(el, '_buildTwoDimensionMatrix');
+          sinon.mock(el._methodsMap.places_person).expects('postProcess').once().returns(postProcessData);
+          mock.expects('asElasticsearchFilters').once().withArgs().returns({
+            bool: {
+              must: []
+            }
+          });
+
+          el._makeChartRequest(agg);
+
+          setTimeout(function() {
+            assert(qwest.post.calledOnce);
+            assert(el._buildSingleDimensionMatrix.notCalled);
+            assert(el._buildTwoDimensionMatrix.notCalled);
+            assert.isAbove(el.chartData.length, 0);// Asserts data follows my data syntax
+
+            el._buildSingleDimensionMatrix.restore();
+            el._buildTwoDimensionMatrix.restore();
+            el._methodsMap.places_person.postProcess.restore();
+            done();
+          }, 200);
+
+          server.respond();
+        });
+      });
+
+      suite('with all filters applied except the visualize dimension', function() {
+        test('should call API & set chartData', function(done) {
+          var postProcessData = [{"filterType":"doc_type","term":"Image Files","count":48860,"total":7590172726,"size_human":7.07,"size_human_measure":"GB","nestedDimension":{"term":"Image Files","count":48860,"total":7590172726},"percent":0.04993018526392737},{"filterType":"doc_type","term":"Web Files","count":40837,"total":3903433193,"size_human":3.64,"size_human_measure":"GB","nestedDimension":{"term":"Web Files","count":40837,"total":3903433193},"percent":0.02567782704393934}];
+          el.dimension = 'doc_type';
+          el.secondDimension = 'none';
+
+          runChartDataFakeServer(3);
+          sinon.spy(el, '_buildSingleDimensionMatrix');
+          sinon.spy(el, '_buildTwoDimensionMatrix');
+          sinon.mock(el._methodsMap.doc_type).expects('postProcess').once().returns(postProcessData);
+          mock.expects('asElasticsearchFilters').once().withArgs('doc_type').returns({
+            bool: {
+              must: []
+            }
+          });
+
+          el._makeChartRequest(agg);
+
+          setTimeout(function() {
+            assert(qwest.post.calledOnce);
+            assert(el._buildSingleDimensionMatrix.notCalled);
+            assert(el._buildTwoDimensionMatrix.notCalled);
+            assert.isAbove(el.chartData.length, 0);// Asserts data follows my data syntax
+
+            el._buildSingleDimensionMatrix.restore();
+            el._buildTwoDimensionMatrix.restore();
+            el._methodsMap.doc_type.postProcess.restore();
+            done();
+          }, 200);
+
+          server.respond();
+        });
+      });
+    });
+
+    suite('_setObjectPercentage', function() {
+      var dataArray = [{"filterType":"unique","term":"unique","count":123858,"total":136881696434,"size_human":127.48,"size_human_measure":"GB","nestedDimension":{"term":"T","count":123858,"total":136881696434,"key":"unique"}},{"filterType":"unique","term":"not_unique","count":91254,"total":13064857948,"size_human":12.17,"size_human_measure":"GB","nestedDimension":{"term":"F","count":91254,"total":13064857948,"key":"not_unique"}},{"filterType":"unique","term":"unknown","count":438,"total":2069158876,"size_human":1.93,"size_human_measure":"GB","nestedDimension":{"count":438,"total":2069158876}}];
+
+      test('should set percentage for each obj in Array', function() {
+        var dataArrayResult = el._setObjectPercentage(dataArray);
+
+        dataArrayResult.forEach(function(item) {
+          assert.isDefined(item.percent);
+          assert.isAbove(item.percent, -1);
+          assert.isBelow(item.percent, 101);
+        });
+      });
+    });
+
+    suite('_getESBasicQuery', function() {
+      test('should get an object', function() {
+        var result = el._getESBasicQuery();
+
+        assert.isObject(result);
+      });
+    });
+
+    suite('_getLocationAgg', function() {
+      setup(function() {
+        setFilterConverterMockObj();
+        mock.expects('getValue').once().withArgs('dirpath').returns([]);
+      });
+
+      teardown(function() {
+        restoreFilterConverterMock();
+      });
+
+      suite('without nested aggregation', function() {
+        test('should get an aggregation object', function () {
+          var locationAgg = el._getLocationAgg('', undefined);
+
+          assert.isObject(locationAgg.files_in_dir);
+          assert.isObject(locationAgg.buckets);
+        });
+      });
+
+      suite('with nested aggregation', function() {
+        test('should get an aggregation object', function () {
+          var nestedAgg = {"nested_doc_type_totals":{"terms":{"field":"metadata.doc_type","size":10},"aggs":{"total_size":{"stats":{"field":"metadata.size"}}}}};
+          var locationAgg = el._getLocationAgg('', nestedAgg);
+
+          assert.isObject(locationAgg.files_in_dir.aggs.nested_doc_type_totals);
+          assert.isObject(locationAgg.buckets.aggs.nested_doc_type_totals);
+        });
+      });
+    });
+
+    suite('_getDocTypeAgg', function() {
+      suite('without nested aggregation', function() {
+        test('should get an aggregation object', function () {
+          var docTypeAgg = el._getDocTypeAgg('', undefined);
+
+          assert.equal(docTypeAgg.totals.terms.field, 'metadata.doc_type');
+        });
+      });
+
+      suite('with nested aggregation', function() {
+        test('should get an aggregation object', function () {
+          var nestedAgg = {"nested_location_files_in_dir":{"filter":{"term":{"dirpath":""}},"aggs":{"total_size":{"stats":{"field":"metadata.size"}}}},"nested_location_buckets":{"terms":{"field":"metadata.dirpath_split.1","size":10},"aggs":{"total_size":{"stats":{"field":"metadata.size"}}}}};
+          var docTypeAgg = el._getDocTypeAgg('', nestedAgg);
+
+          assert.isObject(docTypeAgg.totals.aggs.nested_location_files_in_dir);
+          assert.isObject(docTypeAgg.totals.aggs.nested_location_buckets);
+        });
+      });
+    });
+
+    suite('_getExtensionAgg', function() {
+      suite('without nested aggregation', function() {
+        test('should get an aggregation object', function () {
+          var extensionAgg = el._getExtensionAgg('', undefined);
+
+          assert.equal(extensionAgg.totals.terms.field, 'extension');
+        });
+      });
+
+      suite('with nested aggregation', function() {
+        test('should get an aggregation object', function () {
+          var nestedAgg = {"nested_duplicates_known":{"terms":{"field":"content.unique","size":10},"aggs":{"total_size":{"sum":{"field":"metadata.size"}}}},"nested_duplicates_unknown":{"aggs":{"total_size":{"sum":{"field":"metadata.size"}}},"missing":{"field":"content.unique"}}};
+          var extensionAgg = el._getExtensionAgg('', nestedAgg);
+
+          assert.isObject(extensionAgg.totals.aggs.nested_duplicates_known);
+          assert.isObject(extensionAgg.totals.aggs.nested_duplicates_unknown);
+        });
+      });
+    });
+
+    suite('_getDuplicatesAgg', function() {
+      suite('without nested aggregation', function() {
+        test('should get an aggregation object', function () {
+          var duplicatesAgg = el._getDuplicatesAgg('', undefined);
+
+          assert.isObject(duplicatesAgg.known);
+          assert.isObject(duplicatesAgg.unknown);
+        });
+      });
+
+      suite('with nested aggregation', function() {
+        test('should get an aggregation object', function () {
+          var nestedAgg = {"nested_allow_totals":{"terms":{"field":"permissions.allow","size":10},"aggs":{"total_size":{"stats":{"field":"metadata.size"}}}}};
+          var duplicatesAgg = el._getDuplicatesAgg('', nestedAgg);
+
+          assert.isObject(duplicatesAgg.known.aggs.nested_allow_totals);
+          assert.isObject(duplicatesAgg.unknown.aggs.nested_allow_totals);
+        });
+      });
+    });
+
+    suite('_getPermissionsAgg', function() {
+      suite('without nested aggregation', function() {
+        test('should get an aggregation object', function () {
+          var permissionsAgg = el._getPermissionsAgg('', undefined);
+
+          assert.equal(permissionsAgg.totals.terms.field, 'permissions.allow');
+        });
+      });
+
+      suite('with nested aggregation', function() {
+        test('should get an aggregation object', function () {
+          var nestedAgg = {"nested_archive_status_archived":{"filter":{"exists":{"field":"archive_complete"}},"aggs":{"total_size":{"sum":{"field":"metadata.size"}}}},"nested_archive_status_not_archived":{"filter":{"missing":{"field":"archive_complete"}},"aggs":{"total_size":{"sum":{"field":"metadata.size"}}}}};
+          var permissionsAgg = el._getPermissionsAgg('', nestedAgg);
+
+          assert.isObject(permissionsAgg.totals.aggs.nested_archive_status_archived);
+          assert.isObject(permissionsAgg.totals.aggs.nested_archive_status_not_archived);
+        });
+      });
+    });
+
+    suite('_getArchiveStatusAgg', function() {
+      suite('without nested aggregation', function() {
+        test('should get an aggregation object', function () {
+          var archiveStatusAgg = el._getArchiveStatusAgg('', undefined);
+
+          assert.isObject(archiveStatusAgg.archived);
+          assert.isObject(archiveStatusAgg.not_archived);
+        });
+      });
+
+      suite('with nested aggregation', function() {
+        test('should get an aggregation object', function () {
+          var nestedAgg = {"nested_file_size_file_size":{"range":{"field":"metadata.size","ranges":[{"key":"small","to":1073741823},{"key":"medium","from":1073741824,"to":10737418239},{"key":"large","from":10737418240}]},"aggs":{"total_size":{"sum":{"field":"metadata.size"}}}}};
+          var archiveStatusAgg = el._getArchiveStatusAgg('', nestedAgg);
+
+          assert.isObject(archiveStatusAgg.archived.aggs.nested_file_size_file_size);
+          assert.isObject(archiveStatusAgg.not_archived.aggs.nested_file_size_file_size);
+        });
+      });
+    });
+
+    suite('_getFileSizeAgg', function() {
+      suite('without nested aggregation', function() {
+        test('should get an aggregation object', function () {
+          var fileSizeAgg = el._getFileSizeAgg('', undefined);
+
+          assert.equal(fileSizeAgg.file_size.range.ranges.length, 3);
+        });
+      });
+
+      suite('with nested aggregation', function() {
+        test('should get an aggregation object', function () {
+          var nestedAgg = {"nested_places_person_places_person":{"terms":{"field":"content.person.value","size":10},"aggs":{"total_size":{"sum":{"field":"metadata.size"}}}}};
+          var fileSizeAgg = el._getFileSizeAgg('', nestedAgg);
+
+          assert.isObject(fileSizeAgg.file_size.aggs.nested_places_person_places_person);
+        });
+      });
+    });
+
+    suite('_getPlacesPersonAgg', function() {
+      suite('without nested aggregation', function() {
+        test('should get an aggregation object', function () {
+          var placesPersonAgg = el._getPlacesPersonAgg('', undefined);
+
+          assert.equal(placesPersonAgg.places_person.terms.field, 'content.person.value');
+        });
+      });
+
+      suite('with nested aggregation', function() {
+        test('should get an aggregation object', function () {
+          var nestedAgg = {"nested_places_organisation_places_organisation":{"terms":{"field":"content.organisation.value","size":10},"aggs":{"total_size":{"sum":{"field":"metadata.size"}}}}};
+          var placesPersonAgg = el._getPlacesPersonAgg('', nestedAgg);
+
+          assert.isObject(placesPersonAgg.places_person.aggs.nested_places_organisation_places_organisation);
+        });
+      });
+    });
+
+    suite('_getPlacesOrganisationAgg', function() {
+      suite('without nested aggregation', function() {
+        test('should get an aggregation object', function () {
+          var placesOrganisationAgg = el._getPlacesOrganisationAgg('', undefined);
+
+          assert.equal(placesOrganisationAgg.places_organisation.terms.field, 'content.organisation.value');
+        });
+      });
+
+      suite('with nested aggregation', function() {
+        test('should get an aggregation object', function () {
+          var nestedAgg = {"nested_places_location_places_location":{"terms":{"field":"content.location.value","size":10},"aggs":{"total_size":{"sum":{"field":"metadata.size"}}}}};
+          var placesOrganisationAgg = el._getPlacesOrganisationAgg('', nestedAgg);
+
+          assert.isObject(placesOrganisationAgg.places_organisation.aggs.nested_places_location_places_location);
+        });
+      });
+    });
+
+    suite('_getPlacesLocationAgg', function() {
+      suite('without nested aggregation', function() {
+        test('should get an aggregation object', function () {
+          var placesLocationAgg = el._getPlacesLocationAgg('', undefined);
+
+          assert.equal(placesLocationAgg.places_location.terms.field, 'content.location.value');
+        });
+      });
+
+      suite('with nested aggregation', function() {
+        test('should get an aggregation object', function () {
+          var nestedAgg = {"nested_location_files_in_dir":{"filter":{"term":{"dirpath":""}},"aggs":{"total_size":{"stats":{"field":"metadata.size"}}}},"nested_location_buckets":{"terms":{"field":"metadata.dirpath_split.1","size":10},"aggs":{"total_size":{"stats":{"field":"metadata.size"}}}}};
+          var placesLocationAgg = el._getPlacesLocationAgg('', nestedAgg);
+
+          assert.isObject(placesLocationAgg.places_location.aggs.nested_location_files_in_dir);
+          assert.isObject(placesLocationAgg.places_location.aggs.nested_location_buckets);
+        });
+      });
+    });
+
+    suite('_getNestedDimensionData', function() {
+      suite('simple agg', function() {
+        test('should retrieve a standard agg format', function() {
+          var agg = {"total_size":{"count":158405,"max":2364587458,"sum":51902060433,"avg":327654.1803162779,"min":0},"key":"//10.17.57.20/Technical","doc_count":158405};
+          var data = el._getNestedDimensionData(agg);
+
+          assert.equal(data.term, agg.key);
+          assert.equal(data.count, agg.doc_count);
+          assert.equal(data.total, agg.total_size.sum);
+        });
+      });
+
+      suite('nested agg', function() {
+        test('should retrieve a standard agg format', function() {
+          var agg = {"total_size":{"count":158405,"max":2364587458,"sum":51902060433,"avg":327654.1803162779,"min":0},"nested_file_size_file_size":{"buckets":[{"total_size":{"value":37371283357},"to":1073741823,"to_as_string":"1.073741823E9","key":"small","doc_count":158396},{"from":1073741824,"total_size":{"value":14530777076},"from_as_string":"1.073741824E9","to_as_string":"1.0737418239E10","doc_count":9,"to":10737418239,"key":"medium"},{"total_size":{"value":0},"from_as_string":"1.073741824E10","from":10737418240,"key":"large","doc_count":0}]},"key":"//10.17.57.20/Technical","doc_count":158405};
+          var data = el._getNestedDimensionData(agg);
+
+          data.forEach(function(item) {
+            assert.isObject(item.nestedDimension);
+          })
+        });
+      });
+    });
+
+    suite('_getSizeAgg', function() {
+      setup(function() {
+        setObserversStub();
+      });
+
+      teardown(function() {
+        restoreObserversStub();
+      });
+
+      test('should return 0 for unidimensional views', function() {
+        el.visualisation = 'pie';
+
+        assert.equal(el._getSizeAgg(), 0);
+      });
+
+      test('should return a integer greater than 0 for bidimensional views', function() {
+        el.visualisation = 'chord';
+
+        assert.isAbove(el._getSizeAgg(), 0);
+      })
+    });
+
+    suite('_processLocationData', function() {
+      setup(function() {
+        sinon.spy(el, '_setObjectPercentage');
+        sinon.stub(el, '_getNestedDimensionData', function() {
+          return {
+            nested_data: 'nested_value'
+          }
+        })
+      });
+
+      teardown(function() {
+        el._setObjectPercentage.restore();
+        el._getNestedDimensionData.restore();
+      });
+
+      test('should return standarize Array', function() {
+        var aggs = {"files_in_dir":{"total_size":{"count":0,"max":null,"sum":null,"avg":null,"min":null},"doc_count":0},"buckets":{"buckets":[{"total_size":{"count":158409,"max":2364587458,"sum":51995302924,"avg":328234.52533631295,"min":0},"key":"//10.17.57.20/Technical","doc_count":158409},{"total_size":{"count":43775,"max":1060503552,"sum":31798143060,"avg":726399.6130211308,"min":0},"key":"//10.17.57.20/Sales","doc_count":43775},{"total_size":{"count":8551,"max":1498927289,"sum":13517715839,"avg":1580834.503449889,"min":0},"key":"//10.17.57.20/Administration","doc_count":8551},{"total_size":{"count":4461,"max":13745169408,"sum":54688151113,"avg":12259168.597399686,"min":0},"key":"//10.17.57.20/Managed Services","doc_count":4461},{"total_size":{"count":351,"max":16486264,"sum":111820444,"avg":318576.7635327635,"min":42},"key":"//10.17.57.20/print$","doc_count":351},{"total_size":{"count":7,"max":299520,"sum":683520,"avg":97645.71428571429,"min":3584},"key":"//10.17.57.20/prnproc$","doc_count":7},{"total_size":{"count":2,"max":287238,"sum":308174,"avg":154087,"min":20936},"key":"//rds2.databarracks.com/KazoupTest","doc_count":2}],"sum_other_doc_count":0,"doc_count_error_upper_bound":0}};
+        var result = el._processLocationData(aggs);
+
+        assert(el._getNestedDimensionData.calledBefore(el._setObjectPercentage));
+        assert(el._setObjectPercentage.calledOnce);
+
+        result.forEach(function(item) {
+          assert.isString(item.term);
+          assert.isNumber(item.count);
+          assert.isNumber(item.total);
+          assert.isNumber(item.size_human);
+          assert.isString(item.size_human_measure);
+        });
+      });
+    });
+
+    suite('_processLocationData', function() {
+      setup(function() {
+        sinon.spy(el, '_setObjectPercentage');
+        sinon.stub(el, '_getNestedDimensionData', function() {
+          return {
+            nested_data: 'nested_value'
+          }
+        })
+      });
+
+      teardown(function() {
+        el._setObjectPercentage.restore();
+        el._getNestedDimensionData.restore();
+      });
+
+      test('should return standarize Array', function() {
+        var aggs = {"totals":{"buckets":[{"total_size":{"count":56,"max":41710058,"sum":361709764,"avg":6459102.928571428,"min":9022},"key":"Spreadsheet Files","doc_count":56},{"total_size":{"count":7,"max":274304,"sum":286717,"avg":40959.57142857143,"min":509},"key":"Data Files","doc_count":7},{"total_size":{"count":2,"max":140909,"sum":154630,"avg":77315,"min":13721},"key":"Compressed Files","doc_count":2}],"sum_other_doc_count":0,"doc_count_error_upper_bound":0}};
+        var result = el._processDocTypeData(aggs);
+
+        assert(el._getNestedDimensionData.calledBefore(el._setObjectPercentage));
+        assert(el._setObjectPercentage.calledOnce);
+
+        result.forEach(function(item) {
+          assert.equal(item.filterType, 'doc_type');
+          assert.isString(item.term);
+          assert.isNumber(item.count);
+          assert.isNumber(item.total);
+          assert.isNumber(item.size_human);
+          assert.isString(item.size_human_measure);
+        });
+      });
+    });
+
+    suite('_processExtensionData', function() {
+      setup(function() {
+        sinon.spy(el, '_setObjectPercentage');
+        sinon.stub(el, '_getNestedDimensionData', function() {
+          return {
+            nested_data: 'nested_value'
+          }
+        })
+      });
+
+      teardown(function() {
+        el._setObjectPercentage.restore();
+        el._getNestedDimensionData.restore();
+      });
+
+      test('should return standarize Array', function() {
+        var aggs = {"totals":{"buckets":[{"total_size":{"count":56,"max":41710058,"sum":361709764,"avg":6459102.928571428,"min":9022},"key":".xlsx","doc_count":56},{"total_size":{"count":7,"max":274304,"sum":286717,"avg":40959.57142857143,"min":509},"key":".csv","doc_count":7},{"total_size":{"count":2,"max":140909,"sum":154630,"avg":77315,"min":13721},"key":".zip","doc_count":2}],"sum_other_doc_count":0,"doc_count_error_upper_bound":0}};
+        var result = el._processExtensionData(aggs);
+
+        assert(el._getNestedDimensionData.calledBefore(el._setObjectPercentage));
+        assert(el._setObjectPercentage.calledOnce);
+
+        result.forEach(function(item) {
+          assert.equal(item.filterType, 'extension');
+          assert.isString(item.term);
+          assert.isNumber(item.count);
+          assert.isNumber(item.total);
+          assert.isNumber(item.size_human);
+          assert.isString(item.size_human_measure);
+        });
+      });
+    });
+
+    suite('_processDuplicatesData', function() {
+      setup(function() {
+        sinon.spy(el, '_setObjectPercentage');
+        sinon.stub(el, '_getNestedDimensionData', function() {
+          return {
+            nested_data: 'nested_value'
+          }
+        })
+      });
+
+      teardown(function() {
+        el._setObjectPercentage.restore();
+        el._getNestedDimensionData.restore();
+      });
+
+      test('should return standarize Array', function() {
+        var aggs = {"known":{"buckets":[{"total_size":{"value":136881696434},"key":"T","doc_count":123858},{"total_size":{"value":13064857948},"key":"F","doc_count":91254}],"sum_other_doc_count":0,"doc_count_error_upper_bound":0},"unknown":{"total_size":{"value":2165570692},"doc_count":444}};
+        var result = el._processDuplicatesData(aggs);
+
+        assert(el._getNestedDimensionData.calledBefore(el._setObjectPercentage));
+        assert(el._setObjectPercentage.calledOnce);
+
+        result.forEach(function(item) {
+          assert.isString(item.filterType);
+          assert.isString(item.term);
+          assert.isNumber(item.count);
+          assert.isNumber(item.total);
+          assert.isNumber(item.size_human);
+          assert.isString(item.size_human_measure);
+        });
+      });
+    });
+
+    suite('_processPermissionsData', function() {
+      setup(function() {
+        sinon.spy(el, '_setObjectPercentage');
+        sinon.stub(el, '_getNestedDimensionData', function() {
+          return {
+            nested_data: 'nested_value'
+          }
+        })
+      });
+
+      teardown(function() {
+        el._setObjectPercentage.restore();
+        el._getNestedDimensionData.restore();
+      });
+
+      test('should return standarize Array', function() {
+        var aggs = {"totals":{"buckets":[{"total_size":{"count":215556,"max":13745169408,"sum":152112125074,"avg":705673.3520477278,"min":0},"key":"builtin\\administrators","doc_count":215556},{"total_size":{"count":215556,"max":13745169408,"sum":152112125074,"avg":705673.3520477278,"min":0},"key":"nt authority\\system","doc_count":215556},{"total_size":{"count":215412,"max":13745169408,"sum":152002308970,"avg":705635.2894453419,"min":0},"key":"builtin\\users","doc_count":215412},{"total_size":{"count":202184,"max":2364587458,"sum":83793445984,"avg":414441.5284295493,"min":0},"key":"databarracks\\directors","doc_count":202184},{"total_size":{"count":158409,"max":2364587458,"sum":51995302924,"avg":328234.52533631295,"min":0},"key":"databarracks\\technical team","doc_count":158409},{"total_size":{"count":43916,"max":1060503552,"sum":32219534571,"avg":733662.7782812642,"min":0},"key":"databarracks\\james.holt","doc_count":43916},{"total_size":{"count":43833,"max":1060503552,"sum":32183023284,"avg":734219.0423653412,"min":0},"key":"databarracks\\yasemin.ercan","doc_count":43833},{"total_size":{"count":43800,"max":1060503552,"sum":31879892340,"avg":727851.4232876712,"min":0},"key":"databarracks\\mark.thomas","doc_count":43800},{"total_size":{"count":43783,"max":1060503552,"sum":31800317211,"avg":726316.5432016993,"min":0},"key":"databarracks\\mark.couvaras","doc_count":43783},{"total_size":{"count":43783,"max":1060503552,"sum":31816756127,"avg":726692.0066464152,"min":0},"key":"databarracks\\oscar.arean","doc_count":43783},{"total_size":{"count":43775,"max":1060503552,"sum":31798143060,"avg":726399.6130211308,"min":0},"key":"databarracks\\claudiu.craciun","doc_count":43775},{"total_size":{"count":43775,"max":1060503552,"sum":31798143060,"avg":726399.6130211308,"min":0},"key":"databarracks\\marketing team","doc_count":43775},{"total_size":{"count":43775,"max":1060503552,"sum":31798143060,"avg":726399.6130211308,"min":0},"key":"databarracks\\nikki.calver","doc_count":43775},{"total_size":{"count":43775,"max":1060503552,"sum":31798143060,"avg":726399.6130211308,"min":0},"key":"databarracks\\sales team","doc_count":43775},{"total_size":{"count":34278,"max":198311860,"sum":2234144019,"avg":65177.19875722037,"min":0},"key":"databarracks\\paul.blake","doc_count":34278},{"total_size":{"count":19832,"max":1520496128,"sum":8138537723,"avg":410374.0279850746,"min":0},"key":"databarracks\\sorin.pascan","doc_count":19832},{"total_size":{"count":15166,"max":575885928,"sum":2141616292,"avg":141211.67690887512,"min":0},"key":"databarracks\\herald.wang","doc_count":15166},{"total_size":{"count":8551,"max":1498927289,"sum":13517715839,"avg":1580834.503449889,"min":0},"key":"databarracks\\colin.bycroft","doc_count":8551},{"total_size":{"count":8551,"max":1498927289,"sum":13517715839,"avg":1580834.503449889,"min":0},"key":"databarracks\\databarracks team","doc_count":8551},{"total_size":{"count":2532,"max":1489182146,"sum":4273721555,"avg":1687883.7105055293,"min":33},"key":"databarracks\\nicholas.king","doc_count":2532},{"total_size":{"count":2329,"max":938455779,"sum":3144902183,"avg":1350322.9639330185,"min":0},"key":"databarracks\\tomasz.krupa","doc_count":2329},{"total_size":{"count":1073,"max":206408398,"sum":1339772599,"avg":1248623.1118359738,"min":0},"key":"databarracks\\johan.holder","doc_count":1073},{"total_size":{"count":643,"max":54276274,"sum":737101409,"avg":1146347.4479004666,"min":0},"key":"databarracks\\ciaran.fitzgerald","doc_count":643},{"total_size":{"count":379,"max":44251777,"sum":537342871,"avg":1417791.216358839,"min":63},"key":"databarracks\\jacek.gruzewski","doc_count":379},{"total_size":{"count":365,"max":11708686,"sum":353151594,"avg":967538.6136986301,"min":0},"key":"databarracks\\sam.gillett","doc_count":365},{"total_size":{"count":336,"max":89092671,"sum":534347638,"avg":1590320.3511904762,"min":3698},"key":"databarracks\\jamie.mcrae","doc_count":336},{"total_size":{"count":318,"max":34250728,"sum":214019801,"avg":673018.2421383648,"min":0},"key":"databarracks\\shanil.hirani","doc_count":318},{"total_size":{"count":211,"max":218103,"sum":2355522,"avg":11163.611374407583,"min":786},"key":"nt service\\trustedinstaller","doc_count":211},{"total_size":{"count":210,"max":37567,"sum":2657966,"avg":12656.980952380953,"min":11034},"key":"databarracks\\john.manton","doc_count":210},{"total_size":{"count":185,"max":1513048,"sum":9937350,"avg":53715.40540540541,"min":68},"key":"databarracks\\george.pollard","doc_count":185},{"total_size":{"count":159,"max":1498927289,"sum":1907580212,"avg":11997359.823899372,"min":14102},"key":"databarracks\\james.watts","doc_count":159},{"total_size":{"count":157,"max":6605283,"sum":99080709,"avg":631087.3184713376,"min":2659},"key":"databarracks\\lisa.wegner","doc_count":157},{"total_size":{"count":157,"max":8801378,"sum":100705645,"avg":641437.2292993631,"min":7680},"key":"databarracks\\tom.lepoidevin","doc_count":157},{"total_size":{"count":153,"max":91648,"sum":1985141,"avg":12974.777777777777,"min":6144},"key":"databarracks\\forid.ahmed","doc_count":153},{"total_size":{"count":144,"max":3203854,"sum":25781249,"avg":179036.45138888888,"min":7168},"key":"databarracks\\calum.wright","doc_count":144},{"total_size":{"count":142,"max":16486264,"sum":109507930,"avg":771182.6056338028,"min":42},"key":"everyone","doc_count":142},{"total_size":{"count":129,"max":72708344,"sum":186069680,"avg":1442400.6201550388,"min":2560},"key":"databarracks\\bianca.stephens","doc_count":129},{"total_size":{"count":114,"max":10673032,"sum":42211338,"avg":370274.8947368421,"min":2031},"key":"databarracks\\benson.luice","doc_count":114},{"total_size":{"count":80,"max":2859295,"sum":14174102,"avg":177176.275,"min":788},"key":"databarracks\\che.malcolm-roberts","doc_count":80},{"total_size":{"count":72,"max":2859295,"sum":26068793,"avg":362066.56944444444,"min":10752},"key":"databarracks\\bob.cawsey","doc_count":72},{"total_size":{"count":67,"max":33479699,"sum":132060412,"avg":1971050.9253731344,"min":27906},"key":"databarracks\\bianca.nix","doc_count":67},{"total_size":{"count":65,"max":3147776,"sum":109897421,"avg":1690729.553846154,"min":211456},"key":"databarracks\\phil.gunning","doc_count":65},{"total_size":{"count":59,"max":3895808,"sum":32187465,"avg":545550.2542372881,"min":8192},"key":"databarracks\\michael.gibbs","doc_count":59},{"total_size":{"count":48,"max":1044536,"sum":7330823,"avg":152725.47916666666,"min":76},"key":"databarracks\\vikas.jain","doc_count":48},{"total_size":{"count":42,"max":8812938,"sum":30853309,"avg":734602.5952380953,"min":10382},"key":"databarracks\\jennifer.clarke","doc_count":42},{"total_size":{"count":39,"max":3503858,"sum":13452918,"avg":344946.6153846154,"min":6148},"key":"databarracks\\jessica.cauchi","doc_count":39},{"total_size":{"count":33,"max":14105256,"sum":37440437,"avg":1134558.696969697,"min":9216},"key":"databarracks\\adam.geary","doc_count":33},{"total_size":{"count":31,"max":36308930,"sum":107764021,"avg":3476258.7419354836,"min":6144},"key":"databarracks\\sam.bailey","doc_count":31},{"total_size":{"count":31,"max":23963562,"sum":135273090,"avg":4363648.064516129,"min":1972},"key":"databarracks\\stephen.bines","doc_count":31},{"total_size":{"count":23,"max":263177958,"sum":757363627,"avg":32928853.347826086,"min":637},"key":"databarracks\\thomas.rose","doc_count":23},{"total_size":{"count":23,"max":3702784,"sum":6047434,"avg":262931.9130434783,"min":17333},"key":"databarracks\\vladimir.genkov","doc_count":23},{"total_size":{"count":20,"max":16180456,"sum":22503367,"avg":1125168.35,"min":3072},"key":"databarracks\\kristina.giles","doc_count":20},{"total_size":{"count":19,"max":8133771,"sum":54569881,"avg":2872099,"min":171003},"key":"databarracks\\cassandra.holmes","doc_count":19},{"total_size":{"count":17,"max":486400,"sum":1267793,"avg":74576.05882352941,"min":24},"key":"databarracks\\anthony.cornwall","doc_count":17},{"total_size":{"count":14,"max":8621048,"sum":15764758,"avg":1126054.142857143,"min":7680},"key":"databarracks\\james.osborn","doc_count":14},{"total_size":{"count":11,"max":474090,"sum":1441255,"avg":131023.18181818182,"min":12576},"key":"databarracks\\kaveh.goodarzey","doc_count":11},{"total_size":{"count":7,"max":3036493,"sum":9450097,"avg":1350013.857142857,"min":20144},"key":"databarracks\\luke.gain","doc_count":7},{"total_size":{"count":4,"max":13532,"sum":32476,"avg":8119,"min":4096},"key":"databarracks\\mihai.patrascu","doc_count":4},{"total_size":{"count":3,"max":14336,"sum":30720,"avg":10240,"min":8192},"key":"databarracks\\frederick.macinnes","doc_count":3},{"total_size":{"count":2,"max":287238,"sum":308174,"avg":154087,"min":20936},"key":"databarracks\\kazoup","doc_count":2},{"total_size":{"count":2,"max":287238,"sum":308174,"avg":154087,"min":20936},"key":"databarracks\\oaadmin","doc_count":2},{"total_size":{"count":2,"max":51485404,"sum":102968587,"avg":51484293.5,"min":51483183},"key":"databarracks\\robert.garwood","doc_count":2},{"total_size":{"count":1,"max":31232,"sum":31232,"avg":31232,"min":31232},"key":"databarracks\\charlotte.calver","doc_count":1},{"total_size":{"count":1,"max":8196,"sum":8196,"avg":8196,"min":8196},"key":"databarracks\\radek.dymacz","doc_count":1}],"sum_other_doc_count":0,"doc_count_error_upper_bound":0}};
+        var result = el._processPermissionsData(aggs);
+
+        assert(el._getNestedDimensionData.calledBefore(el._setObjectPercentage));
+        assert(el._setObjectPercentage.calledOnce);
+
+        result.forEach(function(item) {
+          assert.equal(item.filterType, 'allow');
+          assert.isString(item.term);
+          assert.isNumber(item.count);
+          assert.isNumber(item.total);
+          assert.isNumber(item.size_human);
+          assert.isString(item.size_human_measure);
+        });
+      });
+    });
+
+    suite('_processArchiveStatusData', function() {
+      setup(function() {
+        sinon.spy(el, '_setObjectPercentage');
+        sinon.stub(el, '_getNestedDimensionData', function() {
+          return {
+            nested_data: 'nested_value'
+          }
+        })
+      });
+
+      teardown(function() {
+        el._setObjectPercentage.restore();
+        el._getNestedDimensionData.restore();
+      });
+
+      test('should return standarize Array', function() {
+        var aggs = {"not_archived":{"total_size":{"value":111575084},"doc_count":341},"archived":{"total_size":{"value":245360},"doc_count":10}};
+        var result = el._processArchiveStatusData(aggs);
+
+        assert(el._getNestedDimensionData.calledBefore(el._setObjectPercentage));
+        assert(el._setObjectPercentage.calledOnce);
+
+        result.forEach(function(item) {
+          assert.equal(item.filterType, 'archive_status');
+          assert.isString(item.term);
+          assert.isNumber(item.count);
+          assert.isNumber(item.total);
+          assert.isNumber(item.size_human);
+          assert.isString(item.size_human_measure);
+        });
+      });
+    });
+
+    suite('_processFileSizeData', function() {
+      setup(function() {
+        sinon.spy(el, '_setObjectPercentage');
+        sinon.stub(el, '_getNestedDimensionData', function() {
+          return {
+            nested_data: 'nested_value'
+          }
+        })
+      });
+
+      teardown(function() {
+        el._setObjectPercentage.restore();
+        el._getNestedDimensionData.restore();
+      });
+
+      test('should return standarize Array', function() {
+        var aggs = {"file_size":{"buckets":[{"total_size":{"value":115239459813},"to":1073741823,"to_as_string":"1.073741823E9","key":"small","doc_count":215540},{"from":1073741824,"total_size":{"value":23127495853},"from_as_string":"1.073741824E9","to_as_string":"1.0737418239E10","doc_count":15,"to":10737418239,"key":"medium"},{"total_size":{"value":13745169408},"from_as_string":"1.073741824E10","from":10737418240,"key":"large","doc_count":1}]}};
+        var result = el._processFileSizeData(aggs);
+
+        assert(el._getNestedDimensionData.calledBefore(el._setObjectPercentage));
+        assert(el._setObjectPercentage.calledOnce);
+
+        result.forEach(function(item) {
+          assert.equal(item.filterType, 'file_size');
+          assert.isString(item.term);
+          assert.isNumber(item.count);
+          assert.isNumber(item.total);
+          assert.isNumber(item.size_human);
+          assert.isString(item.size_human_measure);
+        });
+      });
+    });
+
+    suite('_processPlacesPersonData', function() {
+      setup(function() {
+        sinon.spy(el, '_setObjectPercentage');
+        sinon.stub(el, '_getNestedDimensionData', function() {
+          return {
+            nested_data: 'nested_value'
+          }
+        })
+      });
+
+      teardown(function() {
+        el._setObjectPercentage.restore();
+        el._getNestedDimensionData.restore();
+      });
+
+      test('should return standarize Array', function() {
+        var aggs = {"places_person":{"buckets":[{"total_size":{"value":142240249},"key":"Peter Port","doc_count":427},{"total_size":{"value":29540133},"key":"Luci Howell","doc_count":92},{"total_size":{"value":20172885},"key":"Ciaran Fitzgerald","doc_count":79},{"total_size":{"value":19849720},"key":"Parkhill","doc_count":76},{"total_size":{"value":22723273},"key":"Jennifer Clarke","doc_count":63},{"total_size":{"value":24021293},"key":"Johan Holder","doc_count":58},{"total_size":{"value":18151165},"key":"Databarracks","doc_count":26},{"total_size":{"value":5572730},"key":"Sam Gillett","doc_count":22},{"total_size":{"value":6175330},"key":"Jamie McRae","doc_count":19}]}};
+        var result = el._processPlacesPersonData(aggs);
+
+        assert(el._getNestedDimensionData.calledBefore(el._setObjectPercentage));
+        assert(el._setObjectPercentage.calledOnce);
+
+        result.forEach(function(item) {
+          assert.equal(item.filterType, 'places_person');
+          assert.isString(item.term);
+          assert.isNumber(item.count);
+          assert.isNumber(item.total);
+          assert.isNumber(item.size_human);
+          assert.isString(item.size_human_measure);
+        });
+      });
+    });
+
+    suite('_processPlacesOrganisationData', function() {
+      setup(function() {
+        sinon.spy(el, '_setObjectPercentage');
+        sinon.stub(el, '_getNestedDimensionData', function() {
+          return {
+            nested_data: 'nested_value'
+          }
+        })
+      });
+
+      teardown(function() {
+        el._setObjectPercentage.restore();
+        el._getNestedDimensionData.restore();
+      });
+
+      test('should return standarize Array', function() {
+        var aggs = {"places_organisation":{"buckets":[{"total_size":{"value":160564363},"key":"Tower Hill House","doc_count":106},{"total_size":{"value":146528736},"key":"Arxcis House","doc_count":46},{"total_size":{"value":89581123},"key":"Service","doc_count":29},{"total_size":{"value":25837543},"key":"Fast Performance Storage Service","doc_count":18},{"total_size":{"value":136851019},"key":"Virtual Data Centre","doc_count":18},{"total_size":{"value":4097812},"key":"Compute Services","doc_count":17}]}};;
+        var result = el._processPlacesOrganisationData(aggs);
+
+        assert(el._getNestedDimensionData.calledBefore(el._setObjectPercentage));
+        assert(el._setObjectPercentage.calledOnce);
+
+        result.forEach(function(item) {
+          assert.equal(item.filterType, 'places_organisation');
+          assert.isString(item.term);
+          assert.isNumber(item.count);
+          assert.isNumber(item.total);
+          assert.isNumber(item.size_human);
+          assert.isString(item.size_human_measure);
+        });
+      });
+    });
+
+    suite('_processPlacesLocationData', function() {
+      setup(function() {
+        sinon.spy(el, '_setObjectPercentage');
+        sinon.stub(el, '_getNestedDimensionData', function() {
+          return {
+            nested_data: 'nested_value'
+          }
+        })
+      });
+
+      teardown(function() {
+        el._setObjectPercentage.restore();
+        el._getNestedDimensionData.restore();
+      });
+
+      test('should return standarize Array', function() {
+        var aggs = {"places_location":{"buckets":[{"total_size":{"value":160348041},"key":"Guernsey","doc_count":105},{"total_size":{"value":146592719},"key":"London","doc_count":48},{"total_size":{"value":35973353},"key":"Nottinghamshire","doc_count":4},{"total_size":{"value":19005013},"key":"Middlesex","doc_count":3},{"total_size":{"value":17612544},"key":"New Greenham Park","doc_count":3},{"total_size":{"value":17612544},"key":"Sandwich","doc_count":3},{"total_size":{"value":8732851},"key":"Telehouse North or Goswell Road","doc_count":3},{"total_size":{"value":2892866},"key":"Asigra","doc_count":2}]}};
+        var result = el._processPlacesLocationData(aggs);
+
+        assert(el._getNestedDimensionData.calledBefore(el._setObjectPercentage));
+        assert(el._setObjectPercentage.calledOnce);
+
+        result.forEach(function(item) {
+          assert.equal(item.filterType, 'places_location');
+          assert.isString(item.term);
+          assert.isNumber(item.count);
+          assert.isNumber(item.total);
+          assert.isNumber(item.size_human);
+          assert.isString(item.size_human_measure);
+        });
+      });
+    });
+
+    suite('_buildTwoDimensionMatrix', function() {
+      test('should return standarize Matrix format plus labels', function() {
+        var data = [{"filterType":"dirpath","term":"//10.17.57.20/Technical","count":158409,"total":51995302924,"size_human":48.42,"size_human_measure":"GB","nestedDimension":[{"filterType":"doc_type","term":"Image Files","count":39051,"total":1209556386,"size_human":1.13,"size_human_measure":"GB","nestedDimension":{"term":"Image Files","count":39051,"total":1209556386},"percent":0.035196780728721684},{"filterType":"doc_type","term":"Web Files","count":38518,"total":3790371493,"size_human":3.53,"size_human_measure":"GB","nestedDimension":{"term":"Web Files","count":38518,"total":3790371493},"percent":0.11029570499040667},{"filterType":"doc_type","term":"Executable Files","count":19914,"total":8592834615,"size_human":8,"size_human_measure":"GB","nestedDimension":{"term":"Executable Files","count":19914,"total":8592834615},"percent":0.2500421801603589},{"filterType":"doc_type","term":"Data Files","count":13983,"total":5521632861,"size_human":5.14,"size_human_measure":"GB","nestedDimension":{"term":"Data Files","count":13983,"total":5521632861},"percent":0.160673535622275},{"filterType":"doc_type","term":"Developer Files","count":12944,"total":212077524,"size_human":202.25,"size_human_measure":"MB","nestedDimension":{"term":"Developer Files","count":12944,"total":212077524},"percent":0.006171226241385171},{"filterType":"doc_type","term":"Misc Files","count":11975,"total":4861593607,"size_human":4.53,"size_human_measure":"GB","nestedDimension":{"term":"Misc Files","count":11975,"total":4861593607},"percent":0.1414671082375933},{"filterType":"doc_type","term":"Text Files","count":8698,"total":1672013268,"size_human":1.56,"size_human_measure":"GB","nestedDimension":{"term":"Text Files","count":8698,"total":1672013268},"percent":0.04865377509511935},{"filterType":"doc_type","term":"PDF Files","count":3267,"total":1170319875,"size_human":1.09,"size_human_measure":"GB","nestedDimension":{"term":"PDF Files","count":3267,"total":1170319875},"percent":0.0340550407567688},{"filterType":"doc_type","term":"System Files","count":2103,"total":4894505236,"size_human":4.56,"size_human_measure":"GB","nestedDimension":{"term":"System Files","count":2103,"total":4894505236},"percent":0.1424248009940003},{"filterType":"doc_type","term":"Audio Files","count":2059,"total":2440635419,"size_human":2.27,"size_human_measure":"GB","nestedDimension":{"term":"Audio Files","count":2059,"total":2440635419},"percent":0.07101984717337087}],"percent":0.34182221107426614},{"filterType":"dirpath","term":"//10.17.57.20/Sales","count":43775,"total":31798143060,"size_human":29.61,"size_human_measure":"GB","nestedDimension":[{"filterType":"doc_type","term":"PDF Files","count":12939,"total":6729534879,"size_human":6.27,"size_human_measure":"GB","nestedDimension":{"term":"PDF Files","count":12939,"total":6729534879},"percent":0.22288064238493452},{"filterType":"doc_type","term":"Data Files","count":7135,"total":10071647498,"size_human":9.38,"size_human_measure":"GB","nestedDimension":{"term":"Data Files","count":7135,"total":10071647498},"percent":0.3335706411499318},{"filterType":"doc_type","term":"Spreadsheet Files","count":6537,"total":3324017868,"size_human":3.1,"size_human_measure":"GB","nestedDimension":{"term":"Spreadsheet Files","count":6537,"total":3324017868},"percent":0.11009070478715331},{"filterType":"doc_type","term":"Document Files","count":6218,"total":5428482455,"size_human":5.06,"size_human_measure":"GB","nestedDimension":{"term":"Document Files","count":6218,"total":5428482455},"percent":0.17979008631359328},{"filterType":"doc_type","term":"Image Files","count":3895,"total":1574126333,"size_human":1.47,"size_human_measure":"GB","nestedDimension":{"term":"Image Files","count":3895,"total":1574126333},"percent":0.052134700926940745},{"filterType":"doc_type","term":"Misc Files","count":3890,"total":2715009706,"size_human":2.53,"size_human_measure":"GB","nestedDimension":{"term":"Misc Files","count":3890,"total":2715009706},"percent":0.08992049498739395},{"filterType":"doc_type","term":"Web Files","count":1801,"total":53151998,"size_human":50.69,"size_human_measure":"MB","nestedDimension":{"term":"Web Files","count":1801,"total":53151998},"percent":0.0017603819091941667},{"filterType":"doc_type","term":"Executable Files","count":463,"total":55363750,"size_human":52.8,"size_human_measure":"MB","nestedDimension":{"term":"Executable Files","count":463,"total":55363750},"percent":0.0018336346250831163},{"filterType":"doc_type","term":"Email Files","count":247,"total":55426560,"size_human":52.86,"size_human_measure":"MB","nestedDimension":{"term":"Email Files","count":247,"total":55426560},"percent":0.0018357148777900132},{"filterType":"doc_type","term":"Text Files","count":214,"total":186686024,"size_human":178.04,"size_human_measure":"MB","nestedDimension":{"term":"Text Files","count":214,"total":186686024},"percent":0.0061829980379851015}],"percent":0.20904410509373092},{"filterType":"dirpath","term":"//10.17.57.20/Administration","count":8551,"total":13517715839,"size_human":12.59,"size_human_measure":"GB","nestedDimension":[{"filterType":"doc_type","term":"Image Files","count":5203,"total":4641481836,"size_human":4.32,"size_human_measure":"GB","nestedDimension":{"term":"Image Files","count":5203,"total":4641481836},"percent":0.6824199889244986},{"filterType":"doc_type","term":"Document Files","count":988,"total":241389993,"size_human":230.21,"size_human_measure":"MB","nestedDimension":{"term":"Document Files","count":988,"total":241389993},"percent":0.035490682107571815},{"filterType":"doc_type","term":"PDF Files","count":721,"total":531563257,"size_human":506.94,"size_human_measure":"MB","nestedDimension":{"term":"PDF Files","count":721,"total":531563257},"percent":0.07815378897770836},{"filterType":"doc_type","term":"Spreadsheet Files","count":379,"total":454316270,"size_human":433.27,"size_human_measure":"MB","nestedDimension":{"term":"Spreadsheet Files","count":379,"total":454316270},"percent":0.06679644882738683},{"filterType":"doc_type","term":"Data Files","count":366,"total":163961177,"size_human":156.37,"size_human_measure":"MB","nestedDimension":{"term":"Data Files","count":366,"total":163961177},"percent":0.02410660830869785},{"filterType":"doc_type","term":"Misc Files","count":250,"total":136343377,"size_human":130.03,"size_human_measure":"MB","nestedDimension":{"term":"Misc Files","count":250,"total":136343377},"percent":0.02004606483658094},{"filterType":"doc_type","term":"Email Files","count":210,"total":31201280,"size_human":29.76,"size_human_measure":"MB","nestedDimension":{"term":"Email Files","count":210,"total":31201280},"percent":0.004587409345628252},{"filterType":"doc_type","term":"Settings Files","count":89,"total":735749,"size_human":718.5,"size_human_measure":"KB","nestedDimension":{"term":"Settings Files","count":89,"total":735749},"percent":0.00010817446715764998},{"filterType":"doc_type","term":"Audio Files","count":73,"total":599796847,"size_human":572.01,"size_human_measure":"MB","nestedDimension":{"term":"Audio Files","count":73,"total":599796847},"percent":0.08818592254568271},{"filterType":"doc_type","term":"System Files","count":71,"total":713557,"size_human":696.83,"size_human_measure":"KB","nestedDimension":{"term":"System Files","count":71,"total":713557},"percent":0.0001049116590870137}],"percent":0.08886678713103152},{"filterType":"dirpath","term":"//10.17.57.20/Managed Services","count":4461,"total":54688151113,"size_human":50.93,"size_human_measure":"GB","nestedDimension":[{"filterType":"doc_type","term":"Text Files","count":1300,"total":4190707103,"size_human":3.9,"size_human_measure":"GB","nestedDimension":{"term":"Text Files","count":1300,"total":4190707103},"percent":0.0769464131063134},{"filterType":"doc_type","term":"Image Files","count":707,"total":164252676,"size_human":156.64,"size_human_measure":"MB","nestedDimension":{"term":"Image Files","count":707,"total":164252676},"percent":0.00301587630695207},{"filterType":"doc_type","term":"Executable Files","count":505,"total":1010209842,"size_human":963.41,"size_human_measure":"MB","nestedDimension":{"term":"Executable Files","count":505,"total":1010209842},"percent":0.018548665396097376},{"filterType":"doc_type","term":"Data Files","count":494,"total":48628157670,"size_human":45.29,"size_human_measure":"GB","nestedDimension":{"term":"Data Files","count":494,"total":48628157670},"percent":0.8928713500392685},{"filterType":"doc_type","term":"Spreadsheet Files","count":467,"total":87563535,"size_human":83.51,"size_human_measure":"MB","nestedDimension":{"term":"Spreadsheet Files","count":467,"total":87563535},"percent":0.0016077716174284326},{"filterType":"doc_type","term":"Web Files","count":420,"total":6484231,"size_human":6.18,"size_human_measure":"MB","nestedDimension":{"term":"Web Files","count":420,"total":6484231},"percent":0.00011905826509459199},{"filterType":"doc_type","term":"Document Files","count":366,"total":218452207,"size_human":208.33,"size_human_measure":"MB","nestedDimension":{"term":"Document Files","count":366,"total":218452207},"percent":0.004011044759433259},{"filterType":"doc_type","term":"PDF Files","count":136,"total":141050399,"size_human":134.52,"size_human_measure":"MB","nestedDimension":{"term":"PDF Files","count":136,"total":141050399},"percent":0.0025898546482751726},{"filterType":"doc_type","term":"Misc Files","count":29,"total":7005371,"size_human":6.68,"size_human_measure":"MB","nestedDimension":{"term":"Misc Files","count":29,"total":7005371},"percent":0.00012862702109224161},{"filterType":"doc_type","term":"Email Files","count":17,"total":8786944,"size_human":8.38,"size_human_measure":"MB","nestedDimension":{"term":"Email Files","count":17,"total":8786944},"percent":0.0001613388400449235}],"percent":0.3595252586629444},{"filterType":"dirpath","term":"//10.17.57.20/print$","count":351,"total":111820444,"size_human":106.64,"size_human_measure":"MB","nestedDimension":[{"filterType":"doc_type","term":"Audio Files","count":196,"total":2005504,"size_human":1.91,"size_human_measure":"MB","nestedDimension":{"term":"Audio Files","count":196,"total":2005504},"percent":0.017935038784142193},{"filterType":"doc_type","term":"Web Files","count":65,"total":52259328,"size_human":49.84,"size_human_measure":"MB","nestedDimension":{"term":"Web Files","count":65,"total":52259328},"percent":0.4673503889861142},{"filterType":"doc_type","term":"System Files","count":34,"total":52555181,"size_human":50.12,"size_human_measure":"MB","nestedDimension":{"term":"System Files","count":34,"total":52555181},"percent":0.46999617529688936},{"filterType":"doc_type","term":"Data Files","count":25,"total":2985031,"size_human":2.85,"size_human_measure":"MB","nestedDimension":{"term":"Data Files","count":25,"total":2985031},"percent":0.026694859126118298},{"filterType":"doc_type","term":"Text Files","count":17,"total":770741,"size_human":752.68,"size_human_measure":"KB","nestedDimension":{"term":"Text Files","count":17,"total":770741},"percent":0.006892666246254576},{"filterType":"doc_type","term":"Misc Files","count":6,"total":552256,"size_human":539.31,"size_human_measure":"KB","nestedDimension":{"term":"Misc Files","count":6,"total":552256},"percent":0.004938774880915336},{"filterType":"doc_type","term":"Settings Files","count":4,"total":223384,"size_human":218.15,"size_human_measure":"KB","nestedDimension":{"term":"Settings Files","count":4,"total":223384},"percent":0.0019977026741192336},{"filterType":"doc_type","term":"Image Files","count":3,"total":468257,"size_human":457.28,"size_human_measure":"KB","nestedDimension":{"term":"Image Files","count":3,"total":468257},"percent":0.0041875795091638164},{"filterType":"doc_type","term":"Game Files","count":1,"total":762,"size_human":762,"size_human_measure":"B","nestedDimension":{"term":"Game Files","count":1,"total":762},"percent":0.0000068144962829873935}],"percent":0.0007351185445972912},{"filterType":"dirpath","term":"//10.17.57.20/prnproc$","count":7,"total":683520,"size_human":667.5,"size_human_measure":"KB","nestedDimension":[{"filterType":"doc_type","term":"Web Files","count":6,"total":679936,"size_human":664,"size_human_measure":"KB","nestedDimension":{"term":"Web Files","count":6,"total":679936},"percent":0.9947565543071161},{"filterType":"doc_type","term":"Audio Files","count":1,"total":3584,"size_human":3.5,"size_human_measure":"KB","nestedDimension":{"term":"Audio Files","count":1,"total":3584},"percent":0.0052434456928838954}],"percent":0.000004493527387560189},{"filterType":"dirpath","term":"//rds2.databarracks.com/KazoupTest","count":2,"total":308174,"size_human":300.95,"size_human_measure":"KB","nestedDimension":[{"filterType":"doc_type","term":"Image Files","count":1,"total":287238,"size_human":280.51,"size_human_measure":"KB","nestedDimension":{"term":"Image Files","count":1,"total":287238},"percent":0.9320643532549794},{"filterType":"doc_type","term":"PDF Files","count":1,"total":20936,"size_human":20.45,"size_human_measure":"KB","nestedDimension":{"term":"PDF Files","count":1,"total":20936},"percent":0.06793564674502067}],"percent":0.0000020259660421552756}];
+        var results = el._buildTwoDimensionMatrix(data);
+
+        assert.isAbove(results.data.length, 0);
+        assert.isAbove(results.labels.length, 0);
+        assert.equal(results.data.length, results.labels.length);
+      });
+    });
+
+    suite('_buildSingleDimensionMatrix', function() {
+      test('should return standarize Matrix format plus labels', function() {
+        var data = [{"filterType":"dirpath","term":"//10.17.57.20/Technical","count":158409,"total":51995302924,"size_human":48.42,"size_human_measure":"GB","nestedDimension":{"term":"//10.17.57.20/Technical","count":158409,"total":51995302924},"percent":0.34182221107426614},{"filterType":"dirpath","term":"//10.17.57.20/Sales","count":43775,"total":31798143060,"size_human":29.61,"size_human_measure":"GB","nestedDimension":{"term":"//10.17.57.20/Sales","count":43775,"total":31798143060},"percent":0.20904410509373092},{"filterType":"dirpath","term":"//10.17.57.20/Administration","count":8551,"total":13517715839,"size_human":12.59,"size_human_measure":"GB","nestedDimension":{"term":"//10.17.57.20/Administration","count":8551,"total":13517715839},"percent":0.08886678713103152},{"filterType":"dirpath","term":"//10.17.57.20/Managed Services","count":4461,"total":54688151113,"size_human":50.93,"size_human_measure":"GB","nestedDimension":{"term":"//10.17.57.20/Managed Services","count":4461,"total":54688151113},"percent":0.3595252586629444},{"filterType":"dirpath","term":"//10.17.57.20/print$","count":351,"total":111820444,"size_human":106.64,"size_human_measure":"MB","nestedDimension":{"term":"//10.17.57.20/print$","count":351,"total":111820444},"percent":0.0007351185445972912},{"filterType":"dirpath","term":"//10.17.57.20/prnproc$","count":7,"total":683520,"size_human":667.5,"size_human_measure":"KB","nestedDimension":{"term":"//10.17.57.20/prnproc$","count":7,"total":683520},"percent":0.000004493527387560189},{"filterType":"dirpath","term":"//rds2.databarracks.com/KazoupTest","count":2,"total":308174,"size_human":300.95,"size_human_measure":"KB","nestedDimension":{"term":"//rds2.databarracks.com/KazoupTest","count":2,"total":308174},"percent":0.0000020259660421552756}];
+        var results = el._buildSingleDimensionMatrix(data);
+
+        assert.isAbove(results.data.length, 0);
+        assert.isAbove(results.labels.length, 0);
+        assert.equal(results.data.length, results.labels.length);
+      });
+    });
+  });
+</script>
+</body>
+</html>

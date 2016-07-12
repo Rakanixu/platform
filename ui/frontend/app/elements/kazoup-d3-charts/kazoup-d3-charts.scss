@@ -1,0 +1,212 @@
+@import '../../styles/guide-style.scss';
+
+:host {
+  display: block;
+  overflow: hidden;
+}
+
+:host::content #container {
+  #chart {
+    svg {
+      width: 100%;
+
+      /* Bubble chart styles */
+      g.node {
+        circle {
+          cursor: pointer;
+        }
+
+        circle.filter-selected {
+          stroke-width: 6px;
+          box-sizing: border-box;
+          -moz-box-sizing: border-box;
+          -webkit-box-sizing: border-box;
+        }
+
+        .bubble-label {
+          text-anchor: middle;
+          pointer-events: none;
+          font-size: 12px;
+
+          tspan {
+            pointer-events: none;
+          }
+        }
+      }
+
+      /* word cloud styles */
+      g.word-cloud-container {
+        text.filter-selected {
+          text-decoration: underline;
+        }
+      }
+
+      /* Pie chart styles */
+      g.slice {
+        cursor: pointer;
+      }
+
+      g.lines {
+        polyline {
+          opacity: .3;
+          stroke: black;
+          stroke-width: 1px;
+          fill: none;
+        }
+      }
+
+      /* Chord styles */
+      .groups {
+        text {
+          textpath {
+            cursor: default;
+          }
+        }
+      }
+
+      /* Force-directed styles */
+      .node-force-directed {
+        stroke: #fff;
+        stroke-width: 1.5px;
+        overflow: hidden;
+      }
+
+      line {
+        stroke: rgba(32,32,32,.3);
+      }
+
+      text.force-labels-term,
+      text.force-labels-size {
+        cursor: pointer;
+      }
+
+      /* Sankey styles */
+      .sankey-node rect {
+        cursor: move;
+        fill-opacity: .9;
+        shape-rendering: crispEdges;
+      }
+
+      .sankey-node text {
+        pointer-events: none;
+        opacity: 0.6;
+        font-size: 0.6em;
+      }
+
+      .sankey-link {
+        fill: none;
+        stroke: #000;
+        stroke-opacity: 0.1;
+      }
+
+      .sankey-link:hover {
+        stroke-opacity: 0.3;
+      }
+
+      g.row line,
+      g.column line {
+        stroke: #fff;
+      }
+
+      g.row text,
+      g.column text {
+        text-transform: capitalize;
+        font-size: 0.8em;
+        opacity: 0.6;
+        fill: rgb(68, 68, 68);
+      }
+
+      /* Matrix styles */
+      rect.background {
+        fill: #000;
+        opacity: 0.05;
+      }
+    }
+
+    /* Treemap styles */
+    .treemap-node {
+      border: solid 1px white;
+      line-height: 12px;
+      overflow: hidden;
+      position: absolute;
+      text-indent: 2px;
+      box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      -webkit-box-sizing: border-box;
+      cursor: pointer;
+
+      svg {
+        cursor: pointer;
+
+        text {
+          fill: white;
+          font-size: 0.8em;
+        }
+      }
+    }
+
+    /* Table chart styles */
+    .table-view {
+      overflow-y: auto;
+      overflow-x: hidden;
+      margin-top: -20px;
+
+      table {
+        table-layout:fixed;
+        width: 100%;
+        border-collapse: collapse;
+
+        thead {
+          tr th {
+            padding: 8px;
+          }
+        }
+
+        tbody:before {
+          content: "";
+          display: block;
+          line-height: 8px;
+          color: transparent;
+        }
+
+        tr:first-child td {
+          border-top: 1px solid $divider-color;
+        }
+
+        tr td {
+          height: 28px;
+          border: 1px solid $divider-color;
+          border-top: 0;
+          border-right:0;
+          cursor: pointer;
+          padding: 5px;
+          word-wrap: break-word;
+        }
+
+        tr.filter-selected td {
+          border: 3px solid $accent-color;
+          box-sizing: border-box;
+          -moz-box-sizing: border-box;
+          -webkit-box-sizing: border-box;
+        }
+
+        tr td:first-child {
+          padding-left: 10px;
+          width: 70%;
+        }
+
+        tr td:nth-child(2),
+        tr td:nth-child(3),
+        tr td:nth-child(4) {
+          width: 10%;
+          text-align: center;
+        }
+      }
+    }
+
+    kazoup-empty-state {
+      position: absolute;
+      top: 0;
+    }
+  }
+}

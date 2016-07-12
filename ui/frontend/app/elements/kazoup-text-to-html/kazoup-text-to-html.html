@@ -1,0 +1,76 @@
+<dom-module id="kazoup-text-to-html">
+  <link rel="stylesheet" href="kazoup-text-to-html.css">
+
+  <template>
+    <p id="target"></p>
+  </template>
+
+  <script>
+    'use strict';
+
+    (function() {
+      // Regex matching open and closing tags
+      // new RegExp(/(<\s*\w.*?>|<\s*\/\s*\w\s*.*?>|<\s*br\s*>)/g)
+      // decodeURIComponent(escape())
+      // When string is assign in JS, sometype of codifications is carry out
+      // When string contains unicode as string, previous solution does not work.
+
+      Polymer({
+        is: 'kazoup-text-to-html',
+        properties: {
+          expression: {
+            type: String,
+            notify: true
+          },
+          replaceWith: {
+            type: String,
+            notify: true,
+            value: ' '
+          },
+          text: {
+            type: String,
+            notify: true,
+            observer: 'textChanged'
+          },
+          unescape: {
+            type: String,
+            notify: true
+          }
+        },
+        textChanged: function() {
+          var expression, text;
+
+          if (this.text) {
+            switch (this.expression) {
+              case 'escapeCharacters':
+                expression = /(\\n|\\t|\\r|\\b|\\a)/g;
+                break;
+            }
+
+            text = this.text.replace(new RegExp(expression), this.replaceWith);
+            /* jshint quotmark: double */
+            text = text.replace(/\\xe2\\x80\\x98/g, "'");
+            /* jshint quotmark: double */
+            text = text.replace(/\\xe2\\x80\\x99/g, "'");
+            /* jshint quotmark: single */
+            text = text.replace(/\\xe2\\x80\\x9c/g, '"');
+            text = text.replace(/\\xe2\\x80\\x9d/g, '"');
+            text = text.replace(/\\xe2\\x80\\x93/g, '-');
+            text = text.replace(/\\xe2\\x80\\x94/g, '--');
+            text = text.replace(/\\xe2\\x80\\xa6/g, '...');
+            text = text.replace(/\\xc2\\xa0/g, ' ');
+            text = text.replace(/(\\xe2\\x80\\xa2|\\xef\\x82\\xb7)/g, '•');
+            text = text.replace(/\\xc2\\xa3/g, '£');
+            text = text.replace(/\\xc2\\xbb/g, '»');
+            text = text.replace(/\\xc2\\xab/g, '«');
+            text = text.replace(/\\xef\\xbf\\xbd/g, '�'); // Unsafe character
+
+            this.$.target.innerHTML = text;
+          } else {
+            this.$.target.innerHTML = '';
+          }
+        }
+      });
+    }());
+  </script>
+</dom-module>

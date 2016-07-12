@@ -1,0 +1,603 @@
+<!doctype html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>kazoup-mobile-search</title>
+
+  <script src="../bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+  <script src="../bower_components/web-component-tester/browser.js"></script>
+
+  <!-- Import the element to test -->
+  <script src="../bower_components/page/page.js"></script>
+  <script src="../bower_components/filesize.js/lib/filesize.min.js"></script>
+  <link rel="import" href="../behaviors/behaviors.html">
+  <link rel="import" href="../elements/kazoup-mobile-search/kazoup-mobile-search.html">
+</head>
+<body>
+
+<kazoup-mobile-search id="fixture"></kazoup-mobile-search>
+
+<script>
+  suite('<kazoup-mobile-search>', function() {
+    var el = document.querySelector('#fixture');
+
+    function fireEvent(eventName, obj) {
+      var customEvent = document.createEvent('Event');
+      customEvent.initEvent(eventName, true, true);
+      customEvent.data = obj;
+
+      window.dispatchEvent(customEvent);
+    }
+
+    suite('requestInProgressChanged', function() {
+      el.requestInProgress = false;
+
+      test('should show kazoup-empty-state', function() {
+        el.results = [];
+        el.requestInProgressChanged();
+
+        assert.equal(el.$.noResults.hidden, false);
+      });
+
+      test('should hidden kazoup-empty-state', function() {
+        el.results = [{}];
+        el.requestInProgressChanged();
+
+        assert.equal(el.$.noResults.hidden, true);
+      });
+    });
+
+    suite('checksumChanged', function() {
+      suite('', function() {
+        setup(function() {
+          sinon.spy(el.$.filterConverter, 'removeValue');
+        });
+
+        teardown(function() {
+          el.$.filterConverter.removeValue.restore();
+        });
+
+        test('should remove checksum filter', function() {
+          el.checksum = '';
+          el.checksumChanged(undefined, '');
+
+          assert(el.$.filterConverter.removeValue.calledWith('checksum', ''));
+        });
+      });
+
+      suite('', function() {
+        setup(function () {
+          sinon.spy(el.$.filterConverter, 'setValue');
+        });
+
+        teardown(function () {
+          el.$.filterConverter.setValue.restore();
+        });
+
+        test('should add checksum filter', function () {
+          el.checksum = 'checksum';
+          el.checksumChanged();
+
+          assert(el.$.filterConverter.setValue.calledWith('checksum', 'checksum'));
+        });
+      });
+    });
+
+    suite('openSearch', function() {
+      setup(function() {
+        sinon.spy(el.$.searchInput, 'focus');
+      });
+
+      teardown(function() {
+        el.$.searchInput.focus.restore();
+      });
+
+      test('should set search view', function(done) {
+        el.openSearch();
+
+        setTimeout(function() {
+          assert.equal(el.selectedToolbar, 1);
+          assert(el.$.searchInput.focus.calledOnce);
+
+          done();
+        }, 150);
+      });
+    });
+
+    suite('goBack', function() {
+      setup(function() {
+        sinon.spy(el.$.filterConverter, 'setValue');
+      });
+
+      teardown(function() {
+        el.$.filterConverter.setValue.restore();
+      });
+
+      test('should set listing view', function() {
+        el.goBack();
+
+        assert.equal(el.selectedToolbar, 0);
+        assert(el.$.filterConverter.setValue.calledWith('q'));
+      });
+    });
+
+    suite('goPreviousDirectory', function() {
+      suite('', function() {
+        setup(function () {
+          sinon.stub(el.$.filterConverter, 'getValue', function() {
+            return '//127.0.0.1';
+          });
+        });
+
+        teardown(function () {
+          el.$.filterConverter.getValue.restore();
+        });
+
+        test('should set root directory', function () {
+          el.goPreviousDirectory();
+
+          assert.equal(el.isRootDirectory, true);
+        });
+      });
+
+      suite('', function() {
+        setup(function () {
+          el.isRootDirectory = false;
+          sinon.stub(el.$.filterConverter, 'getValue', function() {
+            return '//127.0.0.1/path1/path2';
+          });
+        });
+
+        teardown(function () {
+          el.$.filterConverter.getValue.restore();
+        });
+
+        test('should set parent directory', function() {
+          el.goPreviousDirectory();
+
+          assert.equal(el.isRootDirectory, false);
+        });
+      });
+    });
+
+    suite('openDownloadDialog', function() {
+      var e = {
+        currentTarget: {
+          dataset: {}
+        },
+        model: {},
+        stopPropagation: function() {}
+      };
+
+      setup(function() {
+        sinon.spy(el.$.confirmDownload, 'refit');
+        sinon.spy(el.$.confirmDownload, 'open');
+      });
+
+      teardown(function() {
+        el.$.confirmDownload.refit.restore();
+        el.$.confirmDownload.open.restore();
+      });
+
+      test('should open download confirmation dialog', function() {
+        e.currentTarget.dataset.archive = false;
+        el.openDownloadDialog(e);
+
+        assert.equal(el.dialogHeader, 'Confirm download');
+        //assert(el.$.confirmDownload.refit.calledOnce);
+        assert(el.$.confirmDownload.open.calledOnce);
+      });
+
+      test('should open download from archive confirmation dialog', function() {
+        e.currentTarget.dataset.archive = true;
+        el.openDownloadDialog(e);
+
+        assert.equal(el.dialogHeader, 'Confirm Archive download');
+        assert(el.$.confirmDownload.refit.calledOnce);
+        assert(el.$.confirmDownload.open.calledOnce);
+      });
+    });
+
+    suite('confirmDownload', function() {
+      setup(function() {
+        sinon.spy(el.$.confirmDownload, 'close');
+        sinon.stub(el, 'download', function() {});
+      });
+
+      teardown(function() {
+        el.$.confirmDownload.close.restore();
+        el.download.restore();
+      });
+
+      test('should call "download"', function() {
+        el.confirmDownload();
+
+        assert(el.$.confirmDownload.close.calledOnce);
+        assert(el.download.calledOnce);
+      });
+    });
+
+    suite('download', function() {
+      setup(function() {
+        el.model = {
+          __data__: {
+            item: {
+              id_b64: 'id_b64',
+              _source: {
+                metadata: {
+                  filename_b64: 'filename_b64'
+                }
+              }
+            }
+          }
+        };
+        sinon.stub(window, 'open', function() {});
+      });
+
+      teardown(function() {
+        window.open.restore();
+      });
+
+      test('should initialize a file download', function() {
+        el.download();
+
+        assert(window.open.calledOnce);
+      });
+    });
+
+    suite('toggleSearchExplorer', function() {
+      setup(function() {
+        sinon.stub(el, 'goToNewUrl', function() {});
+      });
+
+      teardown(function() {
+        el.goToNewUrl.restore();
+      });
+
+      test('should jump between files / directories listing', function() {
+        var browser = el.browser;
+
+        el.toggleSearchExplorer();
+
+        assert.equal(el.browser, !browser);
+        assert(el.goToNewUrl.calledOnce);
+      });
+    });
+
+    suite('setQ', function() {
+      var qVal = 'query';
+
+      setup(function() {
+        sinon.stub(el.$.filterConverter, 'getValue', function() {
+          return qVal;
+        });
+      });
+
+      teardown(function() {
+        el.$.filterConverter.getValue.restore();
+      });
+
+      test('should sync q value', function() {
+        el.setQ();
+
+        assert.equal(el.q, qVal);
+      });
+    });
+
+    suite('setChecksum', function() {
+      var checksumVal = 'checksum';
+
+      setup(function() {
+        sinon.stub(el.$.filterConverter, 'getValue', function() {
+          return [checksumVal];
+        });
+      });
+
+      teardown(function() {
+        el.$.filterConverter.getValue.restore();
+      });
+
+      test('should sync checksum value', function() {
+        el.setChecksum();
+
+        assert.equal(el.checksum, checksumVal);
+      });
+    });
+
+    suite('goToNewUrl', function() {
+      setup(function() {
+        sinon.spy(history, 'pushState');
+      });
+
+      teardown(function() {
+        history.pushState.restore();
+      });
+
+      test('should update URl with new params', function() {
+        el.goToNewUrl();
+
+        assert(history.pushState.calledOnce);
+      });
+    });
+
+    suite('search', function() {
+      setup(function() {
+        el.q = 'query'
+
+        sinon.stub(el.$.filterConverter, 'setValue', function() {});
+      });
+
+      teardown(function() {
+        el.$.filterConverter.setValue.restore();
+      });
+
+      test('should set q', function() {
+        el.search();
+
+        assert(el.$.filterConverter.setValue.calledWith('q', el.q));
+      });
+    });
+
+    suite('bytesToSize', function() {
+      setup(function() {
+        sinon.spy(window, 'filesize');
+      });
+
+      teardown(function() {
+        window.filesize.restore();
+      });
+
+      test('should call "filesize" library', function() {
+        el.bytesToSize(1024);
+
+        assert(window.filesize.calledOnce);
+      });
+    });
+
+    suite('updatePlaceholder', function() {
+      suite('on root directory', function() {
+        setup(function() {
+          sinon.stub(el.$.filterConverter, 'getValue', function() {
+            return [undefined];
+          });
+        });
+
+        teardown(function() {
+          el.$.filterConverter.getValue.restore();
+        });
+
+        test('should update placeholder (rootDirectory)', function() {
+          el.updatePlaceholder();
+
+          assert.equal(el.isRootDirectory, true);
+          assert.equal(el.placeholderInput, 'Search all files ');
+        });
+      });
+
+      suite('not on root directory', function() {
+        setup(function() {
+          sinon.stub(el.$.filterConverter, 'getValue', function() {
+            return ['//127.0.0.1/path1/path2'];
+          });
+        });
+
+        teardown(function() {
+          el.$.filterConverter.getValue.restore();
+        });
+
+        test('should update placeholder ', function() {
+          el.updatePlaceholder();
+
+          assert.equal(el.isRootDirectory, false);
+        });
+      });
+    });
+
+    suite('switchToAnalytics', function() {
+      setup(function() {
+        sinon.stub(window, 'page', function() {});
+      });
+
+      teardown(function() {
+        window.page.restore();
+      });
+
+      test('should call "page"', function() {
+        el.switchToAnalytics();
+
+        assert(window.page.calledOnce);
+      });
+    });
+
+    suite('setDirpath', function() {
+      setup(function() {
+        sinon.stub(el.$.filterConverter, 'setValue', function() {});
+      });
+
+      teardown(function() {
+        el.$.filterConverter.setValue.restore();
+      });
+
+      test('should set dirpath in filterConverter', function() {
+        var path = '//127.0.0.1';
+        var e = {
+          model: {
+            __data__: {
+              item: {
+                key: path
+              }
+            }
+          }
+        };
+        el.setDirpath(e);
+
+        assert(el.$.filterConverter.setValue.calledWith('dirpath', path));
+      });
+    });
+
+    suite('toggleRightDrawer', function() {
+      setup(function() {
+        sinon.spy(el.$.rightDrawer, 'togglePanel');
+        sinon.stub(el.$.kazoupSearchFilters.$.searchFiltersData, '_fetchAllData', function() {});
+      });
+
+      teardown(function() {
+        el.$.rightDrawer.togglePanel.restore();
+        el.$.kazoupSearchFilters.$.searchFiltersData._fetchAllData.restore();
+      });
+
+      test('should open filters panel', function() {
+        el.toggleRightDrawer();
+
+        assert(el.$.rightDrawer.togglePanel.calledOnce);
+        assert(el.$.kazoupSearchFilters.$.searchFiltersData._fetchAllData.calledOnce);
+      });
+    });
+
+    suite('setChecksumEvent', function() {
+      var checksum = 'checksumValue';
+      var filename = 'filename';
+      var e = {
+        model: {
+          __data__: {
+            item: {
+              _source: {
+                content: {
+                  checksum: checksum
+                },
+                metadata: {
+                  filename: filename
+                }
+              }
+            }
+          }
+        }
+      };
+
+      setup(function() {
+        sinon.stub(el, 'resetSwipeElements', function() {});
+        sinon.stub(el, 'setCheckumSearch', function() {});
+        sinon.stub(el, 'set', function() {});
+      });
+
+      teardown(function() {
+        el.resetSwipeElements.restore();
+        el.setCheckumSearch.restore();
+        el.set.restore();
+      });
+
+      test('should call "setCheckumSearch"', function() {
+        el.setChecksumEvent(e);
+
+        assert(el.resetSwipeElements.calledOnce);
+        assert(el.setCheckumSearch.calledWith(checksum));
+      });
+    });
+
+    suite('setCheckumSearch', function() {
+      var checksum = 'checksum';
+
+      setup(function() {
+        sinon.stub(el.$.filterConverter, 'saveValues', function() {});
+        sinon.stub(el.$.filterConverter, 'setValues', function() {});
+        sinon.stub(el, 'checksumChanged', function() {})
+      });
+
+      teardown(function() {
+        el.$.filterConverter.saveValues.restore();
+        el.$.filterConverter.setValues.restore();
+        el.checksumChanged.restore();
+      });
+
+      test('should save old filters value & set new checksum value', function() {
+        el.setCheckumSearch();
+
+        assert(el.$.filterConverter.saveValues.calledOnce);
+        assert(el.$.filterConverter.setValues.calledOnce);
+      });
+    });
+
+    suite('removeChecksum', function() {
+      setup(function() {
+        sinon.stub(el, 'resetSwipeElements', function() {});
+        sinon.stub(el.$.filterConverter, 'setStoredValues', function() {});
+        sinon.stub(el, 'checksumChanged', function() {});
+      });
+
+      teardown(function() {
+        el.resetSwipeElements.restore();
+        el.$.filterConverter.setStoredValues.restore();
+        el.checksumChanged.restore();
+      });
+
+      test('should set old filters value & set default listing view', function() {
+        el.removeChecksum();
+
+        assert.equal(el.checksum, undefined);
+        assert.equal(el.selectedToolbar, 0);
+        assert(el.resetSwipeElements.calledOnce);
+        assert(el.$.filterConverter.setStoredValues.calledOnce);
+      });
+    });
+
+    suite('swipeConstraints', function() {
+      // This method works closely with its DOM
+/*      var e = {
+        model: {}
+      };
+
+      setup(function() {
+        //sinon.stub()
+      });
+
+      teardown(function() {
+
+      });
+
+      test('should call "resetSwipeElements"', function() {
+        el.swipeConstraints(e);
+      });*/
+    });
+
+    suite('resetSwipeElements', function() {
+      test('should close opened swiped elements', function() {
+        el.resetSwipeElements();
+      });
+    });
+
+    suite('init', function() {
+      el.$.searchData._getSearchResults = function() {};
+      el.filters = {};
+
+      test('should be called on "kazoup-mobile-search-initialized" without params', function (done) {
+        fireEvent('kazoup-mobile-search-initialized', {data:{}});
+
+        setTimeout(function () {
+          assert.deepEqual(el.filters, {checksum: []});
+
+          done();
+        }, 200);
+      });
+
+      test('should be called on "kazoup-mobile-search-initialized" with params', function(done) {
+        var data = {
+          dimension: 'doc_type',
+          secondDimension: undefined,
+          visualisation: 'pie',
+          period: 'month',
+          filters: '{"unique":["not_unique"]}'
+        };
+
+        fireEvent('kazoup-mobile-search-initialized', data);
+
+        setTimeout(function() {
+          assert.deepEqual(el.filters, JSON.parse(data.filters));
+
+          done();
+        }, 200);
+      });
+    });
+  });
+</script>
+</body>
+</html>

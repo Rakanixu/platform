@@ -1,0 +1,28 @@
+@import '../../styles/guide-style.scss';
+
+:host {
+  display: block;
+}
+
+:host::content div.container {
+  height: 60px;
+  width: 35px;
+
+  svg {
+    margin-top: 12px;
+  }
+
+  .details {
+    height: 22px;
+    font-size: 0.65em;
+    text-align: center;
+    position: relative;
+    top: -30px;
+
+    p {
+      color: #fff !important;
+      height: 11px;
+      margin: 0;
+    }
+  }
+}

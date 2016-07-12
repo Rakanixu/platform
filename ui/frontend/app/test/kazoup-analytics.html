@@ -1,0 +1,264 @@
+<!doctype html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>kazoup-analytics</title>
+
+  <script src="/app/bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+  <script src="/app/bower_components/web-component-tester/browser.js"></script>
+
+  <!-- Tests dependencies -->
+  <script src="/app/bower_components/qwest/qwest.min.js"></script>
+  <script src="/app/bower_components/draggabilly/dist/draggabilly.pkgd.min.js"></script>
+  <script src="/app/bower_components/page/page.js"></script>
+  <link rel="import" href="../behaviors/behaviors.html">
+  <link rel="import" href="../elements/kazoup-analytics/kazoup-analytics.html">
+
+</head>
+<body>
+
+  <kazoup-analytics id="fixture"></kazoup-analytics>
+
+<script>
+  // Please refer to
+  // http://stackoverflow.com/questions/25578112/spying-on-a-method-with-sinon-method-bound-to-event-listener-method-was-execut
+  // To see an explanation why we do not spy bind callbacks
+  suite('<kazoup-analytics>', function() {
+    var el = document.querySelector('#fixture');
+
+    function fireEvent(eventName, obj) {
+      var customEvent = document.createEvent('Event');
+      customEvent.initEvent(eventName, true, true);
+      customEvent.data = obj;
+
+      window.dispatchEvent(customEvent);
+    }
+
+    suite('init', function() {
+      test('should be called on "kazoup-analytics-initialized" without params', function(done) {
+        fireEvent('kazoup-analytics-initialized', {});
+
+        setTimeout(function() {
+          //default values
+          assert.equal(el.dimension, 'location');
+          assert.equal(el.secondDimension, 'none');
+          assert.equal(el.visualisation, 'bubble');
+          assert.equal(el.period, 'year');
+          assert.deepEqual(el.filters, {});
+          done();
+        }, 200);
+      });
+
+      test('should be called on "kazoup-analytics-initialized" with params', function() {
+        var data = {
+          dimension: 'doc_type',
+          secondDimension: undefined,
+          visualisation: 'pie',
+          period: 'month',
+          filters: '{"unique":["not_unique"]}'
+        };
+
+        fireEvent('kazoup-analytics-initialized', data);
+
+        setTimeout(function() {
+          //default values
+          assert.equal(el.dimension, data.dimension);
+          assert.equal(el.secondDimension, data.secondDimension);
+          assert.equal(el.visualisation, data.visualisation);
+          assert.equal(el.period, data.period);
+          assert.deepEqual(el.filters, JSON.parse(data.filters));
+          done();
+        }, 200);
+
+      });
+    });
+
+    suite('setTimeRange', function() {
+      var event = {
+        target: {
+          dataset: {
+            period: 'year',
+            value: 'now-7y/d'
+          }
+        }
+      };
+
+      var data = [
+        {field: 'from', val: event.target.dataset.value},
+        {field: 'to', val: 'now-0y/d'}
+      ];
+
+      setup(function() {
+        sinon.spy(el, 'setTimeRange');
+        sinon.spy(el.$.filterConverter, 'setValues');
+      });
+
+      teardown(function() {
+        el.setTimeRange.restore();
+        el.$.filterConverter.setValues.restore();
+      });
+
+      test('should set from and to values', function() {
+        el.setTimeRange(event, undefined);
+
+        assert(el.setTimeRange.calledOnce);
+        assert(el.$.filterConverter.setValues.calledOnce);
+        assert(el.$.filterConverter.setValues.calledWith(data));
+        assert.equal(el.period, event.target.dataset.period);
+      });
+    });
+
+    suite('toggleRightDrawer', function() {
+      setup(function() {
+        sinon.spy(el, 'toggleRightDrawer');
+        sinon.spy(el.$.rightDrawer, 'openDrawer');
+      });
+
+      teardown(function() {
+        el.toggleRightDrawer.restore();
+        el.$.rightDrawer.openDrawer.restore();
+      });
+
+      test('should open right drawer', function() {
+        el.toggleRightDrawer();
+
+        assert(el.toggleRightDrawer.calledOnce);
+        assert(el.$.rightDrawer.openDrawer.calledOnce);
+      });
+    });
+
+    suite('openTimeRangeSelector', function() {
+      setup(function() {
+        sinon.spy(el.$.timeRangeSelector, 'open');
+      });
+
+      teardown(function() {
+        el.$.timeRangeSelector.open.restore();
+      });
+
+      test('should open kazoup-time-range-selector', function() {
+        el.openTimeRangeSelector();
+
+        assert(el.$.timeRangeSelector.open.calledOnce);
+      });
+    });
+
+    suite('openPolicyDialog', function() {
+      setup(function() {
+        sinon.spy(el.$.policiesDialog, 'open');
+      });
+
+      teardown(function() {
+        el.$.policiesDialog.open.restore();
+      });
+
+      test('should open dropdown', function() {
+        el.openPolicyDialog();
+
+        assert(el.$.policiesDialog.open.calledOnce);
+      });
+    });
+
+    suite('switchToSearch', function() {
+      var pageParam;
+
+      setup(function() {
+        pageParam = '/search?q=&browser=false&filters=' +
+          el.$.filterConverter.asQuerystring();
+
+        sinon.spy(window, 'page');
+      });
+
+
+      teardown(function() {
+        window.page.restore();
+      });
+
+      test('should call page global with param', function() {
+        el.switchToSearch();
+
+        assert.equal(el.visualisation, 'bubble');
+        assert(window.page.calledWith(pageParam));
+      });
+    });
+
+    suite('dirPathEncode', function() {
+      test('should return enconded dirpath', function() {
+        var dirpath = el.dirPathEncode();
+
+        assert.equal(dirpath, encodeURIComponent(el.dirpath));
+      });
+    });
+
+    suite('buildQuery', function() {
+      var url;
+
+      setup(function() {
+        url = '/analytics?' +
+          'dimension=' + el.dimension +
+          '&secondDimension=' + el.secondDimension +
+          '&visualisation=' + el.visualisation +
+          '&filters=' + el.$.filterConverter.asQuerystring() +
+          '&period=' + el.period;
+
+        sinon.spy(window.history, 'pushState');
+      });
+
+      teardown(function() {
+        window.history.pushState.restore();
+      });
+
+      test('should push new state into history API', function() {
+        el.buildQuery();
+
+        assert(window.history.pushState.calledWith({}, 'Analytics', url));
+      });
+    });
+
+    suite('dateRangeDataChanged', function() {
+      suite('', function() {
+        setup(function () {
+          el.dateRangeData = [1420521930956];
+
+          el.$.filterConverter.setValues([{field: 'from', val: undefined}]);
+          el.$.filterConverter.setValues([{field: 'to', val: undefined}]);
+
+          sinon.spy(el.$.filterConverter, 'setValues');
+        });
+
+        teardown(function () {
+          el.$.filterConverter.setValues.restore();
+        });
+
+        test('should set new range when from and to are undefined', function () {
+          el.dateRangeDataChanged();
+
+          assert(el.$.filterConverter.setValues.calledOnce);
+        });
+      });
+
+      suite('', function() {
+        setup(function () {
+          el.dateRangeData = [1420521930956];
+
+          el.$.filterConverter.setValues([{field: 'from', val: 'now-7y/d'}]);
+          el.$.filterConverter.setValues([{field: 'to', val: 'now-0y/d'}]);
+
+          sinon.spy(el.$.filterConverter, 'setValues');
+        });
+
+        teardown(function () {
+          el.$.filterConverter.setValues.restore();
+        });
+
+        test('should not set new range when from and to are defined', function () {
+          el.dateRangeDataChanged();
+
+          assert(el.$.filterConverter.setValues.notCalled);
+        });
+      });
+    });
+  });
+</script>
+</body>
+</html>

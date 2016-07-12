@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>kazoup-download-report</title>
+
+  <script src="/app/bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+  <script src="/app/bower_components/web-component-tester/browser.js"></script>
+
+  <!-- Tests dependencies -->
+  <script src="/app/bower_components/PinkySwear.js/pinkyswear.min.js"></script>
+  <script src="/app/bower_components/qwest/qwest.min.js"></script>
+  <link rel="import" href="../behaviors/behaviors.html">
+  <link rel="import" href="../elements/kazoup-download-report/kazoup-download-report.html">
+
+</head>
+<body>
+
+<kazoup-download-report id="fixture"></kazoup-download-report>
+
+<script>
+  suite('<kazoup-download-report>', function() {
+    var el = document.querySelector('#fixture');
+
+    suite('downloadCsv', function() {
+      setup(function() {
+        sinon.spy(el.$.exportCSV, 'submit');
+      });
+
+      teardown(function() {
+        el.$.exportCSV.submit.restore();
+      });
+
+      test('should trigger a csv download', function() {
+        el.downloadCsv();
+
+        assert.equal(el.csvDownloadEndpoint.indexOf('/csv-download/'), 0);
+        assert.deepEqual(el.$.exportCSV.data.value, JSON.stringify(el.chartDataStringify));
+        assert(el.$.exportCSV.submit.calledOnce);
+      });
+    });
+
+    suite('downloadPdf', function() {
+      var mock, server;
+
+      setup(function() {
+        sinon.spy(qwest, 'post');
+
+        el._filterConverter = {
+          getValue: function() {},
+          setValue: function() {},
+          asElasticsearchFilters: function() {}
+        };
+
+        mock = sinon.mock(el._filterConverter);
+        mock.expects('getValue').atLeast(1).returns('data');
+        mock.expects('asElasticsearchFilters').atLeast(1).returns('ESfilters');
+
+        server = sinon.fakeServer.create();
+
+        server.respondWith(
+          'POST',
+          '/api/v1/pdf-report-download-token/?format=json',
+          [
+            200,
+            {
+              'Content-Type': 'application/json'
+            },
+            JSON.stringify({response: {download_url: 'url'}})
+          ]
+        );
+      });
+
+      teardown(function() {
+        qwest.post.restore();
+        mock.restore();
+        server.restore();
+      });
+
+      test('should trigger a pdf download', function() {
+        server.respond();
+        el.downloadPdf();
+
+        assert(qwest.post.calledOnce);
+      });
+    });
+
+    suite('openDropdown', function() {
+      setup(function() {
+        sinon.spy(el.$.dropdown, 'open');
+      });
+
+      teardown(function() {
+        el.$.dropdown.open.restore();
+      });
+
+      test('should open drop down', function() {
+        el.openDropdown();
+
+        assert(el.$.dropdown.open.calledOnce);
+      });
+    });
+  });
+</script>
+</body>
+</html>

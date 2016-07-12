@@ -1,0 +1,186 @@
+@import '../../styles/guide-style.scss';
+
+:host {
+  display: block;
+}
+
+paper-dialog#kazoupDatePickerDialog {
+  z-index: 9999 !important;
+
+  paper-dialog-scrollable {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 240px;
+
+    #scrollable {
+      padding: 0;
+      margin: 0;
+    }
+
+    h2 {
+      background-color: $accent-color;
+      color: #fff;
+      padding: 3px 12px;
+      border-bottom: 1px solid #fff;
+    }
+
+    .header-decorator {
+      margin: 0;
+      padding: 0;
+      position: absolute;
+      left: 12px;
+      top: 14px;
+      color: #fff;
+
+      iron-icon {
+        width: 15px;
+        height: 15px;
+      }
+
+      iron-icon[icon="icons:more-vert"] {
+        margin: 5px 0;
+      }
+    }
+
+    *:first-child {
+      margin: 0;
+    }
+
+    *:last-child {
+      margin: 0;
+    }
+
+    paper-date-picker {
+      padding: 0;
+      margin: 0;
+      width: 240px;
+      overflow: hidden;
+
+      #datePicker {
+        width: 100% !important;
+
+        #heading {
+          overflow: hidden;
+          height: 40px;
+          padding: 12px;
+
+          .year {
+            display: inline;
+            width: 50px;
+            z-index: 9999;
+            margin-left: 30px;
+          }
+
+          .date {
+            position: relative;
+            top: -14px;
+            line-height: 0;
+            left: 80px;
+            width: calc(100% - 50px);
+            font-size: 15px;
+            z-index: 9999;
+          }
+
+          /* Safari only target */
+          .date:not(:root:root){
+            top: -4px;
+          }
+        }
+
+        #chooseYear {
+          #yearList {
+            position: relative;
+
+            #yearSelector {
+              position: absolute;
+              top: 0;
+              margin-left: 85px;
+            }
+          }
+        }
+
+        paper-calendar {
+          .month-row {
+            .month-col {
+              width: 32px;
+              display: inline-table;
+              line-height: 12px;
+            }
+          }
+
+          .month-row.month-weekdays {
+            .month-col {
+              height: 45px;
+
+              .day {
+                color: #A7A7A7;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    paper-date-picker#pickerFromDate {
+      #pages {
+        margin-top: 40px;
+      }
+    }
+
+    paper-date-picker#pickerToDate {
+      position: absolute;
+      top: 35px;
+      left: 0;
+
+      #chooseYear {
+        #yearList {
+          height: calc(100% - 40px);
+        }
+      }
+    }
+
+    .buttons-container {
+      padding-bottom: 15px;
+      margin-left: 20px;
+
+      paper-toggle-button {
+        cursor: pointer;
+        margin: -10px 0 20px 15px;
+        padding-top: 8px;
+
+        .toggle-label {
+          color: #A7A7A7;
+        }
+      }
+    }
+  }
+}
+
+paper-dialog#kazoupDatePickerDialog.mobile-device {
+  paper-dialog-scrollable {
+    paper-date-picker {
+      #chooseYear {
+        #yearList {
+          height: calc(100% - 60px);
+        }
+      }
+    }
+
+    paper-date-picker#pickerToDate {
+      position: relative;
+      top: -395px;
+      height: 0;
+      overflow: visible;
+    }
+
+    .header-decorator {
+      position: relative;
+      top: -444px;
+    }
+
+    .buttons-container {
+      margin-top: -60px;
+      margin-bottom: -50px;
+    }
+  }
+}

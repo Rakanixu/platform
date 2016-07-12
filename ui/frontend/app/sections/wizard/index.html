@@ -1,0 +1,70 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<html lang="">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="Analyze, Search, Archive">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui">
+  <meta name="generator" content="Kazoup" />
+  <title>Kazoup</title>
+
+  <!-- Chrome for Android theme color -->
+  <meta name="theme-color" content="#1EB3DA">
+
+  <!-- Web Application Manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Tile color for Win8 -->
+  <meta name="msapplication-TileColor" content="#1EB3DA">
+
+  <!-- Add to homescreen for Chrome on Android -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="Kazoup">
+
+  <!-- Add to homescreen for Safari on iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Kazoup">
+
+  <!-- build:css static/styles/main.css -->
+  <link rel="stylesheet" href="static/styles/main.css">
+  <!-- endbuild-->
+
+  <!-- build:js static/bower_components/webcomponentsjs/webcomponents-lite.min.js -->
+  <script src="static/bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+  <!-- endbuild -->
+
+  <!-- will be replaced with static/elements/elements.vulcanized.html -->
+  <link rel="import" href="static/elements/elements.html">
+  <!-- endreplace-->
+</head>
+
+<body unresolved class="fullbleed layout vertical">
+<template is="dom-bind" id="app">
+  <kazoup-wizard></kazoup-wizard>
+</template>
+
+
+<paper-toast id="paperToast"></paper-toast>
+
+<!-- build:js static/scripts/app.js -->
+<script src="static/bower_components/qwest/qwest.min.js"></script>
+<script src="static/bower_components/PinkySwear.js/pinkyswear.min.js"></script>
+<script src="static/bower_components/lodash/lodash.min.js"></script>
+<script src="static/scripts/intercom.min.js"></script>
+<script src="static/scripts/kazoup-shared-data.js"></script>
+<script src="static/scripts/app.js"></script>
+<!-- endbuild-->
+</body>
+
+</html>

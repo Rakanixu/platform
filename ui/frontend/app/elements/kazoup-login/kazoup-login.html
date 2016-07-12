@@ -1,0 +1,93 @@
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+
+<dom-module id="kazoup-login">
+  <link rel="import" type="css" href="kazoup-login.css">
+
+  <template>
+    <div class="container box vertical layout center-justified">
+      <iron-image src="/static/images/kazoup-logo.png" class="horizontal layout center-justified"></iron-image>
+
+      <kazoup-form
+        id="loginAppliance"
+        url="[[endpointList.login]]"
+        fields="{{setupFields}}"
+        method="POST"
+        is-authorize="{{false}}"
+        keyboard-target="[[loginApplianceElement]]"
+        label="Login"></kazoup-form>
+    </div>
+
+  </template>
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'kazoup-login',
+        behaviors: [
+          KazoupBehaviors.Routing,
+          KazoupBehaviors.Util,
+          KazoupBehaviors.APIUrls
+        ],
+        properties: {
+          setupFields: {
+            type: Array,
+            value: function() {
+              return [
+                {
+                  'attr': 'username',
+                  'type': 'string',
+                  'required': true,
+                  'read_only': false,
+                  'label': 'Email or username',
+                  'max_length': 256,
+                  'value': '',
+                  'beforeSubmitCallback': function() {
+                    this.value = this.value.toLowerCase();
+                  }
+                },
+                {
+                  'attr': 'password',
+                  'type': 'password',
+                  'required': true,
+                  'read_only': false,
+                  'label': 'Password',
+                  'max_length': 128,
+                  'value': ''
+                }
+              ];
+            }
+          },
+          loginApplianceElement: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return this.$.loginAppliance;
+            }
+          }
+        },
+        reset: function() {
+          var i = 0;
+
+          _.forEach(this.setupFields, function(field) {
+            field.value = '';
+            this.notifyPath('setupFields.' + i + '.value', field.value);
+            i++;
+          }, this);
+        },
+        attached: function() {
+          this.loginAppliance = this.$.loginAppliance;
+
+          this.loginAppliance.addEventListener('request-success', function(e) {
+            this.authSuccessful(e.detail.response.token);
+          }.bind(this));
+
+          this.fullScreen();
+        }
+      });
+    }());
+  </script>
+</dom-module>

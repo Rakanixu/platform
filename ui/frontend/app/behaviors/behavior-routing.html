@@ -1,0 +1,34 @@
+<script>
+  'use strict';
+
+  (function(window) {
+    window.KazoupBehaviors = window.KazoupBehaviors || {};
+    KazoupBehaviors.Routing = KazoupBehaviors.Routing || {};
+
+    KazoupBehaviors.Routing = {
+      authSuccessful: function (token) {
+        var url = Kazoup.router.getWantedURL();
+
+        this.authToken = token;
+        localStorage.setItem('authToken', this.authToken);
+
+        if (url) {
+          Kazoup.router.resetWantedURL();
+          document.location(url);
+        } else {
+          document.location = '/dashboard';
+        }
+      },
+      menuRedirect: function (e, detail) {
+        document.location = '/' + e.currentTarget.dataset.section;
+      },
+      logout: function () {
+        localStorage.removeItem('authToken');
+
+        Intercom('shutdown');
+
+        document.location = '/';
+      }
+    };
+  }(window));
+</script>

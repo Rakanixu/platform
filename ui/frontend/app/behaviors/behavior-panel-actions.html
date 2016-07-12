@@ -1,0 +1,29 @@
+<script>
+  'use strict';
+
+  (function(window) {
+    window.KazoupBehaviors = window.KazoupBehaviors || {};
+    KazoupBehaviors.PanelActions = KazoupBehaviors.PanelActions || {};
+
+    KazoupBehaviors.PanelActions = {
+      openDrawerPanel: function () {
+        if (Polymer.dom(document).querySelector('#main-paper-drawer-panel')) {
+          Polymer.dom(document).querySelector('#main-paper-drawer-panel').openDrawer();
+        }
+      },
+      openDrawerPanelFomDocs: function () {
+        Polymer.dom(document)
+          .querySelector('kazoup-docs')
+          .querySelector('google-youtube')
+          .pause();
+
+        this.openDrawerPanel();
+      },
+      closeDrawerPanel: function () {
+        if (Polymer.dom(document).querySelector('#main-paper-drawer-panel')) {
+          Polymer.dom(document).querySelector('#main-paper-drawer-panel').closeDrawer();
+        }
+      }
+    };
+  }(window));
+</script>

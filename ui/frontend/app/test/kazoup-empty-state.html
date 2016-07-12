@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>kazoup-empty-state</title>
+
+  <script src="/app/bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+  <script src="/app/bower_components/web-component-tester/browser.js"></script>
+
+  <!-- Tests dependencies -->
+  <link rel="import" href="/app/bower_components/polymer/polymer.html">
+  <link rel="import" href="../elements/kazoup-empty-state/kazoup-empty-state.html">
+
+</head>
+<body>
+
+<kazoup-empty-state id="fixture"></kazoup-empty-state>
+
+<script>
+  suite('<kazoup-empty-state>', function() {
+    var el = document.querySelector('#fixture');
+
+    el.header = 'New header';
+    el.description = 'New description';
+
+    suite('headerChanged', function() {
+      test('should update header contents', function() {
+        el.headerChanged();
+
+        assert.equal(el.$.header.innerHTML, el.header);
+      });
+    });
+
+    suite('descriptionChanged', function() {
+      test('should update header contents', function() {
+        el.descriptionChanged();
+
+        assert.equal(el.$.description.innerHTML, el.description);
+      });
+    });
+  });
+</script>
+</body>
+</html>

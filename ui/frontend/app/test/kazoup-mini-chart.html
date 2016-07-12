@@ -1,0 +1,187 @@
+<!doctype html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>kazoup-mini-chart</title>
+
+  <script src="../bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+  <script src="../bower_components/web-component-tester/browser.js"></script>
+
+  <!-- Import the element to test -->
+  <script src="../bower_components/filesize.js/lib/filesize.min.js"></script>
+  <link rel="import" href="../behaviors/behaviors.html">
+  <link rel="import" href="../elements/kazoup-mini-chart/kazoup-mini-chart.html">
+</head>
+<body>
+
+<kazoup-mini-chart id="fixture"></kazoup-mini-chart>
+
+<script>
+
+  suite('<kazoup-mini-chart>', function() {
+    var el = document.querySelector('#fixture');
+    var dataChartRadar = {"labels":["CAD Files","Data Files","Compressed Files","Disk Image Files","Executable Files","Misc Files","System Files","PDF Files","Game Files","Backup Files"],"datasets":[{"fillColor":"rgba(137,131,242,0.2)","strokeColor":"rgba(137,131,242,0.6)","highlightFill":"#8983F2","highlightStroke":"#8983F2","data":[210599096868,197558328781,108151335665,97049058448,96620895906,65181768164,27613492202,14380904489,13102143974,12639963738]}]};
+    var dataChartLine = {"labels":[1990,1994,1996,1997,1998,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017],"datasets":[{"fillColor":"rgba(234,74,62,0.2)","strokeColor":"rgba(234,74,62,0.6)","highlightFill":"#EA4A3E","highlightStroke":"#EA4A3E","data":[368188,372953,403020,403564,465344,950080,3188619,10787726,39776239,54899157,154485606,639888724,1335044632,3868916329,9721632802,12761411295,21844710791,34344987179,50648384934,118942962417,149975505056,160660915285,245576836136.2486]}]};
+    var dataChartBar = {"labels":[1990,1994,1996,1997,1998,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016],"datasets":[{"fillColor":"rgba(253,164,58,0.2)","strokeColor":"rgba(253,164,58,0.6)","highlightFill":"#FDA43A","highlightStroke":"#FDA43A","data":[368188,4765,30067,544,61780,484736,2238539,7599107,28988513,15122918,99586449,485403118,695155908,2533871697,5852716473,3039778493,9083299496,12500276388,16303397755,68294577483,31032542639,10685410229]}]};
+    var dataChartPie = [{"value":3224348005,"color":"#1EB3DA","highlight":"#1EB3DA","label":"Misc Files 3.00 GB"},{"value":2601982454,"color":"#99CDDA","highlight":"#99CDDA","label":"Image Files 2.42 GB"},{"value":2195658118,"color":"#3A424E","highlight":"#3A424E","label":"Data Files 2.04 GB"},{"value":1867425142,"color":"#7D8EA8","highlight":"#7D8EA8","label":"PDF Files 1.74 GB"},{"value":1354575687,"color":"#5D6575","highlight":"#5D6575","label":"Compressed Files 1.26 GB"},{"value":1347297904,"color":"#A8A8A8","highlight":"#A8A8A8","label":"Executable Files 1.25 GB"},{"value":682443197,"color":"#ED4937","highlight":"#ED4937","label":"Web Files 650.83 MB"},{"value":471572841,"color":"#FFA499","highlight":"#FFA499","label":"Document Files 449.73 MB"},{"value":380155084,"color":"#FFA528","highlight":"#FFA528","label":"Video Files 362.54 MB"},{"value":204854578,"color":"#FFD8A3","highlight":"#FFD8A3","label":"Plugin Files 195.36 MB"},{"value":169125692,"color":"#46E4C2","highlight":"#46E4C2","label":"Font Files 161.29 MB"},{"value":120416965,"color":"#B2EDE0","highlight":"#B2EDE0","label":"Spreadsheet Files 114.84 MB"},{"value":113064758,"color":"#70D137","highlight":"#70D137","label":"Text Files 107.83 MB"},{"value":79160922,"color":"#C4F0AA","highlight":"#C4F0AA","label":"Developer Files 75.49 MB"},{"value":73334112,"color":"#00A185","highlight":"#00A185","label":"Database Files 69.94 MB"},{"value":33469217,"color":"#6CD4C1","highlight":"#6CD4C1","label":"System Files 31.92 MB"},{"value":23795102,"color":"#8980F5","highlight":"#8980F5","label":"Audio Files 22.69 MB"},{"value":16390089,"color":"#CFCBF5","highlight":"#CFCBF5","label":"Settings Files 15.63 MB"},{"value":14105600,"color":"#F5E663","highlight":"#F5E663","label":"Email Files 13.45 MB"},{"value":7388022,"color":"#F5F0C4","highlight":"#F5F0C4","label":"Backup Files 7.05 MB"},{"value":233063,"color":"#1EB3DA","highlight":"#1EB3DA","label":"Game Files 227.60 KB"},{"value":31702,"color":"#99CDDA","highlight":"#99CDDA","label":"eBook Files 30.96 KB"}];
+
+    suite('dataChartChanged', function() {
+      suite('when there is data', function() {
+        setup(function() {
+          el.dataChart = dataChartRadar;
+          el.type = 'renderRadarChart';
+
+          sinon.spy(el, 'injectBoundHTML');
+          sinon.spy(el, 'destroy');
+          sinon.spy(el, 'renderRadarChart')
+        });
+
+        teardown(function() {
+          el.injectBoundHTML.restore();
+          el.destroy.restore();
+          el.renderRadarChart.restore();
+        });
+
+        test('should call a render method', function(done) {
+          el.dataChartChanged();
+
+          setTimeout(function() {
+            assert(el.injectBoundHTML.calledOnce);
+            assert(el.destroy.calledOnce);
+            assert(el.renderRadarChart.called);
+
+            done();
+          }, 250)
+        });
+      });
+
+      suite('when there is not data', function() {
+        setup(function() {
+          el.dataChart = [];
+        });
+
+        test('should remove hide canvas element ', function() {
+          el.dataChartChanged();
+
+          assert.equal(el.$.chartContainer.querySelector('canvas').style.display, 'none');
+        });
+      });
+    });
+
+    suite('renderLineChart', function() {
+      setup(function() {
+        el.dataChart = dataChartLine;
+        el.options = {"elasticSearchEndpoint":"files","accumulateXAxisValues":true,"yAxis":"size","prediction":true,"predictedValue":245576836136.2486};
+
+        sinon.spy(window, 'Chart');
+      });
+
+      teardown(function() {
+        window.Chart.restore();
+      });
+
+      test('should render a line chart', function() {
+        el.renderLineChart();
+
+        assert.isObject(el.chart);
+        assert(window.Chart.calledOnce);
+      });
+    });
+
+    suite('renderBarChart', function() {
+      setup(function() {
+        el.dataChart = dataChartBar;
+        el.options = {elasticSearchEndpoint: "files", yAxis: "size"};
+
+        sinon.spy(window, 'Chart');
+      });
+
+      teardown(function() {
+        window.Chart.restore();
+      });
+
+      test('should render a line chart', function() {
+        el.renderBarChart();
+
+        assert.isObject(el.chart);
+        assert(window.Chart.calledOnce);
+      });
+    });
+
+    suite('renderPieChart', function() {
+      setup(function() {
+        el.dataChart = dataChartPie;
+        el.options = {"elasticSearchEndpoint":"files"};
+
+        sinon.spy(window, 'Chart');
+      });
+
+      teardown(function() {
+        window.Chart.restore();
+      });
+
+      test('should render a pie chart', function() {
+        el.renderPieChart();
+
+        assert.isObject(el.chart);
+        assert(window.Chart.calledOnce);
+      });
+    });
+
+    suite('renderRadarChart', function() {
+      setup(function() {
+        el.dataChart = dataChartRadar;
+        el.options = {"elasticSearchEndpoint":"files"};
+
+        sinon.spy(window, 'Chart');
+      });
+
+      teardown(function() {
+        window.Chart.restore();
+      });
+
+      test('should render a radar chart', function() {
+        el.renderRadarChart();
+
+        assert.isObject(el.chart);
+        assert(window.Chart.calledOnce);
+      });
+    });
+
+    suite('setPieLabel', function() {
+      var label = 'some text';
+      var sublabel = 'some sub text';
+
+      test('should update label value', function() {
+        el.setPieLabel(label);
+
+        assert.equal(el.label, label);
+        assert.equal(el.subLabel, '');
+      });
+
+      test('should update sub label value', function() {
+        el.setPieLabel(undefined, sublabel);
+
+        assert.equal(el.subLabel, sublabel);
+      });
+    });
+
+    suite('destroy', function() {
+      setup(function() {
+        sinon.spy(el.chart, 'destroy');
+      });
+
+      teardown(function() {
+        el.chart.destroy.restore();
+      });
+
+      test('should call destroy method', function() {
+        el.destroy();
+
+        assert(el.chart.destroy.calledOnce);
+      });
+    });
+  });
+</script>
+</body>
+</html>

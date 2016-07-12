@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>kazoup-docs</title>
+
+  <script src="/app/bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+  <script src="/app/bower_components/web-component-tester/browser.js"></script>
+
+  <!-- Tests dependencies -->
+  <script src="../bower_components/PinkySwear.js/pinkyswear.min.js"></script>
+  <link rel="import" href="../behaviors/behaviors.html">
+  <link rel="import" href="../elements/kazoup-docs/kazoup-docs.html">
+
+
+</head>
+<body>
+
+<kazoup-docs id="fixture"></kazoup-docs>
+
+<script>
+  suite('<kazoup-docs>', function() {
+    var el = document.querySelector('#fixture');
+
+    var generateRequest = function() {
+      var promise = pinkySwear();
+
+      promise(true, []);
+
+      return promise;
+    };
+
+    suite('openVideo', function() {
+      test('should set new video id and set video visible', function() {
+        var e = {
+          model: {
+            __data__: {
+              video: {
+                videoId: 'sOmeId'
+              }
+            }
+          }
+        };
+
+        el.openVideo(e);
+
+        assert.equal(el.currentVideoId, e.model.__data__.video.videoId);
+        assert.equal(el.selected, 1);
+      });
+    });
+
+    suite('closeVideo', function() {
+      setup(function() {
+        sinon.stub(el.$.youtubeVideo, 'pause', function() {});
+      });
+
+      teardown(function() {
+        el.$.youtubeVideo.pause.restore();
+      });
+
+      test('should pause video and set docs visible', function() {
+        el.closeVideo();
+
+        assert(el.$.youtubeVideo.pause.calledOnce);
+        assert.equal(el.selected, 0);
+      });
+    });
+
+    suite('_handleYoutubeVideoKeys', function() {
+      el.$.videoList = {
+        fire: function() {}
+      };
+
+      setup(function() {
+        sinon.spy(el.$.videoList, 'fire');
+      });
+
+      teardown(function() {
+        el.$.videoList.fire.restore();
+      });
+
+      test('should process youtube response', function() {
+        var videoList = el.videoList.length;
+        var e = {
+          response: {"kind":"youtube#searchListResponse","etag":"\"dcqYJX7VLF4yxRrCehaDvw0InzY/04mkY05cXNNhVviqQgqf5wrqwbM\"","regionCode":"GB","pageInfo":{"totalResults":5,"resultsPerPage":20},"items":[{"kind":"youtube#searchResult","etag":"\"dcqYJX7VLF4yxRrCehaDvw0InzY/lBZhb-xuojjvxDmk8D10wk1TYuU\"","id":{"kind":"youtube#video","videoId":"E855sD7gkR4"},"snippet":{"publishedAt":"2015-10-07T13:22:35.000Z","channelId":"UCxOg7aLYSMZFXbEvExSpZgQ","title":"Kazoup source code visualized  in 46 seconds","description":"Kazoup source code visualized in 46 seconds 7 Oct 2105.","thumbnails":{"default":{"url":"https://i.ytimg.com/vi/E855sD7gkR4/default.jpg","width":120,"height":90},"medium":{"url":"https://i.ytimg.com/vi/E855sD7gkR4/mqdefault.jpg","width":320,"height":180},"high":{"url":"https://i.ytimg.com/vi/E855sD7gkR4/hqdefault.jpg","width":480,"height":360}},"channelTitle":"Kazoup","liveBroadcastContent":"none"}},{"kind":"youtube#searchResult","etag":"\"dcqYJX7VLF4yxRrCehaDvw0InzY/uJcCWgI2nc36xZKqhH2NFHy1t6E\"","id":{"kind":"youtube#video","videoId":"f8R5r4PEf78"},"snippet":{"publishedAt":"2015-01-20T17:37:19.000Z","channelId":"UCxOg7aLYSMZFXbEvExSpZgQ","title":"Kazoup","description":"http://www.kazoup.com A simple way to manage your unstructured file data. Intelligently leveraging the cloud to drive down your storage costs. Kazoup puts you ...","thumbnails":{"default":{"url":"https://i.ytimg.com/vi/f8R5r4PEf78/default.jpg","width":120,"height":90},"medium":{"url":"https://i.ytimg.com/vi/f8R5r4PEf78/mqdefault.jpg","width":320,"height":180},"high":{"url":"https://i.ytimg.com/vi/f8R5r4PEf78/hqdefault.jpg","width":480,"height":360}},"channelTitle":"Kazoup","liveBroadcastContent":"none"}},{"kind":"youtube#searchResult","etag":"\"dcqYJX7VLF4yxRrCehaDvw0InzY/bY-O13l1vzN9sIv9gDi8rZVir04\"","id":{"kind":"youtube#video","videoId":"PQ1qsQz-2h0"},"snippet":{"publishedAt":"2014-08-29T16:44:59.000Z","channelId":"UCxOg7aLYSMZFXbEvExSpZgQ","title":"Kazoup source code visualized in 30 seconds","description":"","thumbnails":{"default":{"url":"https://i.ytimg.com/vi/PQ1qsQz-2h0/default.jpg","width":120,"height":90},"medium":{"url":"https://i.ytimg.com/vi/PQ1qsQz-2h0/mqdefault.jpg","width":320,"height":180},"high":{"url":"https://i.ytimg.com/vi/PQ1qsQz-2h0/hqdefault.jpg","width":480,"height":360}},"channelTitle":"Kazoup","liveBroadcastContent":"none"}},{"kind":"youtube#searchResult","etag":"\"dcqYJX7VLF4yxRrCehaDvw0InzY/B-75U37jmsOIdtfkjMGsf2oJAMs\"","id":{"kind":"youtube#video","videoId":"1g5j5rctdls"},"snippet":{"publishedAt":"2014-04-03T14:54:43.000Z","channelId":"UCxOg7aLYSMZFXbEvExSpZgQ","title":"The challenges of unstructured data","description":"","thumbnails":{"default":{"url":"https://i.ytimg.com/vi/1g5j5rctdls/default.jpg","width":120,"height":90},"medium":{"url":"https://i.ytimg.com/vi/1g5j5rctdls/mqdefault.jpg","width":320,"height":180},"high":{"url":"https://i.ytimg.com/vi/1g5j5rctdls/hqdefault.jpg","width":480,"height":360}},"channelTitle":"Kazoup","liveBroadcastContent":"none"}},{"kind":"youtube#searchResult","etag":"\"dcqYJX7VLF4yxRrCehaDvw0InzY/3TJxKETlxQGkmuDy3qLvbaQZ1CU\"","id":{"kind":"youtube#channel","channelId":"UCxOg7aLYSMZFXbEvExSpZgQ"},"snippet":{"publishedAt":"2014-03-22T11:44:16.000Z","channelId":"UCxOg7aLYSMZFXbEvExSpZgQ","title":"Kazoup","description":"","thumbnails":{"default":{"url":"https://yt3.ggpht.com/-TWHaE3BD224/AAAAAAAAAAI/AAAAAAAAAAA/twQJ6c_kO4U/s512-c-k-no-rj-c0xffffff/photo.jpg"},"medium":{"url":"https://yt3.ggpht.com/-TWHaE3BD224/AAAAAAAAAAI/AAAAAAAAAAA/twQJ6c_kO4U/s512-c-k-no-rj-c0xffffff/photo.jpg"},"high":{"url":"https://yt3.ggpht.com/-TWHaE3BD224/AAAAAAAAAAI/AAAAAAAAAAA/twQJ6c_kO4U/s512-c-k-no-rj-c0xffffff/photo.jpg"}},"channelTitle":"Kazoup","liveBroadcastContent":"none"}}]}
+        };
+
+        el._handleYoutubeVideoKeys(e);
+
+        assert.isAbove(el.videoList.length, videoList);
+        assert(el.$.videoList.fire.calledOnce);
+      });
+    });
+
+    suite('init', function() {
+      el.$.youtube = {
+        generateRequest: function() {}
+      };
+
+      setup(function() {
+        sinon.stub(el.$.youtube, 'generateRequest', generateRequest);
+        sinon.spy(el, '_handleYoutubeVideoKeys');
+      });
+
+      teardown(function() {
+        el.$.youtube.generateRequest.restore();
+        el._handleYoutubeVideoKeys.restore();
+      });
+
+      test('should request for youtube videos', function(done) {
+        el.init();
+
+        setTimeout(function() {
+          assert(el.$.youtube.generateRequest.calledOnce);
+          assert(el._handleYoutubeVideoKeys.calledOnce);
+          done()
+        }, 50);
+      });
+    });
+
+    suite('setVideoHeight', function() {
+      test('should set containerHeight', function() {
+        el.setVideoHeight();
+
+        assert(el.containerHeight.indexOf('px'));
+      });
+    });
+  });
+</script>
+</body>
+</html>

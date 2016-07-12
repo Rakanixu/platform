@@ -1,0 +1,597 @@
+/**
+* This element manages the `filters` query parameter.
+*
+* The filters attribute is only used to initialise the internal private _filters variable. Once initialised
+* any outside changes have no effect on this element. The public api for this element should be used to
+* change the filters, eg getValue, setValue, addValue, removeValue and the filters-changed event listened to
+* in order to react to changes.
+*
+* All filter values are arrays except for timestampType, from and to. Although dirpath is an array it doesn't
+* make sense to have multiple values.
+*
+*/
+<dom-module id="kazoup-filters-converter">
+  <script>
+    (function () {
+      Polymer({
+        is: 'kazoup-filters-converter',
+        properties: {
+          filters: {
+            type: Object,
+            notify: true,
+            value: function() {
+              return {};
+            },
+            observer: 'filtersChanged'
+          },
+          _filters: {
+            type: Object,
+            notify: true,
+            value: function() {
+              return {};
+            }
+          },
+          filtersCopy: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {};
+            }
+          }
+        },
+        filtersChanged: function (newVal, oldVal) {
+          this._filters = this.filters;
+          this.fire('filters-changed', {});
+        },
+        _fireChangedEvent: function (field, oldValue, newValue) {
+          if (!_.isEqual(oldValue, newValue)) {
+            this.fire('filters-changed', {
+              fieldsChanged: [{
+                field: field,
+                newValue: newValue,
+                oldValue: oldValue
+              }]
+            });
+          }
+        },
+        _setSingleValue: function (field, val) {
+          if (val === undefined) {
+            if (field === 'timestampType') {
+              this.set('_filters' + ('.' + field), 'accessed');
+            } else
+            // default value in case we do something stupid
+            {
+              // from or to or q
+              delete this._filters[field];
+            }
+          } else {
+            this.set('_filters' + ('.' + field), val);
+          }
+        },
+        addValue: function (field, val) {
+          var oldValue = this.getValue(field);
+          if (_.contains([
+              'timestampType',
+              'from',
+              'to',
+              'q',
+              'sort'
+            ], field)) {
+            this._setSingleValue(field, val);
+          } else {
+            this.set('_filters' + ('.' + field), _.union(oldValue, [val]));
+          }
+          var newValue = this.getValue(field);
+          this._fireChangedEvent(field, oldValue, newValue);
+        },
+        removeValue: function (field, val) {
+          var oldValue = this.getValue(field);
+          this.set('_filters' + ('.' + field), _.without(this._filters[field], val));
+          var newValue = this.getValue(field);
+          this._fireChangedEvent(field, oldValue, newValue);
+        },
+        setValue: function (field, val) {
+          var oldValue = this.getValue(field);
+          if (_.contains([
+              'timestampType',
+              'from',
+              'to',
+              'q',
+              'sort'
+            ], field)) {
+            this._setSingleValue(field, val);
+          } else {
+            if (val === undefined) {
+              this.set('_filters' + ('.' + field), []);
+            } else {
+              this.set('_filters' + ('.' + field), [val]);
+            }
+          }
+          var newValue = this.getValue(field);
+          this._fireChangedEvent(field, oldValue, newValue);
+        },
+        setValues: function (valuesArray, complete) {
+          // when we change slider values we don't want to fire 2 separate changed events, so we can update everything
+          // and fire just one changed event
+          // eg valuesArray: [{field: fieldname_here, val: new_value_here}, ...]
+          // complete means that whatever the current filters, we only want the filters in valuesArray to be set
+          var changed = [];
+          if (complete === true) {
+            // remove existing values not in valuesArray, remove values and add to changed array
+            var existing_keys = _.keys(this._filters);
+            var new_keys = _.map(valuesArray, function (item) {
+              return item.field;
+            });
+            var removed_keys = _.difference(existing_keys, new_keys);
+
+            _.map(removed_keys, function (removed_key) {
+              changed.push({
+                field: removed_key,
+                newValue: [],
+                oldValue: this.getValue(removed_key)
+              });
+              if (_.contains([
+                  'timestampType',
+                  'from',
+                  'to',
+                  'q',
+                  'sort'
+                ], removed_key)) {
+                this._setSingleValue(removed_key, undefined);
+              } else {
+                this._filters[removed_key] = [];
+              }
+            }, this);
+          }
+
+          _.forEach(valuesArray, function (item) {
+            var oldValue = this.getValue(item.field);
+            if (_.contains([
+                'timestampType',
+                'from',
+                'to',
+                'q',
+                'sort'
+              ], item.field)) {
+              this._setSingleValue(item.field, item.val);
+            } else {
+              if (item.val === undefined) {
+                this._filters[item.field] = [];
+              } else {
+                this._filters[item.field] = [item.val];
+              }
+            }
+
+            var newValue = this.getValue(item.field);
+            if (!_.isEqual(oldValue, newValue)) {
+              changed.push({
+                field: item.field,
+                newValue: newValue,
+                oldValue: oldValue
+              });
+            }
+          }, this);
+          // now fire event with all fields that have changed
+          if (changed.length) {
+            this.fire('filters-changed', { fieldsChanged: changed });
+          }
+        },
+        getValue: function (field) {
+          var retVal;
+          if (_.contains([
+              'timestampType',
+              'from',
+              'to',
+              'q'
+            ], field)) {
+            // timestampType always returns a value, to/from can be undefined
+            if (_.has(this._filters, field)) {
+              retVal = this._filters[field];
+            } else if (field === 'timestampType') {
+              retVal = 'accessed';
+            } else {
+              return undefined;
+            }
+          } else {
+            // always returns an array, an empty one if the field doesn't exist
+            if (_.has(this._filters, field)) {
+              retVal = _.clone(this._filters[field]);
+            } else {
+              retVal = [];
+            }
+          }
+          return retVal;
+        },
+        saveValues: function() {
+          this.set('filtersCopy', _.cloneDeep(this.asObj()));
+        },
+        setStoredValues: function() {
+          this.set('filters', _.cloneDeep(this.filtersCopy));
+        },
+        asObj: function () {
+          return _.clone(this._filters);
+        },
+        asQuerystring: function () {
+          // convert a filters object to a value to be used in a querystring
+          var retVal = JSON.stringify(this._filters);
+          // we have to encode to ensure we don't have any & in the value
+          retVal = encodeURIComponent(retVal);
+          return retVal;
+        },
+        asElasticsearchFilters: function (excludeField) {
+          // takes a filters js object and returns a filters object that can be used directly with an elasticsearch
+          // query
+          var esFiltersObj = { bool: { must: [] } };
+          var paramMethodMap = {
+            dirpath: getDirpathFilters,
+            doc_type: getDocTypeFilters,
+            extension: getExtensionFilters,
+            filename: getFilenameFilters,
+            checksum: getChecksumFilters,
+            unique: getUniqueFilters,
+            allow: getPermissionsFilters,
+            archive_status: getArchiveCompleteFilters,
+            file_size: getFileSizeFilters,
+            places_person: getPlacesPersonFilters,
+            places_organisation: getPlacesOrganisationFilters,
+            places_location: getPlacesLocationFilters,
+            q: getQueryFilter
+          };
+          _.forEach(this._filters, function (vals, key) {
+            if (!_.contains([
+                'timestampType',
+                'from',
+                'to',
+                'sort'
+              ], key) && key !== excludeField) {
+              esFiltersObj.bool.must.push(paramMethodMap[key](vals));
+            }
+          }, this);
+          var from = this.getValue('from');
+          var to = this.getValue('to');
+          if (from || to) {
+            var timestampType = this.getValue('timestampType');
+            var range = { 'range': {} };
+            range.range[timestampType] = {};
+            if (from) {
+              range.range[timestampType].gte = from;
+            }
+            if (to) {
+              range.range[timestampType].lte = to;
+            }
+            esFiltersObj.bool.must.push(range);
+          }
+          return esFiltersObj;
+        },
+        asHumanText: function () {
+          var textArray = [];
+          var dirpath = this.getValue('dirpath');
+          var from = this.getValue('from');
+          var to = this.getValue('to');
+          var timestampType = this.getValue('timestampType');
+          var categories = this.getValue('doc_type');
+          var extensions = this.getValue('extension');
+          var permissions = this.getValue('allow');
+          var unique = this.getValue('unique');
+          var checksum = this.getValue('checksum');
+          var archiveStatus = this.getValue('archive_status');
+          var fileSize = this.getValue('file_size');
+          var persons = this.getValue('places_person');
+          var organisations = this.getValue('places_organisation');
+          var locations = this.getValue('places_location');
+          var q = this.getValue('q');
+          var txt;
+
+          if (dirpath.length) {
+            textArray.push('located under <span class="accent-color-text">' + dirpath[0] + '</span>');
+          }
+
+          if (from || to) {
+            txt = 'being <span class="accent-color-text">' + timestampType + '</span>';
+            if (from) {
+              txt += ' from <span class="accent-color-text">' + convertDateToHumanText(from) + '</span>';
+            }
+            if (to) {
+              txt += ' to <span class="accent-color-text">' + convertDateToHumanText(to) + '</span>';
+            }
+            textArray.push(txt);
+          }
+
+          if (categories.length === 1) {
+            textArray.push('with category <span class="accent-color-text">' + categories[0] + '</span>');
+          } else if (categories.length > 1) {
+            textArray.push('with category one of ' +
+              '<span class="accent-color-text">[' + categories.join(', ') + ']</span>');
+          }
+
+          if (extensions.length === 1) {
+            textArray.push('with extension <span class="accent-color-text">' + extensions[0] + '</span>');
+          } else if (extensions.length > 1) {
+            textArray.push('with extension one of ' +
+              '<span class="accent-color-text">[' + extensions.join(', ') + ']</span>');
+          }
+
+          if (permissions.length === 1) {
+            textArray.push('accessible by <span class="accent-color-text">' + permissions[0] + '</span>');
+          } else if (permissions.length > 1) {
+            textArray.push('accessible by one of ' +
+              '<span class="accent-color-text">[' + permissions.join(', ') + ']</span>');
+          }
+
+          if (unique.length === 1) {
+            textArray.push('is <span class="accent-color-text">' +
+              unique[0].replace('_', ' ').replace('unknown', 'uniqueness unknown') + '</span>');
+          } else if (unique.length > 1) {
+            textArray.push('uniqueness is one of ' +
+              '<span class="accent-color-text">[' + unique.join(', ').replace('_', ' ') + ']</span>');
+          }
+
+          if (archiveStatus.length === 1) {
+            textArray.push('is <span class="accent-color-text">' +
+              archiveStatus[0].replace('_', ' ') + '</span>');
+          } else if (archiveStatus.length > 1) {
+            textArray.push('archive status is one of ' +
+              '<span class="accent-color-text">[' + archiveStatus.join(', ').replace('_', ' ') + ']</span>');
+          }
+
+          if (fileSize.length === 1) {
+            textArray.push('file size <span class="accent-color-text">' + fileSize[0] + '</span>');
+          } else if (fileSize.length > 1) {
+            textArray.push('file size one of ' +
+              '<span class="accent-color-text">[' + fileSize.join(', ') + ']</span>');
+          }
+
+          if (persons.length === 1) {
+            textArray.push('person mentioned <span class="accent-color-text">' + persons[0] + '</span>');
+          } else if (persons.length > 1) {
+            textArray.push('persons mentioned is one of ' +
+              '<span class="accent-color-text">[' + persons.join(', ') + ']</span>');
+          }
+
+          if (organisations.length === 1) {
+            textArray.push('organisation mentioned <span class="accent-color-text">' + organisations[0] + '</span>');
+          } else if (organisations.length > 1) {
+            textArray.push('organisations mentioned is one of ' +
+              '<span class="accent-color-text">[' + organisations.join(', ') + ']</span>');
+          }
+
+          if (locations.length === 1) {
+            textArray.push('place mentioned <span class="accent-color-text">' + locations[0] + '</span>');
+          } else if (locations.length > 1) {
+            textArray.push('places mentioned is one of ' +
+              '<span class="accent-color-text">[' + locations.join(', ') + ']</span>');
+          }
+
+          if (q) {
+            textArray.push('matches a search term of <span class="accent-color-text">' + q + '</span>');
+          }
+
+          return textArray;
+        },
+        _reset: function () {
+          // reset for test purposes
+          this.filters = {};
+        }
+      });
+
+      function getArchiveCompleteFilters(vals) {
+        var filters = { bool: { should: [] } };
+        _.forEach(vals, function (val) {
+          if (val === 'archived') {
+            filters.bool.should.push(convertToExists('archive_complete'));
+          } else if (val === 'not_archived') {
+            filters.bool.should.push(convertToMissing('archive_complete'));
+          }
+        }, this);
+        return filters;
+      }
+
+      function getFileSizeFilters(vals) {
+        var filters = { bool: { should: [] } };
+        if (!vals.length) {
+          return {};
+        }
+        _.forEach(vals, function (val) {
+          var range = { 'metadata.size': {} };
+          if (val === 'small') {
+            range['metadata.size'].lt = 1024 * 1024 * 1024;
+          }
+          if (val === 'medium') {
+            range['metadata.size'].lt = 1024 * 1024 * 1024 * 10;
+            range['metadata.size'].gte = 1024 * 1024 * 1024;
+          }
+          if (val === 'large') {
+            range['metadata.size'].gte = 1024 * 1024 * 1024 * 10;
+          }
+          filters.bool.should.push({ 'range': range });
+        }, this);
+        if (vals.length > 1) {
+          return filters;
+        } else {
+          return filters.bool.should[0];
+        }
+      }
+
+      function getPlacesPersonFilters(vals) {
+        return convertToTerms(vals, 'content.person.value');
+      }
+
+      function getPlacesOrganisationFilters(vals) {
+        return convertToTerms(vals, 'content.organisation.value');
+      }
+
+      function getPlacesLocationFilters(vals) {
+        return convertToTerms(vals, 'content.location.value');
+      }
+
+      function getDirpathFilters(vals) {
+        return convertToPrefix(vals, 'metadata.dirpath');
+      }
+
+      function getDocTypeFilters(vals) {
+        return convertToTerms(vals, 'metadata.doc_type');
+      }
+
+      function getExtensionFilters(vals) {
+        return convertToTerms(vals, 'metadata.extension');
+      }
+
+      function getFilenameFilters(vals) {
+        return convertToTerms(vals, 'metadata.filename_raw');
+      }
+
+      function getPermissionsFilters(vals) {
+        return convertToTerms(vals, 'permissions.allow');
+      }
+
+      function getUniqueFilters(vals) {
+        if (vals.length === 0) {
+          return {};
+        }
+        var retVal = {
+          bool: {
+            should: _.map(vals, function (val) {
+              var obj;
+              if (val === 'unique') {
+                obj = { term: {} };
+                obj.term['content.unique'] = true;
+                return obj;
+              }
+              if (val === 'not_unique') {
+                obj = { term: {} };
+                obj.term['content.unique'] = false;
+                return obj;
+              }
+              if (val === 'unknown') {
+                return { missing: { field: 'content.unique' } };
+              }
+            })
+          }
+        };
+        if (vals.length > 1) {
+          return retVal;
+        } else {
+          return retVal.bool.should[0];
+        }
+      }
+
+      function getChecksumFilters(vals) {
+        return convertToTerms(vals, 'content.checksum');
+      }
+
+      function getQueryFilter(val) {
+        return {
+          query: {
+            bool: {
+              must: [{
+                bool: {
+                  should: [
+                    {
+                      match: {
+                        filename: {
+                          type: 'phrase',
+                          boost: 2,
+                          query: val
+                        }
+                      }
+                    },
+                    { match: { filename: val } }
+                  ]
+                }
+              }]
+            }
+          }
+        };
+      }
+
+      function convertToPrefix(vals, fieldName) {
+        if (vals.length === 0) {
+          return {};
+        }
+        var retVal = {
+          bool: {
+            should: _.map(vals, function (val) {
+              var obj = { prefix: {} };
+              obj.prefix[fieldName] = val;
+              return obj;
+            })
+          }
+        };
+        if (vals.length > 1) {
+          return retVal;
+        } else {
+          return retVal.bool.should[0];
+        }
+      }
+
+      function convertToTerms(vals, fieldName) {
+        if (vals.length === 0) {
+          return {};
+        }
+        var retVal = {
+          bool: {
+            should: _.map(vals, function (val) {
+              var obj = { term: {} };
+              obj.term[fieldName] = val;
+              return obj;
+            })
+          }
+        };
+        if (vals.length > 1) {
+          return retVal;
+        } else {
+          return retVal.bool.should[0];
+        }
+      }
+
+      function convertToMissing(fieldName) {
+        return { missing: { field: fieldName } };
+      }
+
+      function convertToExists(fieldName) {
+        return { exists: { field: fieldName } };
+      }
+
+      function convertDateToHumanText(date) {
+        var int = 0,
+          measure = '',
+          arrayDate = [];
+
+
+
+        if (typeof date === 'string') {
+          // parseint will get rid off y/d or d/d
+          int = parseInt(date.replace('now-', ''));
+
+          if (date.indexOf('y/d') !== -1) {
+            measure = ' years';
+
+            if (int > 0) {
+              date = int + measure + ' ago ';
+            } else {
+              date = ' now ';
+            }
+          } else if (date.indexOf('d/d') !== -1) {
+            if (int > 0) {
+              arrayDate = moment.duration(int, 'days')
+                .format('Y [years],M [months],d [days]').split(',');
+
+              _.forEach(arrayDate, function (str) {
+                if (parseInt(str, 10) > 0) {
+                  measure += str + ', ';
+                }
+              });
+
+              date = measure.substring(0, measure.length - 2) + ' ago';
+            } else {
+              date = ' now ';
+            }
+          }
+        } else if (typeof date === 'number') {
+          date = KazoupBehaviors.Util.formatMonthYear(date);
+        }
+        return date;
+      }
+    }());
+  </script>
+</dom-module>

@@ -1,0 +1,110 @@
+<link rel="import" href="../kazoup-ajax/kazoup-ajax.html">
+<!--<link rel="import" href="../kazoup-form/kazoup-form.html">-->
+
+<dom-module id="kazoup-wizard">
+  <link rel="import" type="css" href="kazoup-wizard.css">
+  <template>
+    <div class="container box vertical layout center-justified">
+      <h2 class="horizontal layout center-justified">Configuring your appliance</h2>
+
+      <p>{{stepDescription}}</p>
+
+      <paper-button on-tap="menuRedirect"
+                    data-section=""
+                    class="kazoup-paper-button horizontal layout"
+                    hidden$="[[!wizardFinished]]"
+                    raised>[[buttonLabel]]</paper-button>
+
+    </div>
+    <iron-a11y-keys id="a11y" keys="enter"></iron-a11y-keys>
+
+    <kazoup-ajax id="elasticSettings"
+                 method="POST"
+                 url="[[endpointList.setElasticSettings]]"
+                 handleas="json"></kazoup-ajax>
+
+    <kazoup-ajax id="elasticMapping"
+                 method="POST"
+                 url="[[endpointList.setElasticMapping]]"
+                 handleas="json"></kazoup-ajax>
+
+    <kazoup-ajax id="flags"
+                 method="POST"
+                 url="[[endpointList.setFlags]]"
+                 handleas="json"></kazoup-ajax>
+  </template>
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'kazoup-wizard',
+        behaviors: [
+          KazoupBehaviors.APIUrls,
+          KazoupBehaviors.Routing
+        ],
+        properties: {
+          waitLong: {
+            type: Number,
+            notify: false,
+            value: 2000
+          },
+          waitShort: {
+            type: Number,
+            notify: false,
+            value: 600
+          },
+          wizardFinished: {
+            type: Boolean,
+            notify: true,
+            value: false
+          },
+          buttonLabel: {
+            type: String,
+            notify: true,
+            value: "Continue"
+          },
+          stepDescription: {
+            type: String,
+            notify: true,
+            value: ""
+          }
+        },
+        _handleFlags: function(e) {
+          if (e) {
+            this.set('stepDescription', "Configured appliance flags.");
+            this.async(function() {
+              this.set('stepDescription', "You are ready to go!");
+              this.set('wizardFinished', true);
+            }, this.waitShort);
+          }
+        },
+        _handleElasticMapping: function(e) {
+          if (e) {
+            this.set('stepDescription', "Configured Elasticsearch mapping.");
+            this.async(function() {
+              this.set('stepDescription', "Configuring appliance flags..");
+              this.$.flags.generateRequest().then(this._handleFlags.bind(this));
+            }, this.waitLong);
+          }
+        },
+        _handleElasticSettings: function(e) {
+          if (e) {
+            this.set('stepDescription', "Configured Elasticsearch settings.");
+            this.async(function() {
+              this.set('stepDescription', "Configuring Elasticsearch mapping..");
+              this.$.elasticMapping.generateRequest().then(this._handleElasticMapping.bind(this));
+            }, this.waitLong);
+          }
+        },
+        init: function() {
+          this.set('stepDescription', "Configuring Elasticsearch settings..");
+          this.$.elasticSettings.generateRequest().then(this._handleElasticSettings.bind(this));
+        },
+        attached: function() {
+          this.init();
+        }
+      });
+    }());
+  </script>
+</dom-module>

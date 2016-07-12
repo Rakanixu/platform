@@ -1,0 +1,2139 @@
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel='import' href='../../bower_components/lib-d3/lib-d3.html'>
+<link rel="import" href="../kazoup-analytics-brush-slider/kazoup-analytics-brush-slider.html">
+<link rel="import" href="../kazoup-d3-cloud-import/kazoup-d3-cloud-import.html">
+<link rel="import" href="../kazoup-d3-sankey-import/kazoup-d3-sankey-import.html">
+<link rel="import" href="../kazoup-d3-tip-import/kazoup-d3-tip-import.html">
+
+<dom-module id="kazoup-d3-charts">
+  <link rel="import" type="css" href="kazoup-d3-charts.css">
+
+  <template>
+
+    <div id="container">
+      <div id="chart">
+        <!-- title tag is important due to html minfication; <svg></svg> -> <svg/> -->
+        <!-- We force the minifier to not transform the tag by adding a children -->
+        <svg id="paper"><title>svg</title></svg>
+
+        <kazoup-analytics-brush-slider id="brushSlider"
+                                       chart-data="{{chartData}}"
+                                       visualisation="{{visualisation}}"
+                                       dimension="{{dimension}}"></kazoup-analytics-brush-slider>
+
+        <kazoup-empty-state header="No data" description="<span>Just point Kazoup at your network and data.
+          Start analyzing by configuring your </span><a href='/settings?section=sources'> data sources</a>
+          <span> and </span><a href='/settings?section=conf'>network access</a>
+          <span> in Settings.</span>" hidden$="[[!chartEmptyStateVisible]]"></kazoup-empty-state>
+      </div>
+    </div>
+
+  </template>
+  <script>
+    'use strict';
+
+    (function() {
+      // calculates the with of a given text
+      function getTextWidth(text) {
+        var canvas = getTextWidth.canvas || (getTextWidth.canvas = document.createElement('canvas'));
+        var context = canvas.getContext('2d');
+        context.font = window.getComputedStyle(canvas, null)
+            .getPropertyValue('font-size') + ' ' +
+          window.getComputedStyle(canvas, null)
+            .getPropertyValue('font-family');
+
+        return Math.ceil(context.measureText(text).width) + 40;
+      }
+
+      Polymer({
+        is: 'kazoup-d3-charts',
+        behaviors: [
+          KazoupBehaviors.Util,
+          KazoupBehaviors.Devices
+        ],
+        properties: {
+          target: {
+            type: String,
+            notify: false
+          },
+          chartData: {
+            type: Object,
+            notify: true,
+            observer: 'chartDataChanged'
+          },
+          chartEmptyStateVisible: {
+            type: Boolean,
+            value: false
+          },
+          colors: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return d3.scale.category20().range([
+                '#1EB3DA',
+                '#99CDDA',
+                '#3A424E',
+                '#7D8EA8',
+                '#5D6575',
+                '#A8A8A8',
+                '#ED4937',
+                '#FFA499',
+                '#FFA528',
+                '#FFD8A3',
+                '#46E4C2',
+                '#B2EDE0',
+                '#70D137',
+                '#C4F0AA',
+                '#00A185',
+                '#6CD4C1',
+                '#8980F5',
+                '#CFCBF5',
+                '#F5E663',
+                '#F5F0C4'
+              ]);
+            }
+          },
+          dimension: {
+            notify: true
+          },
+          period: {
+            notify: true
+          },
+          requestInProgress: {
+            notify: true
+          },
+          visualisation: {
+            notify: true,
+            observer: 'visualisationChanged'
+          }
+        },
+        chartDataChanged: function(newValue, oldValue) {
+          var existsData = false;
+          if (this.visualisation === 'chord' ||
+              this.visualisation === 'force_directed' ||
+              this.visualisation === 'sankey' ||
+              this.visualisation === 'matrix') {
+            if (newValue.data) {
+              existsData = !!newValue.data.length;
+            } else {
+              existsData = false;
+            }
+          } else {
+            existsData = !!newValue.length;
+          }
+
+          //Avoid to show empty state on first load
+          if (oldValue === undefined) {
+            this.chartEmptyStateVisible = false;
+          } else {
+            this.chartEmptyStateVisible = !existsData;
+          }
+
+          if (newValue) {
+            this.prepare();
+          }
+        },
+        setChartData: function(e, detail, sender) {
+          this.selectedData = e.detail.data;
+
+          if (this.selectedData) {
+            this.prepare();
+          }
+        },
+        visualisationChanged: function() {
+          if (Polymer.dom(this.$.chart).querySelector('.table-view')) {
+            Polymer.dom(this.$.chart).querySelector('.table-view').remove();
+          }
+
+          if (Polymer.dom(this.$.chart).querySelector('.treemap-container')) {
+            Polymer.dom(this.$.chart).querySelector('.treemap-container').remove();
+          }
+        },
+        removeFilter: function(data) {
+          var _self = this;
+          // Remove highlight from element
+          d3.selectAll('.filter-selected').each(function() {
+            if (data.label === d3.select(this).attr('label')) {
+              d3.select(this).classed('filter-selected', false).attr('label', '');
+              if (_self.visualisation === 'pie') {
+                d3.select(this).attr('style', '');
+              } else if (_self.visualisation === 'treemap') {
+                var border = d3.select(this).style('border');
+                d3.select(this).style('border', border.replace('4px', '1px'));
+              }
+            }
+          });
+
+          if (data.dimension === 'q') {
+            this._filterConverter.setValue(data.dimension, undefined);
+          } else {
+            this._filterConverter.removeValue(data.dimension, data.label);
+          }
+        },
+        setBucketFilter: function(d) {
+          if (this.dimension === d.filterType ||
+              this.dimension === 'duplicates' &&
+              d.filterType === 'unique') {
+
+            _.forEach(this._filterConverter.asObj(), function(item) {
+              // Ensure item is an Array eg ['.css', '.js']
+              // so we do not try to call indexOf for from or to values 
+              if (item.length && item.indexOf(d.term) !== -1) {
+                d.filtered = true;
+              }
+            });
+          }
+          return d;
+        },
+        hexToRgba: function(hex, opacity) {
+          hex = hex.replace('#', '');
+          var r = parseInt(hex.substring(0, 2), 16);
+          var g = parseInt(hex.substring(2, 4), 16);
+          var b = parseInt(hex.substring(4, 6), 16);
+          return 'rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')';
+        },
+        prepare: function() {
+          var bounds = Polymer.dom(document)
+            .querySelector(this.target)
+            .querySelector('.analytics-main-panel .main-chart')
+            .getBoundingClientRect();
+          var svg = d3.select(this.$.paper);
+          var height = this.$.brushSlider.visible ? bounds.height - 50 : bounds.height;
+
+          if (this.isMobileDevice().any()) {
+            height -= 40;
+          }
+
+          //clear svg and ensure namespace
+          svg.attr('version', '1.1').attr('xmlns', 'http://www.w3.org/2000/svg');
+          svg.selectAll('*').remove();
+          svg.attr('width', bounds.width);
+          svg.attr('height', bounds.height);
+          _.forEach(Polymer.dom(document).querySelectorAll('.d3-tip'), function(tip) {
+            tip.remove();
+          });
+
+          switch (this.visualisation) {
+            case 'bubble':
+              this.renderBubbleChart(svg, this.selectedData, bounds.width, height);
+              break;
+            case 'pie':
+              this.renderPieChart(svg, this.selectedData, bounds.width, height);
+              break;
+            case 'treemap':
+              this.renderTreemapChart(svg, this.selectedData, bounds.width, height);
+              break;
+            case 'word_cloud':
+              this.renderWordCloudChart(svg, this.selectedData, bounds.width, height);
+              break;
+            case 'table':
+              this.renderTableChart(svg, this._brushSlider.getAllData(), bounds.width, height);
+              break;
+            case 'chord':
+              this.renderChordChart(svg, this.selectedData, bounds.width, height);
+              break;
+            case 'force_directed':
+              this.renderForceDirectedChart(svg, this.chartData, bounds.width, height);
+              break;
+            case 'sankey':
+              this.renderSankeyChart(svg, this.chartData, bounds.width, height);
+              break;
+            case 'matrix':
+              this.renderMatrixChart(svg, this.chartData, bounds.width, height);
+              break;
+          }
+          return svg.node();
+        },
+        renderBubbleChart: function(svg, data, width, height) {
+          var self = this;
+          var DataManager = function(keyField, emptyItem) {
+            // it's important that data keeps the same colour
+            // for the whole lifetime of the chart.
+            // When a data item becomes 0 we don't remove it,
+            // just reduce it's size to 0 so if it comes back
+            // it will return as the same colour.
+            // this class is used to pad missing previously
+            // seen values, and order data into the order
+            // the items were seen (to keep the colours in sync)
+            var registry = {};
+            var i = 0;
+
+            this.getOrderedData = function(data) {
+              var output = [];
+              var existingItem, key;
+              var existingKeys = [];
+              // handle key that exist in data
+              _.each(data, function(item) {
+                existingItem = registry[item[keyField]];
+                existingKeys.push(item[keyField]);
+                if (existingItem === undefined) {
+                  registry[item[keyField]] = i++;
+                }
+                output.push(item);
+              });
+              // handle keys no longer in data
+              _.each(_.difference(_.keys(registry), existingKeys), function(key) {
+                var emptyObj = {};
+                emptyObj[keyField] = key;
+                output.push(_.extend(emptyObj, emptyItem));
+              });
+              // now we have complete padded data, sort by i from registry
+              output = _.sortBy(output, function(item) {
+                return registry[item[keyField]];
+              });
+              return output;
+            };
+          };
+
+          var tip = d3.tip().offset([
+            -10,
+            0
+          ]).html(function(d) {
+            var human_term = _.find([
+              d.term_human,
+              d.term
+            ], function(item) {
+              return item !== undefined;
+            });
+            human_term = self.analyticsLabel(human_term.split('/')[human_term.split('/').length - 1]);
+            var output = '<div class="d3-tip">' + '<b>Name: </b>' + human_term +
+              '</b><br><b> Size:</b> ' + d.size_human + ' ' + d.size_human_measure + '</div>';
+
+            if (d.visible === undefined) {
+              return output;
+            }
+          });
+
+          var selection = svg;
+          selection.call(tip);
+          selection.append('circle').attr('class', 'tip-helper');
+          selection.on('mousemove', function(d) {
+            var svgX = event.pageX - this.getBoundingClientRect().left;
+            var svgY = event.pageY - this.getBoundingClientRect().top;
+            // Set the cicle to move within the mouse pointer,
+            // so on mousehover we can call tip show within this explicit target.
+            // https://github.com/Caged/d3-tip/issues/53
+            svg.select('circle.tip-helper').attr('cx', svgX).attr('cy', svgY);
+          });
+
+          var bubble = d3.layout.pack().sort(null).size([
+            width,
+            height - 20
+          ]).value(function(d) {
+            return d.total;
+          }).padding(8);
+
+          var dm = new DataManager('term', {
+            count: 0,
+            total: 0,
+            fieldname: '',
+            size_human: '0',
+            size_human_measure: ''
+          });
+
+          var chart = function(selection) {
+            selection.each(function(data) {
+              chart.update = function() {
+                selection.call(chart);
+              };
+
+              bubble.size([
+                width,
+                height - 20
+              ]);
+
+              data = _.shuffle(data);
+              // randomise the bubble pattern
+              data = dm.getOrderedData(data);
+              // d3.layout.pack() has a bug where lots items with zero size
+              // can cause overlaps in the pack, see https://github.com/mbostock/d3/issues/1761
+              //
+              // To avoid the problem we
+              // * add a add the original index to each item
+              // * filter the zero values
+              // * filter the non zero values
+              // * concat the zero values to the end of the non zero values
+              // * get d3 to do the layout as normal
+              // * sort the array back to it's original order
+              // * remove the property that stored the original index
+              _.each(data, function(item, i) {
+                item.orig_index = i;
+              });
+
+              var dataZeros = _.filter(data, function(item) {
+                return item.total === 0;
+              });
+
+              data = _.filter(data, function(item) {
+                return item.total > 0;
+              });
+
+              // move zeros to the end so the pack layout works properly
+              data = data.concat(dataZeros);
+              bubble.nodes({ children: data });
+              data = _.sortBy(data, 'orig_index');
+              // remove orig_index properties
+              _.each(data, function(item) {
+                delete item.orig_index;
+              });
+
+              var join = selection.selectAll('g.node').data(data);
+
+              join
+                .enter()
+                .append('g')
+                .attr('class', 'node')
+                .attr('fill-opacity', 0.6)
+                .attr('stroke-width', 1)
+                .attr('stroke', function(d, i) {
+                  var color;
+                  if (d.hasOwnProperty('color')) {
+                    // data is returning colours
+                    color = d.color ? d.color : '#7f8c8d';
+                  } else {
+                    // no colours in dataset
+                    color = self.colors(i);
+                  }
+
+                  return color;
+                }).attr('transform', function(d) {
+                  return 'translate(' + d.x + ',' + (d.y + 10) + ')';
+                }).on('mousemove', function(d) {
+                  tip.show(d, selection.select('circle.tip-helper').node());
+                }).on('mouseout', tip.hide).call(function(selection) {
+                  selection.append('circle').attr('fill', function(d, i) {
+                    var color;
+                    if (d.hasOwnProperty('color')) {
+                      // data is returning colours
+                      color = d.color ? d.color : '#7f8c8d';
+                    } else {
+                      // no colours in dataset
+                      color = self.colors(i);
+                    }
+                    return color;
+                  }).each(function(d) {
+                    d = self.setBucketFilter(d);
+                  }).attr('class', function(d) {
+                    if (d.filtered) {
+                      return 'filter-selected';
+                    }
+                  }).attr('label', function(d) {
+                    if (d.filtered) {
+                      return d.term;
+                    }
+                  }).on('click', function(d) {
+                    if (d.term.indexOf('{files in directory}') === -1) {
+                      d3.selectAll('.d3-tip').remove();
+
+                      if (self.dimension === 'location') {
+                        self._filterConverter.setValue(d.filterType, d.term);
+                      } else {
+                        if (d3.select(this).attr('class').indexOf('filter-selected') !== -1) {
+                          self.removeFilter({
+                            label: d.term,
+                            dimension: d.filterType
+                          });
+                        } else {
+                          self._filterConverter.addValue(d.filterType, d.term);
+                          d3.select(this).attr('label', d.term).attr('class', 'filter-selected');
+                        }
+                      }
+                    }
+                  }).attr('r', 0);
+                });
+              // remove all labels upon each update
+              join.select('.bubble-label').remove();
+              join.select('circle').each(function(d, i) {
+                d3.select(this).classed('clickable', function(d) {
+                  return d.term.indexOf('{files in directory}') === -1;
+                });
+              });
+
+              var t1 = d3.transition().duration(1000).each(function() {
+                join.transition().attr('transform', function(d) {
+                  return 'translate(' + d.x + ',' + (d.y + 10) + ')';
+                }).select('circle').attr('r', function(d) {
+                  return d.r;
+                });
+              });
+              t1.transition().each(function() {
+                join.transition().each(function(d, i) {
+                  var human_term = _.find([
+                    d.term_human,
+                    d.term
+                  ], function(item) {
+                    return item !== undefined;
+                  });
+                  human_term = self.analyticsLabel(human_term.substring(human_term.lastIndexOf('/') + 1));
+                  var size = d.size_human + ' ' + d.size_human_measure;
+                  var text = d3.select(this).append('text')
+                    .attr('class', 'bubble-label')
+                    .attr('fill', 'white')
+                    .attr('stroke-width', 0)
+                    .attr('fill-opacity', 1)
+                    .attr('visibility', 'hidden');
+
+
+                  text.append('tspan').text(human_term);
+                  text.append('tspan').text(size).attr('x', 0).attr('y', 15);
+
+                  if (d && text.node().getBBox().width * 1.15 < d.r * 2) {
+                    d.visible = true;
+                    // the transition() call is necessary
+                    text.transition().style('visibility', 'visible');
+                  }
+                });
+              });
+
+              var values = _.filter(data, function(item) {
+                return item.total > 0;
+              });
+            });
+          };
+
+          if (data && data.length) {
+            selection.datum(data);
+            chart(selection);
+          }
+        },
+        renderPieChart: function(svg, data, width, height) {
+          var _self = this;
+          var DataColorManager = function(keyField, emptyItem) {
+            // util for storing all seen data items so we
+            // can sort by total before every update, also
+            // sets colours to those previously seen so that
+            // an item has the same colour for the lifetime of
+            // a chart
+            var registry = {};
+            var i = 0;
+            var self = this;
+
+            self.getOrderedData = function(data) {
+              var output = [];
+              var existingItem, key;
+              var existingKeys = [];
+              // handle key that exist in data
+              _.each(data, function(item) {
+                existingItem = registry[item[keyField]];
+                existingKeys.push(item[keyField]);
+                if (existingItem === undefined) {
+                  var color;
+                  if (item.hasOwnProperty('color')) {
+                    // data is returning colours
+                    color = item.color ? item.color : '#7f8c8d';
+                  } else {
+                    // no colours in dataset
+                    color = _self.colors(i);
+                  }
+                  registry[item[keyField]] = {
+                    i: i++,
+                    color: color
+                  };
+                }
+                if (!item.color) {
+                  item.color = registry[item[keyField]].color;
+                }
+                output.push(item);
+              });
+              // handle keys no longer in data
+              _.each(_.difference(_.keys(registry), existingKeys), function(key) {
+                var emptyObj = {};
+                emptyObj[keyField] = key;
+                emptyObj.color = registry[key].color;
+                output.push(_.extend(emptyObj, emptyItem));
+              });
+              // now we have complete padded data, sort
+              output = _.sortBy(output, function(item) {
+                return item.total;
+              }).reverse();
+              return output;
+            };
+          };
+
+          var xScale = d3.scale.linear().domain([
+            0,
+            0.5 * Math.PI,
+            Math.PI,
+            1.5 * Math.PI,
+            2 * Math.PI
+          ]).range([
+            0,
+            10,
+            0,
+            -10,
+            0
+          ]);
+
+          // scales for transforms on mouseover
+          var yScale = d3.scale.linear().domain([
+            0,
+            0.5 * Math.PI,
+            Math.PI,
+            1.5 * Math.PI,
+            2 * Math.PI
+          ]).range([
+            -10,
+            0,
+            10,
+            0,
+            -10
+          ]);
+
+          var minPercentVisualization = 0.025;
+          var maxPercentVisualization = 0.95;
+          var angleForBigPercent = Math.PI * 2 / 8;
+          var duration = 1000;
+          var radius = Math.min(width, height) / 2;
+          var pie = d3.layout.pie().sort(null).value(function(d) {
+            if (d.percent < 0.001) {
+              d.percent = 0.001;
+            }
+            return d.percent;
+          });
+          var arc = d3.svg.arc().outerRadius(radius * 0.8).innerRadius(radius * 0.4);
+          var middleArc = d3.svg.arc().outerRadius(radius * 0.8).innerRadius(radius * 0.8);
+          var outerArc = d3.svg.arc().innerRadius(radius * 0.9).outerRadius(radius * 0.9);
+          var enterClockwise = {
+            startAngle: 0,
+            endAngle: 0
+          };
+
+          var enterAntiClockwise = {
+            startAngle: Math.PI * 2,
+            endAngle: Math.PI * 2
+          };
+
+          var key = function(d) {
+            return d.data.term;
+          };
+
+          var midAngle = function(d) {
+            return d.startAngle + (d.endAngle - d.startAngle) / 2;
+          };
+
+          // Remove texts not longer needed for the given chart
+          var checkExtremePercentValues = function(d) {
+            // Remove elements not longer needed for the given chart
+            if (d.data.percent === undefined || d.data.percent < minPercentVisualization) {
+              this.remove();
+              return true;
+            } else if (d.data.percent > maxPercentVisualization) {
+              d.endAngle = angleForBigPercent;
+            }
+            return false;
+          };
+
+          var getInitDataValue = function(d) {
+            return {
+              data: {
+                count: 0,
+                percent: 0,
+                total: 0
+              },
+              value: d.value,
+              startAngle: enterClockwise.startAngle,
+              endAngle: enterClockwise.endAngle
+            };
+          };
+
+          var dm = new DataColorManager('term', {
+            count: 0,
+            total: 0,
+            fieldname: '',
+            size_human: '0',
+            size_human_measure: ''
+          });
+
+          var tip = d3.tip().offset([
+            -10,
+            0
+          ]).html(function(d) {
+            var human_term = _.find([
+              d.data.term_human,
+              d.data.term
+            ], function(item) {
+              return item !== undefined;
+            });
+            human_term = _self.analyticsLabel(human_term.split('/')[human_term.split('/').length - 1]);
+            var output = '<div class="d3-tip"><b>Name: </b>' + human_term + '<br>' +
+              '<b> Size: </b>' + d.data.size_human + ' ' + d.data.size_human_measure +
+              '</div>';
+
+            if (d.data.percent < minPercentVisualization) {
+              return output;
+            }
+          });
+
+          svg.call(tip);
+          svg.append('g').attr('class', 'lines');
+          svg.append('g').attr('class', 'slices');
+          svg.append('g').attr('class', 'labels');
+          svg.append('circle').attr('class', 'tip-helper');
+          svg.on('mousemove', function(d) {
+            var svgX = event.pageX - this.getBoundingClientRect().left;
+            var svgY = event.pageY - this.getBoundingClientRect().top;
+            // Set the cicle to move within the mouse pointer,
+            // so on mousehover we can call tip show within this explicit target.
+            // https://github.com/Caged/d3-tip/issues/53
+            svg.select('circle.tip-helper').attr('cx', svgX).attr('cy', svgY);
+          });
+
+          svg.selectAll('g').attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+          function change(data) {
+            data = dm.getOrderedData(data);
+
+            /* ------- SLICE TO TEXT POLYLINES -------*/
+            var polyline = svg.select('.lines').selectAll('polyline').data(pie(data), key);
+
+            polyline
+              .enter()
+              .append('polyline')
+              .style('opacity', 0)
+              .each(function(d) {
+                this._current = getInitDataValue(d);
+              });
+
+            polyline
+              .transition()
+              .duration(duration)
+              .style('opacity', function(d) {
+                return d.data.value === 0 ? 0 : 0.5;
+              })
+              .attrTween('points', function(d) {
+                if (checkExtremePercentValues.call(this, d)) {
+                  return;
+                }
+
+                this._current = this._current;
+                var interpolate = d3.interpolate(this._current, d);
+                var _this = this;
+                return function(t) {
+                  var d2 = interpolate(t);
+                  _this._current = d2;
+                  var pos = outerArc.centroid(d2);
+                  pos[0] = radius * 0.95 * (midAngle(d2) < Math.PI ? 1 : -1);
+
+                  return [
+                    middleArc.centroid(d2),
+                    outerArc.centroid(d2),
+                    pos
+                  ];
+                };
+              });
+
+            /* ------- SLICE ARCS -------*/
+            var slice = svg.select('.slices').selectAll('path.slice').data(pie(data), key);
+            slice.enter().insert('path').attr('class', 'slice').each(function(d) {
+              this._current = getInitDataValue(d);
+            });
+            slice.transition().duration(250).each('start', function() {
+              // remove any mouseover/out transitions so they don't interfere with
+              // tween transitions
+              var elem = d3.select(this);
+              elem.on('mouseover', null);
+              elem.on('mouseout', null);
+            }).transition().duration(duration).each('start', function(d) {
+              // wait until the first transition has finished
+              // before setting new values
+              d3.select(this).attr('fill', function(d, i) {
+                return _self.hexToRgba(d.data.color, 0.6);
+              });
+              // dm adds a color if necessary
+              this._current = {
+                data: {
+                  count: 0,
+                  percent: 0,
+                  total: 0
+                },
+                value: d.value,
+                startAngle: enterClockwise.startAngle,
+                endAngle: enterClockwise.endAngle
+              };
+              d.data = _self.setBucketFilter(d.data);
+              if (d.data.filtered) {
+                d3.select(this).attr('style', function() {
+                  return 'stroke: ' + d.data.color + ';stroke-width: 3;';
+                }).attr('class', 'filter-selected').attr('label', d.data.term);
+              }
+            }).attrTween('d', function(d) {
+              if (d.data.percent === undefined) {
+                d.value = 0;
+                d.startAngle = enterClockwise.startAngle;
+                d.endAngle = enterClockwise.endAngle;
+                this._current = getInitDataValue(d);
+              }
+              var interpolate = d3.interpolate(this._current, d);
+              var _this = this;
+              return function(t) {
+                _this._current = interpolate(t);
+                return arc(_this._current);
+              };
+            }).each('end', function(d) {
+              // add mouseover only when the tween transition has finished
+              d3.select(this).on('mousemove', function(d) {
+                tip.show(d, svg.select('circle.tip-helper').node());
+              }).on('mouseout', tip.hide).on('click', function(d) {
+                if (d.data.term.indexOf('{files in directory}') === -1) {
+                  d3.selectAll('.d3-tip').remove();
+
+                  if (_self.dimension === 'location') {
+                    _self._filterConverter.setValue(d.data.filterType, d.data.term);
+                  } else {
+                    // Remove filter if is set up
+                    if (d3.select(this).attr('class').indexOf('filter-selected') !== -1) {
+                      _self.removeFilter({
+                        label: d.data.term,
+                        dimension: d.data.filterType
+                      });
+                    } else {
+                      // Add filter
+                      _self._filterConverter.addValue(d.data.filterType, d.data.term);
+                      d3.select(this)
+                        .attr('label', d.data.term)
+                        .attr('class', 'filter-selected')
+                        .attr('style', function() {
+                          return 'stroke: ' + d.data.color + ';stroke-width: 3;';
+                        });
+                    }
+                  }
+                }
+              });
+            });
+
+            /* ------- TEXT LABELS -------*/
+            var text = svg.select('.labels')
+              .selectAll('text')
+              .data(pie(data), key);
+
+            text
+              .enter()
+              .append('text')
+              .attr('dy', '.35em')
+              .style('opacity', 0)
+              .text(function(d) {
+                var words = d.data.term.split('/');
+                return _self.analyticsLabel(words[words.length - 1]);
+              })
+              .each(function(d) {
+                this._current = getInitDataValue(d);
+              });
+
+            text
+              .transition()
+              .duration(duration)
+              .style('opacity', function(d) {
+                return d.data.percent === 0 ? 0 : 0.8;
+              })
+              .attrTween('transform', function(d) {
+                if (checkExtremePercentValues.call(this, d)) {
+                  return;
+                }
+
+                var interpolate = d3.interpolate(this._current, d);
+                var _this = this;
+
+                return function(t) {
+                  var d2 = interpolate(t);
+                  _this._current = d2;
+                  var pos = outerArc.centroid(d2);
+                  pos[0] = radius * (midAngle(d2) < Math.PI ? 1 : -1);
+
+                  return 'translate(' + pos + ')';
+                };
+              })
+              .styleTween('text-anchor', function(d) {
+                var interpolate = d3.interpolate(this._current, d);
+
+                return function(t) {
+                  var d2 = interpolate(t);
+                  return midAngle(d2) < Math.PI ? 'start' : 'end';
+                };
+              });
+          }
+
+          if (data && data.length) {
+            change(data);
+          }
+        },
+        renderTreemapChart: function(svg, data, width, height) {
+          var _self = this;
+          var treemap = null;
+
+          var DataColorManager = function(keyField, emptyItem) {
+            // util for storing all seen data items so we
+            // can sort by total before every update, also
+            // sets colours to those previously seen so that
+            // an item has the same colour for the lifetime of
+            // a chart
+            var registry = {};
+            var i = 0;
+            var self = this;
+
+            self.getOrderedData = function(data) {
+              var output = [];
+              var existingItem, key;
+              var existingKeys = [];
+              // handle key that exist in data
+              _.each(data, function(item) {
+                existingItem = registry[item[keyField]];
+                existingKeys.push(item[keyField]);
+                if (existingItem === undefined) {
+                  var color;
+                  if (item.hasOwnProperty('color')) {
+                    // data is returning colours
+                    color = item.color ? item.color : '#7f8c8d';
+                  } else {
+                    // no colours in dataset
+                    color = _self.colors(i);
+                  }
+                  registry[item[keyField]] = {
+                    i: i++,
+                    color: color
+                  };
+                }
+                if (!item.color) {
+                  item.color = registry[item[keyField]].color;
+                }
+                output.push(item);
+              });
+              // handle keys no longer in data
+              _.each(_.difference(_.keys(registry), existingKeys), function(key) {
+                var emptyObj = {};
+                emptyObj[keyField] = key;
+                emptyObj.color = registry[key].color;
+                output.push(_.extend(emptyObj, emptyItem));
+              });
+              // now we have complete padded data, sort
+              output = _.sortBy(output, function(item) {
+                return item.total;
+              }).reverse();
+              return output;
+            };
+          };
+
+          var duration = 1000;
+          var tip = d3.tip().offset([
+            -10,
+            0
+          ]).html(function(d) {
+            if (d.size_human && d.size_human_measure && !d.visible) {
+              var human_term = _.find([
+                d.term_human,
+                d.term
+              ], function(item) {
+                return item !== undefined;
+              });
+              human_term = _self.analyticsLabel(human_term.split('/')[human_term.split('/').length - 1]);
+              var position = 'position:relative; top: ' + (d3.event.pageY - 100) + 'px; ' +
+                'left: ' + (d3.event.pageX - getTextWidth('Name:' + human_term)) + 'px;';
+              var output = '<div class="d3-tip" style="' + position + '">' + '<b>Name: </b>' + human_term +
+                '<br>' + '<b> Size: </b>' + d.size_human + ' ' + d.size_human_measure +
+                '</div>';
+
+              return output;
+            }
+          });
+
+          svg.attr('transform', 'translate(0, 40)').call(tip);
+          // cheat trick to integrate treemap within window resize
+          svg = d3.select(Polymer.dom(svg.node()).parentNode);
+          svg.selectAll('.treemap-container').remove();
+          svg.append('circle').attr('class', 'tip-helper');
+          svg.on('mousemove', function(d) {
+            var svgX = event.pageX - this.getBoundingClientRect().left;
+            var svgY = event.pageY - this.getBoundingClientRect().top;
+            // Set the cicle to move within the mouse pointer,
+            // so on mousehover we can call tip show within this explicit target.
+            // https://github.com/Caged/d3-tip/issues/53
+            svg.select('circle.tip-helper')
+              .attr('cx', svgX)
+              .attr('cy', svgY);
+          });
+          var container = svg.append('div')
+            .attr('class', 'treemap-container')
+            .style('height', height + 'px')
+            .style('width', '100%')
+            .append('g')
+            .attr('class', 'g-container');
+
+          var dm = new DataColorManager('term', {
+            count: 0,
+            total: 0,
+            fieldname: '',
+            size_human: '0',
+            size_human_measure: ''
+          });
+
+          var resetTreemap = function() {
+            treemap = d3.layout.treemap().size([
+              width,
+              height
+            ]).sticky(true).sort(function(a, b) {
+              return a.total - b.total;
+            }).value(function(d) {
+              return d.total;
+            });
+          };
+
+          var calculatePosition = function() {
+            this.style('left', function(d) {
+              return d.x + 'px';
+            }).style('top', function(d) {
+              return d.y + 'px';
+            }).style('width', function(d) {
+              return Math.max(0, d.dx - 1) + 'px';
+            }).style('height', function(d) {
+              return Math.max(0, d.dy - 1) + 'px';
+            });
+          };
+
+          // colour helper to set opacity
+          var hexToRgba = function(hex, opacity) {
+            hex = hex.replace('#', '');
+
+            var r = parseInt(hex.substring(0, 2), 16);
+            var g = parseInt(hex.substring(2, 4), 16);
+            var b = parseInt(hex.substring(4, 6), 16);
+
+            return 'rgba(' + r + ',' + g + ',' + b + ',' + opacity + ')';
+          };
+
+          var renderTreemap = function(data) {
+            container.selectAll('*').remove();
+            resetTreemap();
+            data = dm.getOrderedData(data);
+            var radialTreeData = {
+              term: '',
+              color: '#fff',
+              children: data
+            };
+
+            var node = container
+              .datum(radialTreeData)
+              .selectAll('.node')
+              .data(treemap.nodes)
+              .enter()
+              .append('div')
+              .attr('class', 'treemap-node')
+              .style('visibility', function(d) {
+              // data is extended in every request
+              // DOM elements must be visible if area belongs to them
+              return d.area ? 'visible' : 'hidden';
+            })
+            .style('background', function(d) {
+              return hexToRgba(d.color, 0.6);
+            })
+            .style('border', function(d) {
+              var borderWidth = 1;
+              d = _self.setBucketFilter(d);
+              if (d.filtered) {
+                borderWidth = 4;
+                d3.select(this).classed('filter-selected', true).attr('label', d.term);
+              }
+              return borderWidth + 'px solid ' + d.color;
+            })
+            .style('position', 'absolute')
+            .on('mousemove', function(d) {
+              var term = _self.analyticsLabel(d.term.split('/')[d.term.split('/').length - 1]);
+              if (!(getTextWidth(term) < d.dx &&
+                  getTextWidth(d.size_human + ' ' + d.size_human_measure) < d.dx &&
+                  d.dy > 30)) {
+                tip.show(d, svg.select('circle.tip-helper').node());
+              }
+            })
+            .on('mouseout', tip.hide)
+            .transition()
+            .duration(duration)
+            .call(calculatePosition)
+            .each('end', function(d) {
+              var terms = d.term.split('/'), term = _self.analyticsLabel(terms[terms.length - 1]);
+
+              // place text if fits its container
+              if (getTextWidth(term) < d.dx &&
+                  getTextWidth(d.size_human + ' ' + d.size_human_measure) < d.dx &&
+                  d.dy > 30) {
+                var svg = d3.select(this).append('svg').attr('height', d.dy).attr('width', '100%');
+
+                svg
+                  .append('text')
+                  .attr('text-anchor', 'middle')
+                  .attr('x', parseInt(d.dx / 2))
+                  .attr('y', parseInt(d.dy / 2) - 8)
+                  .append('tspan')
+                  .text(term);
+
+                if (d.size_human && d.size_human_measure) {
+                  svg
+                    .append('text')
+                    .attr('text-anchor', 'middle')
+                    .attr('x', parseInt(d.dx / 2))
+                    .attr('y', parseInt(d.dy / 2) + 7)
+                    .append('tspan')
+                    .text(d.size_human + ' ' + d.size_human_measure);
+
+                  d.visible = true;
+                }
+              }
+
+              d3.select(this).on('click', function(d) {
+                if (d.term.indexOf('{files in directory}') === -1) {
+                  d3.selectAll('.d3-tip').remove();
+
+                  if (_self.dimension === 'location') {
+                    _self._filterConverter.setValue(d.filterType, d.term);
+                  } else {
+                    if (d3.select(this).attr('class').indexOf('filter-selected') !== -1) {
+                      _self.removeFilter({
+                        label: d.term,
+                        dimension: d.filterType
+                      });
+                    } else {
+                      _self._filterConverter.addValue(d.filterType, d.term);
+                      d3.select(this).style('border', function(d) {
+                        return '4px solid ' + d.color;
+                      }).classed('filter-selected', true).attr('label', d.term);
+                    }
+                  }
+                }
+              });
+            });
+          };
+
+          if (data && data.length) {
+            renderTreemap(data);
+          }
+        },
+        renderWordCloudChart: function(svg, data, width, height) {
+          var _self = this;
+          var wordScale = d3.scale.linear().domain([
+            0,
+            1,
+            _.max(data, 'total').total
+          ]).range([
+            0,
+            6,
+            80
+          ]).clamp(true);
+
+          function draw(words) {
+            svg.attr('width', width)
+              .attr('height', height)
+              .append('g')
+              .classed('word-cloud-container', true)
+              .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')')
+              .selectAll('text')
+              .data(words)
+              .enter()
+              .append('text')
+              .style('font-size', function(d) {
+                return '0';
+              }).style('fill', function(d, i) {
+                return _self.colors(i);
+              }).each(function(d) {
+                d = _self.setBucketFilter(d);
+              }).attr('class', function(d) {
+                if (d.filtered) {
+                  return 'filter-selected';
+                }
+              }).attr('text-anchor', 'middle').attr('transform', function(d) {
+                return 'translate(' + [
+                    d.x,
+                    d.y
+                  ] + ')rotate(' + d.rotate + ')';
+              }).text(function(d) {
+                return _self.analyticsLabel(d.term.split('/')[d.term.split('/').length - 1]);
+              }).classed('cursor-pointer unselectable', true).on('click', function(d) {
+                if (d.term.indexOf('{files in directory}') === -1) {
+
+                  if (_self.dimension === 'location') {
+                    _self._filterConverter.setValue(d.filterType, d.term);
+                  } else {
+                    if (d3.select(this).attr('class').indexOf('filter-selected') !== -1) {
+                      _self.removeFilter({
+                        label: d.term,
+                        dimension: d.filterType
+                      });
+
+                      d3.select(this).classed('filter-selected', false);
+                    } else {
+                      _self._filterConverter.addValue(d.filterType, d.term);
+                      d3.select(this).classed('filter-selected', true).attr('label', d.term);
+                    }
+                  }
+                }
+              }).transition().duration(1000).style('font-size', function(d) {
+                return d.size + 'px';
+              });
+          }
+
+          d3.layout.cloud().size([
+            width,
+            height
+          ]).words(data).font('Gotham Rounded SSm A').rotate(function() {
+            return 0;
+          }).text(function(d) {
+            return _self.analyticsLabel(d.term.split('/')[d.term.split('/').length - 1]);
+          }).fontSize(function(d) {
+            d.size = Math.floor(wordScale(d.total));
+
+            return d.size;
+          }).on('end', draw).start();
+        },
+        renderTableChart: function(svg, data, width, height) {
+          var _self = this;
+
+          if (!data.length) {
+            d3.selectAll('.table-view').remove();
+          } else {
+            d3.select(this.$.paper).attr('height', 0);
+            svg = d3.select(Polymer.dom(svg.node()).parentNode);
+            svg.selectAll('.table-view').remove();
+
+            var selection = svg.append('div').attr('class', 'table-view').attr('style', function() {
+              return 'height:' + height + 'px; width:' + width + 'px;';
+            }).append('table');
+
+            selection.append('thead').append('tr').attr('class', 't-header').call(function(selection) {
+              selection.append('th').text('Term');
+              selection.append('th').text('Count');
+              selection.append('th').text('Size');
+              selection.append('th').text('Percentage');
+            });
+            selection.append('tbody');
+
+            var chart = function(selection) {
+              selection.each(function(data) {
+                chart.update = function() {
+                  selection.call(chart);
+                };
+
+                d3.select('div.table-view').style('height', height + 'px');
+                data = _.sortBy(data, 'total').reverse();
+                var join = selection.select('tbody').selectAll('tr').data(data);
+                join.exit().remove();
+                join.enter().append('tr');
+                join.call(function(selection) {
+                  selection.selectAll('td').remove();
+                  selection.append('td').attr('class', 'align-left').text(function(d) {
+                    var term = _.find([
+                      d.term_human,
+                      d.term
+                    ], function(item) {
+                      return item !== undefined;
+                    });
+                    return _self.analyticsLabel(term.split('/')[term.split('/').length - 1]);
+                  });
+                  selection.append('td').text(function(d) {
+                    return d.count;
+                  });
+                  selection.append('td').text(function(d) {
+                    return d.size_human + ' ' + d.size_human_measure;
+                  });
+                  selection.append('td').text(function(d) {
+                    return Math.round(d.percent * 100 * 10) / 10 + '%';
+                  });
+                }).on('click', function(d) {
+                  if (d.term.indexOf('{files in directory}') === -1) {
+
+                    if (_self.dimension === 'location') {
+                      _self._filterConverter.setValue(d.filterType, d.term);
+                    } else {
+                      if (d3.select(this).attr('class').indexOf('filter-selected') !== -1) {
+                        _self.removeFilter({
+                          label: d.term,
+                          dimension: d.filterType
+                        });
+                      } else {
+                        _self._filterConverter.addValue(d.filterType, d.term);
+                        d3.select(this).classed('filter-selected', true).attr('label', d.term);
+                      }
+                    }
+                  }
+                }).each(function(d, i) {
+                  d3.select(this).classed('clickable', function(d) {
+                    return d.term.indexOf('{files in directory}') === -1;
+                  });
+                  d = _self.setBucketFilter(d);
+                  if (d.filtered) {
+                    d3.select(this).attr('class', function() {
+                      return 'clickable filter-selected';
+                    }).attr('label', d.term);
+                  }
+                });
+              });
+            };
+
+            selection.datum(data);
+            chart(selection);
+          }
+        },
+        renderChordChart: function(svg, data, width, height) {
+          var _self = this;
+          if (data && data.data && data.data.length) {
+            var matrix = [];
+
+            for (var i = 0; i < data.data.length; i++) {
+              matrix.push(_.map(data.data[i], 'total'));
+            }
+
+            var chord = d3.layout.chord()
+              .padding(0.04)
+              .sortSubgroups(d3.descending)
+              .matrix(matrix);
+
+            var innerRadius = Math.min(width, height) * 0.4;
+            var outerRadius = innerRadius * 1.1;
+
+            var chordTip = d3.tip().attr('class', 'd3-tip').offset([
+              -10,
+              0
+            ]).html(function(d) {
+              return _self.analyticsLabel(
+                  data.labels[d.source.index]
+                    .term.split('/')[data.labels[d.source.index].term.split('/').length - 1]
+                ) + ' - ' +
+                _self.analyticsLabel(data.labels[d.target.index].term.split('/')
+                  [data.labels[d.target.index].term.split('/').length - 1]);
+            });
+
+            var groupTip = d3.tip().attr('class', 'd3-tip').offset([
+              -10,
+              0
+            ]).html(function(d) {
+              return _self.analyticsLabel(
+                data.labels[d.index].term.split('/')[data.labels[d.index].term.split('/').length - 1]
+              );
+            });
+
+            svg
+              .attr('width', width)
+              .attr('height', height)
+              .append('circle')
+              .attr('class', 'tip-helper');
+
+            svg.on('mousemove', function(d) {
+              var svgX = event.pageX - this.getBoundingClientRect().left;
+              var svgY = event.pageY - this.getBoundingClientRect().top;
+              // Set the cicle to move within the mouse pointer,
+              // so on mousehover we can call tip show within this explicit target.
+              // https://github.com/Caged/d3-tip/issues/53
+              d3.selectAll('circle.tip-helper').attr('cx', svgX).attr('cy', svgY);
+            });
+            svg = svg.append('g').attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+            svg.call(chordTip).call(groupTip);
+
+            var groups = svg
+              .append('g')
+              .selectAll('path')
+              .data(chord.groups)
+              .enter()
+              .append('g')
+              .attr('class', 'groups');
+
+            groups.append('path').style('fill', function(d) {
+              return _self.colors(d.index);
+            }).style('stroke', function(d) {
+              return _self.colors(d.index);
+            }).style('cursor', function(d) {
+              if (data.labels[d.index].term.indexOf('//', 0) === 0) {
+                return 'pointer';
+              }
+            }).attr('d', d3.svg.arc().innerRadius(innerRadius).outerRadius(outerRadius)).attr('id', function(d) {
+              return 'groups' + d.index;
+            }).attr('visibility', function(d) {
+              return d.endAngle - d.startAngle > 1e-7 ? 'visible' : 'hidden';
+            })
+            .on('mousemove', mouseOverGroup.bind(this))
+            .on('mouseout', mouseOutGroup.bind(this))
+            .on('click', clickGroup.bind(this));
+
+            groups.append('text')
+              .attr('x', 6)
+              .attr('dy', 16)
+              .append('textPath')
+              .attr('xlink:href', function(d) {
+                return '#groups' + d.index;
+              }).text(function(d) {
+                return _self.analyticsLabel(
+                  data.labels[d.index].term.split('/')[data.labels[d.index].term.split('/').length - 1]
+                );
+              }).each(function(d) {
+                d.arcLength = 2 * Math.PI * innerRadius * ((d.endAngle - d.startAngle) / (2 * Math.PI));
+              }).attr('style', function(d) {
+                if (this.getComputedTextLength() - 5 >= d.arcLength) {
+                  return 'display: none;';
+                }
+              }).style('cursor', function(d) {
+                if (data.labels[d.index].term.indexOf('//', 0) === 0) {
+                  return 'pointer';
+                }
+              })
+              .on('mouseover', mouseOverGroup.bind(this))
+              .on('mouseout', mouseOutGroup.bind(this))
+              .on('click', clickGroup.bind(this));
+
+            svg.append('g')
+              .attr('class', 'chord')
+              .selectAll('path')
+              .data(chord.chords)
+              .enter()
+              .append('path')
+              .attr('d', d3.svg.chord().radius(innerRadius))
+              .style('fill', function(d) {
+                return _self.colors(d.target.index);
+              }).style('opacity', 0.4).attr('visibility', function(d) {
+                return d.source.endAngle - d.source.startAngle > 1e-7 ? 'visible' : 'hidden';
+              }).on('mousemove', function(d) {
+                d3.selectAll('g.chord path').style('opacity', 0.1);
+                d3.select(this).style('opacity', 0.4);
+                chordTip.show(d, d3.selectAll('circle.tip-helper').node());
+              }).on('mouseout', function(d) {
+                d3.selectAll('g.chord path').style('opacity', 0.4);
+                chordTip.hide(d);
+              });
+          }
+
+          // Returns an event handler for fading a given chord group.
+          function fade(opacity) {
+            return function(d, i) {
+              svg.selectAll('.chord path').filter(function(d) {
+                return d.source.index !== i && d.target.index !== i;
+              }).transition().style('opacity', opacity);
+            };
+          }
+
+          function mouseOverGroup(d) {
+            fade(0.1).call(this, d, d.index);
+            groupTip.show(d, d3.selectAll('html /deep/ circle.tip-helper').node());
+          }
+
+          function mouseOutGroup(d) {
+            fade(0.4).call(this, d, d.index);
+            groupTip.hide(d);
+          }
+
+          function clickGroup(d) {
+            if (data.labels[d.index].term.indexOf('//', 0) === 0) {
+              this._filterConverter.setValue('dirpath', data.labels[d.index].term);
+            }
+          }
+        },
+        renderForceDirectedChart: function(svg, data, width, height) {
+          var _self = this;
+          var nodeTip = d3.tip().offset(function(d) {
+            return [
+              -10,
+              0
+            ];
+          }).html(function(d) {
+            var term = _self.analyticsLabel(d.term.split('/')[d.term.split('/').length - 1]);
+            var size = filesize(d.total, { output: 'array' });
+            var output = '<div class=\'d3-tip\'><b>Name: </b>' + term +
+              '</b><br><b> Size:</b> ' + size[0] + ' ' + size[1] + '</div>';
+
+            if (d.r === 0 || d.computedLabelTermWidth > d.r * 2 - 5) {
+              return output;
+            }
+          });
+          var force = d3.layout.force().charge(function(d) {
+            // Dispersion force is proporcional to node weight
+            return d.weight * -150;
+          }).linkDistance(function(d) {
+            // Distance from / to nodes's edges will be 75
+            return Math.floor(d.source.r + d.target.r) + 75;
+          }).gravity(0.15).size([
+            width,
+            height
+          ]);
+          // Lets draw the nodes with proporcional radius between them to fit the screen
+          // Width / height is reduce to generate a better layout
+          var bubble = d3.layout.pack().sort(null).size([
+            width - 100,
+            height - 120
+          ]).value(function(d) {
+            return d.total;
+          }).padding(8);
+          var graph = {
+            nodes: [],
+            links: []
+          };
+          // Transform matrix data into nodes + links object
+          _.forEach(data.data, function(array, i) {
+            var sumItems = {
+              count: 0,
+              total: 0
+            };
+            _.forEach(array, function(item, j) {
+              if (item.count > 0) {
+                sumItems.count += item.count;
+                sumItems.total += item.total;
+                // Do not push duplicated links due to conmutative property
+                // A -> B <--> B-> A in abjacency matrix
+                if (i <= j) {
+                  graph.links.push({
+                    source: i,
+                    target: j,
+                    count: item.count,
+                    total: item.total
+                  });
+                }
+              }
+            });
+            graph.nodes.push({
+              term: data.labels[i].term,
+              group: data.labels[i].group,
+              count: sumItems.count,
+              total: sumItems.total,
+              value: sumItems.total
+            });
+          });
+          // Generates a proporcional radius for each data item given a data set
+          bubble.nodes({ children: graph.nodes });
+          force.nodes(graph.nodes).links(graph.links).start();
+          svg.append('circle').attr('class', 'tip-helper');
+          svg.on('mousemove', function(d) {
+            var svgX = event.pageX - this.getBoundingClientRect().left;
+            var svgY = event.pageY - this.getBoundingClientRect().top;
+            // Set the cicle to move within the mouse pointer,
+            // so on mousehover we can call tip show within this explicit target.
+            // https://github.com/Caged/d3-tip/issues/53
+            svg.select('circle.tip-helper').attr('cx', svgX).attr('cy', svgY);
+          });
+          var link = svg
+            .selectAll('line')
+            .data(graph.links)
+            .enter()
+            .append('svg:line');
+
+          var node = svg
+            .selectAll('.node')
+            .data(graph.nodes)
+            .enter()
+            .append('circle')
+            .attr('class', 'node-force-directed')
+            .each(function(d) {
+              // Now we can set the radius calculated by the buble d3 algorithm
+              if (d.r === 0) {
+                d.radius = 0;
+              } else if (d.r < 5) {
+                d.radius = 5;
+              } else {
+                d.radius = d.r;
+              }
+            })
+            .attr('r', function(d) {
+              return d.radius;
+            })
+            .style('fill', function(d) {
+              return _self.colors(d.group);
+            })
+            .on('mousedown', mousedownNode.bind(this))
+            .on('mouseup', mouseupNode.bind(this))
+            .call(nodeTip)
+            .on('mousemove', function(d) {
+              nodeTip.show(d, svg.select('circle.tip-helper').node());
+            })
+            .on('mouseout', nodeTip.hide)
+            .call(force.drag);
+
+          var labelTerm = svg
+            .selectAll('text.force-labels-term')
+            .data(graph.nodes)
+            .enter()
+            .append('text')
+            .attr('font-size', '.6em')
+            .attr({
+              'x': function(d) {
+                return d.x;
+              },
+              'y': function(d) {
+                return d.y - 2;
+              }
+            })
+            .text(function(d) {
+              d.computedLabelTermWidth = getTextWidth(
+                _self.analyticsLabel(d.term.split('/')[d.term.split('/').length - 1])
+              );
+
+              return d.r === 0 || d.computedLabelTermWidth > d.r * 2 - 5 ?
+                '' : _self.analyticsLabel(d.term.split('/')[d.term.split('/').length - 1]);
+            })
+            .attr('class', 'force-labels-term unselectable')
+            .style('text-anchor', 'middle')
+            .style('fill', 'white')
+            .on('mousedown', mousedownNode.bind(this))
+            .on('mouseup', mouseupNode.bind(this))
+            .call(force.drag);
+
+          var labelSize = svg
+            .selectAll('text.force-labels-size')
+            .data(graph.nodes)
+            .enter()
+            .append('text')
+            .attr('font-size', '.6em')
+            .attr({
+              'x': function(d) {
+                return d.x;
+              },
+              'y': function(d) {
+                return d.y + 8;
+              }
+            }).text(function(d) {
+              var size = filesize(d.total, { output: 'array' });
+
+              return d.r === 0 || d.computedLabelTermWidth > d.r * 2 - 5 ?
+                '' : size[0] + ' ' + size[1];
+            })
+            .attr('class', 'force-labels-size unselectable')
+            .style('text-anchor', 'middle')
+            .style('fill', 'white')
+            .on('mousedown', mousedownNode.bind(this))
+            .on('mouseup', mouseupNode.bind(this))
+            .call(force.drag);
+
+          force.on('tick', function() {
+            var q = d3.geom.quadtree(graph.nodes),
+              i = 0,
+              n = graph.nodes.length;
+
+            while (++i < n) {
+              q.visit(collide(graph.nodes[i]));
+            }
+            // Do not allow to drag nodes out of the svg container
+            link.attr('x1', function(d) {
+              return Math.max(d.source.r, Math.min(width - d.source.r, d.source.x));
+            }).attr('y1', function(d) {
+              return Math.max(d.source.r, Math.min(height - d.source.r, d.source.y));
+            }).attr('x2', function(d) {
+              return Math.max(d.target.r, Math.min(width - d.target.r, d.target.x));
+            }).attr('y2', function(d) {
+              return Math.max(d.target.r, Math.min(height - d.target.r, d.target.y));
+            });
+            node.attr('cx', function(d) {
+              d.x = Math.max(d.r, Math.min(width - d.r, d.x));
+              return d.x;
+            }).attr('cy', function(d) {
+              d.y = Math.max(d.r, Math.min(height - d.r, d.y));
+              return d.y;
+            });
+            labelTerm.attr('x', function(d) {
+              return d.x;
+            }).attr('y', function(d) {
+              return d.y - 2;
+            });
+            labelSize.attr('x', function(d) {
+              return d.x;
+            }).attr('y', function(d) {
+              return d.y + 8;
+            });
+          });
+          // This code allows to drag items out of the container, elements will come vack due to gravity
+          /*link
+           .attr("x1", function(d) { return d.source.x; })
+           .attr("y1", function(d) { return d.source.y; })
+           .attr("x2", function(d) { return d.target.x; })
+           .attr("y2", function(d) { return d.target.y; });
+
+           node
+           .attr("cx", function(d) { return d.x; })
+           .attr("cy", function(d) { return d.y; });*/
+          force.resume();
+
+          // Resolves collisions between d and all other circles.
+          function collide(node) {
+            var r = node.radius + 10,
+              nx1 = node.x - r,
+              nx2 = node.x + r,
+              ny1 = node.y - r,
+              ny2 = node.y + r;
+
+            return function(quad, x1, y1, x2, y2) {
+              if (quad.point && quad.point !== node) {
+                var x = node.x - quad.point.x,
+                  y = node.y - quad.point.y,
+                  l = Math.sqrt(x * x + y * y),
+                  r = node.radius + 10 + quad.point.radius;
+
+                if (l < r) {
+                  l = (l - r) / l * 0.5;
+                  node.x -= x *= l;
+                  node.y -= y *= l;
+                  quad.point.x += x;
+                  quad.point.y += y;
+                }
+              }
+              return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+            };
+          }
+
+          var mousetiming;
+
+          function mousedownNode(d) {
+            mousetiming = new Date().getTime();
+          }
+
+          function mouseupNode(d) {
+            if (new Date().getTime() - mousetiming < 400) {
+              if (data.labels[d.index].term.indexOf('//', 0) === 0) {
+                this._filterConverter.setValue('dirpath', data.labels[d.index].term);
+              }
+            }
+          }
+        },
+        renderSankeyChart: function(svg, data, width, height) {
+          var _self = this;
+          var margin = {
+            top: 10,
+            left: 15,
+            right: 15,
+            bottom: 20
+          };
+          var graph = {
+            nodes: [],
+            links: []
+          };
+          if (data.data && data.data.length <= 0) {
+            return;
+          } else {
+            // Data contains items from two dimensions
+            if (_.some(data.labels, 'group', 1) && _.some(data.labels, 'group', 2)) {
+              // Transform matrix data into nodes + links object
+              _.forEach(data.data, function(array, i) {
+                var sumItems = {
+                  count: 0,
+                  total: 0
+                };
+                _.forEach(array, function(item, j) {
+                  if (item.count > 0) {
+                    sumItems.count += item.count;
+                    sumItems.total += item.total;
+                    // Do not push duplicated links due to conmutative property
+                    // A -> B <--> B-> A in abjacency matrix
+                    if (i <= j) {
+                      graph.links.push({
+                        source: i,
+                        target: j,
+                        count: item.count,
+                        total: item.total,
+                        value: item.total
+                      });
+                    }
+                  }
+                });
+                graph.nodes.push({
+                  term: data.labels[i].term,
+                  group: data.labels[i].group,
+                  count: sumItems.count,
+                  total: sumItems.total,
+                  value: sumItems.total
+                });
+              });
+            } else
+            // Data contains items from just one dimension
+            {
+              _.forEach(data.data, function(row, i) {
+                // Push the node twice, because the item relates to itself uniquely
+                // algorith breaks if term is repeated,
+                // so second one we add a space as workaround
+                graph.nodes.push({
+                  term: data.labels[i].term,
+                  group: data.labels[i].group,
+                  count: data.data[i][i].count,
+                  total: data.data[i][i].total,
+                  value: data.data[i][i].total
+                });
+                graph.nodes.push({
+                  term: data.labels[i].term + ' ',
+                  group: data.labels[i].group,
+                  count: data.data[i][i].count,
+                  total: data.data[i][i].total,
+                  value: data.data[i][i].total
+                });
+                // Every two nodes only one link exists
+                // xItem <-> xItem
+                var link = {
+                  source: graph.nodes.length - 2,
+                  target: graph.nodes.length - 1,
+                  count: data.data[i][i].count,
+                  total: data.data[i][i].total,
+                  value: data.data[i][i].total
+                };
+                graph.links.push(link);
+              });
+            }
+          }
+          var sankey = d3.sankey().nodeWidth(15).nodePadding(5).size([
+            width - margin.left - margin.right,
+            height - margin.top - margin.bottom
+          ]);
+          var path = sankey.link();
+          var tip = d3.tip().offset([
+            -10,
+            0
+          ]).html(function(d) {
+            return '<div class="d3-tip">' + '<b>Size: </b>' + filesize(d.total) + '</div>';
+          });
+
+          svg = svg
+            .attr('width', width)
+            .attr('height', height)
+            .call(tip)
+            .append('g')
+            .attr('width', width - margin.left - margin.right)
+            .attr('height', height - margin.top - margin.bottom)
+            .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+
+          svg
+            .append('circle')
+            .attr('class', 'tip-helper');
+
+          svg.on('mousemove', function(d) {
+            var svgX = event.pageX - this.getBoundingClientRect().left;
+            var svgY = event.pageY - this.getBoundingClientRect().top;
+            // Set the cicle to move within the mouse pointer,
+            // so on mousehover we can call tip show within this explicit target.
+            // https://github.com/Caged/d3-tip/issues/53
+            svg.select('circle.tip-helper').attr('cx', svgX).attr('cy', svgY);
+          });
+
+          sankey.nodes(graph.nodes).links(graph.links).layout(1500);
+
+          var link = svg
+            .append('g')
+            .selectAll('.sankey-link')
+            .data(graph.links)
+            .enter()
+            .append('path')
+            .attr('class', 'sankey-link')
+            .attr('d', path)
+            .style('stroke-width', function(d) {
+              return Math.max(1, d.dy);
+            }).sort(function(a, b) {
+              return b.dy - a.dy;
+            }).on('mousemove', function(d) {
+              tip.show(d, d3.selectAll('svg').select('circle.tip-helper').node());
+            }).on('mouseout', tip.hide);
+
+          var node = svg
+            .append('g')
+            .selectAll('.sankey-node')
+            .data(graph.nodes)
+            .enter()
+            .append('g')
+            .attr('class', 'sankey-node')
+            .attr('transform', function(d) {
+              return 'translate(' + d.x + ',' + d.y + ')';
+            }).call(d3.behavior.drag().origin(function(d) {
+              return d;
+            }).on('dragstart', function() {
+              Polymer.dom(Polymer.dom(this).parentNode).appendChild(this);
+            }).on('drag', dragmove));
+
+
+          node.append('rect').attr('height', function(d) {
+            return d.dy;
+          }).attr('width', sankey.nodeWidth()).style('fill', function(d) {
+            d.color = _self.colors(d.group);
+            return d.color;
+          }).style('stroke', function(d) {
+            return d3.rgb(d.color).darker(2);
+          })
+          .on('mousedown', mousedownNode.bind(this))
+          .on('mouseup', mouseupNode.bind(this))
+          .on('mousemove', function(d) {
+            tip.show(d, d3.selectAll('svg').select('circle.tip-helper').node());
+          }).on('mouseout', tip.hide);
+
+          node.append('text').attr('x', -6).attr('y', function(d) {
+            return d.dy / 2;
+          })
+          .attr('dy', '.35em')
+          .attr('text-anchor', 'end')
+          .attr('transform', null).text(function(d) {
+            return _self.analyticsLabel(d.term.split('/')[d.term.split('/').length - 1]);
+          }).filter(function(d) {
+            return d.x < width / 2;
+          }).attr('x', 6 + sankey.nodeWidth()).attr('text-anchor', 'start');
+
+          var mousetiming;
+
+          function mousedownNode(d) {
+            mousetiming = new Date().getTime();
+          }
+
+          function mouseupNode(d) {
+            if (new Date().getTime() - mousetiming < 400) {
+              if (d.term.indexOf('//', 0) === 0) {
+
+                // When visualising same dimension, we had to push the same object twice,
+                // with its d.term with an extra blank space at the end,
+                // so the algorith works properly
+                if (d.term.charAt(d.term.length - 1) === ' ') {
+                  d.term = d.term.substring(0, d.term.length - 2);
+                }
+                this._filterConverter.setValue('dirpath', d.term);
+              }
+            }
+          }
+
+          function dragmove(d) {
+            d3.select(this)
+              .attr('transform', 'translate(' + d.x + ',' +
+                (d.y = Math.max(0, Math.min(height - margin.bottom - d.dy, d3.event.y))) + ')');
+
+            sankey.relayout();
+            link.attr('d', path);
+          }
+        },
+        renderMatrixChart: function(svg, data, width, height) {
+          var _self = this;
+          var graph = {
+            nodes: [],
+            links: []
+          };
+
+          if (data.data && data.data.length <= 0) {
+            return;
+          }
+
+          // Transform matrix data into nodes + links object
+          _.forEach(data.data, function(array, i) {
+            var sumItems = {
+              count: 0,
+              total: 0
+            };
+            _.forEach(array, function(item, j) {
+              if (item.count > 0) {
+                sumItems.count += item.count;
+                sumItems.total += item.total;
+                // Do not push duplicated links due to conmutative property
+                // A -> B <--> B-> A in abjacency matrix
+                if (i <= j) {
+                  graph.links.push({
+                    source: i,
+                    target: j,
+                    count: item.count,
+                    total: item.total
+                  });
+                }
+              }
+            });
+            graph.nodes.push({
+              term: data.labels[i].term,
+              group: data.labels[i].group,
+              count: sumItems.count,
+              total: sumItems.total,
+              value: sumItems.total
+            });
+          });
+
+          var termPadding = 0;
+          _.forEach(graph.nodes, function(node) {
+            var textWidth = getTextWidth(_self.analyticsLabel(node.term.split('/')[node.term.split('/').length - 1]).substring(0, 12));
+            if (textWidth > termPadding) {
+              termPadding = textWidth;
+            }
+          });
+          termPadding *= 1.1;
+
+          var x = d3.scale.ordinal().rangeBands([
+            0,
+            Math.min(width, height) - termPadding
+          ]);
+          var z = d3.scale.linear().domain([
+            0,
+            1,
+            _.max(graph.nodes, 'total').total / 2,
+            _.max(graph.nodes, 'total').total
+          ]).range([
+            0,
+            0.001,
+            0.85,
+            1
+          ]).clamp(true);
+          var tip = d3.tip().offset([
+            -10,
+            0
+          ]).html(function(d) {
+            return '<div class="d3-tip">' + '<b>Size: </b>' + filesize(d.z) + '</div>';
+          });
+
+          svg = svg
+            .attr('width', width)
+            .attr('height', height)
+            .call(tip)
+            .append('g')
+            .attr('transform', function() {
+              var x = 0, y = 0;
+              if (width > height) {
+                x = (width - height) / 2;
+              } else {
+                y = (height - width) / 2;
+              }
+              return 'translate(' + x + ',' + y + ')';
+            });
+
+          svg
+            .append('circle')
+            .attr('class', 'tip-helper');
+
+          svg.on('mousemove', function(d) {
+            var svgX = event.pageX - this.getBoundingClientRect().left;
+            var svgY = event.pageY - this.getBoundingClientRect().top;
+            // Set the cicle to move within the mouse pointer,
+            // so on mousehover we can call tip show within this explicit target.
+            // https://github.com/Caged/d3-tip/issues/53
+            svg.select('circle.tip-helper').attr('cx', svgX).attr('cy', svgY);
+          });
+
+          width = height = Math.min(width, height) - termPadding;
+          var matrix = [],
+            nodes = graph.nodes,
+            n = graph.nodes.length;
+
+          // Compute index per node.
+          nodes.forEach(function(node, i) {
+            node.index = i;
+            node.count = 0;
+            matrix[i] = d3.range(n).map(function(j) {
+              return {
+                x: j,
+                y: i,
+                z: 0
+              };
+            });
+          });
+
+          // Convert links to matrix; count character occurrences.
+          graph.links.forEach(function(link) {
+            matrix[link.source][link.target].z += link.total;
+            matrix[link.target][link.source].z += link.total;
+            matrix[link.source][link.source].z += link.total;
+            matrix[link.target][link.target].z += link.total;
+            nodes[link.source].count += link.total;
+            nodes[link.target].count += link.total;
+          });
+
+          // Precompute the orders.
+          var orders = {
+            totals: d3.range(n).sort(function(a, b) {
+              return nodes[b].total - nodes[a].total;
+            }),
+            group: d3.range(n).sort(function(a, b) {
+              return nodes[b].group - nodes[a].group;
+            })
+          };
+
+          // The default sort order.
+          x.domain(orders.group);
+          svg
+            .append('rect')
+            .attr('class', 'background')
+            .attr('width', width)
+            .attr('height', height)
+            .attr('transform', 'translate(' + termPadding + ', ' + termPadding + ')');
+
+          var row = svg
+            .selectAll('.row')
+            .data(matrix)
+            .enter()
+            .append('g')
+            .attr('class', 'row')
+            .attr('transform', function(d, i) {
+              return 'translate(' + termPadding + ',' + (x(i) + termPadding) + ')';
+            }).each(generateRow);
+
+          row
+            .append('line')
+            .attr('x2', width);
+
+          row
+            .append('text')
+            .attr('x', -6)
+            .attr('y', x.rangeBand() / 2)
+            .attr('dy', '.32em')
+            .attr('text-anchor', 'end')
+            .text(function(d, i) {
+              return _self.analyticsLabel(
+                nodes[i].term.split('/')[nodes[i].term.split('/').length - 1]
+              ).substring(0, 12);
+            }).on('click', clickLabel.bind(this))
+            .style('cursor', 'pointer');
+
+          var column = svg
+            .selectAll('.column')
+            .data(matrix)
+            .enter()
+            .append('g')
+            .attr('class', 'column')
+            .attr('transform', function(d, i) {
+              return 'translate(' + (x(i) + termPadding) + ',' + termPadding + ')rotate(-90)';
+            });
+
+          column
+            .append('line')
+            .attr('x1', -width);
+          column
+            .append('text')
+            .attr('x', 6)
+            .attr('y', x.rangeBand() / 2)
+            .attr('dy', '.32em')
+            .attr('text-anchor', 'start')
+            .text(function(d, i) {
+              return _self.analyticsLabel(
+                nodes[i].term.split('/')[nodes[i].term.split('/').length - 1]
+              ).substring(0, 12);
+            })
+            .on('click', clickLabel.bind(this))
+            .style('cursor', 'pointer');
+
+          function generateRow(row) {
+            var cell = d3.select(this).selectAll('.cell').data(row.filter(function(d) {
+              return d.z;
+            })).enter().append('rect').attr('class', 'cell').attr('x', function(d) {
+              return x(d.x);
+            }).on('mousemove', function(d) {
+              tip.show(d, d3.selectAll('svg').select('circle.tip-helper').node());
+            })
+            .on('mouseout', tip.hide)
+            .attr('width', x.rangeBand())
+            .attr('height', x.rangeBand())
+            .style('fill-opacity', function(d) {
+              return z(d.z);
+            }).style('fill', function(d) {
+              return nodes[d.x].group === nodes[d.y].group ?
+                _self.colors(nodes[d.x].group) : _self.colors(d.x * d.y);
+            });
+          }
+
+          function clickLabel(d, i) {
+            if (nodes[i].term.indexOf('//', 0) === 0) {
+              this._filterConverter.setValue('dirpath', nodes[i].term);
+            }
+          }
+        },
+        attached: function() {
+          var resizeCallback;
+
+          Polymer.dom.flush();
+
+          // Selects its filter converter, if not,
+          // the one from kazoup-search can be selected erroneously
+          // trigerring observer in the wrong place
+          this._filterConverter = Polymer.dom(document)
+            .querySelector(this.target)
+            .querySelector('#filterConverter');
+          this._brushSlider = this.$.brushSlider;
+          this._brushSlider.addEventListener('data-chart', this.setChartData.bind(this));
+
+          window.addEventListener('resize', function() {
+            clearTimeout(resizeCallback);
+            resizeCallback = setTimeout(function() {
+              this.prepare();
+            }.bind(this), 200);
+          }.bind(this));
+        }
+      });
+    }());
+  </script>
+</dom-module>
