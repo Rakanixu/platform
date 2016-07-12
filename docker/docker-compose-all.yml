@@ -81,9 +81,9 @@ services:
           links:
           - registry
 
-        web-proxy:
+        proxy-srv:
           command: --registry_address=registry:8500
-          image: kazoup/web-proxy
+          image: kazoup/proxy-srv
           links:
           - registry
           ports:
