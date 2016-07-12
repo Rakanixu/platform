@@ -171,7 +171,9 @@ func (f *Flag) List(ctx context.Context, req *proto.ListRequest, rsp *proto.List
 	for _, hit := range input["hits"].(map[string]interface{})["hits"].([]interface{}) {
 		var val bool
 
-		if hit.(map[string]interface{})["_source"].(map[string]interface{})["value"] == nil {
+		// Boolean values can be stored as empty and type boolean or false and type boolean in ES
+		if hit.(map[string]interface{})["_source"].(map[string]interface{})["value"] == nil ||
+			hit.(map[string]interface{})["_source"].(map[string]interface{})["value"].(bool) == false {
 			val = false
 		} else {
 			val = true
