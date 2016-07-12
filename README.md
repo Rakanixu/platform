@@ -15,7 +15,7 @@ Repo | Description
 [elastic](https://github.com/kazoup/platform/tree/master/elastic) | Microservice for supporting agnostic CRUD, Search and QueryDSL operations over Elastic search 
 [proxy](https://github.com/kazoup/platform/tree/master/proxy) | Entry point for Kazoup platform frontend 
 [auth](https://github.com/kazoup/platform/tree/master/auth) | Microservices for Kazoup auth 
-[ldap](https://github.com/kazoup/ldap) | LDAP/AD authetication service 
+[ldap](https://github.com/kazoup/platform/tree/master/ldap) | LDAP/AD authetication service 
 [crawler](https://github.com/kazoup/crawler) | Crawler service 
 [publish](https://github.com/kazoup/publish) | Publish service 
 [indexer](https://github.com/kazoup/indexer) | Index files from files topic 
