@@ -5,6 +5,9 @@ set -x
 
 REGISTRY=kazoup
 
+# Build UI
+
+cd ui/frontend && npm install && npm install gulp && bower install && gulp && cd ../..
 
 # Used to rebuild all the things
 
