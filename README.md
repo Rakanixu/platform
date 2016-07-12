@@ -19,7 +19,19 @@ Repo | Description
 [crawler](https://github.com/kazoup/platform/tree/master/crawler) | Crawler service 
 [publish](https://github.com/kazoup/platform/tree/master/publish) | Publish service 
 [indexer](https://github.com/kazoup/platform/tree/master/indexer) | Index files from files topic 
-[kazoup-web](https://github.com/kazoup/kazoup-web) | Web frontend  as micro services 
+[ui](https://github.com/kazoup/platform/tree/master/ui) | Web frontend  as micro services 
+[config](https://github.com/kazoup/platform/tree/config) | Config service for kazoup platform 
+
+## Build
+
+This will build all platform 
+
+```
+
+./build.sh
+
+```
+
 ## Run
 
 Running everything with Docker is the fastes way to start
