@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package go.micro.srv.crawler.crawl;
+
+service Crawl {
+	rpc Start(StartRequest) returns(StartResponse) {}
+	rpc Stop(StopRequest) returns(StopResponse) {}
+	rpc Search(SearchRequest) returns(SearchResponse) {}
+}
+
+message Status {
+  int64 id = 1;
+  string type = 2;
+  string description = 3;
+	map<string,string> config = 4;
+}
+
+message StartRequest {
+	string type = 1;
+	map<string,string> config = 2;
+}
+
+message StartResponse {
+
+}
+
+message StopRequest {
+  int64 id = 1;
+}
+
+message StopResponse {
+
+}
+
+message SearchRequest {
+
+}
+
+message SearchResponse {
+  map<string,Status> crawls = 1;
+}

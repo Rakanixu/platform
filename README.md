@@ -16,8 +16,8 @@ Repo | Description
 [proxy](https://github.com/kazoup/platform/tree/master/proxy) | Entry point for Kazoup platform frontend 
 [auth](https://github.com/kazoup/platform/tree/master/auth) | Microservices for Kazoup auth 
 [ldap](https://github.com/kazoup/platform/tree/master/ldap) | LDAP/AD authetication service 
-[crawler](https://github.com/kazoup/crawler) | Crawler service 
-[publish](https://github.com/kazoup/publish) | Publish service 
+[crawler](https://github.com/kazoup/platform/tree/master/crawler) | Crawler service 
+[publish](https://github.com/kazoup/platform/tree/master/publish) | Publish service 
 [indexer](https://github.com/kazoup/indexer) | Index files from files topic 
 [kazoup-web](https://github.com/kazoup/kazoup-web) | Web frontend  as micro services 
 ## Run
