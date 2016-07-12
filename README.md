@@ -14,12 +14,12 @@ Repo | Description
 [policy](https://github.com/kazoup/platfrom/tree/master/policy) | Policy service 
 [elastic](https://github.com/kazoup/platform/tree/master/elastic) | Microservice for supporting agnostic CRUD, Search and QueryDSL operations over Elastic search 
 [proxy](https://github.com/kazoup/platform/tree/master/proxy) | Entry point for Kazoup platform frontend 
-[auth](https://github.com/kazoup/auth) | Microservices for Kazoup auth 
-[kazoup-web](https://github.com/kazoup/kazoup-web) | Web frontend  as micro services 
+[auth](https://github.com/kazoup/platform/tree/master/auth) | Microservices for Kazoup auth 
 [ldap](https://github.com/kazoup/ldap) | LDAP/AD authetication service 
 [crawler](https://github.com/kazoup/crawler) | Crawler service 
 [publish](https://github.com/kazoup/publish) | Publish service 
 [indexer](https://github.com/kazoup/indexer) | Index files from files topic 
+[kazoup-web](https://github.com/kazoup/kazoup-web) | Web frontend  as micro services 
 ## Run
 
 Running everything with Docker is the fastes way to start
