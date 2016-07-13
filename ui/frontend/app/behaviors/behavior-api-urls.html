@@ -39,6 +39,8 @@
               scanShares: '/api/v1/servers/list_shares/?format=json',
               addShare: '/api/v1/servers/select_shares/?format=json',
               createPolicy: 'http://localhost:8080/policy/create',
+              deletePolicy: 'http://localhost:8080/policy/delete',
+              listPolicies: 'http://localhost:8080/policy/list',
               users: 'http://localhost:8080/v2/settings/user/read',
               login: 'http://localhost:8080/v2/auth/read',
               config: '/api/public/config/?format=json',
@@ -56,9 +58,6 @@
       },
       deleteShareEndpoint: function(shareId) {
         return '/api/v1/shares/' + shareId + '/?format=json';
-      },
-      deletePolicyEndpoint: function(policyId) {
-        return '/api/v1/filters/' + policyId + '/?format=json';
       },
       deleteEditUserEndpoint: function(userId) {
         return '/api/v1/users/' + userId + '/?format=json';

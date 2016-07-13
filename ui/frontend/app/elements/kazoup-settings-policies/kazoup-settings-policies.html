@@ -118,16 +118,16 @@
       <paper-button on-tap="deletePolicy">OK</paper-button>
     </paper-dialog>
 
-    <kazoup-ajax id="filters"
-                 url="[[endpointList.policies]]"
-                 method="GET"
+    <kazoup-ajax id="policies"
+                 url="[[endpointList.listPolicies]]"
+                 method="POST"
                  is-authorize="true"
                  handle-as="json"></kazoup-ajax>
 
     <kazoup-ajax id="deletePolicy"
-                 url="[[deletePolicyEndpoint(policyId)]]"
+                 url="[[endpointList.deletePolicy]]"
                  is-authorize="true"
-                 method="DELETE"
+                 method="POST"
                  handle-as="json"></kazoup-ajax>
 
     <iron-media-query query="max-width: 1024px"
@@ -158,7 +158,7 @@
               return [];
             }
           },
-          policyId: {
+          policyName: {
             type: Number,
             notify: true,
             value: null
@@ -222,7 +222,11 @@
 
           return qwest.post(
             this.endpointList.ESFiles,
-            query,
+            {
+              index: "files",
+              type: "file",
+              query: query
+            },
             {
               dataType: 'json',
               cache: true,
@@ -234,10 +238,13 @@
           );
         },
         openDeletionDialog: function(e, detail) {
-          this.set('policyId', e.model.__data__.item.id);
+          this.set('policyName', e.model.__data__.item.name);
           this.$.deletePolicyDialog.open();
         },
         deletePolicy: function() {
+          this.$.deletePolicy.setParamsAsObj({
+            name: this.policyName
+          });
           this.$.deletePolicy.generateRequest().then(this._handlePolicyDeletion.bind(this));
         },
         fileSize: function(val) {
@@ -246,21 +253,29 @@
           }
         },
         _handlePolicyDeletion: function(e) {
-          if (e && e.status === 204) {
-            this.getPolicies();
+          if (e && e.status === 204 || e.status === 200) {
+            var index = _.findIndex(this.policies, function(policy) {
+              return policy.name == this.policyName;
+            }.bind(this));
+
+            // Remove element from model
+            this.policies.splice(index, 1)
+            this.set('policies', this.policies);
+            this.$.list.fire('iron-resize');
+
             Polymer.dom(document).querySelector('paper-toast').text = 'Policy deleted successfully';
             Polymer.dom(document).querySelector('paper-toast').show();
             this.$.deletePolicyDialog.close();
           }
         },
-        _handleFilters: function(e) {
-          if (e && e.response && e.response.results && e.response.results.length > 0) {
+        _handlePolicies: function(e) {
+          if (e && e.response && e.response.result && e.response.result.length > 0) {
             this.set('emptyStateVisible', false);
 
             // Once we retieved all policies, we need to request some data about them
             // Pushes into the policies model every policy with its data aggregated, policy['data']
             // Sorting / order depends on network
-            _.forEach(e.response.results, function(policy) {
+            _.forEach(e.response.result, function(policy) {
               this.getMatchingFiles(policy)
                 .then(
                   function(xhr, response) {
@@ -279,7 +294,7 @@
         },
         getPolicies: function() {
           this.set('policies', []);
-          this.$.filters.generateRequest().then(this._handleFilters.bind(this));
+          this.$.policies.generateRequest().then(this._handlePolicies.bind(this));
         },
         init: function(e) {
           this.getPolicies();
