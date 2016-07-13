@@ -71,19 +71,22 @@ type MockFile struct {
 	DirpathSplit intmap.Intmap
 	Sharepath    string
 	Extension    string
+	DocType      string
 }
 
 var directories = [...]string{"aaa", "bbb", "ccc", "ddd", "eee"}
 var extensions = [...]string{".js", ".go", ".png", ".avi", ".txt"}
+var docTypes = [...]string{"JavaScript", "Golang", "Images", "Videos", "Documents"}
 var mimeTypes = [...]string{"application/javascript", "application", "image/png", "video/avi", "text/plain"}
 
 // GenerateData for mock file
 func (mf *MockFile) GenerateData() {
 	index := randomdata.Number(0, 4)
-	path := "/127.0.0.1/"
+	path := "//127.0.0.1/"
 
 	mf.Filename += extensions[index]
 	mf.Extension = extensions[index]
+	mf.DocType = docTypes[index]
 	mf.Mimetype = mimeTypes[index]
 
 	for i := 0; i < index; i++ {
@@ -94,7 +97,7 @@ func (mf *MockFile) GenerateData() {
 
 	mf.Fullpath = path
 	mf.DirpathSplit = pathToIntmap(path)
-	mf.Sharepath = "/vol1/"
+	mf.Sharepath = "//vol1/"
 }
 
 // NewMockFile constructor
@@ -117,6 +120,7 @@ func NewMockFile() *File {
 		Content: content.Content{},
 		Metadata: metadata.Metadata{
 			Mimetype:     mockFile.Mimetype,
+			DocType:      mockFile.DocType,
 			DirpathSplit: mockFile.DirpathSplit,
 			Extension:    mockFile.Extension,
 			Created: time.Date(
