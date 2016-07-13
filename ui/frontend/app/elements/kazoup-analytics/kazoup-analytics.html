@@ -349,7 +349,15 @@
             this.advance_anlytics_enabled = false;
 
           // kazoup-analytics initialized with URL params
-          window.addEventListener('kazoup-analytics-initialized', this.init.bind(this));
+          // TODO: clean up
+          //window.addEventListener('kazoup-analytics-initialized', this.init.bind(this));
+          window.addEventListener('WebComponentsReady', function() {
+            this.init({
+              data: {
+                //fromSearch: true
+              }
+            });
+          }.bind(this));
 
           this.$.filterConverter.addEventListener('filters-changed', this.buildQuery.bind(this));
         },

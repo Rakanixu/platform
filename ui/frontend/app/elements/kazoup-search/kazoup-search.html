@@ -744,11 +744,13 @@
           // kazoup-search initialized with URL params
           //TODO: clean up
           //window.addEventListener('kazoup-search-initialized', this.init.bind(this));
-          this.init({
-            data: {
-              browser: true
-            }
-          })
+          window.addEventListener('WebComponentsReady', function() {
+            this.init({
+              data: {
+                browser: true
+              }
+            });
+          }.bind(this));
 
           // filters changed
           this.$.filterConverter.addEventListener('filters-changed', this.goToNewUrl.bind(this));
