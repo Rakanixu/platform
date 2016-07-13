@@ -157,10 +157,11 @@ func pathToIntmap(path string) intmap.Intmap {
 	parts := strings.Split(dir, "/")
 	for k, v := range parts {
 		if k == 0 {
-			results[k] = "/" + v
-
+			continue
+		} else if k == 1 {
+			results[k-1] = "//" + v
 		} else {
-			results[k] = filepath.Join(results[k-1], v)
+			results[k-1] = "/" + filepath.Join(results[k-2], v)
 		}
 	}
 	return results
