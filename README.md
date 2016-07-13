@@ -32,6 +32,16 @@ This will build all platform
 
 ```
 
+## Deploy
+
+Deploy images to DockerHub
+
+```
+
+./deploy.sh
+
+```
+
 ## Run
 
 Running everything with Docker is the fastes way to start
