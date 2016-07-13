@@ -2,13 +2,12 @@ package handler
 
 import (
 	"encoding/json"
-	"time"
-
-	elasticsearch "github.com/kazoup/platform/elastic/srv/proto/elastic"
+	elastic "github.com/kazoup/platform/elastic/srv/proto/elastic"
 	proto "github.com/kazoup/platform/policy/srv/proto/policy"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
+	"time"
 )
 
 // Policy struct
@@ -23,14 +22,14 @@ func (p *Policy) Create(ctx context.Context, req *proto.CreateRequest, rsp *prot
 	// Try read record, if exists, let consumer know policy name is in use
 	srvReadReq := client.NewRequest(
 		"go.micro.srv.elastic",
-		"Elasticsearch.Read",
-		&elasticsearch.ReadRequest{
+		"Elastic.Read",
+		&elastic.ReadRequest{
 			Index: "policies",
 			Type:  "policy",
 			Id:    req.Name,
 		},
 	)
-	srvReadRsp := &elasticsearch.ReadResponse{}
+	srvReadRsp := &elastic.ReadResponse{}
 
 	if err := client.Call(ctx, srvReadReq, srvReadRsp); err == nil {
 		return errors.BadRequest("go.micro.srv.policy", "Policy name already exists")
@@ -59,15 +58,15 @@ func (p *Policy) Create(ctx context.Context, req *proto.CreateRequest, rsp *prot
 
 	srvCreateReq := client.NewRequest(
 		"go.micro.srv.elastic",
-		"Elasticsearch.Create",
-		&elasticsearch.CreateRequest{
+		"Elastic.Create",
+		&elastic.CreateRequest{
 			Index: "policies",
 			Type:  "policy",
 			Id:    req.Name,
 			Data:  string(data),
 		},
 	)
-	srvCreateRsp := &elasticsearch.CreateResponse{}
+	srvCreateRsp := &elastic.CreateResponse{}
 
 	if err := client.Call(ctx, srvCreateReq, srvCreateRsp); err != nil {
 		return errors.InternalServerError("go.micro.srv.policy", err.Error())
@@ -84,14 +83,14 @@ func (p *Policy) Read(ctx context.Context, req *proto.ReadRequest, rsp *proto.Re
 
 	srvReq := client.NewRequest(
 		"go.micro.srv.elastic",
-		"Elasticsearch.Read",
-		&elasticsearch.ReadRequest{
+		"Elastic.Read",
+		&elastic.ReadRequest{
 			Index: "policies",
 			Type:  "policy",
 			Id:    req.Name,
 		},
 	)
-	srvRsp := &elasticsearch.ReadResponse{}
+	srvRsp := &elastic.ReadResponse{}
 
 	if err := client.Call(ctx, srvReq, srvRsp); err != nil {
 		return errors.InternalServerError("go.micro.srv.policy", err.Error())
@@ -134,14 +133,14 @@ func (p *Policy) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *prot
 
 	srvReq := client.NewRequest(
 		"go.micro.srv.elastic",
-		"Elasticsearch.Delete",
-		&elasticsearch.DeleteRequest{
+		"Elastic.Delete",
+		&elastic.DeleteRequest{
 			Index: "policies",
 			Type:  "policy",
 			Id:    req.Name,
 		},
 	)
-	srvRsp := &elasticsearch.DeleteResponse{}
+	srvRsp := &elastic.DeleteResponse{}
 
 	if err := client.Call(ctx, srvReq, srvRsp); err != nil {
 		return errors.InternalServerError("go.micro.srv.policy", err.Error())
@@ -154,15 +153,15 @@ func (p *Policy) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *prot
 func (p *Policy) List(ctx context.Context, req *proto.ListRequest, rsp *proto.ListResponse) error {
 	srvReq := client.NewRequest(
 		"go.micro.srv.elastic",
-		"Elasticsearch.Search",
-		&elasticsearch.SearchRequest{
+		"Elastic.Search",
+		&elastic.SearchRequest{
 			Index:  "policies",
 			Type:   "policy",
 			Limit:  1000000,
 			Offset: 0,
 		},
 	)
-	srvRsp := &elasticsearch.SearchResponse{}
+	srvRsp := &elastic.SearchResponse{}
 
 	if err := client.Call(ctx, srvReq, srvRsp); err != nil {
 		return errors.InternalServerError("go.micro.srv.policy", err.Error())
