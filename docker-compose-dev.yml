@@ -19,7 +19,7 @@ static-web:
   command: --registry_address=registry:8500
   image: kazoup/static-web
   volumes:
-    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/kazoup-web/frontend/app:/frontend/app"
+    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/platform/ui/frontend/app:/frontend/app"
   links:
   - registry
 
@@ -27,7 +27,7 @@ dashboard-web:
   command: --registry_address=registry:8500
   image: kazoup/dashboard-web
   volumes:
-    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/kazoup-web/frontend/app/sections/dashboard:/frontend/app/sections/dashboard"
+    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/platform/ui/frontend/app/sections/dashboard:/frontend/app/sections/dashboard"
   links:
   - registry
 
@@ -35,7 +35,7 @@ analytics-web:
   command: --registry_address=registry:8500
   image: kazoup/analytics-web
   volumes:
-    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/kazoup-web/frontend/app/sections/analytics:/frontend/app/sections/analytics"
+    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/platform/ui/frontend/app/sections/analytics:/frontend/app/sections/analytics"
   links:
   - registry
 
@@ -43,7 +43,7 @@ search-web:
   command: --registry_address=registry:8500
   image: kazoup/search-web
   volumes:
-    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/kazoup-web/frontend/app/sections/search:/frontend/app/sections/search"
+    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/platform/ui/frontend/app/sections/search:/frontend/app/sections/search"
   links:
   - registry
 
@@ -51,7 +51,7 @@ settings-web:
   command: --registry_address=registry:8500
   image: kazoup/settings-web
   volumes:
-    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/kazoup-web/frontend/app/sections/settings:/frontend/app/sections/settings"
+    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/platform/ui/frontend/app/sections/settings:/frontend/app/sections/settings"
   links:
   - registry
 
@@ -59,7 +59,7 @@ logs-web:
   command: --registry_address=registry:8500
   image: kazoup/logs-web
   volumes:
-    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/kazoup-web/frontend/app/sections/logs:/frontend/app/sections/logs"
+    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/platform/ui/frontend/app/sections/logs:/frontend/app/sections/logs"
   links:
   - registry
 
@@ -67,7 +67,7 @@ docs-web:
   command: --registry_address=registry:8500
   image: kazoup/docs-web
   volumes:
-    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/kazoup-web/frontend/app/sections/docs:/frontend/app/sections/docs"
+    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/platform/ui/frontend/app/sections/docs:/frontend/app/sections/docs"
   links:
   - registry
 
@@ -75,7 +75,7 @@ login-web:
   command: --registry_address=registry:8500
   image: kazoup/login-web
   volumes:
-    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/kazoup-web/frontend/app/sections/login:/frontend/app/sections/login"
+    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/platform/ui/frontend/app/sections/login:/frontend/app/sections/login"
   links:
   - registry
 
@@ -83,7 +83,7 @@ login-web:
   command: --registry_address=registry:8500
   image: kazoup/wizard-web
   volumes:
-    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/kazoup-web/frontend/app/sections/wizard:/frontend/app/sections/wizard"
+    - "/home/pabloaguirre/WebstormProjects/src/github.com/kazoup/platform/ui/frontend/app/sections/wizard:/frontend/app/sections/wizard"
   links:
   - registry
 
@@ -186,3 +186,17 @@ config-api:
   image: kazoup/config-api
   links:
   - registry
+
+policy-srv:
+  command: --registry_address=registry:8500
+  image: kazoup/policy-srv
+  links:
+  - registry
+
+policy-api:
+  command: --registry_address=registry:8500
+  image: kazoup/policy-api
+  links:
+  - registry
+
+

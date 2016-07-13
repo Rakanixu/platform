@@ -236,7 +236,11 @@
 
           return qwest.post(
             this.endpointList.ESFiles,
-            query,
+            {
+              index: "files",
+              type: "file",
+              query: query
+            },
             {
               dataType: 'json',
               cache: true,
@@ -370,7 +374,11 @@
 
           return qwest.post(
             this.endpointList.ESFiles,
-            query,
+            {
+              index: "files",
+              type: "file",
+              query: query
+            },
             {
               dataType: 'json',
               cache: true,

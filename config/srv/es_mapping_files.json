@@ -153,8 +153,7 @@
     },
     "first_seen":{
       "type":"date",
-      "doc_values":true,
-      "format":"date_optional_time"
+      "doc_values":true
     },
     "id_b64":{
       "type":"string",
@@ -163,20 +162,17 @@
     },
     "last_seen":{
       "type":"date",
-      "doc_values":true,
-      "format":"date_optional_time"
+      "doc_values":true
     },
     "metadata":{
       "properties":{
         "accessed":{
           "type":"date",
-          "doc_values":true,
-          "format":"date_optional_time"
+          "doc_values":true
         },
         "created":{
           "type":"date",
-          "doc_values":true,
-          "format":"date_optional_time"
+          "doc_values":true
         },
         "dirpath":{
           "type":"string",
@@ -334,8 +330,7 @@
         },
         "modified":{
           "type":"date",
-          "doc_values":true,
-          "format":"date_optional_time"
+          "doc_values":true
         },
         "sharepath":{
           "type":"string",

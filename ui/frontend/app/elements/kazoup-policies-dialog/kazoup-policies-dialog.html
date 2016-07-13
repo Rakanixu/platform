@@ -41,8 +41,8 @@
       </section>
     </paper-dialog>
 
-    <kazoup-ajax id="filterEndpoint"
-                 url="[[endpointList.policies]]"
+    <kazoup-ajax id="policyEndpoint"
+                 url="[[endpointList.createPolicy]]"
                  is-authorize="true"
                  method="POST"
                  handleas="json"></kazoup-ajax>
@@ -161,8 +161,8 @@
               filter_raw: this._filterConverter.asQuerystring()
             };
 
-            this.$.filterEndpoint.setParamsAsObj(params);
-            this.$.filterEndpoint.generateRequest().then(this.handleResponse);
+            this.$.policyEndpoint.setParamsAsObj(params);
+            this.$.policyEndpoint.generateRequest().then(this.handleResponse);
             this.$.policyDialog.close();
           } else {
             this.invalidPolicyName = true;

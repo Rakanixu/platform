@@ -286,6 +286,7 @@
         is: 'kazoup-search',
         behaviors: [
           KazoupBehaviors.Devices,
+          KazoupBehaviors.Routing,
           KazoupBehaviors.PanelActions,
           KazoupBehaviors.Util,
           KazoupBehaviors.EmailTo,
@@ -700,21 +701,21 @@
           this.$.searchData.firstLoad = true;
           this.$.kazoupSearchFilters.$.searchFiltersData.firstLoad = true;
 
-          if (e.data.browser !== undefined && e.data.browser !== 'undefined') {
-            if (e.data.browser === 'true') {
-              e.data.browser = true;
-            } else if (e.data.browser === 'false') {
-              e.data.browser = false;
+          if (e.browser !== undefined && e.browser !== 'undefined') {
+            if (e.browser === 'true') {
+              e.browser = true;
+            } else if (e.browser === 'false') {
+              e.browser = false;
             }
 
-            this.set('browser', e.data.browser);
+            this.set('browser', e.browser);
           } else {
             // Default value if not defined in URL
             this.set('browser', false);
           }
 
-          if (e.data.filters) {
-            this.set('filters', JSON.parse(e.data.filters));
+          if (e.filters) {
+            this.set('filters', JSON.parse(e.filters));
           } else {
             this.set('filters', {});
           }
@@ -742,7 +743,9 @@
           this.$.rightDrawer.querySelector('#scrim').style['z-index'] = 9999;
 
           // kazoup-search initialized with URL params
-          window.addEventListener('kazoup-search-initialized', this.init.bind(this));
+          window.addEventListener('WebComponentsReady', function() {
+            this.init(this.parseQueryString(window.location.search));
+          }.bind(this));
 
           // filters changed
           this.$.filterConverter.addEventListener('filters-changed', this.goToNewUrl.bind(this));

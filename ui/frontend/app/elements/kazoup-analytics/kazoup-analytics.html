@@ -181,6 +181,7 @@
         is: 'kazoup-analytics',
         behaviors: [
           KazoupBehaviors.Devices,
+          KazoupBehaviors.Routing,
           KazoupBehaviors.PanelActions,
           KazoupBehaviors.Util,
           KazoupBehaviors.EmailTo
@@ -303,37 +304,37 @@
           this.set('visualisation', undefined);
           this.set('period', undefined);
 
-          if (e.data.dimension) {
-            this.set('dimension', e.data.dimension);
+          if (e.dimension) {
+            this.set('dimension', e.dimension);
           } else {
             this.set('dimension', 'location'); // default
           }
 
-          if (e.data.secondDimension) {
-            this.set('secondDimension', e.data.secondDimension);
+          if (e.secondDimension) {
+            this.set('secondDimension', e.secondDimension);
           } else {
             this.set('secondDimension', 'none');
           }
 
-          if (e.data.visualisation) {
-            this.set('visualisation', e.data.visualisation);
+          if (e.visualisation) {
+            this.set('visualisation', e.visualisation);
           } else {
             this.set('visualisation', 'bubble'); // default
           }
 
-          if (e.data.period) {
-            this.set('period', e.data.period);
+          if (e.period) {
+            this.set('period', e.period);
           } else {
             this.set('period', 'year'); // default
           }
 
-          if (e.data.filters) {
-            this.set('filters', JSON.parse(e.data.filters));
+          if (e.filters) {
+            this.set('filters', JSON.parse(e.filters));
           } else {
             this.set('filters', {}); // default
           }
 
-          if (e.data.fromSearch) {
+          if (e.fromSearch) {
             this.async(function() {
               Polymer.dom(this.root).querySelector('kazoup-analytics-data')._fetchAllData();
             }, 10);
@@ -349,7 +350,9 @@
             this.advance_anlytics_enabled = false;
 
           // kazoup-analytics initialized with URL params
-          window.addEventListener('kazoup-analytics-initialized', this.init.bind(this));
+          window.addEventListener('WebComponentsReady', function() {
+            this.init(this.parseQueryString(window.location.search));
+          }.bind(this));
 
           this.$.filterConverter.addEventListener('filters-changed', this.buildQuery.bind(this));
         },

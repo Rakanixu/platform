@@ -27,7 +27,7 @@ ElasticSearch.queries = ElasticSearch.queries || {};
               'must': [
                 {
                   'range': {
-                    'accessed': {
+                    'metadata.accessed': {
                       'lt': ElasticSearch.utils.getDateByMonthsAgo(0).getTime(),
                       'gt': ElasticSearch.utils.getDateByMonthsAgo(12).getTime()
                     }
@@ -72,7 +72,7 @@ ElasticSearch.queries = ElasticSearch.queries || {};
               'must': [
                 {
                   'range': {
-                    'accessed': {
+                    'metadata.accessed': {
                       'lt': ElasticSearch.utils.getDateByMonthsAgo(0).getTime(),
                       'gt': ElasticSearch.utils.getDateByMonthsAgo(12).getTime()
                     }

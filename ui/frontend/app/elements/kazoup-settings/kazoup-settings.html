@@ -53,7 +53,10 @@
     (function() {
       Polymer({
         is: 'kazoup-settings',
-        behaviors: [KazoupBehaviors.PanelActions],
+        behaviors: [
+          KazoupBehaviors.PanelActions,
+          KazoupBehaviors.Routing
+        ],
         properties: {
           selectedTab: {
             type: Number,
@@ -98,9 +101,9 @@
           }
         },
         init: function(e) {
-          if (e && e.data && e.data.section) {
-            if (this.sections.indexOf(e.data.section) !== -1) {
-              this.selectedTab = this.sections.indexOf(e.data.section);
+          if (e && e.section) {
+            if (this.sections.indexOf(e.section) !== -1) {
+              this.selectedTab = this.sections.indexOf(e.section);
             }
           } else {
             this.selectedTab = 0;
@@ -115,7 +118,9 @@
           Polymer.dom.flush();
 
           // kazoup-settings initialized with URL params
-          window.addEventListener('kazoup-settings-initialized', this.init.bind(this));
+          window.addEventListener('WebComponentsReady', function() {
+            this.init(this.parseQueryString(window.location.search));
+          }.bind(this));
         }
       });
     }());
