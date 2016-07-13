@@ -26,7 +26,7 @@
           }
         },
         _fetchData: function() {
-          var timestampType = this._filterConverter.getValue('timestampType');
+          var timestampType = "metadata." + this._filterConverter.getValue('timestampType');
           var query = {
             'query': {
               'constant_score': {
@@ -67,7 +67,11 @@
 
           qwest.post(
             this.endpointList.ESFiles,
-            query,
+            {
+              index: "files",
+              type: "file",
+              query: query
+            },
             {
               dataType: 'json',
               cache: true,

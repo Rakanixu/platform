@@ -31,7 +31,7 @@ ElasticSearch.queries = ElasticSearch.queries || {};
       'aggs': {
         'buckets': {
           'range': {
-            'field': 'modified',
+            'field': 'metadata.modified',
             'ranges': [
               {
                 'key' : 'all_data',
@@ -79,14 +79,14 @@ ElasticSearch.queries = ElasticSearch.queries || {};
               'must': [
                 {
                   'range': {
-                    'modified': {
+                    'metadata.modified': {
                       'lt': ElasticSearch.utils.getDateByMonthsAgo(0).getTime()
                     }
                   }
                 },
                 {
                   'prefix': {
-                    'dirpath': '//'
+                    'metadata.dirpath': '//'
                   }
                 }
               ],
@@ -109,7 +109,7 @@ ElasticSearch.queries = ElasticSearch.queries || {};
       'aggs': {
         'total_size': {
           'date_histogram' : {
-            'field' : 'modified',
+            'field' : 'metadata.modified',
             'interval' : 'year'
           },
           'aggs': {

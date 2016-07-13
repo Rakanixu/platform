@@ -742,7 +742,13 @@
           this.$.rightDrawer.querySelector('#scrim').style['z-index'] = 9999;
 
           // kazoup-search initialized with URL params
-          window.addEventListener('kazoup-search-initialized', this.init.bind(this));
+          //TODO: clean up
+          //window.addEventListener('kazoup-search-initialized', this.init.bind(this));
+          this.init({
+            data: {
+              browser: true
+            }
+          })
 
           // filters changed
           this.$.filterConverter.addEventListener('filters-changed', this.goToNewUrl.bind(this));
