@@ -186,3 +186,17 @@ config-api:
   image: kazoup/config-api
   links:
   - registry
+
+policy-srv:
+  command: --registry_address=registry:8500
+  image: kazoup/policy-srv
+  links:
+  - registry
+
+policy-api:
+  command: --registry_address=registry:8500
+  image: kazoup/policy-api
+  links:
+  - registry
+
+
