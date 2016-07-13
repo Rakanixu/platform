@@ -28,6 +28,26 @@
         Intercom('shutdown');
 
         document.location = '/';
+      },
+      parseQueryString: function(queryString) {
+        var params;
+        var paramsObj = {};
+        var keyValue;
+
+        if (queryString.length && queryString[0] === '?') {
+          queryString = queryString.substring(1, queryString.length)
+        }
+        params = queryString.split('&');
+
+        if (queryString.length) {
+          _.forEach(params, function(param) {
+            keyValue = param.split('=');
+
+            paramsObj[keyValue[0]] = decodeURIComponent(keyValue[1]);
+          });
+        }
+
+        return paramsObj;
       }
     };
   }(window));
