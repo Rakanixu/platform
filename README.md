@@ -20,7 +20,8 @@ Repo | Description
 [publish](https://github.com/kazoup/platform/tree/master/publish) | Publish service 
 [indexer](https://github.com/kazoup/platform/tree/master/indexer) | Index files from files topic 
 [ui](https://github.com/kazoup/platform/tree/master/ui) | Web frontend  as micro services 
-[config](https://github.com/kazoup/platform/tree/config) | Config service for kazoup platform 
+[config](https://github.com/kazoup/platform/tree/master/config) | Config service for kazoup platform 
+[datasource](https://github.com/kazoup/platform/tree/master/datasource) | Datasource store and configure service
 
 ## Build
 

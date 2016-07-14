@@ -1,0 +1,11 @@
+datasource-api:
+  command: --registry_address=registry:8500
+  image: kazoup/datasource-api
+  external_links:
+  - consul:registry
+
+datasource-srv:
+  command: --registry_address=registry:8500
+  image: kazoup/datasource-srv
+  external_links:
+  - consul:registry
