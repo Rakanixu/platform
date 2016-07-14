@@ -44,7 +44,7 @@ func GetDataSource(endpoint *proto.Endpoint) (filestorer.FileStorer, error) {
 func DeleteDataSource(id string) error {
 	srvReq := client.NewRequest(
 		"go.micro.srv.elastic",
-		"Elasticsearch.Delete",
+		"Elastic.Delete",
 		&elastic.DeleteRequest{
 			Index: "datasources",
 			Type:  "datasource",
@@ -70,7 +70,7 @@ func SearchDataSources(query string, limit int64, offset int64) ([]*proto.Endpoi
 
 	srvReq := client.NewRequest(
 		"go.micro.srv.elastic",
-		"Elasticsearch.Search",
+		"Elastic.Search",
 		&elastic.SearchRequest{
 			Index:  "datasources",
 			Type:   "datasource",

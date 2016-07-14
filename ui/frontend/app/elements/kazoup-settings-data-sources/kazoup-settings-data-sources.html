@@ -1,5 +1,6 @@
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../../bower_components/iron-icons/av-icons.html">
 <link rel="import" href="../../bower_components/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html">
 <link rel="import" href="../../bower_components/paper-listbox/paper-listbox.html">
@@ -19,7 +20,7 @@
                                       <span> data sources by scanning your servers </span>"
                           hidden$="[[!emptyStateVisible]]"></kazoup-empty-state>
 
-      <iron-list id="list" items="[[shares]]" as="item">
+      <iron-list id="list" items="[[dataSources]]" as="item">
         <template>
           <div class="horizontal layout row">
             <div class="icon">
@@ -29,10 +30,20 @@
             <div class="vertical layout flex data-source cursor-pointer"
                  on-tap="openScaning"
                  data-server$="[[item.server]]">
-              <h4>[[item.share]]</h4>
+              <h4>[[item.url]]</h4>
               <p>Last scan:
-                <span> [[timestampToHumanDate(item.scan_last_completed)]]</span>
+                <span> [[timestampToHumanDate(item.last_scan)]]</span>
               </p>
+            </div>
+
+            <div class="horizontal layout actions">
+              <paper-icon-button id="deletion-icon"
+                                 icon="av:play-arrow"
+                                 data-value$="[[item.id]]"
+                                 on-tap="startScan"></paper-icon-button>
+              <paper-tooltip for$="deletion-icon"
+                             animation-delay="100"
+                             position="left">Start scaning</paper-tooltip>
             </div>
 
             <template is="dom-if" if="[[item.pending_delete]]">
@@ -119,12 +130,12 @@
             notify: false,
             value: false
           },
-          shareId: {
+          dataSourceId: {
             type: Number,
             notify: false,
             value: null
           },
-          shares: {
+          dataSources: {
             type: Array,
             notify: true,
             value: function() {
@@ -160,7 +171,7 @@
           var url
 
           if (this.dataSourceType === "local") {
-            url = this.dataSourceType + '://home/'
+            url = this.dataSourceType + '://'
           } else {
             url = this.dataSourceType
           }
@@ -170,50 +181,71 @@
               url: url
             }
           });
-          this.$.addDataSourceReq.generateRequest().then(function(e) {
-            console.log(e)
-          });
-
+          this.$.addDataSourceReq.generateRequest().then(this._handleAddDataSource.bind(this));
           this.$.addDataSourceDialog.close();
         },
         openDeletionDialog: function(e, detail) {
-          this.set('shareId', e.model.__data__.item.id);
+          this.set('dataSourceId', e.model.__data__.item.id);
           this.$.deleteShareDialog.open();
         },
         deleteShare: function() {
+          this.$.deleteDataSourceReq.setParamsAsObj({
+            id: this.dataSourceId
+          });
           this.$.deleteDataSourceReq.generateRequest().then(this._handleShareDeletion.bind(this));
         },
+        _handleAddDataSource: function(e) {
+          if (e && e.status === 200) {
+            Polymer.dom(document).querySelector('paper-toast').text = 'Data source added successfully';
+            Polymer.dom(document).querySelector('paper-toast').show();
+            // We cannot append (UI) a datasource without quering backend, we need to retrieve info just created
+            // So we ensure ES index has been recalculated and eventually consistent
+            this.async(function() {
+              this.getDataSources();
+            }, 1001);
+          }
+        },
         _handleShareDeletion: function(e) {
-          if (e.status === 204) {
-            this.set('shareId', null);
+          if (e && e.status === 204 || e.status === 200) {
+            var index = _.findIndex(this.dataSources, function(dataSource) {
+              return dataSource.id === this.dataSourceId
+            }.bind(this));
+
+            this.dataSources.splice(index, 1);
+            this.set('dataSources', this.dataSources);
+            this.$.list.fire('iron-resize');
+
+            this.set('dataSourceId', null);
             this.$.deleteShareDialog.close();
-            this.getDataSources();
             Polymer.dom(document).querySelector('paper-toast').text = 'Share deleted successfully';
             Polymer.dom(document).querySelector('paper-toast').show();
           }
         },
         _handleDataSources: function(e) {
-          if (e && e.response && e.response.results) {
-            this.set('shares', e.response.results);
+          if (e && e.response) {
+            this.set('dataSources', e.response);
 
-            _.forEach(this.shares, function(share, index) {
+            _.forEach(this.dataSources, function(share, index) {
               if (share.pending_delete) {
-                this.shares[index].pending_delete = 'Deleting';
+                this.dataSources[index].pending_delete = 'Deleting';
               } else {
-                this.shares[index].pending_delete = undefined;
+                this.dataSources[index].pending_delete = undefined;
               }
             }, this);
           }
           this.$.list.fire('iron-resize');
-          this.set('emptyStateVisible', !this.shares.length);
+          this.set('emptyStateVisible', !this.dataSources.length);
         },
         getDataSources: function() {
-          this.set('shares', []);
+          this.set('dataSources', []);
           this.$.searchDataSourcesReq.setParamsAsObj({
             offset: 0,
             limit: 1000
           });
           this.$.searchDataSourcesReq.generateRequest().then(this._handleDataSources.bind(this));
+        },
+        startScan: function(e, detail) {
+          console.log(e.model.__data__.item)
         },
         init: function() {
           this.getDataSources();

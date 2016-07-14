@@ -199,4 +199,16 @@ policy-api:
   links:
   - registry
 
+datasource-srv:
+  command: --registry_address=registry:8500
+  image: kazoup/datasource-srv
+  links:
+  - registry
+
+datasource-api:
+  command: --registry_address=registry:8500
+  image: kazoup/datasource-api
+  links:
+  - registry
+
 

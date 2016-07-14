@@ -26,7 +26,7 @@ func (fs *FileStore) Save(data interface{}) error {
 
 	srvReq := client.NewRequest(
 		"go.micro.srv.elastic",
-		"Elasticsearch.Create",
+		"Elastic.Create",
 		&elastic.CreateRequest{
 			Index: "datasources",
 			Type:  "datasource",
