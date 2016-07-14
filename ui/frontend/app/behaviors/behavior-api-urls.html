@@ -24,7 +24,7 @@
               flipFlag: 'http://localhost:8080/flag/flip',
               listFlags: 'http://localhost:8080/flag/list',
               ESFiles: 'http://localhost:8080/elastic/query',
-              ESAuditTrail: 'http://localhost:8080/v2/esproxy/call?index=audit-trail',
+              ESAuditTrail: 'http://localhost:8080/elastic/query',
               restoreApplianceStep1: '/api/restore/step_1/?format=json',
               restoreApplianceStep2: '/api/restore/step_2/?format=json',
               restoreApplianceStep2Values: '/api/restore/step_2_values/?format=json',
@@ -35,9 +35,9 @@
               activeDirectory: '/api/v1/ldap-settings/?format=json',
               email: '/api/v1/smtp-settings/?format=json',
               auditTrail: '/api/v1/settings/audit-trail-retention/?format=json',
-              shares: '/api/v1/shares/?format=json',
-              scanShares: '/api/v1/servers/list_shares/?format=json',
-              addShare: '/api/v1/servers/select_shares/?format=json',
+              createDataSource: 'http://localhost:8080/datasource/create',
+              deleteDataSource: 'http://localhost:8080/datasource/delete',
+              searchDataSources: 'http://localhost:8080/datasource/search',
               createPolicy: 'http://localhost:8080/policy/create',
               deletePolicy: 'http://localhost:8080/policy/delete',
               listPolicies: 'http://localhost:8080/policy/list',
@@ -50,14 +50,6 @@
             };
           }
         }
-      },
-      ESDinamicIndex: function(index) {
-        //TODO: ... well, remove index everywhere, will be created in req body
-        //return 'http://localhost:8080/v2/esproxy/call?index=' + index;
-        return 'http://localhost:8080/elastic/query'
-      },
-      deleteShareEndpoint: function(shareId) {
-        return '/api/v1/shares/' + shareId + '/?format=json';
       },
       deleteEditUserEndpoint: function(userId) {
         return '/api/v1/users/' + userId + '/?format=json';

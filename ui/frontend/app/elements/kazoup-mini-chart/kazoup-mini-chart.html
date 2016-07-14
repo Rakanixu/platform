@@ -6,11 +6,11 @@
   <template>
 
     <div class="container layout vertical">
-      <div id="pieLabel" class="vertical layout">
+      <div id="pieLabel" class="vertical layout" hidden$="{{noData}}">
         <span id="label" class="flex">[[label]]</span>
         <span id="subLabel" class="flex">[[subLabel]]</span>
       </div>
-      <div id="chartContainer"></div>
+      <div id="chartContainer" hidden$="{{noData}}"></div>
 
       <kazoup-empty-state hidden$="{{!noData}}"
                           icon="settings"
