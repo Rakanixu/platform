@@ -3,20 +3,21 @@ package handler
 import (
 	"encoding/json"
 	"errors"
-	"strings"
-
 	"github.com/kazoup/platform/datasource/srv/filestore"
 	local "github.com/kazoup/platform/datasource/srv/filestore/local"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	elastic "github.com/kazoup/platform/elastic/srv/proto/elastic"
+	publish "github.com/kazoup/platform/publish/srv/proto/publish"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	"strings"
 )
 
 const (
 	localEndpoint = "local://"
 	nfsEndpoint   = "nfs://"
 	smbEndpoint   = "smb://"
+	topic         = "go.micro.topic.scan"
 )
 
 // GetDataSource returns a FileStorer interface
@@ -60,6 +61,7 @@ func DeleteDataSource(id string) error {
 	return nil
 }
 
+// SearchDataSources queries for datasources stored in ES
 func SearchDataSources(query string, limit int64, offset int64) ([]*proto.Endpoint, error) {
 	var result []*proto.Endpoint
 	var resultMap map[string]interface{}
@@ -118,4 +120,37 @@ func SearchDataSources(query string, limit int64, offset int64) ([]*proto.Endpoi
 	}
 
 	return result, nil
+}
+
+func ScanDataSource(ctx context.Context, id string) error {
+	elasticSrvReq := client.NewRequest(
+		"go.micro.srv.elastic",
+		"Elastic.Read",
+		&elastic.ReadRequest{
+			Index: "datasources",
+			Type:  "datasource",
+			Id:    id,
+		},
+	)
+	elasticSrvRes := &elastic.ReadResponse{}
+
+	if err := client.Call(ctx, elasticSrvReq, elasticSrvRes); err != nil {
+		return err
+	}
+
+	pubSrvReq := client.NewRequest(
+		"go.micro.srv.publish",
+		"Publish.Send",
+		&publish.SendRequest{
+			Topic: topic,
+			Data:  elasticSrvRes.Result,
+		},
+	)
+	pubSrvRes := &publish.SendResponse{}
+
+	if err := client.Call(ctx, pubSrvReq, pubSrvRes); err != nil {
+		return err
+	}
+
+	return nil
 }

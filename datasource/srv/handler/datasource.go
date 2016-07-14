@@ -55,3 +55,16 @@ func (ds *DataSource) Search(ctx context.Context, req *proto.SearchRequest, rsp 
 
 	return nil
 }
+
+// Scan datasources handler, will publish to scan topic to be pick up by crawler srv
+func (ds *DataSource) Scan(ctx context.Context, req *proto.ScanRequest, rsp *proto.ScanResponse) error {
+	if len(req.Id) <= 0 {
+		return errors.BadRequest("go.micro.srv.datasource", "id required")
+	}
+
+	if err := ScanDataSource(ctx, req.Id); err != nil {
+		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
+	}
+
+	return nil
+}
