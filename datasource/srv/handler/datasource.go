@@ -2,12 +2,15 @@ package handler
 
 import (
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
 )
 
 // DataSource struct
-type DataSource struct{}
+type DataSource struct {
+	Client client.Client
+}
 
 // Create datasource handler
 func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.CreateResponse) error {
@@ -62,7 +65,7 @@ func (ds *DataSource) Scan(ctx context.Context, req *proto.ScanRequest, rsp *pro
 		return errors.BadRequest("go.micro.srv.datasource", "id required")
 	}
 
-	if err := ScanDataSource(ctx, req.Id); err != nil {
+	if err := ScanDataSource(ctx, req.Id, ds); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 

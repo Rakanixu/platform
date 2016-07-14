@@ -1,26 +1,18 @@
 package main
 
 import (
-	"log"
-
 	"github.com/kazoup/platform/crawler/srv/handler"
-	proto "github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/micro/go-micro"
-	"github.com/micro/go-micro/broker"
 	"github.com/micro/go-micro/cmd"
+	"github.com/micro/go-micro/server"
 	_ "github.com/micro/go-plugins/broker/nats"
+	"log"
 )
+
+const topic string = "go.micro.topic.scan"
 
 func main() {
 	cmd.Init()
-
-	if err := broker.Init(); err != nil {
-		log.Fatalf("Broker Init error: %v", err)
-	}
-
-	if err := broker.Connect(); err != nil {
-		log.Fatalf("Broker Connert error: %v", err)
-	}
 
 	service := micro.NewService(
 		// TODO: com.kazoup.srv.crawler
@@ -30,9 +22,23 @@ func main() {
 
 	service.Init()
 
-	proto.RegisterCrawlHandler(service.Server(), new(handler.Crawl))
+	service.Server().Handle(
+		service.Server().NewHandler(
+			new(handler.Crawl),
+		),
+	)
 
-	if err := service.Run(); err != nil {
+	if err := service.Server().Subscribe(
+		service.Server().NewSubscriber(
+			topic,
+			handler.Subscriber,
+		),
+	); err != nil {
+		log.Fatal(err)
+	}
+
+	// Run server
+	if err := server.Run(); err != nil {
 		log.Fatal(err)
 	}
 }

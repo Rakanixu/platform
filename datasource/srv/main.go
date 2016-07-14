@@ -1,10 +1,9 @@
 package main
 
 import (
-	"log"
-
 	"github.com/kazoup/platform/datasource/srv/handler"
 	"github.com/micro/go-micro"
+	"log"
 )
 
 func main() {
@@ -16,7 +15,9 @@ func main() {
 
 	// New service handler
 	service.Server().Handle(
-		service.Server().NewHandler(new(handler.DataSource)),
+		service.Server().NewHandler(&handler.DataSource{
+			Client: service.Client(),
+		}),
 	)
 
 	// Init service

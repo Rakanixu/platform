@@ -113,6 +113,11 @@
                  url="[[endpointList.createDataSource]]"
                  is-authorize="true"></kazoup-ajax>
 
+    <kazoup-ajax id="kickOffScanReq"
+                 method="POST"
+                 url="[[endpointList.scanDataSource]]"
+                 is-authorize="true"></kazoup-ajax>
+
   </template>
   <script>
     'use strict';
@@ -194,6 +199,21 @@
           });
           this.$.deleteDataSourceReq.generateRequest().then(this._handleShareDeletion.bind(this));
         },
+        getDataSources: function() {
+          this.set('dataSources', []);
+          this.$.searchDataSourcesReq.setParamsAsObj({
+            offset: 0,
+            limit: 1000
+          });
+          this.$.searchDataSourcesReq.generateRequest().then(this._handleDataSources.bind(this));
+        },
+        startScan: function(e, detail) {
+          console.log(e.model.__data__.item)
+          this.$.kickOffScanReq.setParamsAsObj({
+            id: e.model.__data__.item.id
+          });
+          this.$.kickOffScanReq.generateRequest().then(this._handleStartScan.bind(this));
+        },
         _handleAddDataSource: function(e) {
           if (e && e.status === 200) {
             Polymer.dom(document).querySelector('paper-toast').text = 'Data source added successfully';
@@ -236,16 +256,11 @@
           this.$.list.fire('iron-resize');
           this.set('emptyStateVisible', !this.dataSources.length);
         },
-        getDataSources: function() {
-          this.set('dataSources', []);
-          this.$.searchDataSourcesReq.setParamsAsObj({
-            offset: 0,
-            limit: 1000
-          });
-          this.$.searchDataSourcesReq.generateRequest().then(this._handleDataSources.bind(this));
-        },
-        startScan: function(e, detail) {
-          console.log(e.model.__data__.item)
+        _handleStartScan: function(e) {
+          if (e.status === 200) {
+            Polymer.dom(document).querySelector('paper-toast').text = 'Scan task queued';
+            Polymer.dom(document).querySelector('paper-toast').show();
+          }
         },
         init: function() {
           this.getDataSources();
