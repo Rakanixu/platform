@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package go.micro.srv.datasource;
+
+service DataSource {
+  rpc Create(CreateRequest) returns (CreateResponse) {}
+  rpc Delete(DeleteRequest) returns (DeleteResponse) {}
+  rpc Search(SearchRequest) returns (SearchResponse) {}
+}
+
+message Endpoint {
+  string id = 1;
+  string url = 2;  // example: local://tmp/test, nfs://123.19.2.8/volume1, smb://10.17.77.3/volume1
+  int64 size = 3;
+  int64 files = 4;
+  int64 last_scan = 5;
+}
+
+message CreateRequest {
+  Endpoint endpoint = 1;
+}
+
+message CreateResponse {
+  string response = 1;
+}
+
+message DeleteRequest {
+  string id = 1;
+}
+
+message DeleteResponse {
+
+}
+
+message SearchRequest {
+  string query = 1;
+  int64 limit = 2;
+  int64 offset = 3;
+}
+
+message SearchResponse {
+  repeated Endpoint result = 1;
+}
