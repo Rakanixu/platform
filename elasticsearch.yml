@@ -1,0 +1,9 @@
+elasticsearch:
+ image: elasticsearch:1.7
+ hostname: "elasticsearch"
+ ports:
+   - "9200:9200"
+   - "9300:9300"
+ environment:
+   ES_HEAP_SIZE: 512m
+   ES_CLUSTER_NAME: Kazoup

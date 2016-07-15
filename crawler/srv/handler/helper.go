@@ -9,23 +9,7 @@ import (
 	"strings"
 )
 
-func mapScanner(id int64, typ string, conf map[string]string) (scanner.Scanner, error) {
-	var err error
-	var s scanner.Scanner
-
-	switch typ {
-	case "fake":
-		s = fake.NewFake(id, conf)
-	case "local":
-		s = local.NewLocal(id, "/home", conf)
-	default:
-		err = errors.BadRequest("go.micro.srv.crawler.Crawl.Start", "Error creating scanner")
-	}
-
-	return s, err
-}
-
-func mapScanner2(id int64, dataSource *datasource.Endpoint) (scanner.Scanner, error) {
+func mapScanner(id int64, dataSource *datasource.Endpoint) (scanner.Scanner, error) {
 	var err error
 	var s scanner.Scanner
 	var config map[string]string
@@ -36,7 +20,7 @@ func mapScanner2(id int64, dataSource *datasource.Endpoint) (scanner.Scanner, er
 	case "fake":
 		s = fake.NewFake(id, config)
 	case "local":
-		s = local.NewLocal(id, dsUrl[1], config)
+		s, err = local.NewLocal(id, dsUrl[1], config)
 	default:
 		err = errors.BadRequest("go.micro.srv.crawler.Crawl.Start", "Error creating scanner")
 	}

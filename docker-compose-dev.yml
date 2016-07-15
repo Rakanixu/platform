@@ -146,6 +146,8 @@ smtp-srv:
 crawler-srv:
    command: --registry_address=registry:8500
    image: kazoup/crawler-srv
+   volumes:
+     - "/home/:/home"
    links:
    - registry
 

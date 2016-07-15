@@ -2,32 +2,43 @@ package main
 
 import (
 	"github.com/kazoup/platform/crawler/srv/handler"
+	"github.com/kazoup/platform/structs/categories"
 	"github.com/micro/go-micro"
-	"github.com/micro/go-micro/cmd"
 	"github.com/micro/go-micro/server"
 	_ "github.com/micro/go-plugins/broker/nats"
+	"io/ioutil"
 	"log"
 )
 
 const topic string = "go.micro.topic.scan"
 
 func main() {
-	cmd.Init()
+	// Load categories JSON map. categories_map.json
+	mapping, err := ioutil.ReadFile("categories_map.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := categories.SetMap(mapping); err != nil {
+		log.Fatal(err)
+	}
 
 	service := micro.NewService(
-		// TODO: com.kazoup.srv.crawler
 		micro.Name("go.micro.srv.crawler"),
 		micro.Version("latest"),
 	)
 
+	// Init srv
 	service.Init()
 
+	// Attach handler
 	service.Server().Handle(
 		service.Server().NewHandler(
 			new(handler.Crawl),
 		),
 	)
 
+	// Attach subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			topic,
