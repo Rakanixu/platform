@@ -1,4 +1,6 @@
 const electron = require('electron');
+const glob = require("glob")
+const fs = require("fs")
 const ipc = require('ipc');
 // Module to control application life.
 const {app} = electron;
@@ -13,6 +15,10 @@ const {BrowserWindow} = electron;
 // be closed automatically when the JavaScript object is garbage collected.
 let win;
 let es;
+let paths;
+let services;
+let running;
+
 function createWindow() {
   // Create the browser window.
   win = new BrowserWindow({width: 800, height: 600});
@@ -23,7 +29,7 @@ function createWindow() {
 
   // Open the DevTools.
   win.webContents.openDevTools();
-  win.webContents.send('starting', "elasicsearch");
+  //win.webContents.send('starting', "elasicsearch");
   // Emitted when the window is closed.
   win.on('closed', () => {
     // Dereference the window object, usually you would store windows
@@ -44,6 +50,10 @@ app.on('window-all-closed', () => {
   // to stay active until the user quits explicitly with Cmd + Q
   //
   //es.kill('SIGHUP');
+  for (var i = 0; i < running.length; i++) {
+    running[i].kill('SIGHUP');
+    console.log('Killing ' + i);
+  }
   if (process.platform !== 'darwin') {
     app.quit();
   }
@@ -65,9 +75,24 @@ app.on('asynchronous-message', (event, arg) => {
 });
 
 ipcMain.on('starting', (event, arg) => {
-  console.log(os.platform());  // prints "ping"
- 
-  startServices()
+  running = [];
+  paths = discoverServices(process.platform, archConvert(process.arch));
+  elastic = startService('bin/elasticsearch/bin/elasticsearch',[])
+  api = startService('bin/micro/' + process.platform + '/' + archConvert(process.arch) + '/micro',['--registry=mdns', 'api'] )
+  web = startService('bin/micro/' + process.platform + '/' + archConvert(process.arch) + '/micro',['--registry=mdns', 'web'] )
+  running.push(elastic)
+  running.push(api)
+  running.push(web)
+
+  for (var i = 0; i< paths.length; i++) {
+    if (paths[i].indexOf('elastic-srv') !== -1) {
+      running.push(startService(paths[i], ['--registry=mdns', '--elasticsearch_hosts=localhost:9200']));
+    } else if (paths[i].indexOf('ui') !== -1) {
+      running.push(startService(paths[i], ['--registry=mdns', '--environment=prod']));
+    } else {
+      running.push(startService(paths[i], ['--registry=mdns']));
+    }
+  }
   event.returnValue = "OK";
 });
 
@@ -76,15 +101,44 @@ app.on('synchronous-message', (event, arg) => {
   event.returnValue = 'pong';
 });
 
-function startServices(){
+function startService(path, args) {
+  //if (!args.length) {
+  //  args = ['--registry=mdns']
+  //}
 
-
-   var wd =  __dirname + "/bin"
-   var es = spawn( __dirname + '/bin/auth-api_darwin_amd64', ['--registry=mdns'], {wd:__dirname});
+   var wd =  __dirname
+   var es = spawn( __dirname + '/' + path, args, {wd:__dirname});
    es.stdout.on('data', function (data) {
    console.log('stdout: ' + data);
    });
    es.on('close', function (code, signal) {
    console.log('stdout: es process terminated due to receipt of signal ' + signal);
    });
+
+  return es;
+}
+
+function discoverServices(platform, architecture) {
+  url = 'bin/' + platform + '/' + architecture + '/';
+  services = []
+  files = fs.readdirSync(url);
+
+  for(var i in files) {
+    services.push(url + files[i]);
+  }
+  return services;
+}
+
+function archConvert(arch) {
+
+  switch (arch) {
+    case 'x64':
+      arch = 'amd64';
+      break;
+    case 'ia32':
+      arch = '386';
+      break;
+  }
+
+  return arch;
 }
