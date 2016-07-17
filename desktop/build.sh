@@ -11,13 +11,12 @@ WORKING_DIR=$PWD
 # add ES download to build on circle
 # https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/zip/elasticsearch/2.3.4/elasticsearch-2.3.4.zip
 
-cd ../../../micro/micro && gox -verbose -os="darwin linux" -arch="386 amd64" -output $WORKING_DIR/bin/micro/{{.OS}}/{{.Arch}}/micro
-cd $WORKING_DIR
+#cd ../../../micro/micro && gox -verbose -os="darwin linux" -arch="386 amd64" -output $WORKING_DIR/bin/micro/{{.OS}}/{{.Arch}}/micro
+#cd $WORKING_DIR
 
 #cd ../ui/frontend && npm install && npm install gulp && bower install && node_modules/gulp/bin/gulp.js && cd ../..
-cd ../
 # Used to rebuild all the things
-
+cd ../
 find * -type d -maxdepth 1 -print | while read dir; do
 	if [ ! -f $dir/Dockerfile ]; then
 		continue
