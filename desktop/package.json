@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "main": "main.js",
   "devDependencies": {
+    "appdmg": "^0.4.5",
     "electron-builder": "^5.12.1",
     "electron-prebuilt": "^1.2.7"
   },
@@ -14,24 +15,24 @@
   "build": {
     "appId": "com.kazoup.app",
     "app-category-type": "public.app-category.productivity",
-    "dmg":{
-	    "background": "build/background.png"
+    "dmg": {
+      "background": "build/background.png"
     },
     "win": {
       "iconUrl": "https://s3-eu-west-1.amazonaws.com/www.kazoup.com/img/favicon.ico"
     },
     "linux": {
-	"target":"deb"
+      "target": "deb"
     }
   },
-"scripts": {
+  "scripts": {
     "postinstall": "install-app-deps",
     "start": "electron ./app --enable-logging --remote-debugging-port=9222",
     "dev": "NODE_ENV='development' npm run start",
     "dist": "npm run dist:osx && npm run dist:win32 && npm run dist:win64 && npm run dist:linux",
     "dist:osx": "build --platform darwin",
-    "dist:linux":"build --platform linux",
+    "dist:linux": "build --platform linux",
     "dist:win32": "build --platform win32 --arch ia32",
     "dist:win64": "build --platform win32 --arch x64"
-}
+  }
 }
