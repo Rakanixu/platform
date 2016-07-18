@@ -6,6 +6,7 @@ dependencies:
                 - mkdir -p $HOME/.go_project/src/github.com/$CIRCLE_PROJECT_USERNAME
                 - ln -fs $HOME/$CIRCLE_PROJECT_REPONAME $HOME/.go_project/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
                 - echo 'export GOPATH=$GOPATH:$HOME/.go_project' >> ~/.circlerc
+                - sudo apt-get install ruby ruby-dev gcc make icnsutils graphicsmagick xz-utils
                   #- go get -d  -v -t ./...
 test:
         override:
