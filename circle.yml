@@ -9,9 +9,11 @@ dependencies:
                   #- go get -d  -v -t ./...
 test:
         override:
-                - ./build_ui.sh
-                - ./build_docker.sh
-                - ./build_desktop.sh
+                - cd desktop && npm install && npm run dist  && cd ..
+                  #- ./build_ui.sh
+                  #- ./build_docker.sh
+                  #- ./build_desktop.sh
+                  #
 deployment:
         release:
                 branch: desktop
