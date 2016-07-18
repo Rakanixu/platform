@@ -9,8 +9,15 @@ dependencies:
                   #- go get -d  -v -t ./...
 test:
         override:
-                - ./build.sh
+                - ./build_ui.sh
+                - ./build_docker.sh
+                - ./build_desktop.sh
 deployment:
+        release:
+                branch: desktop
+                commands:
+                        - go get github.com/tcnksm/ghr
+                        - ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace `git describe --tags` desktop/dist/
         hub: 
                 branch: master
                 commands:

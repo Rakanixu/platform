@@ -1,0 +1,9 @@
+{
+  "name": "Kazoup",
+  "version": "0.0.1",
+  "description" : "Kazoup Desktop distributed application",
+  "author" : "Kazoup Team <info@kazooup.com>",
+  "homepage":"www.kazoup.com",
+  "license": "UNLICENSED",
+  "main" : "main.js"
+}

@@ -1,7 +1,5 @@
 const electron = require('electron');
-const glob = require("glob")
 const fs = require("fs")
-const ipc = require('ipc');
 // Module to control application life.
 const {app} = electron;
 const {ipcMain} = require('electron');
@@ -18,14 +16,13 @@ let es;
 let paths;
 let services;
 let running;
-
 function createWindow() {
   // Create the browser window.
-  win = new BrowserWindow({width: 800, height: 600});
+  win = new BrowserWindow({width: 800, height: 600, webSecurity:false});
   //Start micro services
 
   // and load the index.html of the app.
-  win.loadURL(`file://${__dirname}/app/index.html`);
+  win.loadURL(`file://${__dirname}/index.html`);
 
   // Open the DevTools.
   win.webContents.openDevTools();

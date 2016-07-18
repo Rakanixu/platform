@@ -3,7 +3,6 @@
 set -e
 set -x
 
-REGISTRY=kazoup
 go get github.com/mitchellh/gox
 # Build Micro
 go get github.com/micro/micro
@@ -15,21 +14,19 @@ WORKING_DIR=$PWD
 #cd $WORKING_DIR
 
 #cd ../ui/frontend && npm install && npm install gulp && bower install && node_modules/gulp/bin/gulp.js && cd ../..
-# Remove binaries
-rm -rf bin
-cd ../
+
+# Build binary distributable
+rm -rf desktop/bin
+
 find * -type d -maxdepth 1 -print | while read dir; do
 	if [ ! -f $dir/Dockerfile ]; then
 		continue
 	fi
 
-	if [ ${dir%/*} = "ui" ]; then
-		continue
-	fi
 	pushd $dir >/dev/null
 
 
-	IMAGE=${dir%/*}-${dir#*/}
+	NAME=${dir%/*}-${dir#*/}
 	
 	# dep
 	go get -d  -v -t ./...
@@ -38,7 +35,7 @@ find * -type d -maxdepth 1 -print | while read dir; do
 	go test -v ./...
 
 	# crosscompile
-	gox -verbose -os="darwin linux" -arch="386 amd64" -output ../../desktop/bin/${IMAGE}_{{.OS}}_{{.Arch}}
+	gox -verbose -os="darwin linux" -arch="386 amd64" -output $WORKING_DIR/desktop/bin/${NAME}_{{.OS}}_{{.Arch}}
 	
 	# build ui  		
 
