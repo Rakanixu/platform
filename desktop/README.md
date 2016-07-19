@@ -14,8 +14,9 @@ npm run dev
 
 
 ## Build
-
-
+<!-- 
+TODO:Simplify this
+-->
 To build distribution for all platforms run below
 This will build OSX,Linux and Windows packages and save tem in /dist folder
 You will need to install dependencies so far it works on Mac see more over [here](https://github.com/electron-userland/electron-builder/wiki/Multi-Platform-Build)
