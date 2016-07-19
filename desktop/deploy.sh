@@ -6,4 +6,4 @@ USERNAME=kazoup
 REPONAME=platform
 WORKING_DIR=$PWD
 go get github.com/tcnksm/ghr
-ghr -t $GITHUB_TOKEN -u $USERNAME -r $REPONAME --replace `git describe --tags` dist/
+ghr -t $GITHUB_TOKEN -u $USERNAME -r $REPONAME --replace v0.0.2 release/

@@ -1,11 +1,13 @@
 {
-  "name": "Kazoup",
-  "version": "0.0.1",
+  "name": "kazoup",
+  "version": "0.0.2",
   "main": "main.js",
   "devDependencies": {
-    "appdmg": "^0.4.5",
+    "copyfiles": "^1.0.0",
     "electron-builder": "^5.12.1",
-    "electron-prebuilt": "^1.2.7"
+    "electron-prebuilt": "^1.2.7",
+    "npm-run-all": "^2.3.0",
+    "rimraf": "^2.5.3"
   },
   "dependencies": {
     "electron-spawn": "^5.0.0",
@@ -29,10 +31,14 @@
     "postinstall": "install-app-deps",
     "start": "electron ./app --enable-logging --remote-debugging-port=9222",
     "dev": "NODE_ENV='development' npm run start",
-    "dist": "npm run dist:osx && npm run dist:win32 && npm run dist:win64 && npm run dist:linux",
+    "dist": "npm run dist:osx  && npm run dist:win64 && npm run dist:linux",
     "dist:osx": "build --platform darwin",
     "dist:linux": "build --platform linux",
-    "dist:win32": "build --platform win32 --arch ia32",
-    "dist:win64": "build --platform win32 --arch x64"
+    "dist:win64": "build --platform win32 --arch x64",
+    "release:osx": "copyfiles -f dist/mac/*.{dmg,zip} release/",
+    "release:linux": "copyfiles -f dist/*.deb release/",
+    "release:win64": "copyfiles -f dist/win/{*.nupkg,*.exe} release/",
+    "clean" : "rm -rf release/* ",
+    "release": "npm run clean && run-p release:*"
   }
 }

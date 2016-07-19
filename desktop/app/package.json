@@ -1,6 +1,6 @@
 {
-  "name": "Kazoup",
-  "version": "0.0.1",
+  "name": "kazoup-desktop",
+  "version": "0.0.2",
   "description" : "Kazoup Desktop distributed application",
   "author" : "Kazoup Team <info@kazooup.com>",
   "homepage":"www.kazoup.com",

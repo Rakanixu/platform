@@ -19,8 +19,9 @@ deployment:
         release:
                 branch: desktop
                 commands:
-                        - go get github.com/tcnksm/ghr
-                        - ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace `git describe --tags` desktop/dist/
+                        - sleep 10
+                        #- go get github.com/tcnksm/ghr
+                        #- ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace `git describe --tags` desktop/dist/
         hub: 
                 branch: master
                 commands:
