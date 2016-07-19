@@ -3,9 +3,10 @@ const fs = require("fs")
 // Module to control application life.
 const {app} = electron;
 const {ipcMain} = require('electron');
-const {os} = require('os')
+//const {os} = require('os')
 const spawn = require("child_process").spawn
-
+const {autoUpdater} = electron;
+const os = require('os');
 // Module to create native browser window.
 const {BrowserWindow} = electron;
 
@@ -16,16 +17,76 @@ let es;
 let paths;
 let services;
 let running;
+let updateFeed = '';
+let isDevelopment = process.env.NODE_ENV === 'development';
+let  feedURL = 'https://protected-reaches-10740.herokuapp.com' ;
+const version = require('./package.json').version;
+
+
+
 function createWindow() {
   // Create the browser window.
-  win = new BrowserWindow({width: 800, height: 600, webSecurity:false});
+  win = new BrowserWindow({width: 1024, height: 768, webSecurity:false});
   //Start micro services
 
   // and load the index.html of the app.
   win.loadURL(`file://${__dirname}/index.html`);
 
+  //win.loadURL("http://google.com");
   // Open the DevTools.
   win.webContents.openDevTools();
+
+  
+// Don't use auto-updater if we are in development 
+if (!isDevelopment) {
+    if (os.platform() === 'darwin') {
+	updateFeed = `${feedURL}/update?version=${version}&platform=osx`;
+
+    }
+    else if (os.platform() === 'win32') {
+        //updateFeed = 'https://protected-reaches-10740.herokuapp.com/' + (os.arch() === 'x64' ? '64' : '32');
+
+	updateFeed = `${feedURL}/update?version=${version}&platform=win`;
+    }
+
+    autoUpdater.addListener("update-available", function(event) {
+        console.log("A new update is available");
+        if (win) {
+            win.webContents.send('update-message', 'update-available');
+        }
+    });
+    autoUpdater.addListener("update-downloaded", function(event, releaseNotes, releaseName, releaseDate, updateURL) {
+        console.log("A new update is ready to install", `Version ${releaseName} is downloaded and will be automatically installed on Quit`);
+        if (win) {
+            win.webContents.send('update-message', 'update-downloaded');
+        }
+    });
+    autoUpdater.addListener("error", function(error) {
+        console.log(error);
+        if (win) {
+            win.webContents.send('update-message', 'update-error');
+        }
+    });
+    autoUpdater.addListener("checking-for-update", function(event) {
+        console.log("Checking for update");
+        if (win) {
+            win.webContents.send('update-message', 'checking-for-update');
+        }
+    });
+    autoUpdater.addListener("update-not-available", function() {
+        console.log("Update not available");
+        if (win) {
+            win.webContents.send('update-message', 'update-not-available');
+        }
+    });
+     
+   //updateFeed = `${feedURL}/update?version=${version}&platform=osx`;
+   autoUpdater.setFeedURL(updateFeed);
+}
+
+
+
+
   //win.webContents.send('starting', "elasicsearch");
   // Emitted when the window is closed.
   win.on('closed', () => {
@@ -34,6 +95,13 @@ function createWindow() {
     // when you should delete the corresponding element.
     win = null;
   });
+  if (!isDevelopment) {
+        win.webContents.on('did-frame-finish-load', function() {
+            console.log("Checking for updates: " + updateFeed);
+	    autoUpdater.setFeedURL(updateFeed)
+            autoUpdater.checkForUpdates();
+        });
+    }
 }
 
 // This method will be called when Electron has finished
@@ -47,10 +115,11 @@ app.on('window-all-closed', () => {
   // to stay active until the user quits explicitly with Cmd + Q
   //
   //es.kill('SIGHUP');
-  for (var i = 0; i < running.length; i++) {
-    running[i].kill('SIGHUP');
-    console.log('Killing ' + i);
-  }
+  
+  //for (var i = 0; i < running.length; i++) {
+  //  running[i].kill('SIGHUP');
+  //  console.log('Killing ' + i);
+  //}
   if (process.platform !== 'darwin') {
     app.quit();
   }
@@ -139,3 +208,4 @@ function archConvert(arch) {
 
   return arch;
 }
+

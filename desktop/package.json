@@ -1,6 +1,6 @@
 {
   "name": "kazoup",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "main": "main.js",
   "devDependencies": {
     "copyfiles": "^1.0.0",
@@ -11,8 +11,7 @@
   },
   "dependencies": {
     "electron-spawn": "^5.0.0",
-    "glob": "^7.0.5",
-    "ipc": "0.0.1"
+    "glob": "^7.0.5"
   },
   "build": {
     "appId": "com.kazoup.app",
