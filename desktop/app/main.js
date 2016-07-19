@@ -1,3 +1,4 @@
+// Handle Squirrel events for Windows immediately on start
 const electron = require('electron');
 const fs = require("fs")
 // Module to control application life.
@@ -20,8 +21,7 @@ let running;
 let updateFeed = '';
 let isDevelopment = process.env.NODE_ENV === 'development';
 let  feedURL = 'https://protected-reaches-10740.herokuapp.com' ;
-const version = require('./package.json').version;
-
+const version = app.getVersion();
 
 
 function createWindow() {
@@ -46,7 +46,7 @@ if (!isDevelopment) {
     else if (os.platform() === 'win32') {
         //updateFeed = 'https://protected-reaches-10740.herokuapp.com/' + (os.arch() === 'x64' ? '64' : '32');
 
-	updateFeed = `${feedURL}/update?version=${version}&platform=win`;
+	updateFeed = `${feedURL}/update/win32/${version};
     }
 
     autoUpdater.addListener("update-available", function(event) {
