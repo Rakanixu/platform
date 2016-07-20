@@ -17,6 +17,7 @@
   "build": {
     "appId": "com.kazoup.app",
     "app-category-type": "public.app-category.productivity",
+    "extraResources" : "bin/*",
     "dmg": {
       "background": "build/background.png"
     },
@@ -31,14 +32,16 @@
     "postinstall": "install-app-deps",
     "start": "electron ./app --enable-logging --remote-debugging-port=9222",
     "dev": "NODE_ENV='development' npm run start",
-    "dist": "npm run dist:osx  && npm run dist:win64 && npm run dist:linux",
+    "dist": "npm run clean:dist && npm run dist:osx  && npm run dist:win64 && npm run dist:linux",
     "dist:osx": "build --platform darwin",
     "dist:linux": "build --platform linux",
     "dist:win64": "build --platform win32 --arch x64",
     "release:osx": "copyfiles -f dist/mac/*.{dmg,zip} release/",
     "release:linux": "copyfiles -f dist/*.deb release/",
     "release:win64": "copyfiles -f dist/win/{*.nupkg,*.exe,RELEASES} release/",
-    "clean": "rm -rf release/* ",
-    "release": "npm run clean && run-p release:*"
+    "clean:release": "rm -rf release/* ",
+    "clean:dist":"rm -rf dist/*",
+    "release": "npm run clean:release && run-p release:*",
+    "all":"run-p clean:* && npm run dist && npm run release"
   }
 }

@@ -35,7 +35,7 @@ find * -type d -maxdepth 1 -print | while read dir; do
 	go test -v ./...
 
 	# crosscompile
-	gox -verbose -os="darwin linux" -arch="386 amd64" -output $WORKING_DIR/desktop/bin/${NAME}_{{.OS}}_{{.Arch}}
+	gox -verbose -os="darwin linux" -arch="386 amd64" -output $WORKING_DIR/desktop/bin/{{.OS}}/{{.Arch}}/${NAME}-{{.OS}}-{{.Arch}}
 	
 	# build ui  		
 
