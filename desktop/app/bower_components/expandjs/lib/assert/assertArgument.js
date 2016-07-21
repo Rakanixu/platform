@@ -1,0 +1,1 @@
+!function(){"use strict";var r=require("../assert/assert"),e=require("../error/ArgumentError");module.exports=function(t,n,o){r(t,function(){throw new e(n,o)})}}();

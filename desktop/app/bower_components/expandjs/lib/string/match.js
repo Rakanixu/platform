@@ -1,0 +1,1 @@
+!function(){"use strict";var e=require("../assert/assertArgument"),r=require("../tester/isRegExp"),t=require("../tester/isString"),s=require("../tester/isVoid");module.exports=function(i,u){return e(s(i)||t(i),1,"string"),e(s(u)||r(u),2,"RegExp"),i&&u?i.match(u)||[]:[]}}();

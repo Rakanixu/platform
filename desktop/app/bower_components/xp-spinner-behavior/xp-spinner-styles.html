@@ -1,0 +1,14 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+
+</head><body><dom-module id="xp-spinner-styles">
+
+    <template strip-whitespace="">
+
+        <style>:host{display:block;margin:auto;pointer-events:none !important;position:relative;}:host([auto-center]){left:50%;position:absolute;top:50%;transform:translate(-50%, -50%);}:host(:not([showed])){visibility:hidden !important;}:host .wrapper,
+            :host .layer,
+            :host .circle{bottom:0;left:0;position:absolute;right:0;top:0;}:host([showed]) .wrapper{-webkit-animation:spinner-wrapper-rotate 1568ms linear infinite;animation:spinner-wrapper-rotate 1568ms linear infinite;}:host .layer{opacity:0;}@-webkit-keyframes spinner-wrapper-rotate{to{transform:rotate(360deg);}}@keyframes spinner-wrapper-rotate{to{transform:rotate(360deg);}}</style>
+
+    </template>
+
+</dom-module>
+</body></html>

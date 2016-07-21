@@ -1,0 +1,1 @@
+!function(){"use strict";var r=require("../assert/assertArgument"),e=require("../tester/isIndex"),t=require("../tester/isString"),i=require("../tester/isVoid");module.exports=function(s,n,u){r(i(s)||t(s),1,"string"),r(i(n)||e(n),2,"number"),r(i(u)||t(u),3,"string");var o,a="";if(s)for(o=0;o<n;o+=1)a+=(o?u||"":"")+s;return a}}();

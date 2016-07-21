@@ -1,0 +1,24 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-checkbox/mat-checkbox.html">
+<link rel="import" href="../mat-typography/mat-typography.html">
+<link rel="import" href="../xp-table-behavior/xp-thead-behavior.html">
+<link rel="import" href="../xp-table-behavior/xp-thead-styles.html">
+
+</head><body><dom-module id="mat-thead">
+
+    <template strip-whitespace="">
+
+        <style include="xp-thead-styles"></style>
+
+        <style>:host{@apply (--mat-font-caption);font-weight:500 !important;line-height:16px !important;}:host .checkbox{margin:8px -12px 8px 12px;}:host-context(mat-table:not([selectable])) .checkbox{display:none !important;}</style>
+
+        <mat-checkbox class="checkbox" checked="{{active}}" on-xp-active="_switchHandler"></mat-checkbox>
+        <content select=".table-cell"></content>
+
+    </template>
+
+    <script>Polymer({is:"mat-thead",behaviors:[Polymer.XPTableHeaderBehavior]});</script>
+
+</dom-module>
+</body></html>

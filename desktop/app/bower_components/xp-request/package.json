@@ -1,0 +1,37 @@
+{
+  "name": "xp-request",
+  "license": "BSD-3-Clause",
+  "description": "This class is used to perform XHR requests.",
+  "version": "0.10.0",
+  "homepage": "https://github.com/ExpandJS/xp-request",
+  "author": "ExpandJS <dev@expandjs.com> (http://expandjs.com)",
+  "contributors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ExpandJS/xp-request.git"
+  },
+  "dependencies": {
+    "expandjs": "0.10.0",
+    "xp-emitter": "0.10.0"
+  },
+  "devDependencies": {
+    "browserify": "*",
+    "derequire": "*",
+    "minifyify": "*"
+  },
+  "scripts": {
+    "build": "npm run build:browserify && npm run build:minify && node noconflict",
+    "build:browserify": "browserify index -i expandjs -i xp-emitter --standalone XPRequest | derequire > dist/xp-request.js",
+    "build:minify": "browserify -d index -i expandjs -i xp-emitter --standalone XPRequest -p [minifyify --map xp-request.min.map --output dist/xp-request.min.map] | derequire > dist/xp-request.min.js"
+  },
+  "keywords": [
+      "expandjs",
+      "web app",
+      "request",
+      "xhr"
+  ]
+}

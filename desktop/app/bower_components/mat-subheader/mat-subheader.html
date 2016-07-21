@@ -1,0 +1,22 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-ink/mat-ink-behavior.html">
+<link rel="import" href="../mat-ink/mat-ink-styles.html">
+<link rel="import" href="../mat-typography/mat-typography.html">
+
+</head><body><dom-module id="mat-subheader">
+
+    <template strip-whitespace="">
+
+        <style include="mat-ink-styles"></style>
+
+        <style>:host{@apply (--mat-font-menu);display:block;height:48px;line-height:48px !important;text-align:left;}:host .wrapper{overflow:hidden;text-overflow:ellipsis !important;white-space:nowrap !important;padding:0 16px;}:host([inset]) .wrapper{padding-left:72px;}</style>
+
+        <div class="wrapper">[[label]]</div>
+
+    </template>
+
+    <script>Polymer({is:"mat-subheader",behaviors:[Polymer.MatInkBehavior],properties:{inset:{reflectToAttribute:!0,type:Boolean,value:!1},label:{reflectToAttribute:!0,type:String},opacity:{reflectToAttribute:!0,type:String,value:"secondary"}},created:function(){this.classList.add("subheader")}});</script>
+
+</dom-module>
+</body></html>

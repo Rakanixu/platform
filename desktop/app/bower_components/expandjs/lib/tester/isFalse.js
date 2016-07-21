@@ -1,0 +1,1 @@
+!function(){"use strict";module.exports=function(t){return t===!1}}();

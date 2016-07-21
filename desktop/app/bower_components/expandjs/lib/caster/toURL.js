@@ -1,0 +1,1 @@
+!function(){"use strict";var r=require("../tester/isObject"),e=require("url");module.exports=function(t){if(r(t))return e.format(t)}}();

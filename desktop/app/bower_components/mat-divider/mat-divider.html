@@ -1,0 +1,21 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-ink/mat-ink-behavior.html">
+<link rel="import" href="../mat-ink/mat-ink-styles.html">
+
+</head><body><dom-module id="mat-divider">
+
+    <template strip-whitespace="">
+
+        <style include="mat-ink-styles"></style>
+
+        <style>:host{display:block;overflow:hidden;padding:7px 0 8px 0;}:host([baseline]){bottom:0;left:0;padding:0;position:absolute;right:0;}:host([cap]){left:0;padding:0;position:absolute;right:0;top:0;}:host .line{border-top:1px solid currentColor;}</style>
+
+        <div class="line"></div>
+
+    </template>
+
+    <script>Polymer({is:"mat-divider",behaviors:[Polymer.MatInkBehavior],properties:{baseline:{observer:"_baselineChanged",reflectToAttribute:!0,type:Boolean,value:!1},cap:{observer:"_capChanged",reflectToAttribute:!0,type:Boolean,value:!1},opacity:{reflectToAttribute:!0,type:String,value:"divider"}},_baselineChanged:function(e){this.cap=this.cap&&!e},_capChanged:function(e){this.baseline=this.baseline&&!e},created:function(){this.classList.add("divider")}});</script>
+
+</dom-module>
+</body></html>

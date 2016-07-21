@@ -1,0 +1,8 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-finder-behavior/xp-finder-behavior.html">
+<link rel="import" href="../xp-master-behavior/xp-master-behavior.html">
+<link rel="import" href="../xp-overlay/xp-overlay-behavior.html">
+
+<script>Polymer.XPMenuBehaviorImp={listeners:{"xp-activate":"_optionHandler"},observers:["_submenusObserver(submenus.*)"],properties:{cascade:{notify:!0,observer:"_cascadeObserver",reflectToAttribute:!0,type:Boolean,value:!1},findDeep:{readOnly:!0,type:Boolean,value:!0},itemSelector:{type:String,value:".option"},submenus:{notify:!0,readOnly:!0,value:function(){return[]}}},_cascadeObserver:function(){!this.cascade||"over"!==this.position&&this.position||(this.position="baseline")},_showedObserver:function(){var e=this;Polymer.XPOverlayBehaviorImp._showedObserver.apply(e,arguments),e.showed||XP.invoke(e.submenus||[],"hide")},_submenusObserver:function(){this.submenus.length&&(this.cascade=!0)},created:function(){this.classList.add("menu")},ready:function(){this.slavesMap.submenus=".submenu"},_optionHandler:function(e){var r=this;!e.detail.firer.toggleable&&e.detail.firer.classList.contains("option")&&requestAnimationFrame(function(){return e.defaultPrevented||r.hide()})}},Polymer.XPMenuBehavior=[Polymer.XPFinderBehavior,Polymer.XPMasterBehavior,Polymer.XPOverlayBehavior,Polymer.XPMenuBehaviorImp];</script>
+</head><body></body></html>

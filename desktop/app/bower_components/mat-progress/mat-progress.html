@@ -1,0 +1,26 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-ink/mat-ink.html">
+<link rel="import" href="../mat-paper/mat-paper.html">
+<link rel="import" href="../xp-progress-behavior/xp-progress-behavior.html">
+<link rel="import" href="../xp-progress-behavior/xp-progress-styles.html">
+
+</head><body><dom-module id="mat-progress">
+
+    <template strip-whitespace="">
+
+        <style include="xp-progress-styles"></style>
+
+        <style>:host{height:4px;transform:scale(1, 1);transition:transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);}:host(:not([showed])){transform:scale(1, 0) !important;}:host .bar{transition:none;}:host .bar.aux{background:hsla(207, 90%, 54%, 1);}:host .bar.buffer{background:hsla(207, 89%, 86%, 1);}:host .bar.progress{background:hsla(207, 90%, 54%, 1);}:host .bar.stream{color:hsla(207, 89%, 86%, 1);}:host([mode="buffer"]) .bar.stream::before{-webkit-animation:buffer-stream 6s linear 0s infinite;animation:buffer-stream 6s linear 0s infinite;background-size:10px 10px !important;background:radial-gradient(currentColor 0%, currentColor 16%, hsla(0, 0%, 0%, 0) 42%) 0 -23px;height:4px;}@-webkit-keyframes buffer-stream{0%{background-position:0 -23px;}100%{background-position:-230px -23px;}}@keyframes buffer-stream{0%{background-position:0 -23px;}100%{background-position:-230px -23px;}}:host([mode="indeterminate"]) .bar{transition:transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);}:host([mode="indeterminate"]) .bar.aux{animation:indeterminate-aux 2s linear 0s infinite;}:host([mode="indeterminate"]) .bar.progress{animation:indeterminate-progress 2s linear 0s infinite;}@-webkit-keyframes indeterminate-aux{0%{transform:translateX(0%) scale(0, 1);}50%{transform:translateX(0%) scale(0, 1);}75%{transform:translateX(0%) scale(0.6, 1);}100%{transform:translateX(100%) scale(0.2, 1);}}@keyframes indeterminate-aux{0%{transform:translateX(0%) scale(0, 1);}50%{transform:translateX(0%) scale(0, 1);}75%{transform:translateX(0%) scale(0.6, 1);}100%{transform:translateX(100%) scale(0.2, 1);}}@-webkit-keyframes indeterminate-progress{0%{transform:translateX(0%) scale(0, 1);}20%{transform:translateX(0%) scale(0.5, 1);}33%{transform:translateX(20%) scale(0.7, 1);}66%{transform:translateX(100%) scale(0.7, 1);}100%{transform:translateX(100%) scale(0.7, 1);}}@keyframes indeterminate-progress{0%{transform:translateX(0%) scale(0, 1);}20%{transform:translateX(0%) scale(0.5, 1);}33%{transform:translateX(20%) scale(0.7, 1);}66%{transform:translateX(100%) scale(0.7, 1);}100%{transform:translateX(100%) scale(0.7, 1);}}:host([mode="query"]) .bar{transition:transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);}:host([mode="query"]) .bar.aux{-webkit-animation:query-aux 2s linear 0s infinite;animation:query-aux 2s linear 0s infinite;transform-origin:right;}:host([mode="query"]) .bar.progress{-webkit-animation:query-progress 2s linear 0s infinite;animation:query-progress 2s linear 0s infinite;transform-origin:right;}@-webkit-keyframes query-aux{0%{transform:translateX(0%) scale(0, 1);}50%{transform:translateX(0%) scale(0, 1);}75%{transform:translateX(0%) scale(0.6, 1);}100%{transform:translateX(-100%) scale(0.2, 1);}}@keyframes query-aux{0%{transform:translateX(0%) scale(0, 1);}50%{transform:translateX(0%) scale(0, 1);}75%{transform:translateX(0%) scale(0.6, 1);}100%{transform:translateX(-100%) scale(0.2, 1);}}@-webkit-keyframes query-progress{0%{transform:translateX(0%) scale(0, 1);}20%{transform:translateX(0%) scale(0.5, 1);}33%{transform:translateX(-20%) scale(0.7, 1);}66%{transform:translateX(-100%) scale(0.7, 1);}100%{transform:translateX(-100%) scale(0.7, 1);}}@keyframes query-progress{0%{transform:translateX(0%) scale(0, 1);}20%{transform:translateX(0%) scale(0.5, 1);}33%{transform:translateX(-20%) scale(0.7, 1);}66%{transform:translateX(-100%) scale(0.7, 1);}100%{transform:translateX(-100%) scale(0.7, 1);}}</style>
+
+        <mat-ink class="stream bar" color="[[bufferColor]]"></mat-ink>
+        <mat-paper class="buffer bar" background="[[bufferColor]]"></mat-paper>
+        <mat-paper class="aux bar" background="[[color]]"></mat-paper>
+        <mat-paper class="progress bar" background="[[color]]"></mat-paper>
+
+    </template>
+
+    <script>Polymer({is:"mat-progress",behaviors:[Polymer.XPProgressBehavior],properties:{bufferColor:{reflectToAttribute:!0,type:String},color:{reflectToAttribute:!0,type:String}}});</script>
+
+</dom-module>
+</body></html>

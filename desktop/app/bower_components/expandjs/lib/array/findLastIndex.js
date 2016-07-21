@@ -1,0 +1,1 @@
+!function(){"use strict";var e=require("lodash"),r=require("../assert/assertArgument"),t=require("../tester/isIndex"),i=require("../tester/isPredicate"),s=require("../caster/toArray");module.exports=function(n,u,a){r(n=s(n),1,"Arrayable"),r(i(u),2,"Function | Object | string");var o=e.findLastIndex(n,u,a);return t(o)?o:void 0}}();

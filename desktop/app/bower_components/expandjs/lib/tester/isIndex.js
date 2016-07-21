@@ -1,0 +1,1 @@
+!function(){"use strict";var t=require("../tester/isInt");module.exports=function(e){return t(e,!0)}}();

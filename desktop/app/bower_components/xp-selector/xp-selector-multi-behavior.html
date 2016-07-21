@@ -1,0 +1,6 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-selector/xp-selector-behavior.html">
+
+<script>Polymer.XPSelectorMultiBehaviorImp={properties:{multi:{observer:"_multiObserver",notify:!0,reflectToAttribute:!0,type:Boolean,value:!1}},_multiObserver:function(){var e=this;e._setSelection(e.multi?XP.toArray(e.selection,!0):XP.isArray(e.selection)?null:e.selection),e.selected=e.multi?XP.toArray(e.selected,!0):XP.isArray(e.selected)?null:e.selected}},Polymer.XPSelectorMultiBehavior=[Polymer.XPSelectorBehavior,Polymer.XPSelectorMultiBehaviorImp];</script>
+</head><body></body></html>

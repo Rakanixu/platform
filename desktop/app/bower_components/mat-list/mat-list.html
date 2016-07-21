@@ -1,0 +1,24 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-ink/mat-ink.html">
+<link rel="import" href="../mat-typography/mat-typography.html">
+<link rel="import" href="../xp-list-behavior/xp-list-behavior.html">
+<link rel="import" href="../xp-list-behavior/xp-list-styles.html">
+
+</head><body><dom-module id="mat-list">
+
+    <template strip-whitespace="">
+
+        <style include="xp-list-styles"></style>
+
+        <style>:host .wrapper{box-sizing:border-box;height:100%;padding:8px 0;}:host .wrapper ::content .item:not(mat-item){@apply (--mat-font-subhead);color:inherit;line-height:48px !important;min-height:48px;padding:0 16px;overflow:hidden;text-overflow:ellipsis !important;white-space:nowrap !important;}:host .wrapper ::content > .subheader,
+            :host .wrapper ::content .sublist[label]:not([label=""]):not([collapsible]){margin-top:-8px;}:host .wrapper[foreground="dark"] ::content .item:not(mat-item)[active]{background:hsla(0, 0%, 0%, 0.12);}:host .wrapper[foreground="dark"] ::content > .item:not(mat-item):not(:last-of-type){border-bottom:1px solid hsla(0, 0%, 0%, 0.12);margin-bottom:-1px;}:host .wrapper[foreground="light"] ::content .item:not(mat-item)[active]{background:hsla(0, 0%, 100%, 0.12);}:host .wrapper[foreground="light"] ::content > .item:not(mat-item):not(:last-of-type){border-bottom:1px solid hsla(0, 0%, 100%, 0.12);margin-bottom:-1px;}</style>
+
+        <mat-ink class="wrapper"><content></content></mat-ink>
+
+    </template>
+
+    <script>Polymer({is:"mat-list",behaviors:[Polymer.XPListBehavior]});</script>
+
+</dom-module>
+</body></html>

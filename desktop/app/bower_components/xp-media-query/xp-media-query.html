@@ -1,0 +1,5 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+
+<script>Polymer({is:"xp-media-query",properties:{data:{notify:!0},matcher:{notify:!0,readOnly:!0},matched:{notify:!0,readOnly:!0,reflectToAttribute:!0,type:Boolean,value:!1},query:{observer:"_queryChanged",type:String}},_queryChanged:function(){var e=this,a=e.matcher;e._setMatcher(window.matchMedia(e.query)),a&&a.removeListener(e._handleQuery),e.matcher&&e.matcher.addListener(e._handleQuery),e._handleQuery(e.matcher)},created:function(){var e=this;e.classList.add("media-query"),e._handleQuery=e._handleQuery.bind(e)},_handleQuery:function(e){var a=this;a._setMatched(e.matches),XP.delay(a.fire.bind(a,"xp-media-change",{firer:a,matched:a.matched}))}});</script>
+</head><body></body></html>

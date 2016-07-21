@@ -1,0 +1,39 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../mat-icon/mat-icon.html">
+<link rel="import" href="../mat-pressed-behavior/mat-pressed-ink-behavior.html">
+<link rel="import" href="../mat-pressed-behavior/mat-pressed-ink-styles.html">
+<link rel="import" href="../xp-anchor-behavior/xp-anchor-behavior.html">
+<link rel="import" href="../xp-anchor-behavior/xp-anchor-styles.html">
+<link rel="import" href="../xp-overlay/xp-overlay-injector.html">
+
+</head><body><dom-module id="mat-icon-button">
+
+    <template strip-whitespace="">
+
+        <style include="xp-anchor-styles"></style>
+        <style include="mat-pressed-ink-styles"></style>
+
+        <style>:host{border-radius:50%;height:40px;margin:4px;width:40px;}:host .anchor:after{min-height:48px;min-width:48px;}:host .main{@apply (--layout-horizontal);@apply (--layout-center-center);box-sizing:border-box;height:100%;}:host .icons,
+            :host .icon{box-sizing:border-box;display:block;height:100%;max-height:24px;max-width:24px;position:relative;width:100%;}:host .icon{transition:opacity 0.4s cubic-bezier(0.55, 0, 0.01, 1), transform 0.4s cubic-bezier(0.55, 0, 0.01, 1), visibility 0.4s cubic-bezier(0.55, 0, 0.01, 1);}:host([animated]) .icon.one{position:absolute;}:host .icon.one,
+            :host([active]) .icon.two{opacity:1;transform:scale(1);visibility:inherit;}:host([active][animated]) .icon.one,
+            :host(:not([active])) .icon.two{opacity:0;transform:scale(0);visibility:hidden;}:host .icon.one{@apply (--mat-icon-button-icon-one);}:host .icon.two{@apply (--mat-icon-button-icon-two);}:host([active]) .icon.one{@apply (--mat-icon-button-active-icon-one);}:host([active]) .icon.two{@apply (--mat-icon-button-active-icon-two);}</style>
+
+        <a class="anchor" tabindex="-1" on-click="_anchorHandler">
+            <div class="main">
+                <div class="icons">
+                    <mat-icon class="icon one" color="[[currentColor]]" disabled="[[disabled]]" name="[[icon]]" opacity="[[_computeOpacity(active, dimmed)]]" src="[[iconSrc]]"></mat-icon>
+                    <mat-icon class="icon two" color="[[currentColor]]" disabled="[[disabled]]" name="[[activeIcon]]" src="[[activeIconSrc]]"></mat-icon>
+                </div>
+            </div>
+        </a>
+
+        <div class="ripple-waves"></div>
+
+    </template>
+
+    <script>Polymer({is:"mat-icon-button",behaviors:[Polymer.XPAnchorBehavior,Polymer.XPOverlayInjector,Polymer.MatPressedInkBehavior],properties:{activeIcon:{observer:"_activeIconChanged",reflectToAttribute:!0,type:String},activeIconSrc:{observer:"_activeIconChanged",reflectToAttribute:!0,type:String},animated:{notify:!0,readOnly:!0,reflectToAttribute:!0,type:Boolean,value:!1},dimmed:{reflectToAttribute:!0,type:Boolean,value:!1},icon:{reflectToAttribute:!0,type:String},iconSrc:{reflectToAttribute:!0,type:String}},_computeOpacity:function(t,e){return!t&&e?"hint":"icon"},_activeIconChanged:function(){this._setAnimated(!!this.activeIcon||!!this.activeIconSrc)},created:function(){this.classList.add("button")}});</script>
+
+</dom-module>
+</body></html>

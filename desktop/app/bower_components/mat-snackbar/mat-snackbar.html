@@ -1,0 +1,27 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../mat-button/mat-button.html">
+<link rel="import" href="../mat-typography/mat-typography.html">
+<link rel="import" href="../xp-snackbar-behavior/xp-snackbar-behavior.html">
+<link rel="import" href="../xp-snackbar-behavior/xp-snackbar-styles.html">
+
+</head><body><dom-module id="mat-snackbar">
+
+    <template strip-whitespace="">
+
+        <style include="xp-snackbar-styles"></style>
+
+        <style>:host{@apply (--mat-font-body);background:hsla(0, 0%, 20%, 1);bottom:0;color:hsla(0, 0%, 95%, 1);left:0;max-height:80px;min-height:48px;padding:14px 24px;right:0;transform:translate(0, 100%);}:host .label{@apply (--layout-flex);}:host .button{color:var(--mat-accent-color, #FFC107);margin:-8px -12px;}@media (min-width: 960px){:host{border-radius:2px 2px 0 0;left:50%;max-width:568px;min-width:288px;right:auto;transform:translate(-50%, 112px);}:host([showed]){transform:translate(-50%, 0px);}:host .button{margin:-8px -12px -8px 36px;}}</style>
+
+        <div class="wrapper">
+            <div class="label">[[label]]</div>
+            <mat-button class="button" data="[[data]]" label="[[button]]" target="[[target]]" on-xp-activate="_actionHandler"></mat-button>
+        </div>
+
+    </template>
+
+    <script>Polymer({is:"mat-snackbar",behaviors:[Polymer.XPSnackbarBehavior]});</script>
+
+</dom-module>
+</body></html>
