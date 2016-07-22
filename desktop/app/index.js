@@ -6,7 +6,22 @@ const {ipcRenderer} = electron;
 function boot() {
 
     console.log("DOM fully loaded and parsed");
-    ipcRenderer.send("disks-message","ping");
+// check for Geolocation support
+	if (navigator.geolocation) {
+  		console.log('Geolocation is supported!');
+	}
+	else {
+	  console.log('Geolocation is not supported for this Browser/OS version yet.');
+	}
+	var startPos;
+  var geoSuccess = function(position) {
+    	startPos = position;
+	console.log(position);
+    	//document.getElementById('startLat').innerHTML = startPos.coords.latitude;
+    	//document.getElementById('startLon').innerHTML = startPos.coords.longitude;
+  	};
+ 	 navigator.geolocation.getCurrentPosition(geoSuccess);
+    //ipcRenderer.send("disks-message","ping");
 }
 
 document.addEventListener('DOMContentLoaded', boot);

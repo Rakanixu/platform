@@ -32,6 +32,7 @@
     "postinstall": "install-app-deps",
     "start": "electron ./app --enable-logging --remote-debugging-port=9222",
     "dev": "NODE_ENV='development' npm run start",
+    "dep": "cd app && npm install && cd ..",
     "dist": "npm run clean:dist && npm run dist:osx  && npm run dist:win64 && npm run dist:linux",
     "dist:osx": "build --platform darwin",
     "dist:linux": "build --platform linux",
@@ -42,6 +43,6 @@
     "clean:release": "rm -rf release/* ",
     "clean:dist":"rm -rf dist/*",
     "release": "npm run clean:release && run-p release:*",
-    "all":"run-p clean:* && npm run dist && npm run release"
+    "all":"run-p clean:* && npm run dep && npm run dist && npm run release"
   }
 }
