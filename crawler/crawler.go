@@ -4,41 +4,41 @@ import (
 	"log"
 	"time"
 
-	"github.com/kazoup/auth-api/handler"
+	"github.com/kazoup/platform/crawler/srv/handler"
 	"github.com/micro/cli"
 	"github.com/micro/go-micro"
 )
 
-func api(ctx *cli.Context) {
+func srv(ctx *cli.Context) {
 
 	service := micro.NewService(
-		micro.Name("go.micro.api.auth"),
+		micro.Name("go.micro.srv.crawler"),
 		micro.RegisterTTL(time.Minute),
 		micro.RegisterInterval(time.Second*30),
 	)
 
 	service.Server().Handle(
-		service.Server().NewHandler(new(handler.Auth)),
+		service.Server().NewHandler(new(handler.Crawl)),
 	)
 	if err := service.Run(); err != nil {
 		log.Fatalf("%v", err)
 	}
 }
 
-func authCommands() []cli.Command {
+func crawlerCommands() []cli.Command {
 	return []cli.Command{{
-		Name:   "api",
-		Usage:  "Run auth api service",
-		Action: api,
+		Name:   "srv",
+		Usage:  "Run crawler service",
+		Action: srv,
 	},
 	}
 }
 func Commands() []cli.Command {
 	return []cli.Command{
 		{
-			Name:        "auth",
-			Usage:       "Auth commands",
-			Subcommands: authCommands(),
+			Name:        "crawler",
+			Usage:       "Crawler commands",
+			Subcommands: crawlerCommands(),
 		},
 	}
 }

@@ -3,6 +3,8 @@ package main
 import (
 	auth "github.com/kazoup/platform/auth"
 	config "github.com/kazoup/platform/config"
+	crawler "github.com/kazoup/platform/crawler"
+	datasource "github.com/kazoup/platform/datasource"
 	"github.com/micro/cli"
 	ccli "github.com/micro/cli"
 	"github.com/micro/go-micro/cmd"
@@ -13,6 +15,8 @@ func main() {
 
 	app.Commands = append(app.Commands, auth.Commands()...)
 	app.Commands = append(app.Commands, config.Commands()...)
+	app.Commands = append(app.Commands, crawler.Commands()...)
+	app.Commands = append(app.Commands, datasource.Commands()...)
 	app.Action = func(context *cli.Context) { cli.ShowAppHelp(context) }
 
 	setup(app)
