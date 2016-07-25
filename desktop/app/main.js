@@ -148,27 +148,24 @@ ipcMain.on("starting", (event, arg) => {
   if (!isDevelopment) {
 	resourcesPath = process.resourcesPath;
   } else {
-	//TODO: stupid hack fixme
+	//TODO: stupid hack fixme should we point to desktop folder ?
 	resourcesPath = __dirname + "/../" ;
   }
-  console.log(process.resourcesPath);
   //paths = discoverServices(process.platform, archConvert(process.arch));
+  // Starting all required services FIXME: 
   elastic = startService(resourcesPath + "/elasticsearch/bin/elasticsearch",[]);
-  //api = startService("bin/micro/" + process.platform + "/" + archConvert(process.arch) + "/micro",["--registry=mdns", "api"] )
-  //web = startService("bin/micro/" + process.platform + "/" + archConvert(process.arch) + "/micro",["--registry=mdns", "web"] )
+  api = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/micro",["--registry=mdns", "api"] )
+  web = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/micro",["--registry=mdns", "web"] )
+  crawler = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup",["--registry=mdns", "crawler","srv"] )
+  datasource_api = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup",["--registry=mdns", "datasource","api"] )
+  datasource_srv = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup",["--registry=mdns", "datasource","srv"] )
   running.push(elastic)
-  //running.push(api)
-  //running.push(web)
+  running.push(api)
+  running.push(web)
+  running.push(crawler)
+  running.push(datasource_api)
+  running.push(datasource_srv)
 
-  //for (var i = 0; i< paths.length; i++) {
-  // if (paths[i].indexOf("elastic-srv") !== -1) {
-  //   running.push(startService(paths[i], ["--registry=mdns", "--elasticsearch_hosts=localhost:9200"]));
-  // } else if (paths[i].indexOf("ui") !== -1) {
-  //   running.push(startService(paths[i], ["--registry=mdns", "--environment=prod"]));
-  // } else {
-  //   running.push(startService(paths[i], ["--registry=mdns"]));
-  // }
-  //
   event.returnValue = "OK";
 });
 

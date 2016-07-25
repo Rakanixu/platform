@@ -18,16 +18,12 @@ WORKING_DIR=$PWD
 # Build binary distributable
 rm -rf desktop/bin
 
+# crosscompile Kazoup CLI
+cd ../kazoup
+gox -verbose -os="darwin linux" -arch="amd64" -output $WORKING_DIR/bin/{{.OS}}/{{.Arch}}/kazoup
+cd $GOPATH/src/github.com/micro/micro
+gox -verbose -os="darwin linux" -arch="amd64" -output $WORKING_DIR/bin/{{.OS}}/{{.Arch}}/micro
 
+cd $WORKING_DIR
 
-	
-	# dep
-	
-	# test
-	#go test -v ./...
-
-	# crosscompile
-	gox -verbose -os="darwin linux" -arch="amd64" -output bin/{{.OS}}/{{.Arch}}/kazoup-{{.OS}}-{{.Arch}}
-	
-	# build ui  		
 

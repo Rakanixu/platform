@@ -5,6 +5,7 @@ import (
 	config "github.com/kazoup/platform/config"
 	crawler "github.com/kazoup/platform/crawler"
 	datasource "github.com/kazoup/platform/datasource"
+	elastic "github.com/kazoup/platform/elastic"
 	"github.com/micro/cli"
 	ccli "github.com/micro/cli"
 	"github.com/micro/go-micro/cmd"
@@ -17,6 +18,7 @@ func main() {
 	app.Commands = append(app.Commands, config.Commands()...)
 	app.Commands = append(app.Commands, crawler.Commands()...)
 	app.Commands = append(app.Commands, datasource.Commands()...)
+	app.Commands = append(app.Commands, elastic.Commands()...)
 	app.Action = func(context *cli.Context) { cli.ShowAppHelp(context) }
 
 	setup(app)
@@ -44,6 +46,11 @@ func setup(app *ccli.App) {
 			Name:   "html_dir",
 			EnvVar: "MICRO_HTML_DIR",
 			Usage:  "The html directory for a web app",
+		},
+		ccli.StringFlag{
+			Name:   "elasticsearch_hosts",
+			EnvVar: "ELASTICSEARCH_HOSTS",
+			Usage:  "ELasticsearch hosts ie: localhost:9200",
 		},
 	)
 }
