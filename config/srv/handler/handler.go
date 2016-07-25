@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"io/ioutil"
 
 	proto "github.com/kazoup/platform/config/srv/proto/config"
 	elastic "github.com/kazoup/platform/elastic/srv/proto/elastic"
@@ -13,7 +12,11 @@ import (
 )
 
 // Config struct
-type Config struct{}
+type Config struct {
+	ESSettings *[]byte
+	ESFlags    *[]byte
+	ESMapping  *[]byte
+}
 
 // Status handler, retrieve kazoup appliance status
 func (c *Config) Status(ctx context.Context, req *proto.StatusRequest, rsp *proto.StatusResponse) error {
@@ -30,17 +33,13 @@ func (c *Config) Status(ctx context.Context, req *proto.StatusRequest, rsp *prot
 
 // SetElasticSettings handler, sets ElasticSearch settings (check es_settings.json in repo) for files index
 func (c *Config) SetElasticSettings(ctx context.Context, req *proto.SetElasticSettingsRequest, rsp *proto.SetElasticSettingsResponse) error {
-	settings, err := ioutil.ReadFile("es_settings.json")
-	if err != nil {
-		return errors.InternalServerError("go.micro.srv.config", err.Error())
-	}
 
 	srvReq := client.NewRequest(
 		"go.micro.srv.elastic",
 		"Elastic.CreateIndexWithSettings",
 		&elastic.CreateIndexWithSettingsRequest{
 			Index:    "files",
-			Settings: string(settings),
+			Settings: string(*c.ESSettings),
 		},
 	)
 	srvRes := &elastic.CreateIndexWithSettingsResponse{}
@@ -54,10 +53,6 @@ func (c *Config) SetElasticSettings(ctx context.Context, req *proto.SetElasticSe
 
 // SetElasticSettings handler, sets ElasticSearch mapping for files index and file documents.(Check es_mapping_files.json in this repo)
 func (c *Config) SetElasticMapping(ctx context.Context, req *proto.SetElasticMappingRequest, rsp *proto.SetElasticMappingResponse) error {
-	mapping, err := ioutil.ReadFile("es_mapping_files.json")
-	if err != nil {
-		return errors.InternalServerError("go.micro.srv.config", err.Error())
-	}
 
 	srvReq := client.NewRequest(
 		"go.micro.srv.elastic",
@@ -65,7 +60,7 @@ func (c *Config) SetElasticMapping(ctx context.Context, req *proto.SetElasticMap
 		&elastic.PutMappingFromJSONRequest{
 			Index:   "files",
 			Type:    "file",
-			Mapping: string(mapping),
+			Mapping: string(*c.ESMapping),
 		},
 	)
 	srvRes := &elastic.PutMappingFromJSONResponse{}
@@ -81,10 +76,7 @@ func (c *Config) SetElasticMapping(ctx context.Context, req *proto.SetElasticMap
 func (c *Config) SetFlags(ctx context.Context, req *proto.SetFlagsRequest, rsp *proto.SetFlagsResponse) error {
 	var flagsSlice []interface{}
 
-	flags, err := ioutil.ReadFile("es_flags.json")
-	if err != nil {
-		return errors.InternalServerError("go.micro.srv.config", err.Error())
-	}
+	flags := *c.ESFlags
 
 	if err := json.Unmarshal(flags, &flagsSlice); err != nil {
 		return errors.InternalServerError("go.micro.srv.config", err.Error())

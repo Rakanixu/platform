@@ -1,5 +1,13 @@
 ## Usage
 
+
+### Data
+
+```
+go-bindata -pkg data -o data/bindata.go data/
+
+```
+
 ### Status
 Get Kazoup appliance current status
 ```
