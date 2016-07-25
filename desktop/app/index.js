@@ -21,7 +21,7 @@ function boot() {
     	//document.getElementById('startLon').innerHTML = startPos.coords.longitude;
   	};
  	 navigator.geolocation.getCurrentPosition(geoSuccess);
-    //ipcRenderer.send("disks-message","ping");
+    ipcRenderer.send("starting","elasticsearch");
 }
 
 document.addEventListener('DOMContentLoaded', boot);

@@ -24,10 +24,10 @@ rm -rf desktop/bin
 	# dep
 	
 	# test
-	go test -v ./...
+	#go test -v ./...
 
 	# crosscompile
-	gox -verbose -os="darwin linux" -arch="386 amd64" -output bin/{{.OS}}/{{.Arch}}/kazoup-{{.OS}}-{{.Arch}}
+	gox -verbose -os="darwin linux" -arch="amd64" -output bin/{{.OS}}/{{.Arch}}/kazoup-{{.OS}}-{{.Arch}}
 	
 	# build ui  		
 

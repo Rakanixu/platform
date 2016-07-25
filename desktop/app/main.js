@@ -117,10 +117,10 @@ app.on("window-all-closed", () => {
   // to stay active until the user quits explicitly with Cmd + Q
   //
   //es.kill("SIGHUP");
-  //for (var i = 0; i < running.length; i++) {
-  //  running[i].kill("SIGHUP");
-  //  console.log("Killing " + i);
-  //}
+  for (var i = 0; i < running.length; i++) {
+    running[i].kill("SIGHUP");
+    console.log("Killing " + i);
+  }
   if (process.platform !== "darwin") {
     app.quit();
   }
@@ -143,23 +143,32 @@ app.on("asynchronous-message", (event, arg) => {
 
 ipcMain.on("starting", (event, arg) => {
   running = [];
-  paths = discoverServices(process.platform, archConvert(process.arch));
-  elastic = startService("bin/elasticsearch/bin/elasticsearch",[])
-  api = startService("bin/micro/" + process.platform + "/" + archConvert(process.arch) + "/micro",["--registry=mdns", "api"] )
-  web = startService("bin/micro/" + process.platform + "/" + archConvert(process.arch) + "/micro",["--registry=mdns", "web"] )
-  running.push(elastic)
-  running.push(api)
-  running.push(web)
-
-  for (var i = 0; i< paths.length; i++) {
-    if (paths[i].indexOf("elastic-srv") !== -1) {
-      running.push(startService(paths[i], ["--registry=mdns", "--elasticsearch_hosts=localhost:9200"]));
-    } else if (paths[i].indexOf("ui") !== -1) {
-      running.push(startService(paths[i], ["--registry=mdns", "--environment=prod"]));
-    } else {
-      running.push(startService(paths[i], ["--registry=mdns"]));
-    }
+  resourcesPath = "";
+  //Set resources path depending if we running in development - needs to do it better
+  if (!isDevelopment) {
+	resourcesPath = process.resourcesPath;
+  } else {
+	//TODO: stupid hack fixme
+	resourcesPath = __dirname + "/../" ;
   }
+  console.log(process.resourcesPath);
+  //paths = discoverServices(process.platform, archConvert(process.arch));
+  elastic = startService(resourcesPath + "/elasticsearch/bin/elasticsearch",[]);
+  //api = startService("bin/micro/" + process.platform + "/" + archConvert(process.arch) + "/micro",["--registry=mdns", "api"] )
+  //web = startService("bin/micro/" + process.platform + "/" + archConvert(process.arch) + "/micro",["--registry=mdns", "web"] )
+  running.push(elastic)
+  //running.push(api)
+  //running.push(web)
+
+  //for (var i = 0; i< paths.length; i++) {
+  // if (paths[i].indexOf("elastic-srv") !== -1) {
+  //   running.push(startService(paths[i], ["--registry=mdns", "--elasticsearch_hosts=localhost:9200"]));
+  // } else if (paths[i].indexOf("ui") !== -1) {
+  //   running.push(startService(paths[i], ["--registry=mdns", "--environment=prod"]));
+  // } else {
+  //   running.push(startService(paths[i], ["--registry=mdns"]));
+  // }
+  //
   event.returnValue = "OK";
 });
 
@@ -180,8 +189,9 @@ function startService(path, args) {
   //  args = ["--registry=mdns"]
   //}
 
-   var wd =  __dirname
-   var es = spawn( __dirname + "/" + path, args, {wd:__dirname});
+   //var wd =  __dirname
+   //var es = spawn( __dirname + "/" + path, args, {wd:__dirname});
+   es = spawn(path,args,{wd:path});
    es.stdout.on("data", function (data) {
    console.log("stdout: " + data);
    });
