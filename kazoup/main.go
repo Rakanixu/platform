@@ -6,6 +6,7 @@ import (
 	crawler "github.com/kazoup/platform/crawler"
 	datasource "github.com/kazoup/platform/datasource"
 	elastic "github.com/kazoup/platform/elastic"
+	indexer "github.com/kazoup/platform/indexer"
 	"github.com/micro/cli"
 	ccli "github.com/micro/cli"
 	"github.com/micro/go-micro/cmd"
@@ -19,6 +20,7 @@ func main() {
 	app.Commands = append(app.Commands, crawler.Commands()...)
 	app.Commands = append(app.Commands, datasource.Commands()...)
 	app.Commands = append(app.Commands, elastic.Commands()...)
+	app.Commands = append(app.Commands, indexer.Commands()...)
 	app.Action = func(context *cli.Context) { cli.ShowAppHelp(context) }
 
 	setup(app)

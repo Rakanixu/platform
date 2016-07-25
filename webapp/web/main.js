@@ -159,12 +159,18 @@ ipcMain.on("starting", (event, arg) => {
   crawler = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup",["--registry=mdns", "crawler","srv"] )
   datasource_api = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup",["--registry=mdns", "datasource","api"] )
   datasource_srv = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup",["--registry=mdns", "datasource","srv"] )
+  elastic_srv = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup",["--registry=mdns", "elastic","srv"] )
+  elastic_api = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup",["--registry=mdns", "elastic","api"] )
+  indexer_srv = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup",["--registry=mdns", "indexer","srv"] )
   running.push(elastic)
   running.push(api)
   running.push(web)
   running.push(crawler)
   running.push(datasource_api)
   running.push(datasource_srv)
+  running.push(elastic_srv)
+  running.push(elastic_api)
+  running.push(indexer_srv)
 
   event.returnValue = "OK";
 });
