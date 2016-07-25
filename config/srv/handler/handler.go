@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 
 	proto "github.com/kazoup/platform/config/srv/proto/config"
 	elastic "github.com/kazoup/platform/elastic/srv/proto/elastic"
@@ -34,6 +35,7 @@ func (c *Config) Status(ctx context.Context, req *proto.StatusRequest, rsp *prot
 // SetElasticSettings handler, sets ElasticSearch settings (check es_settings.json in repo) for files index
 func (c *Config) SetElasticSettings(ctx context.Context, req *proto.SetElasticSettingsRequest, rsp *proto.SetElasticSettingsResponse) error {
 
+	log.Print(*c.ESSettings)
 	srvReq := client.NewRequest(
 		"go.micro.srv.elastic",
 		"Elastic.CreateIndexWithSettings",
@@ -77,7 +79,6 @@ func (c *Config) SetFlags(ctx context.Context, req *proto.SetFlagsRequest, rsp *
 	var flagsSlice []interface{}
 
 	flags := *c.ESFlags
-
 	if err := json.Unmarshal(flags, &flagsSlice); err != nil {
 		return errors.InternalServerError("go.micro.srv.config", err.Error())
 	}
