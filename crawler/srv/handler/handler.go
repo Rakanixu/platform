@@ -1,12 +1,12 @@
 package handler
 
 import (
-	"strconv"
-
 	crawler "github.com/kazoup/platform/crawler/srv/proto/crawler"
 	scanner "github.com/kazoup/platform/crawler/srv/scan"
+	datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
+	"strconv"
 )
 
 // Crawl ...
@@ -19,9 +19,10 @@ func (c *Crawl) Start(ctx context.Context, req *crawler.StartRequest, rsp *crawl
 	l := int64(len(crawls)) + 1
 
 	// mapScanner ensures data validation
-	s, err := mapScanner(l, req.Type, req.Config)
+	s, err := mapScanner(l, &datasource.Endpoint{
+		Url: "local://",
+	})
 	if err != nil {
-		// TODO: com.kazoup.srv.crawler.Crawl.Stop
 		return errors.InternalServerError("go.micro.srv.crawler.Crawl.Start", err.Error())
 	}
 
@@ -64,6 +65,20 @@ func (c *Crawl) Search(ctx context.Context, req *crawler.SearchRequest, rsp *cra
 	}
 
 	rsp.Crawls = r
+
+	return nil
+}
+
+func Subscriber(ctx context.Context, endpoint *datasource.Endpoint) error {
+	l := int64(len(crawls)) + 1
+
+	s, err := mapScanner(l, endpoint)
+	if err != nil {
+		return err
+	}
+
+	crawls[l] = s
+	s.Start()
 
 	return nil
 }

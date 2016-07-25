@@ -140,7 +140,7 @@
 
     <kazoup-ajax id="elasticSearchQuery"
                  method="POST"
-                 url$="[[ESDinamicIndex(selectedCard.options.elasticSearchEndpoint)]]"
+                 url$="[[endpointList.ESFiles]]"
                  handleas="json"
                  is-authorize="true"></kazoup-ajax>
 
@@ -548,7 +548,7 @@
             value: searchCount,
             valueInfo: '',
             color: '#17A085',
-            iconPath: 'images/number-of-searches.svg',
+            iconPath: '/static/images/number-of-searches.svg',
             data: undefined,
             type: 'renderBarChart',
             options: {

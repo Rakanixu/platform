@@ -132,3 +132,28 @@ func (ds *Datasource) Search(ctx context.Context, req *api.Request, rsp *api.Res
 
 	return nil
 }
+
+// Scan datasource handler
+func (ds *Datasource) Scan(ctx context.Context, req *api.Request, rsp *api.Response) error {
+	var scanRequest *datasource.ScanRequest
+
+	if err := json.Unmarshal([]byte(req.Body), &scanRequest); err != nil {
+		return errors.InternalServerError("go.micro.api.datasource", err.Error())
+	}
+
+	srvReq := client.NewRequest(
+		"go.micro.srv.datasource",
+		"DataSource.Scan",
+		scanRequest,
+	)
+	srvRes := &datasource.ScanResponse{}
+
+	if err := client.Call(ctx, srvReq, srvRes); err != nil {
+		return errors.InternalServerError("go.micro.api.datasource", err.Error())
+	}
+
+	rsp.Body = `{}`
+	rsp.StatusCode = http.StatusOK
+
+	return nil
+}

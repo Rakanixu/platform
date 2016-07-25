@@ -146,6 +146,8 @@ smtp-srv:
 crawler-srv:
    command: --registry_address=registry:8500
    image: kazoup/crawler-srv
+   volumes:
+     - "/home/:/home"
    links:
    - registry
 
@@ -196,6 +198,18 @@ policy-srv:
 policy-api:
   command: --registry_address=registry:8500
   image: kazoup/policy-api
+  links:
+  - registry
+
+datasource-srv:
+  command: --registry_address=registry:8500
+  image: kazoup/datasource-srv
+  links:
+  - registry
+
+datasource-api:
+  command: --registry_address=registry:8500
+  image: kazoup/datasource-api
   links:
   - registry
 

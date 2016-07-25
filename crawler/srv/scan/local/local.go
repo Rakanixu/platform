@@ -3,14 +3,14 @@ package local
 import (
 	"encoding/json"
 	"errors"
-	"os"
-	"path/filepath"
-
+	"github.com/kazoup/go-homedir"
 	scan "github.com/kazoup/platform/crawler/srv/scan"
 	publish "github.com/kazoup/platform/publish/srv/proto/publish"
 	"github.com/kazoup/platform/structs"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	"os"
+	"path/filepath"
 )
 
 // Local ...
@@ -25,13 +25,18 @@ type Local struct {
 const topic string = "go.micro.topic.files"
 
 // NewLocal ...
-func NewLocal(id int64, rootPath string, conf map[string]string) *Local {
+func NewLocal(id int64, rootPath string, conf map[string]string) (*Local, error) {
+	path, err := homedir.Dir()
+	if err != nil {
+		return nil, err
+	}
+
 	return &Local{
 		Id:       id,
-		RootPath: rootPath,
+		RootPath: path,
 		Running:  make(chan bool, 1),
 		Config:   conf,
-	}
+	}, nil
 }
 
 // Start ...
@@ -62,7 +67,7 @@ func (fs *Local) walkHandler() filepath.WalkFunc {
 		default:
 			f := structs.NewFileFromLocal(&structs.LocalFile{
 				Type: "LocalFile",
-				Path: path,
+				Path: "/" + path,
 				Info: info,
 			})
 
