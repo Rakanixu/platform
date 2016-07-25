@@ -5,8 +5,8 @@ ElasticSearch.queries = ElasticSearch.queries || {};
 
 (function() {
   ElasticSearch.queries.searchStatistics = JSON.stringify({
-    'index': 'files',
-    'type': 'file',
+    'index': 'logs',
+    'type': 'log',
     'query': {
       'query':{
         'constant_score':{
@@ -48,8 +48,8 @@ ElasticSearch.queries = ElasticSearch.queries || {};
   });
 
   ElasticSearch.queries.searchStatisticsCount = JSON.stringify({
-    'index': 'files',
-    'type': 'file',
+    'index': 'logs',
+    'type': 'log',
     'query': {
       'query':{
         'constant_score':{

@@ -3,17 +3,17 @@ package structs
 import (
 	"crypto/rand"
 	"fmt"
+	"github.com/Pallinder/go-randomdata"
+	"github.com/kazoup/platform/structs/categories"
+	"github.com/kazoup/platform/structs/content"
+	"github.com/kazoup/platform/structs/intmap"
+	"github.com/kazoup/platform/structs/metadata"
+	"github.com/kazoup/platform/structs/permissions"
 	"mime"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
-
-	"github.com/Pallinder/go-randomdata"
-	"github.com/kazoup/platform/structs/content"
-	"github.com/kazoup/platform/structs/intmap"
-	"github.com/kazoup/platform/structs/metadata"
-	"github.com/kazoup/platform/structs/permissions"
 )
 
 // File model
@@ -40,19 +40,19 @@ type LocalFile struct {
 func NewFileFromLocal(lf *LocalFile) *File {
 	return &File{
 		//ID:              "/" + lf.Path + ":" + strconv.FormatInt(lf.Info.ModTime().Unix(), 10),
-		ExistsOnDisk: true,
-		//	ID:              pseudoUUID(),
+		ExistsOnDisk:    true,
 		ArchiveComplete: false,
 		FirstSeen:       time.Now(),
 		Content:         content.Content{},
 		Metadata: metadata.Metadata{
 			Mimetype:     mime.TypeByExtension(filepath.Ext(lf.Info.Name())),
+			DocType:      categories.GetDocType(filepath.Ext(lf.Info.Name())),
 			DirpathSplit: pathToIntmap(lf.Path),
 			Extension:    filepath.Ext(lf.Info.Name()),
 			Created:      lf.Info.ModTime(),
 			Modified:     lf.Info.ModTime(),
 			Filename:     lf.Info.Name(),
-			Dirpath:      filepath.Dir(lf.Path),
+			Dirpath:      "/" + filepath.Dir(lf.Path), // For consistency with other data sources, //x/y/z
 			Accessed:     lf.Info.ModTime(),
 			Fullpath:     lf.Path,
 			Sharepath:    filepath.VolumeName(lf.Path),
