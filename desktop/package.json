@@ -17,7 +17,7 @@
   "build": {
     "appId": "com.kazoup.app",
     "app-category-type": "public.app-category.productivity",
-    "extraResources" : ["bin/*","elasticsearch"],
+    "extraResources" : ["bin","elasticsearch"],
     "dmg": {
       "background": "build/background.png"
     },

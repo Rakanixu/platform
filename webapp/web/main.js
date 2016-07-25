@@ -162,6 +162,7 @@ ipcMain.on("starting", (event, arg) => {
   elastic_srv = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup",["--registry=mdns", "elastic","srv"] )
   elastic_api = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup",["--registry=mdns", "elastic","api"] )
   indexer_srv = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup",["--registry=mdns", "indexer","srv"] )
+  publish_srv = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup",["--registry=mdns", "publish","srv"] )
   running.push(elastic)
   running.push(api)
   running.push(web)
@@ -171,6 +172,7 @@ ipcMain.on("starting", (event, arg) => {
   running.push(elastic_srv)
   running.push(elastic_api)
   running.push(indexer_srv)
+  running.push(publish_srv)
 
   event.returnValue = "OK";
 });
