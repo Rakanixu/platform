@@ -1,34 +1,30 @@
 package handler
 
 import (
-	"log"
-
 	"golang.org/x/net/context"
 
-	"github.com/micro/go-micro/broker"
+	elasticsearch "github.com/kazoup/platform/elastic/srv/proto/elastic"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
-
-	elasticsearch "github.com/kazoup/platform/elastic/srv/proto/elastic"
+	example "github.com/micro/micro/examples/template/srv/proto/example"
 )
 
-func Subscriber(p broker.Publication) error {
-	log.Printf("Got message: %v with id: %v", string(p.Message().Body), p.Message().Header["id"])
-	ctx := context.TODO()
-	msg := p.Message()
+func Subscriber(ctx context.Context, msg *example.Message) error {
+	//log.Printf("Got message: %s", msg.Say)
+
+	ctx = context.TODO()
 	srvReq := client.NewRequest(
 		"go.micro.srv.elastic",
-		"Elastic.Create",
-		&elasticsearch.CreateRequest{
+		"Elastic.BulkCreate",
+		&elasticsearch.BulkCreateRequest{
 			Index: "files", // Hardcoded index for flags
 			Type:  "file",  // Hardcoded type ...
-			Data:  string(msg.Body),
+			Data:  string(msg.Say),
 		},
 	)
-	srvRsp := &elasticsearch.CreateResponse{}
+	srvRsp := &elasticsearch.BulkCreateResponse{}
 	if err := client.Call(ctx, srvReq, srvRsp); err != nil {
 
-		log.Printf("ES response: %v %v ", srvRsp, err.Error())
 		return errors.InternalServerError("go.micro.srv.indexer.Subscriber", err.Error())
 	}
 	return nil

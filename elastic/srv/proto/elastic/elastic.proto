@@ -4,6 +4,7 @@ package go.micro.srv.elastic;
 
 service Elastic {
   rpc Create(CreateRequest) returns (CreateResponse) {}
+  rpc BulkCreate(BulkCreateRequest) returns (BulkCreateResponse) {}
   rpc Read(ReadRequest) returns (ReadResponse) {}
   rpc Update(UpdateRequest) returns (UpdateResponse) {}
   rpc Delete(DeleteRequest) returns (DeleteResponse) {}
@@ -22,18 +23,27 @@ message DocRef {
 message CreateRequest {
   string index = 1;
   string type = 2;
-	string id = 3;
-	string data = 4;
+  string id = 3;
+  string data = 4;
 }
 
 message CreateResponse {
 
 }
 
+message BulkCreateRequest {
+  string index = 1;
+  string type = 2;
+  string id = 3;
+  string data = 4;
+}
+
+message BulkCreateResponse {
+}
 message ReadRequest {
   string index = 1;
   string type = 2;
-	string id = 3;
+  string id = 3;
 }
 
 message ReadResponse {

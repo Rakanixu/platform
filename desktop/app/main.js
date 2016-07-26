@@ -153,7 +153,7 @@ ipcMain.on("starting", (event, arg) => {
   }
   //paths = discoverServices(process.platform, archConvert(process.arch));
   // Starting all required services FIXME: 
-  elastic = startService(resourcesPath + "/elasticsearch/bin/elasticsearch",[]);
+  elastic = startService(resourcesPath + "/elasticsearch/bin/elasticsearch",["--Xmx=2G","--Xms=2G"]);
   api = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/micro",["--registry=mdns", "api"] )
   web = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/micro",["--registry=mdns", "web"] )
   crawler = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup",["--registry=mdns", "crawler","srv"] )

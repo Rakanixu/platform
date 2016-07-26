@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 
 	proto "github.com/kazoup/platform/elastic/srv/proto/elastic"
 	lib "github.com/mattbaird/elastigo/lib"
@@ -15,18 +16,31 @@ var (
 	// Hosts elasticsearch
 	Hosts []string
 	conn  *lib.Conn
+	bulk  *lib.BulkIndexer
 )
 
 // Init ES connection
 func Init() {
 	conn = lib.NewConn()
 	conn.SetHosts(Hosts)
+	bulk = conn.NewBulkIndexerErrors(100, 5)
+	bulk.BulkMaxDocs = 1000
+	bulk.Start()
 }
 
 // Create record
 func Create(cr *proto.CreateRequest) error {
 	_, err := conn.Index(cr.Index, cr.Type, cr.Id, nil, cr.Data)
 
+	return err
+}
+
+// Create record
+func BulkCreate(cr *proto.BulkCreateRequest) error {
+	err := bulk.Index(cr.Index, cr.Type, cr.Id, "", "", nil, cr.Data)
+	if err != nil {
+		log.Print("Bulk Indexer error %s", err.Error())
+	}
 	return err
 }
 

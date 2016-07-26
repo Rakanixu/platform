@@ -12,18 +12,27 @@ type Elastic struct{}
 
 // Create srv handler
 func (es *Elastic) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.CreateResponse) error {
-	var err error
+	//var err error
 
-	if err = DocRefFieldsExists(&proto.DocRef{
-		Index: req.Index,
-		Type:  req.Type,
-		Id:    req.Id,
-	}); err != nil {
-		return err
+	//if err = DocRefFieldsExists(&proto.DocRef{
+	//	Index: req.Index,
+	//	Type:  req.Type,
+	//	Id:    req.Id,
+	//}); err != nil {
+	//	return err
+	//}
+
+	if err := elastic.Create(req); err != nil {
+		return errors.InternalServerError("go.micro.srv.elastic.Elastic.Create", err.Error())
 	}
 
-	if err = elastic.Create(req); err != nil {
-		return errors.InternalServerError("go.micro.srv.elastic.Elastic.Create", err.Error())
+	return nil
+}
+
+func (es *Elastic) BulkCreate(ctx context.Context, req *proto.BulkCreateRequest, rsp *proto.BulkCreateResponse) error {
+	//log.Print("Bulk Create ...")
+	if err := elastic.BulkCreate(req); err != nil {
+		return errors.InternalServerError("go.micro.srv.elastic.Elastic.BulkCreate", err.Error())
 	}
 
 	return nil

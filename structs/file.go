@@ -3,17 +3,18 @@ package structs
 import (
 	"crypto/rand"
 	"fmt"
+	"mime"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
+
 	"github.com/Pallinder/go-randomdata"
 	"github.com/kazoup/platform/structs/categories"
 	"github.com/kazoup/platform/structs/content"
 	"github.com/kazoup/platform/structs/intmap"
 	"github.com/kazoup/platform/structs/metadata"
 	"github.com/kazoup/platform/structs/permissions"
-	"mime"
-	"os"
-	"path/filepath"
-	"strings"
-	"time"
 )
 
 // File model
@@ -167,7 +168,7 @@ func pathToIntmap(path string) intmap.Intmap {
 	return results
 }
 
-func pseudoUUID() (uuid string) {
+func PseudoUUID() (uuid string) {
 	b := make([]byte, 16)
 	_, err := rand.Read(b)
 	if err != nil {

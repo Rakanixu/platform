@@ -3,14 +3,19 @@ package local
 import (
 	"encoding/json"
 	"errors"
-	"github.com/kazoup/go-homedir"
-	scan "github.com/kazoup/platform/crawler/srv/scan"
-	publish "github.com/kazoup/platform/publish/srv/proto/publish"
-	"github.com/kazoup/platform/structs"
-	"github.com/micro/go-micro/client"
-	"golang.org/x/net/context"
+	"log"
 	"os"
 	"path/filepath"
+
+	"golang.org/x/net/context"
+
+	"github.com/kazoup/go-homedir"
+	"github.com/micro/go-micro/client"
+
+	scan "github.com/kazoup/platform/crawler/srv/scan"
+	"github.com/kazoup/platform/structs"
+	"github.com/micro/go-micro/broker"
+	example "github.com/micro/micro/examples/template/srv/proto/example"
 )
 
 // Local ...
@@ -31,6 +36,14 @@ func NewLocal(id int64, rootPath string, conf map[string]string) (*Local, error)
 		return nil, err
 	}
 
+	if err := broker.Init(); err != nil {
+		log.Fatalf("Broker Init error: %v", err)
+	}
+
+	// Connect broker
+	if err := broker.Connect(); err != nil {
+		log.Fatalf("Broker Connert error: %v", err)
+	}
 	return &Local{
 		Id:       id,
 		RootPath: path,
@@ -61,8 +74,13 @@ func (fs *Local) Info() (scan.Info, error) {
 
 func (fs *Local) walkHandler() filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			log.Print("Got error %s", err)
+			return nil
+		}
 		select {
 		case <-fs.Running:
+			log.Print("Scanner stopped")
 			return errors.New("Scanner stopped")
 		default:
 			f := structs.NewFileFromLocal(&structs.LocalFile{
@@ -75,21 +93,29 @@ func (fs *Local) walkHandler() filepath.WalkFunc {
 			if err != nil {
 				return errors.New("Error marshaling data")
 			}
-
-			req := client.NewRequest(
-				"go.micro.srv.publish",
-				"Publish.Send",
-				&publish.SendRequest{
-					Topic: topic,
-					Data:  string(b),
-				},
-			)
-			res := &publish.SendResponse{}
-
-			// Call Publish.Send
-			if err := client.Call(context.Background(), req, res); err != nil {
-				return errors.New("Error calling com.kazoup.srv.publish.Publish.Send")
+			//time.Sleep(1 * time.Millisecond)
+			msg := &example.Message{
+				Say: string(b),
 			}
+			ctx := context.TODO()
+			if err := client.Publish(ctx, client.NewPublication(topic, msg)); err != nil {
+				log.Printf("Error pubslishing : %", err.Error())
+			}
+
+			//§eq := client.NewRequest(
+			//§   "go.micro.srv.publish",
+			//§   "Publish.Send",
+			//§   &publish.SendRequest{
+			//§   	Topic: topic,
+			//§   	Data:  string(b),
+			//§   },
+			//§
+			//§es := &publish.SendResponse{}
+
+			//§/ Call Publish.Send
+			//§f err := client.Call(context.Background(), req, res); err != nil {
+			//§   return errors.New("Error calling com.kazoup.srv.publish.Publish.Send")
+			//§
 		}
 
 		return nil
