@@ -154,14 +154,14 @@ ipcMain.on("starting", (event, arg) => {
   //paths = discoverServices(process.platform, archConvert(process.arch));
   // Starting all required services FIXME: 
   elastic = startService(resourcesPath + "/elasticsearch/bin/elasticsearch",["--Xmx=2G","--Xms=2G"]);
-  api = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/micro",["--registry=mdns", "api"] )
-  web = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/micro",["--registry=mdns", "web"] )
-  crawler = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup",["--registry=mdns", "crawler","srv"] )
+  api = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/micro",["--registry=mdns","--enable_stats", "api"] )
+  web = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/micro",["--registry=mdns","--enable_stats", "web"] )
+  crawler = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup",["--registry=mdns","--broker=nats","--broker_address=127.0.0.1:4222" ,"crawler","srv"] )
   datasource_api = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup",["--registry=mdns", "datasource","api"] )
   datasource_srv = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup",["--registry=mdns", "datasource","srv"] )
   elastic_srv = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup",["--registry=mdns", "elastic","srv"] )
   elastic_api = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup",["--registry=mdns", "elastic","api"] )
-  indexer_srv = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup",["--registry=mdns", "indexer","srv"] )
+  indexer_srv = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup",["--registry=mdns","--broker=nats","--broker_address=127.0.0.1:4222", "indexer","srv"] )
   publish_srv = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup",["--registry=mdns", "publish","srv"] )
   config_api = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup",["--registry=mdns", "config","api"] )
   config_srv = startService(resourcesPath + "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup",["--registry=mdns", "config","srv"] )

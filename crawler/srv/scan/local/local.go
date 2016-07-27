@@ -100,22 +100,9 @@ func (fs *Local) walkHandler() filepath.WalkFunc {
 			ctx := context.TODO()
 			if err := client.Publish(ctx, client.NewPublication(topic, msg)); err != nil {
 				log.Printf("Error pubslishing : %", err.Error())
+				return err
 			}
 
-			//§eq := client.NewRequest(
-			//§   "go.micro.srv.publish",
-			//§   "Publish.Send",
-			//§   &publish.SendRequest{
-			//§   	Topic: topic,
-			//§   	Data:  string(b),
-			//§   },
-			//§
-			//§es := &publish.SendResponse{}
-
-			//§/ Call Publish.Send
-			//§f err := client.Call(context.Background(), req, res); err != nil {
-			//§   return errors.New("Error calling com.kazoup.srv.publish.Publish.Send")
-			//§
 		}
 
 		return nil
