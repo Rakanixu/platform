@@ -1,11 +1,11 @@
 syntax = "proto3";
 
-package go.micro.srv.crawler.crawl;
 
 service Crawl {
-	rpc Start(StartRequest) returns(StartResponse) {}
-	rpc Stop(StopRequest) returns(StopResponse) {}
-	rpc Search(SearchRequest) returns(SearchResponse) {}
+	rpc Start(StartRequest) returns (StartResponse) {}
+	rpc Stop(StopRequest) returns (StopResponse) {}
+	rpc Search(SearchRequest) returns (SearchResponse) {}
+	rpc Status(StatusRequest) returns (stream StatusResponse) {}
 }
 
 message Status {
@@ -38,4 +38,15 @@ message SearchRequest {
 
 message SearchResponse {
   map<string,Status> crawls = 1;
+}
+
+message StatusRequest {
+	
+}
+
+message StatusResponse {
+   int64 counter= 1;	
+}
+message Metric {
+   int64 count = 1;
 }

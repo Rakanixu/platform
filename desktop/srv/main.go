@@ -43,6 +43,7 @@ func main() {
 			elastic.Hosts = parts
 		}),
 	)
+
 	cmd.Init()
 	// Monitoring service
 

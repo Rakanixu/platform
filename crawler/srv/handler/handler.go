@@ -3,6 +3,7 @@ package handler
 import (
 	"log"
 	"strconv"
+	"time"
 
 	crawler "github.com/kazoup/platform/crawler/srv/proto/crawler"
 	scanner "github.com/kazoup/platform/crawler/srv/scan"
@@ -69,5 +70,18 @@ func (c *Crawl) Search(ctx context.Context, req *crawler.SearchRequest, rsp *cra
 
 	rsp.Crawls = r
 
+	return nil
+}
+func (c *Crawl) Status(ctx context.Context, req *crawler.StatusRequest, stream crawler.Crawl_StatusStream) error {
+	log.Printf("Recived Crawl.Status req: %", req)
+	for {
+		if err := stream.Send(&crawler.StatusResponse{
+			Counter: int64(len(Crawls)),
+		}); err != nil {
+			log.Printf("Error Crawl.Status %s", err)
+			return err
+		}
+		time.Sleep(2 * time.Second)
+	}
 	return nil
 }

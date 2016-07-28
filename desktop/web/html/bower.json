@@ -10,7 +10,9 @@
     "paper-toolbar": "PolymerElements/paper-toolbar#^1.1.6",
     "paper-icon-button": "PolymerElements/paper-icon-button#^1.1.2",
     "mat-elements": "ExpandJS/mat-elements#^0.10.0",
-    "electron-ipc": "Pupix/electron-ipc#^0.8.0"
+    "electron-ipc": "Pupix/electron-ipc#^0.8.0",
+    "ws-element": "mesopotamia/ws-element#develop",
+    "web-socket": "*"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",

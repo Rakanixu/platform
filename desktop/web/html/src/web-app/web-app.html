@@ -15,7 +15,7 @@
 <link rel="import" href="../../bower_components/mat-icon-button/mat-icon-button.html">
 <link rel="import" href="../../bower_components/mat-item/mat-item.html">
 <link rel="import" href="../../bower_components/mat-breadcrumb/mat-breadcrumb.html">
-
+<link rel="import" href="../../bower_components/web-socket/web-socket.html">
 
 
 
@@ -117,6 +117,13 @@ paper-toolbar {
 
       </paper-drawer-panel>
 </paper-drawer-panel>
+<web-socket url="ws://localhost:8082/desktop/status"
+            auto json
+            on-open="_onOpen"
+            on-close="_onClose"
+            on-message="_onMessage"
+            on-error="_onError">
+</web-socket>
   </template>
 
   <script>
@@ -142,6 +149,22 @@ paper-toolbar {
       _listTap: function() {
         this.$.mainDrawerPanel.closeDrawer();
       },
+      _onOpen: function(){
+	      console.log("Opening WS")
+      },
+
+      _onClose: function(){
+	      console.log("Closing WS")
+      },
+
+      _onMessage: function(e){
+	      console.log("Message from WS ",e.detail)
+      },
+	
+      _onError: function(e){
+	      console.log(e)
+      },
+
       properties: {
         prop1: {
           type: String,

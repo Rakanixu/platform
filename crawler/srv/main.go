@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/kazoup/platform/crawler/srv/handler"
+	proto "github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/kazoup/platform/crawler/srv/subscriber"
 	"github.com/kazoup/platform/structs/categories"
 	"github.com/micro/go-micro"
@@ -32,13 +33,13 @@ func main() {
 
 	// Init srv
 	service.Init()
-
+	proto.RegisterCrawlHandler(service.Server(), new(handler.Crawl))
 	// Attach handler
-	service.Server().Handle(
-		service.Server().NewHandler(
-			new(handler.Crawl),
-		),
-	)
+	//service.Server().Handle(
+	//	service.Server().NewHandler(
+	//		new(handler.Crawl),
+	//	),
+	//)
 
 	// Attach subscriber
 	if err := service.Server().Subscribe(
