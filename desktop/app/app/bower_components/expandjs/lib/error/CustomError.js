@@ -1,0 +1,1 @@
+!function(){"use strict";module.exports=function(s,t,e){var a=Error.call(this,t||"");this.name=a.name=s,this.message=a.message,this.stack=a.stack,this.code=a.code=e}}();

@@ -1,0 +1,1 @@
+!function(){"use strict";var r=require("../error/CustomError"),t=require("../caster/toPosition");module.exports=function(e,o,n){r.call(this,"ArgumentError",(t(e)||"Unknown")+" argument must be "+o,n)}}();

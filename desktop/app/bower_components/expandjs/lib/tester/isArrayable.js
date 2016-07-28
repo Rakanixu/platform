@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("../tester/isIndex"),r=require("../tester/isVoid"),t=require("../operator/xnor");module.exports=function(o,i){return!!o&&"object"==typeof o&&e(o.length)&&(r(i)||t(o.length,i))}}();

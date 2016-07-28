@@ -30,11 +30,53 @@ type File struct {
 	Permissions     permissions.Permissions `json:"permissions"`
 }
 
+//Desktop file
+type DesktopFile struct {
+	Name     string
+	URL      string
+	Modified time.Time
+	Size     int64
+	IsDir    bool
+	Mode     os.FileMode
+}
+
+//Desktop file optimized
+type DesktopFileOptimised struct {
+	N string
+	U string
+	M time.Time
+	S int64
+	D bool
+	P os.FileMode
+}
+
 // LocalFile model
 type LocalFile struct {
 	Type string
 	Path string
 	Info os.FileInfo
+}
+
+func NewDesktopFile(lf *LocalFile) *DesktopFile {
+	return &DesktopFile{
+		Name:     lf.Info.Name(),
+		URL:      lf.Path,
+		Modified: lf.Info.ModTime(),
+		Size:     lf.Info.Size(),
+		IsDir:    lf.Info.IsDir(),
+		Mode:     lf.Info.Mode(),
+	}
+}
+
+func NewDesktopFileOptimised(lf *LocalFile) *DesktopFileOptimised {
+	return &DesktopFileOptimised{
+		N: lf.Info.Name(),
+		U: lf.Path,
+		M: lf.Info.ModTime(),
+		S: lf.Info.Size(),
+		D: lf.Info.IsDir(),
+		P: lf.Info.Mode(),
+	}
 }
 
 // NewFileFromLocal file constructor

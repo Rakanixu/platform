@@ -1,0 +1,1 @@
+!function(){"use strict";var e=require("../assert/assertArgument"),r=require("../tester/isEvent"),t=require("../tester/isVoid");module.exports=function(s){return e(t(s)||r(s),1,"Event"),s.stopPropagation(),s}}();

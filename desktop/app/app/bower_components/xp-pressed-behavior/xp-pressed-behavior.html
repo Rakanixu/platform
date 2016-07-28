@@ -1,0 +1,9 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-array-behavior/xp-array-behavior.html">
+<link rel="import" href="../xp-focused-behavior/xp-focused-behavior.html">
+<link rel="import" href="../xp-refirer-behavior/xp-refirer-behavior.html">
+<link rel="import" href="../xp-targeter-behavior/xp-targeter-behavior.html">
+
+<script>!function(){Polymer.XPPressedBehaviorImp={press:function(){var e=this,t=e.target;return"inject"!==e.behavior&&(t=e.findTarget()||t),e.fire("xp-activate",{firer:e,target:t,data:e.data,isActive:e.active},{cancelable:!0}).defaultPrevented?e:(e.toggleable&&(e.active=!e.active),e.autoDisable&&(e.disabled=!0),t?("inject"===e.behavior&&e.inject&&e.inject(t,e.data),"reset"===e.behavior&&t.reset&&t.reset(),"submit"===e.behavior&&t.submit&&t.submit(e.data),"toggle"===e.behavior&&t.toggle&&t.toggle(e,e.data),e):e)},listeners:{click:"_clickHandler",down:"_touchHandler",up:"_touchHandler"},properties:{active:{notify:!0,observer:"_activeObserver",reflectToAttribute:!0,type:Boolean,value:!1},autoDisable:{type:Boolean,value:!1},behavior:{type:String},data:{notify:!0},pressed:{notify:!0,readOnly:!0,reflectToAttribute:!0,type:Boolean,value:!1},tapDisabled:{reflectToAttribute:!0,type:Boolean,value:!1},toggleable:{observer:"_toggleableObserver",reflectToAttribute:!0,type:Boolean,value:!1}},_activeObserver:function(){this.fire("xp-active",{firer:this,isActive:this.active})},_toggleableObserver:function(){this.toggleable||(this.active=!1)},_clickHandler:function(e){var t=this;e.button||(e.pressed=e.pressed||t),e.pressed===t&&t.press()},_touchHandler:function(e){var t=this;e.pressed=e.pressed||t,e.pressed===t&&t._setPressed("down"===e.type)}},Polymer.XPPressedBehavior=[Polymer.XPArrayBehavior,Polymer.XPFocusedBehavior,Polymer.XPRefirerBehavior,Polymer.XPTargeterBehavior,Polymer.XPPressedBehaviorImp]}();</script>
+</head><body></body></html>

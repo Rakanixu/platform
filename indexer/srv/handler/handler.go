@@ -9,7 +9,7 @@ import (
 	example "github.com/micro/micro/examples/template/srv/proto/example"
 )
 
-func Subscriber(ctx context.Context, msg *example.Message) error {
+func FileSubscriber(ctx context.Context, msg *example.Message) error {
 	//log.Printf("Got message: %s", msg.Say)
 
 	ctx = context.TODO()

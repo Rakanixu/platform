@@ -1,0 +1,1 @@
+!function(){"use strict";var r=require("../assert/assertArgument"),e=require("../tester/isString"),t=require("../tester/isVoid");module.exports=function(s){r(t(s)||e(s),1,"string");try{return JSON.parse(s||"")}catch(r){}}}();

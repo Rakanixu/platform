@@ -1,0 +1,1 @@
+!function(){"use strict";var r=require("../assert/assertArgument"),e=require("../tester/isString"),t=require("../tester/isVoid"),i=require("../caster/toArray");module.exports=function(s,u){return r(s=i(s),1,"Arrayable"),r(t(u)||e(u),2,"string"),!s.length||Buffer.isBuffer(s[0])?Buffer.concat(s):s.join(u||"")}}();

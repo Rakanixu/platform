@@ -1,0 +1,6 @@
+bin
+node_modules
+frontend
+dist
+elasticsearch
+release

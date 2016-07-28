@@ -1,0 +1,18 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="xp-iconset-finder.html">
+
+</head><body><dom-module id="xp-iconset">
+
+    <template strip-whitespace="">
+
+        <style>:host{display:none !important;}</style>
+
+        <content></content>
+
+    </template>
+
+    <script>Polymer({is:"xp-iconset",behaviors:[Polymer.XPIconsetFinder],findIcon:function(e){XP.assertArgument(XP.isVoid(e)||XP.isString(e),1,"string");var n=this,i=e?XP.findElement(Polymer.dom(n),"svg"):null,t=i?XP.getElement(Polymer.dom(i),'g[id="'+e+'"]'):null,r=t?t.cloneNode(!0):null;return r&&r.removeAttribute("id"),r},properties:{name:{observer:"_nameChanged",reflectToAttribute:!0,type:String,value:""}},_nameChanged:function(){this.fire("xp-iconset",{firer:this.icons[this.name]=this,name:this.name},{node:window})}});</script>
+
+</dom-module>
+</body></html>

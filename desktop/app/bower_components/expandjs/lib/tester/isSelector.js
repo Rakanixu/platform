@@ -1,1 +1,0 @@
-!function(){"use strict";var r=require("../tester/isString");module.exports=function(t){return r(t,!0)}}();

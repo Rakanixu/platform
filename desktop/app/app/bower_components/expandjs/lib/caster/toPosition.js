@@ -1,0 +1,1 @@
+!function(){"use strict";var t=require("../tester/isIndex");module.exports=function(r){if(t(r)){var e=r.toString(),n=e[e.length-1];return"1"===n&&11!==r?e+"st":"2"===n&&12!==r?e+"nd":"3"===n&&13!==r?e+"rd":e+"th"}}}();

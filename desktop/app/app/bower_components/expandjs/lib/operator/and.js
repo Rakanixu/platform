@@ -1,0 +1,1 @@
+!function(){"use strict";module.exports=function(n,o){return Boolean(n&&o)}}();

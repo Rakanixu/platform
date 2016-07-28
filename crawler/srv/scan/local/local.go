@@ -5,16 +5,15 @@ import (
 	"errors"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 
 	"golang.org/x/net/context"
 
-	"github.com/kazoup/go-homedir"
 	"github.com/micro/go-micro/client"
 
 	scan "github.com/kazoup/platform/crawler/srv/scan"
 	"github.com/kazoup/platform/structs"
-	"github.com/micro/go-micro/broker"
 	example "github.com/micro/micro/examples/template/srv/proto/example"
 )
 
@@ -31,22 +30,11 @@ const topic string = "go.micro.topic.files"
 
 // NewLocal ...
 func NewLocal(id int64, rootPath string, conf map[string]string) (*Local, error) {
-	path, err := homedir.Dir()
-	if err != nil {
-		return nil, err
-	}
 
-	if err := broker.Init(); err != nil {
-		log.Fatalf("Broker Init error: %v", err)
-	}
-
-	// Connect broker
-	if err := broker.Connect(); err != nil {
-		log.Fatalf("Broker Connert error: %v", err)
-	}
+	log.Print(path.Clean(rootPath))
 	return &Local{
 		Id:       id,
-		RootPath: path,
+		RootPath: path.Clean(rootPath),
 		Running:  make(chan bool, 1),
 		Config:   conf,
 	}, nil
@@ -83,9 +71,9 @@ func (fs *Local) walkHandler() filepath.WalkFunc {
 			log.Print("Scanner stopped")
 			return errors.New("Scanner stopped")
 		default:
-			f := structs.NewFileFromLocal(&structs.LocalFile{
+			f := structs.NewDesktopFile(&structs.LocalFile{
 				Type: "LocalFile",
-				Path: "/" + path,
+				Path: path,
 				Info: info,
 			})
 

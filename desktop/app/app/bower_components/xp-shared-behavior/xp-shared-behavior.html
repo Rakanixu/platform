@@ -1,0 +1,8 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-array-behavior/xp-array-behavior.html">
+<link rel="import" href="../xp-object-behavior/xp-object-behavior.html">
+<link rel="import" href="../xp-refirer-behavior/xp-refirer-behavior.html">
+
+<script>!function(){var r={};Polymer.XPSharedBehaviorImp={share:function(r,e){XP.assertArgument(XP.isString(r,!0),1,"string");var a=this;return a.enforce("shared."+r,e),a.notifyOthers("sharers","shared."+r,e),e},properties:{shared:{notify:!0,readOnly:!0,value:r}},sharers:[],ready:function(){this.append("sharers",this)}},Polymer.XPSharedBehavior=[Polymer.XPArrayBehavior,Polymer.XPObjectBehavior,Polymer.XPRefirerBehavior,Polymer.XPSharedBehaviorImp]}();</script>
+</head><body></body></html>

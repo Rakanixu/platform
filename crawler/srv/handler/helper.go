@@ -1,15 +1,16 @@
 package handler
 
 import (
+	"strings"
+
 	scanner "github.com/kazoup/platform/crawler/srv/scan"
 	"github.com/kazoup/platform/crawler/srv/scan/fake"
 	"github.com/kazoup/platform/crawler/srv/scan/local"
 	datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/micro/go-micro/errors"
-	"strings"
 )
 
-func mapScanner(id int64, dataSource *datasource.Endpoint) (scanner.Scanner, error) {
+func MapScanner(id int64, dataSource *datasource.Endpoint) (scanner.Scanner, error) {
 	var err error
 	var s scanner.Scanner
 	var config map[string]string

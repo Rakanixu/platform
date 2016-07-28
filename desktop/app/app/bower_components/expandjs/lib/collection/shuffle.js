@@ -1,0 +1,1 @@
+!function(){"use strict";var r=require("lodash"),e=require("../assert/assertArgument"),t=require("../tester/isCollection"),s=require("../caster/toArray");module.exports=function(u){return e(t(u=s(u)||u),1,"Arrayable or Object"),r.shuffle(u)}}();

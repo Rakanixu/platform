@@ -1,6 +1,0 @@
-<html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../expandjs/expandjs.html">
-<link rel="import" href="../xp-overlay/xp-overlay-behavior.html">
-
-<script>Polymer.XPDialogBehaviorImp={align:function(){var e=this;return e.showed&&e.async(XP.alignElement.bind(null,e)),e},observers:["_sizeObserver(fullScreen, height, width)"],properties:{backdropDisabled:{reflectToAttribute:!0,type:Boolean,value:!1},fullScreen:{reflectToAttribute:!0,type:Boolean,value:!1},height:{reflectToAttribute:!0,type:Number,value:0},width:{reflectToAttribute:!0,type:Number,value:0}},_sizeObserver:function(){var e=this,t=XP.getMargin(e);return e.style.height=e.height&&!e.fullScreen?"calc(100% - "+(t.top+t.bottom)+"px)":"",e.style.margin=e.fullScreen?"0":"",e.style.maxHeight=e.height&&!e.fullScreen?e.height+"px":"",e.style.maxWidth=e.width&&!e.fullScreen?e.width+"px":"",e.style.width=e.width&&!e.fullScreen?"calc(100% - "+(t.left+t.right)+"px)":"",e.align(),e},attached:function(){this._sizeObserver()},created:function(){this.classList.add("dialog")},_backdropHandler:function(e){e.button||this.autoHideDisabled||this.hide()}},Polymer.XPDialogBehavior=[Polymer.XPOverlayBehavior,Polymer.XPDialogBehaviorImp];</script>
-</head><body></body></html>

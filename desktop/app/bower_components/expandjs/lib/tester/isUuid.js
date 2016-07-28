@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("../regex/uuidRegex"),r=require("../tester/isString"),t=require("../tester/isVoid"),i=require("../operator/xnor");module.exports=function(u,n){return r(u)&&e.test(u)&&(t(n)||i(u.length,n))}}();

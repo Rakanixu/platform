@@ -1,0 +1,6 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-shared-behavior/xp-shared-behavior.html">
+
+<script>Polymer.XPShellBehaviorImp={properties:{language:{notify:!0,observer:"_languageObserver",type:String,value:navigator.language.slice(0,2)}},_languageObserver:function(){this.share("language",this.language||null)},created:function(){this.classList.add("shell")}},Polymer.XPShellBehavior=[Polymer.XPSharedBehavior,Polymer.XPShellBehaviorImp];</script>
+</head><body></body></html>

@@ -1,5 +1,0 @@
-<html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../expandjs/expandjs.html">
-
-<script>Polymer.XPSpinnerBehavior={hide:function(){var e=this;return e.showed=!1,e},show:function(){var e=this;return e.showed=!0,e},toggle:function(){var e=this;return e.showed=!e.showed,e},properties:{autoCenter:{reflectToAttribute:!0,type:Boolean,value:!1},showed:{notify:!0,observer:"_showedObserver",reflectToAttribute:!0,type:Boolean,value:!1}},_showedObserver:function(){this.isAttached&&this.fire(this.showed?"xp-show":"xp-hide",{firer:this})},created:function(){this.classList.add("spinner")}};</script>
-</head><body></body></html>

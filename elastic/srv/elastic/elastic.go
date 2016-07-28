@@ -16,16 +16,18 @@ var (
 	// Hosts elasticsearch
 	Hosts []string
 	conn  *lib.Conn
-	bulk  *lib.BulkIndexer
+	Bulk  *lib.BulkIndexer
 )
 
 // Init ES connection
 func Init() {
 	conn = lib.NewConn()
 	conn.SetHosts(Hosts)
-	bulk = conn.NewBulkIndexerErrors(100, 5)
-	bulk.BulkMaxDocs = 1000
-	bulk.Start()
+	Bulk = conn.NewBulkIndexerErrors(100, 5)
+	Bulk.BulkMaxDocs = 100000
+
+	Bulk.Start()
+	log.Printf("ES initialised conn: %s", conn.Hosts)
 }
 
 // Create record
@@ -37,7 +39,7 @@ func Create(cr *proto.CreateRequest) error {
 
 // Create record
 func BulkCreate(cr *proto.BulkCreateRequest) error {
-	err := bulk.Index(cr.Index, cr.Type, cr.Id, "", "", nil, cr.Data)
+	err := Bulk.Index(cr.Index, cr.Type, cr.Id, "", "", nil, cr.Data)
 	if err != nil {
 		log.Print("Bulk Indexer error %s", err.Error())
 	}

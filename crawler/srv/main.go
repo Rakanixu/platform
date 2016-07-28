@@ -1,13 +1,15 @@
 package main
 
 import (
+	"io/ioutil"
+	"log"
+
 	"github.com/kazoup/platform/crawler/srv/handler"
+	"github.com/kazoup/platform/crawler/srv/subscriber"
 	"github.com/kazoup/platform/structs/categories"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/server"
 	_ "github.com/micro/go-plugins/broker/nats"
-	"io/ioutil"
-	"log"
 )
 
 const topic string = "go.micro.topic.scan"
@@ -42,7 +44,7 @@ func main() {
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			topic,
-			handler.Subscriber,
+			subscriber.Scans,
 		),
 	); err != nil {
 		log.Fatal(err)

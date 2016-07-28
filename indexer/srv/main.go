@@ -19,7 +19,7 @@ func main() {
 	)
 
 	if err := service.Server().Subscribe(
-		service.Server().NewSubscriber(topic, handler.Subscriber),
+		service.Server().NewSubscriber(topic, handler.FileSubscriber),
 	); err != nil {
 		log.Printf("Got error subscibing .. %s", err.Error())
 	}

@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("../tester/isNumber");module.exports=function(r){return e(r)&&r<0}}();

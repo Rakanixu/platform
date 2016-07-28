@@ -1,0 +1,71 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../mat-divider/mat-divider.html">
+<link rel="import" href="../mat-ink/mat-ink.html">
+<link rel="import" href="../mat-pressed-behavior/mat-pressed-behavior.html">
+<link rel="import" href="../mat-pressed-behavior/mat-pressed-styles.html">
+<link rel="import" href="../mat-typography/mat-typography.html">
+<link rel="import" href="../xp-anchor-behavior/xp-anchor-behavior.html">
+<link rel="import" href="../xp-anchor-behavior/xp-anchor-styles.html">
+<link rel="import" href="../xp-overlay/xp-overlay-injector.html">
+<link rel="import" href="../xp-refirer-behavior/xp-refirer-behavior.html">
+
+</head><body><dom-module id="mat-item">
+
+    <template strip-whitespace="">
+
+        <style include="xp-anchor-styles"></style>
+        <style include="mat-pressed-styles"></style>
+
+        <style>:host{display:block;text-align:left;}:host .anchor:after{display:none !important;}:host .main{@apply (--layout-horizontal);@apply (--layout-center);overflow:hidden;box-sizing:border-box;height:100%;}:host .action{pointer-events:none !important;}:host(:not([inset])) .action{display:none !important;}:host .content{@apply (--layout-horizontal);@apply (--layout-center);@apply (--layout-flex);min-height:48px;overflow:hidden;position:relative;width:100%;}:host([inset]) .content{margin-left:16px;}:host([primary-type="avatar"]) .content,
+            :host([secondary-type="avatar"]) .content{min-height:56px;}:host .body{@apply (--layout-flex);overflow:hidden;padding:11px 16px 13px 16px;overflow:hidden;}:host([inline]) .body{@apply (--layout-horizontal);@apply (--layout-center);}:host([empty][description]:not([description=""]):not([inline])) .body{padding:15px 16px 13px 16px;}:host([inset]) .body{padding-left:0 !important;}:host-context([inset]) .body:not([inset]){padding-left:72px !important;}:host .label,
+            :host([inline]) .description,
+            :host([inline]) .text{@apply (--mat-font-subhead);}:host(:not([inline])) .description,
+            :host(:not([inline])) .text{@apply (--mat-font-body);}:host .label,
+            :host .description,
+            :host([inline]) .text{overflow:hidden;text-overflow:ellipsis !important;white-space:nowrap !important;}:host([inline]) .text{@apply (--layout-horizontal);@apply (--layout-center);@apply (--layout-flex);}:host([label=""]) .label,
+            :host(:not([label])) .label,
+            :host([description=""]) .description,
+            :host(:not([description])) .description,
+            :host([empty]) .text{display:none !important;}:host .aside{pointer-events:none;text-align:right;}:host(:not([empty]):not([inline])) .action,
+            :host(:not([empty]):not([inline])) .aside,
+            :host([secondary-text]:not([secondary-text=""]):not([inline])) .aside{@apply (--layout-self-start);}:host .secondary-text{@apply (--mat-font-caption);display:block;margin:18px 16px 0 0;}:host([secondary-text=""]) .secondary-text,
+            :host(:not([secondary-text])) .secondary-text{display:none !important;}:host([inline]) .secondary-text{margin-top:-4px;}:host(:not([empty]):not([inline])) .secondary-text{margin-top:14px;}:host .divider{display:none;}:host-context(.list) .divider{display:block;}:host(:last-of-type) .divider,
+            :host-context(.sublist) .divider{display:none !important;}:host ::content .primary,
+            :host ::content .secondary{display:block;margin:4px 8px;}:host ::content .secondary{pointer-events:auto;}:host ::content .primary.avatar{margin:8px 0 8px 16px;}:host ::content .secondary.avatar{margin:8px 16px 8px 0;}:host ::content .primary.icon,
+            :host ::content .secondary.icon{margin:12px 16px;}:host(:not([empty]):not([inline])) ::content .primary,
+            :host(:not([empty]):not([inline])) ::content .secondary{margin-top:8px;}:host(:not([empty]):not([inline])) ::content .primary.avatar,
+            :host(:not([empty]):not([inline])) ::content .primary.icon,
+            :host(:not([empty]):not([inline])) ::content .secondary.avatar,
+            :host(:not([empty]):not([inline])) ::content .secondary.icon{margin-top:16px;}:host([secondary-text]:not([secondary-text=""])) ::content .secondary{margin-top:13px;}:host([secondary-text]:not([secondary-text=""])) ::content .secondary.avatar{display:none !important;}</style>
+
+        <a class="anchor" tabindex="-1" on-click="_handleAnchor">
+            <div class="main">
+                <div class="action" on-xp-active="_handleStop">
+                    <content select=".primary"></content>
+                </div>
+                <div class="content">
+                    <div class="body" inset$="[[inset]]">
+                        <mat-ink class="label" disabled="[[disabled]]">[[label]]</mat-ink>
+                        <mat-ink class="description" disabled="[[disabled]]" opacity="secondary">[[description]]</mat-ink>
+                        <mat-ink class="text" disabled="[[disabled]]"><content select=":not(.secondary)"></content></mat-ink>
+                    </div>
+                    <div class="aside" on-click="_handlePrevent" on-xp-active="_handleRefire" on-xp-activate="_handleRefire">
+                        <mat-ink class="secondary-text" disabled="[[disabled]]" opacity="secondary">[[secondaryText]]</mat-ink>
+                        <content select=".secondary"></content>
+                    </div>
+                    <mat-divider class="divider" baseline=""></mat-divider>
+                </div>
+            </div>
+        </a>
+
+        <div class="ripple-ground" active$="[[_computeActive(active, primaryType)]]"></div>
+        <div class="ripple-waves"></div>
+
+    </template>
+
+    <script>Polymer({is:"mat-item",behaviors:[Polymer.XPAnchorBehavior,Polymer.XPOverlayInjector,Polymer.XPRefirerBehavior,Polymer.MatPressedBehavior],observers:["_primaryChanged(active, disabled, primaryAction, primaryType, toggleable)","_secondaryChanged(disabled, secondaryAction)","_secondaryDataChanged(data, secondaryAction)"],properties:{description:{reflectToAttribute:!0,type:String},empty:{notify:!0,readOnly:!0,reflectToAttribute:!0,type:Boolean,value:!0},inline:{reflectToAttribute:!0,type:Boolean,value:!1},inset:{notify:!0,readOnly:!0,reflectToAttribute:!0,type:Boolean,value:!1},label:{reflectToAttribute:!0,type:String},primaryAction:{notify:!0,readOnly:!0},primaryType:{computed:"_computeType(primaryAction)",notify:!0,reflectToAttribute:!0,type:String},secondaryAction:{notify:!0,readOnly:!0},secondaryText:{reflectToAttribute:!0,type:String},secondaryType:{computed:"_computeType(secondaryAction)",notify:!0,reflectToAttribute:!0,type:String},text:{notify:!0,readOnly:!0}},_computeActive:function(e,t){return!!e&&"checkbox"!==t},_computeType:function(e){return e?"checkbox"===e.type?"checkbox":e.classList.contains("avatar")?"avatar":"button":null},_primaryChanged:function(){var e=this;e._setInset(!!e.primaryAction),e.primaryAction&&("checkbox"===e.primaryType&&(e.toggleable=!0),e.primaryAction.toggleable=e.toggleable,e.primaryAction.disabled=e.disabled,e.primaryAction.data=e.data,e.primaryAction.checked=e.active,e.primaryAction.active=e.active)},_secondaryChanged:function(){var e=this;e.secondaryAction&&(e.secondaryAction.disabled=e.disabled,e.secondaryAction.data=e.data)},_secondaryDataChanged:function(){this.secondaryAction&&(this.secondaryAction.data=this.data)},created:function(){this.classList.add("item")},mutated:function(){var e=this;e._setEmpty(!XP.hasChildren(Polymer.dom(e.text))),e._setPrimaryAction(XP.findElement(Polymer.dom(e),".primary")),e._setSecondaryAction(XP.findElement(Polymer.dom(e),".secondary"))},ready:function(){var e=this;e._setText(Polymer.dom(e.root).querySelector(".text")),Polymer.dom(e).observeNodes(e.mutated.bind(e))},_handleAnchor:function(e){var t=this;t.secondaryAction&&Polymer.dom(e).path.indexOf(t.secondaryAction)>=0||Polymer.XPAnchorBehavior._anchorHandler.apply(t,arguments)},_handlePrevent:function(e){e.selectPrevented=!0},_handleRefire:function(e){this.refire(e,e.type,{firer:this,isSecondary:!0})},_handleStop:function(e){e.stopPropagation()}});</script>
+
+</dom-module>
+</body></html>

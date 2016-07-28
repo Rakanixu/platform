@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("../tester/isBindable");module.exports=function(r){return e(r,!0)}}();

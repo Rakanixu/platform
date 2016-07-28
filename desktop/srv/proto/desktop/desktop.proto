@@ -1,0 +1,3 @@
+syntax = "proto3";
+
+import "github.com/kazoup/platform/crawler/srv/proto/crawler/crawler.proto";

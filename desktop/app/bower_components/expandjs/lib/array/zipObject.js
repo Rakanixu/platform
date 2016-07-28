@@ -1,1 +1,0 @@
-!function(){"use strict";var r=require("../assert/assertArgument"),e=require("../tester/isArrayable"),t=require("../tester/isDefined"),i=require("../tester/isString"),s=require("../caster/toArray");module.exports=function(u,a){r(i(u,!0)||t(u=s(u)),1,"Arrayable or string");var n={},o=e(a);return i(u)?n[u]=a:u.forEach(function(r,e){n[r]=o?a[e]:a}),n}}();

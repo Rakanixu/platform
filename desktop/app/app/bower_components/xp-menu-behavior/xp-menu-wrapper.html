@@ -1,0 +1,6 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-overlay/xp-overlay-wrapper.html">
+
+<script>Polymer.XPMenuWrapperImp={listeners:{"xp-activate":"_activateHandler"},properties:{items:{notify:!0,readOnly:!0,value:function(){return[]}}},ready:function(){this.attributesMap.overlay.push("items")},_activateHandler:function(e){var a=this,r=a.items.indexOf(e.detail.firer)>=0?e.detail.firer:null,t=r&&!r.toggleable&&r.value;t&&XP.apply(a,XP.camelCase("do-"+t),[r.data])}},Polymer.XPMenuWrapper=[Polymer.XPOverlayWrapper,Polymer.XPMenuWrapperImp];</script>
+</head><body></body></html>

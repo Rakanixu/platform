@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("../assert/assertArgument"),r=require("../tester/isRegExp"),t=require("../tester/isString"),s=require("../tester/isVoid");module.exports=function(i,u){return e(s(i)||t(i),1,"string"),e(s(u)||r(u)||t(u),2,"RegExp or string"),i&&u?i.replace(u,""):i||""}}();

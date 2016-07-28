@@ -1,0 +1,30 @@
+{
+  "name": "mat-pressed-behavior",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "mat-pressed-behavior.html",
+  "description": "A behavior used to simulate a ripple effect from the touch point",
+  "homepage": "http://expandjs.com/elements/mat-pressed-behavior",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "material design",
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "mat-ink": "ExpandJS/mat-ink#0.10.0",
+    "mat-paper": "ExpandJS/mat-paper#0.10.0",
+    "xp-pressed-behavior": "ExpandJS/xp-pressed-behavior#0.10.0",
+    "polymer": "Polymer/polymer#^1.2.0"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "webapp",
+  "short_name": "webapp",
+  "start_url": "/",
+  "display": "standalone"
+}

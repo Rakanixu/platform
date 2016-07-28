@@ -1,0 +1,1 @@
+!function(){"use strict";var e=require("../tester/isElement");module.exports=function(t){return e(t)&&"TEMPLATE"===(t.node||t).tagName}}();

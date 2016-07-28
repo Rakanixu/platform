@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("lodash"),r=require("../assert/assertArgument"),t=require("../tester/isObject"),s=require("../tester/isPredicate");module.exports=function(i,u,n){return r(t(i),1,"Object"),r(s(u),2,"Function | Object | string"),e.findLastKey(i,u,n)}}();
