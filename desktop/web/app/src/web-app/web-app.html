@@ -16,167 +16,160 @@
 <link rel="import" href="../../bower_components/mat-item/mat-item.html">
 <link rel="import" href="../../bower_components/mat-breadcrumb/mat-breadcrumb.html">
 <link rel="import" href="../../bower_components/web-socket/web-socket.html">
-
+<link rel="import" href="../../bower_components/mat-toast/mat-toast.html">
+<link rel="import" href="../../bower_components/mat-typography/mat-typography.html">
 
 
 <dom-module id="web-app">
-  <template>
-    <style>
-      :host {
-        display: block;
-      }
-      paper-toolbar{
-       --paper-toolbar-background: var(--primary-color);
-      }
-.nav {
-  border-right: 1px solid #ccc;
-}
+    <template>
+        <style>
+            :host {
+                display: block;
+            }
 
-.list-panel {
-  background-color: #fafafa;
-}
+            paper-toolbar {
+                --paper-toolbar-background: var(--primary-color);
+            }
 
-.list-panel {
-  --paper-header-panel-standard-container: {
-    border-right: 1px solid #ccc;
-  };
-}
+            .nav {
+                border-right: 1px solid #ccc;
+            }
 
-paper-toolbar {
-  background-color: #42A5F5;
+            .list-panel {
+                background-color: #fafafa;
+            }
 
-  background-color: var(--primary-color-dark);
-}
+            .list-panel {
+                --paper-header-panel-standard-container: {
+                    border-right: 1px solid #ccc;
+                }
+                ;
+            }
 
-.list {
-  padding: 0;
-}
+            paper-toolbar {
+                background-color: #42A5F5;
+                background-color: var(--primary-color-dark);
+            }
 
-.list paper-item {
-  height: 80px;
-  border-bottom: 1px solid #dedede;
-  background-color: #fafafa;
-}
+            .list {
+                padding: 0;
+            }
 
-.main-drawer-panel:not([narrow]) [list-toggle] {
-  display: none;
-}
+            .list paper-item {
+                height: 80px;
+                border-bottom: 1px solid #dedede;
+                background-color: #fafafa;
+            }
 
-.content {
-  height: 3000px;
-}
-    </style>
-<paper-drawer-panel id="navDrawerPanel" responsive-width="1280px">
-	<div class="nav" drawer>
-        <!-- Nav Content -->
-      	</div>
+            .main-drawer-panel:not([narrow]) [list-toggle] {
+                display: none;
+            }
 
-      <paper-drawer-panel id="mainDrawerPanel" class="main-drawer-panel" main responsive-width="600px"
-          drawer-width="[[_computeListWidth(_isMobile)]]" drawer-toggle-attribute="list-toggle"
-          narrow="{{_isMobile}}">
+            .content {
+                height: 3000px;
+            }
+        </style>
+        <paper-drawer-panel id="navDrawerPanel" responsive-width="1280px">
+            <div class="nav" drawer>
+                <!-- Nav Content -->
+            </div>
 
-        <paper-header-panel class="list-panel" drawer>
+            <paper-drawer-panel id="mainDrawerPanel" class="main-drawer-panel" main responsive-width="600px" drawer-width="[[_computeListWidth(_isMobile)]]" drawer-toggle-attribute="list-toggle" narrow="{{_isMobile}}">
 
-          <!-- List Toolbar -->
-         <paper-toolbar class="medium-tall">
-         <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
-	<mat-breadcrumb class="extended bottom title" shift>
-        <mat-breadcrumb-step label="My files"></mat-breadcrumb-step>
-        <mat-breadcrumb-step label="Photos"></mat-breadcrumb-step>
-        <mat-breadcrumb-step label="Beach"></mat-breadcrumb-step>
-    	</mat-breadcrumb>
+                <paper-header-panel class="list-panel" drawer>
 
-          </paper-toolbar>
+                    <!-- List Toolbar -->
+                    <paper-toolbar class="medium-tall">
+                        <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
+                        <mat-breadcrumb class="extended bottom title" shift>
+                            <mat-breadcrumb-step label="My files"></mat-breadcrumb-step>
+                            <mat-breadcrumb-step label="Photos"></mat-breadcrumb-step>
+                            <mat-breadcrumb-step label="Beach"></mat-breadcrumb-step>
+                        </mat-breadcrumb>
 
-          <!-- List -->
-<mat-list>
-    <mat-item label="Normal">
-        <mat-avatar class="primary" icon="mat:folder"></mat-avatar>
-    </mat-item>
-    <mat-item label="Toggleable" description="Description" toggleable>
-        <mat-avatar class="primary" icon="mat:folder" active-background="light-blue"></mat-avatar>
-    </mat-item>
-    <mat-item label="Image" description="Description">
-        <mat-avatar class="primary" icon-src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSrMWEFsQUah7yjvKE8SX9jptOcgpMC-CdP5MxPyJzHsRXFT03Rrw"></mat-avatar>
-        <span>Content</span>
-    </mat-item>
-</mat-list>
-        </paper-header-panel>
+                    </paper-toolbar>
 
-        <paper-header-panel class="content-panel" main>
+                    <!-- List -->
+                    <mat-list>
+                        <mat-item label="Normal">
+                            <mat-avatar class="primary" icon="mat:folder"></mat-avatar>
+                        </mat-item>
+                        <mat-item label="Toggleable" description="Description" toggleable>
+                            <mat-avatar class="primary" icon="mat:folder" active-background="light-blue"></mat-avatar>
+                        </mat-item>
+                        <mat-item label="Image" description="Description">
+                            <mat-avatar class="primary" icon-src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSrMWEFsQUah7yjvKE8SX9jptOcgpMC-CdP5MxPyJzHsRXFT03Rrw"></mat-avatar>
+                            <span>Content</span>
+                        </mat-item>
+                    </mat-list>
+                </paper-header-panel>
 
-          <!-- Main Toolbar -->
-          <paper-toolbar>
-            <paper-icon-button icon="arrow-back" list-toggle></paper-icon-button>
-          </paper-toolbar>
+                <paper-header-panel class="content-panel" main>
 
-          <!-- Main Content -->
-          <div class="content"></div>
+                    <!-- Main Toolbar -->
+                    <paper-toolbar>
+                        <paper-icon-button icon="arrow-back" list-toggle></paper-icon-button>
+                    </paper-toolbar>
 
-        </paper-header-panel>
+                    <!-- Main Content -->
+                    <div class="content"></div>
 
-      </paper-drawer-panel>
-</paper-drawer-panel>
-<web-socket url="ws://localhost:8082/desktop/status"
-            auto json
-            on-open="_onOpen"
-            on-close="_onClose"
-            on-message="_onMessage"
-            on-error="_onError">
-</web-socket>
-  </template>
+                </paper-header-panel>
 
-  <script>
-      
-    Polymer({
+            </paper-drawer-panel>
+        </paper-drawer-panel>
+        <mat-toast id="toast" label="Lorem ipsum dolor sit amet..."></mat-toast>
+        <web-socket url="ws://localhost:8082/desktop/status" auto json on-open="_onOpen" on-close="_onClose" on-message="_onMessage" on-error="_onError">
+        </web-socket>
+    </template>
 
-      is: 'web-app',
-      ready:function(){
+    <script>
+        Polymer({
 
-	      //POC to dectect we are on Desktop App
-	      if (typeof window !== 'undefined' && window.process && window.process.type === "renderer"){
-		      console.log("We are in Electron ! Let's Go ! ")
-			      ipcRenderer.on('disks-message',function(event,disks){
-				      console.log(disks);
-				      this.disks = disks;
-			      });
-	      }
-      },
-      _computeListWidth: function(isMobile) {
-        // when in mobile screen size, make the list be 100% width to cover the whole screen
-        return isMobile ? '100%' : '66%';
-      },
-      _listTap: function() {
-        this.$.mainDrawerPanel.closeDrawer();
-      },
-      _onOpen: function(){
-	      console.log("Opening WS")
-      },
+            is: 'web-app',
+            ready: function() {
+		var that = this
+                //POC to dectect we are on Desktop App
+                if (typeof window !== 'undefined' && window.process && window.process.type === "renderer") {
+                    console.log("We are in Electron ! Let's Go ! ")
+                    ipcRenderer.on('disks-message', function(event, disks) {
+			that.disks = disks
+                        that.$.toast.label = "Got disk " + disks[0]['description']
+			that.$.toast.show()
+                    });
+                }
+            },
+            _computeListWidth: function(isMobile) {
+                // when in mobile screen size, make the list be 100% width to cover the whole screen
+                return isMobile ? '100%' : '66%';
+            },
+            _listTap: function() {
+                this.$.mainDrawerPanel.closeDrawer();
+            },
+            _onOpen: function() {
+                console.log("Opening WS")
+            },
 
-      _onClose: function(){
-	      console.log("Closing WS")
-      },
+            _onClose: function() {
+                console.log("Closing WS")
 
-      _onMessage: function(e){
-	      console.log("Message from WS ",e.detail)
-      },
-	
-      _onError: function(e){
-	      console.log(e)
-      },
+            },
 
-      properties: {
-        prop1: {
-          type: String,
-          value: 'web-app',
-        },
-	disks: {
-	  type: Array,
-	  value: [],
-	},
-      },
+            _onMessage: function(e) {
+                console.log("Message from WS ", e.detail)
+            },
 
-    });
-    
-  </script>
+            _onError: function(e) {
+                console.log(e)
+            },
+
+            properties: {
+                disks: {
+                    type: Array,
+                    value: [],
+                },
+            },
+
+        });
+    </script>
 </dom-module>
