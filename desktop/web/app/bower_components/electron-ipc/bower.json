@@ -1,0 +1,25 @@
+{
+  "name": "electron-ipc",
+  "license": "MIT",
+  "version": "0.8.0",
+  "description": "An element used to communicate through the ipc module for electron.",
+  "homepage": "http://expandjs.com/elements/mat-input-decorator",
+  "authors": [
+    "Robert Manolea <manolea.robert@gmail.com>"
+  ],
+  "keywords": [
+    "electron",
+    "ipc",
+    "web-components"
+  ],
+  "main": [
+    "electron-ipc.html"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.9.5",
+    "polymer": "Polymer/polymer#^1.0.0"
+  }
+}

@@ -1,0 +1,1 @@
+!function(){"use strict";var r=require("../error/CustomError");module.exports=function(e,o){r.call(this,"AlreadyUsedError",e+" is already used",o)}}();

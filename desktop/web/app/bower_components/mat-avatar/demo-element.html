@@ -1,0 +1,73 @@
+<link rel="import" href="../mat-demo/mat-demo.html">
+<link rel="import" href="../mat-icons/mat-icons.html">
+<link rel="import" href="mat-avatar.html">
+
+<dom-module id="mat-avatar-demo">
+
+    <template>
+
+        <style>
+            :host {
+                display: block;
+            }
+        </style>
+
+        <mat-demo name="mat-avatar" type="element" url="http://expandjs.com/elements/mat-avatar">
+
+            <mat-demo-panel label="Default">
+                <script type="text/html">
+                    <mat-avatar icon="mat:folder"></mat-avatar>
+                    <mat-avatar icon="mat:star" background="blue"></mat-avatar>
+                    <mat-avatar icon-src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSrMWEFsQUah7yjvKE8SX9jptOcgpMC-CdP5MxPyJzHsRXFT03Rrw"></mat-avatar>
+                </script>
+                <mat-avatar icon="mat:folder"></mat-avatar>
+                <mat-avatar icon="mat:star" background="blue"></mat-avatar>
+                <mat-avatar icon-src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSrMWEFsQUah7yjvKE8SX9jptOcgpMC-CdP5MxPyJzHsRXFT03Rrw"></mat-avatar>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Disabled">
+                <script type="text/html">
+                    <mat-avatar disabled icon="mat:folder"></mat-avatar>
+                    <mat-avatar disabled icon="mat:star" background="blue"></mat-avatar>
+                    <mat-avatar disabled icon-src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSrMWEFsQUah7yjvKE8SX9jptOcgpMC-CdP5MxPyJzHsRXFT03Rrw"></mat-avatar>
+                </script>
+                <mat-avatar disabled icon="mat:folder"></mat-avatar>
+                <mat-avatar disabled icon="mat:star" background="blue"></mat-avatar>
+                <mat-avatar disabled icon-src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSrMWEFsQUah7yjvKE8SX9jptOcgpMC-CdP5MxPyJzHsRXFT03Rrw"></mat-avatar>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Big">
+                <script type="text/html">
+                    <mat-avatar big icon="mat:folder"></mat-avatar>
+                    <mat-avatar big icon="mat:star" background="blue"></mat-avatar>
+                    <mat-avatar big icon-src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSrMWEFsQUah7yjvKE8SX9jptOcgpMC-CdP5MxPyJzHsRXFT03Rrw"></mat-avatar>
+                </script>
+                <mat-avatar big icon="mat:folder"></mat-avatar>
+                <mat-avatar big icon="mat:star" background="blue"></mat-avatar>
+                <mat-avatar big icon-src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSrMWEFsQUah7yjvKE8SX9jptOcgpMC-CdP5MxPyJzHsRXFT03Rrw"></mat-avatar>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Big disabled">
+                <script type="text/html">
+                    <mat-avatar big disabled icon="mat:folder"></mat-avatar>
+                    <mat-avatar big disabled icon="mat:star" background="blue"></mat-avatar>
+                    <mat-avatar big disabled icon-src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSrMWEFsQUah7yjvKE8SX9jptOcgpMC-CdP5MxPyJzHsRXFT03Rrw"></mat-avatar>
+                </script>
+                <mat-avatar big disabled icon="mat:folder"></mat-avatar>
+                <mat-avatar big disabled icon="mat:star" background="blue"></mat-avatar>
+                <mat-avatar big disabled icon-src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSrMWEFsQUah7yjvKE8SX9jptOcgpMC-CdP5MxPyJzHsRXFT03Rrw"></mat-avatar>
+            </mat-demo-panel>
+
+        </mat-demo>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-avatar-demo'
+        });
+    </script>
+
+</dom-module>

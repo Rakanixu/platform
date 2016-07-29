@@ -1,0 +1,42 @@
+{
+  "name": "mat-text-field",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "mat-text-field.html",
+  "description": "A custom element used to display a Material Design text-field",
+  "homepage": "http://expandjs.com/elements/mat-text-field",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "material design",
+    "material input",
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "mat-ink": "ExpandJS/mat-ink#0.10.0",
+    "mat-input-behavior": "ExpandJS/mat-input-behavior#0.10.0",
+    "polymer": "Polymer/polymer#^1.2.0"
+  },
+  "devDependencies": {
+    "mat-demo": "ExpandJS/mat-demo#0.10.0"
+  },
+  "_release": "0.10.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.10.0",
+    "commit": "c4a8ed1f6bb3934cef18b84ff074de6c27f7eaf0"
+  },
+  "_source": "git://github.com/ExpandJS/mat-text-field.git",
+  "_target": "0.10.0",
+  "_originalSource": "ExpandJS/mat-text-field"
+}

@@ -1,0 +1,86 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A behavior used to add menu wrapping capabilities on a custom element.
+
+@behavior xp-menu-wrapper
+@description A behavior used to add menu wrapping capabilities on a custom element
+@keywords expandjs, web app, custom elements, web-components
+@group behaviors
+@hot
+
+@homepage http://expandjs.com/elements/xp-menu-wrapper
+@repository https://github.com/ExpandJS/xp-menu-behavior
+
+@behavior xp-overlay-wrapper /bower_components/xp-overlay/xp-overlay-wrapper.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency xp-overlay ExpandJS/xp-overlay#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-overlay/xp-overlay-wrapper.html">
+
+<script>
+    Polymer.XPMenuWrapperImp = {
+
+        // LISTENERS
+        listeners: {
+            'xp-activate': '_activateHandler'
+        },
+
+        // PROPERTIES
+        properties: {
+
+            /**
+             * The found items.
+             *
+             * @attribute items
+             * @type Array
+             * @notifies
+             * @readonly
+             */
+            items: {
+                notify: true,
+                readOnly: true,
+                value: function () { return []; }
+            }
+        },
+
+        /*********************************************************************/
+
+        // LISTENER
+        ready: function () {
+
+            // Mapping
+            this.attributesMap.overlay.push('items');
+        },
+
+        /*********************************************************************/
+
+        // HANDLER
+        _activateHandler: function (event) {
+
+            // Vars
+            var self  = this,
+                item  = self.items.indexOf(event.detail.firer) >= 0 ? event.detail.firer : null,
+                value = item && !item.toggleable && item.value;
+
+            // Calling
+            if (value) { XP.apply(self, XP.camelCase('do-' + value), [item.data]); }
+        }
+    };
+
+    Polymer.XPMenuWrapper = [
+        Polymer.XPOverlayWrapper,
+        Polymer.XPMenuWrapperImp
+    ];
+</script>

@@ -1,0 +1,177 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A behavior used to add menu capabilities on a custom element.
+
+@behavior xp-menu-behavior
+@description A behavior used to add menu capabilities on a custom element
+@keywords expandjs, web app, custom elements, web-components
+@group behaviors
+
+@homepage http://expandjs.com/elements/xp-menu-behavior
+@repository https://github.com/ExpandJS/xp-menu-behavior
+
+@behavior xp-finder-behavior /bower_components/xp-finder-behavior/xp-finder-behavior.html
+@behavior xp-master-behavior /bower_components/xp-master-behavior/xp-master-behavior.html
+@behavior xp-overlay-behavior /bower_components/xp-overlay/xp-overlay-behavior.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency xp-finder-behavior ExpandJS/xp-finder-behavior#0.10.0
+@dependency xp-master-behavior ExpandJS/xp-master-behavior#0.10.0
+@dependency xp-overlay ExpandJS/xp-overlay#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-finder-behavior/xp-finder-behavior.html">
+<link rel="import" href="../xp-master-behavior/xp-master-behavior.html">
+<link rel="import" href="../xp-overlay/xp-overlay-behavior.html">
+
+<script>
+    Polymer.XPMenuBehaviorImp = {
+
+        // LISTENERS
+        listeners: {
+            'xp-activate': '_optionHandler'
+        },
+
+        // OBSERVERS
+        observers: [
+            '_submenusObserver(submenus.*)'
+        ],
+
+        // PROPERTIES
+        properties: {
+
+            /**
+             * If set to true, the menu is a cascade one.
+             *
+             * @attribute cascade
+             * @type boolean
+             * @default false
+             * @notifies
+             */
+            cascade: {
+                notify: true,
+                observer: '_cascadeObserver',
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * If set to true, the items will be deep searched.
+             *
+             * @attribute find-deep
+             * @type boolean
+             * @default true
+             * @readonly
+             */
+            findDeep: {
+                readOnly: true,
+                type: Boolean,
+                value: true
+            },
+
+            /**
+             * The selector used to recognize items.
+             *
+             * @attribute item-selector
+             * @type string
+             * @default ".option"
+             */
+            itemSelector: {
+                type: String,
+                value: '.option'
+            },
+
+            /**
+             * The slave submenus.
+             *
+             * @attribute submenus
+             * @type Array
+             * @notifies
+             * @readonly
+             */
+            submenus: {
+                notify: true,
+                readOnly: true,
+                value: function () { return []; }
+            }
+        },
+
+        /*********************************************************************/
+
+        // OBSERVER
+        _cascadeObserver: function () {
+
+            // Setting
+            if (this.cascade && (this.position === 'over' || !this.position)) { this.position = 'baseline'; }
+        },
+
+        // OBSERVER
+        _showedObserver: function () {
+
+            // Vars
+            var self = this;
+
+            // Super
+            Polymer.XPOverlayBehaviorImp._showedObserver.apply(self, arguments);
+
+            // Hiding
+            if (!self.showed) { XP.invoke(self.submenus || [], 'hide'); }
+        },
+
+        // OBSERVER
+        _submenusObserver: function () {
+
+            // Setting
+            if (this.submenus.length) { this.cascade = true; }
+        },
+
+        /*********************************************************************/
+
+        // LISTENER
+        created: function () {
+
+            // Classifying
+            this.classList.add('menu');
+        },
+
+        // LISTENER
+        ready: function () {
+
+            // Mapping
+            this.slavesMap.submenus = '.submenu';
+        },
+
+        /*********************************************************************/
+
+        // HANDLER
+        _optionHandler: function (event) {
+
+            // Vars
+            var self  = this;
+
+            // Checking
+            if (event.detail.firer.toggleable || !event.detail.firer.classList.contains('option')) { return; }
+
+            // Frame 1
+            requestAnimationFrame(function () { return event.defaultPrevented || self.hide(); });
+        }
+    };
+
+    Polymer.XPMenuBehavior = [
+        Polymer.XPFinderBehavior,
+        Polymer.XPMasterBehavior,
+        Polymer.XPOverlayBehavior,
+        Polymer.XPMenuBehaviorImp
+    ];
+</script>

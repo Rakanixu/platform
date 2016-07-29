@@ -1,0 +1,41 @@
+{
+  "name": "xp-tabs-behavior",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "xp-tabs-behavior.html",
+  "description": "A behavior used to add tabs capabilities on a custom element",
+  "homepage": "http://expandjs.com/elements/xp-tabs-behavior",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "xp-master-behavior": "ExpandJS/xp-master-behavior#0.10.0",
+    "xp-observer": "ExpandJS/xp-observer#0.10.0",
+    "xp-selector": "ExpandJS/xp-selector#0.10.0",
+    "xp-slave-behavior": "ExpandJS/xp-slave-behavior#0.10.0",
+    "xp-targeter-behavior": "ExpandJS/xp-targeter-behavior#0.10.0",
+    "polymer": "Polymer/polymer#^1.2.0",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0"
+  },
+  "_release": "0.10.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.10.0",
+    "commit": "add7245e0079f5d2f164e6a0a07eb34e10526ee7"
+  },
+  "_source": "git://github.com/ExpandJS/xp-tabs-behavior.git",
+  "_target": "0.10.0",
+  "_originalSource": "ExpandJS/xp-tabs-behavior"
+}

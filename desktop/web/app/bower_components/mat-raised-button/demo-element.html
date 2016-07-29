@@ -1,0 +1,56 @@
+<link rel="import" href="../mat-demo/mat-demo.html">
+<link rel="import" href="mat-raised-button.html">
+
+<dom-module id="mat-raised-button-demo">
+
+    <template>
+
+        <style>
+            :host {
+                display: block;
+            }
+        </style>
+
+        <mat-demo name="mat-raised-button" type="element" url="http://expandjs.com/elements/mat-raised-button">
+
+            <mat-demo-panel label="Default">
+                <script type="text/html">
+                    <mat-raised-button label="Button"></mat-raised-button>
+                </script>
+                <mat-raised-button label="Button"></mat-raised-button>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Colored">
+                <script type="text/html">
+                    <mat-raised-button label="Colored" background="deep-orange-600"></mat-raised-button>
+                </script>
+                <mat-raised-button label="Colored" background="deep-orange-600"></mat-raised-button>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Disabled">
+                <script type="text/html">
+                    <mat-raised-button label="Disabled" disabled></mat-raised-button>
+                </script>
+                <mat-raised-button label="Disabled" disabled></mat-raised-button>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Link">
+                <script type="text/html">
+                    <mat-raised-button label="Link" href="http://expandjs.com/elements/mat-raised-button" target="_blank"></mat-raised-button>
+                </script>
+                <mat-raised-button label="Link" href="http://expandjs.com/elements/mat-raised-button" target="_blank"></mat-raised-button>
+            </mat-demo-panel>
+
+        </mat-demo>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-raised-button-demo'
+        });
+    </script>
+
+</dom-module>

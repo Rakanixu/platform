@@ -1,0 +1,36 @@
+{
+  "name": "xp-observer",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "xp-observer.html",
+  "description": "A class used to provide object observing",
+  "homepage": "http://expandjs.com/classes/xp-observer",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "nodejs",
+    "web app",
+    "javascript",
+    "expandjs",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0"
+  },
+  "_release": "0.10.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.10.0",
+    "commit": "214e5bbae60cb8b1aa630198ac7c31da4d8bd24d"
+  },
+  "_source": "git://github.com/ExpandJS/xp-observer.git",
+  "_target": "0.10.0",
+  "_originalSource": "ExpandJS/xp-observer"
+}

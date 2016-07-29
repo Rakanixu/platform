@@ -1,0 +1,54 @@
+{
+  "name": "mat-item",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "mat-item.html",
+  "description": "A custom element used to display a Material Design item",
+  "homepage": "http://expandjs.com/elements/mat-item",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "material design",
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "mat-divider": "ExpandJS/mat-divider#0.10.0",
+    "mat-ink": "ExpandJS/mat-ink#0.10.0",
+    "mat-pressed-behavior": "ExpandJS/mat-pressed-behavior#0.10.0",
+    "mat-typography": "ExpandJS/mat-typography#0.10.0",
+    "xp-anchor-behavior": "ExpandJS/xp-anchor-behavior#0.10.0",
+    "xp-overlay": "ExpandJS/xp-overlay#0.10.0",
+    "xp-refirer-behavior": "ExpandJS/xp-refirer-behavior#0.10.0",
+    "polymer": "Polymer/polymer#^1.2.0",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0"
+  },
+  "devDependencies": {
+    "mat-avatar": "ExpandJS/mat-avatar#0.10.0",
+    "mat-checkbox": "ExpandJS/mat-checkbox#0.10.0",
+    "mat-demo": "ExpandJS/mat-demo#0.10.0",
+    "mat-icon": "ExpandJS/mat-icon#0.10.0",
+    "mat-icon-button": "ExpandJS/mat-icon-button#0.10.0",
+    "mat-icons": "ExpandJS/mat-icons#0.10.0",
+    "mat-list": "ExpandJS/mat-list#0.10.0",
+    "mat-menu": "ExpandJS/mat-menu#0.10.0"
+  },
+  "_release": "0.10.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.10.0",
+    "commit": "d8e2db96672dea31a513b7e286a752a723eb83b3"
+  },
+  "_source": "git://github.com/ExpandJS/mat-item.git",
+  "_target": "0.10.0",
+  "_originalSource": "ExpandJS/mat-item"
+}

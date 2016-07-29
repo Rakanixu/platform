@@ -1,0 +1,39 @@
+{
+  "name": "mat-shell",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "mat-shell.html",
+  "description": "A custom element wrap a Material Design application",
+  "homepage": "http://expandjs.com/elements/mat-shell",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "material design",
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "mat-paper": "ExpandJS/mat-paper#0.10.0",
+    "mat-typography": "ExpandJS/mat-typography#0.10.0",
+    "xp-shell-behavior": "ExpandJS/xp-shell-behavior#0.10.0",
+    "polymer": "Polymer/polymer#^1.0.0"
+  },
+  "_release": "0.10.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.10.0",
+    "commit": "e99ba4ca8cec945157b673b4dc38a5de1277f477"
+  },
+  "_source": "git://github.com/ExpandJS/mat-shell.git",
+  "_target": "0.10.0",
+  "_originalSource": "ExpandJS/mat-shell"
+}

@@ -1,0 +1,30 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../mat-icons/mat-icons.html">
+<link rel="import" href="../mat-typography/mat-typography.html">
+<link rel="import" href="mat-demo-panel.html">
+
+</head><body><dom-module id="mat-demo">
+
+    <template>
+
+        <style>:host{display:block;}:host .wrapper{@apply (--layout-vertical);box-sizing:border-box;height:100%;}:host .header{position:relative;}:host .header:after{clear:both;content:"";display:block;height:0;}:host .name{@apply (--mat-font-display2);margin:0;overflow:hidden;text-overflow:ellipsis !important;white-space:nowrap !important;}:host .type{@apply (--mat-font-title);float:left;margin:0;opacity:0.30;text-transform:capitalize;}:host .button{float:right;margin:-8px -8px -8px 8px;}:host .icon{display:block;}:host .body{position:relative;}:host ::content .demo-panel{margin-top:16px;}@media (min-width: 960px){:host ::content .demo-panel{margin-top:24px;}}</style>
+
+        <div class="wrapper">
+            <div class="header">
+                <h1 class="name">[[name]]</h1>
+                <h2 class="type">[[type]]</h2>
+                <mat-icon-button class="docs" href="[[url]]" title="Docs" icon="mat:description"></mat-icon-button>
+            </div>
+            <div class="body">
+                <content></content>
+            </div>
+        </div>
+
+    </template>
+
+    <script>Polymer({is:"mat-demo",properties:{name:{reflectToAttribute:!0,type:String,value:""},type:{reflectToAttribute:!0,type:String},url:{type:String}},created:function(){this.classList.add("demo")}});</script>
+
+</dom-module>
+</body></html>

@@ -1,0 +1,70 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A stylesheet used to stylize a tabs element.
+
+@stylesheet xp-tabs-styles
+@description A stylesheet used to stylize a tabs element
+@keywords expandjs, web app, custom elements, web-components
+@group stylesheets
+
+@homepage http://expandjs.com/elements/xp-tabs-styles
+@repository https://github.com/ExpandJS/xp-tabs-behavior
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency iron-flex-layout PolymerElements/iron-flex-layout#^1.0.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+
+<dom-module id="xp-tabs-styles">
+
+    <template strip-whitespace>
+
+        <style>
+            :host {
+                @apply(--layout-horizontal);
+                display: block;
+                overflow: hidden;
+                position: relative;
+                white-space: nowrap !important;
+            }
+
+            :host(:not([more-left])) .left,
+            :host(:not([more-right])) .right {
+                opacity: 0 !important;
+                pointer-events: none !important;
+                visibility: hidden !important;
+            }
+
+            :host(:not([scrollable])) .left,
+            :host(:not([scrollable])) .right {
+                display: none !important;
+            }
+
+            :host .slider {
+                @apply(--layout-flex);
+                box-sizing: border-box;
+                height: 100%;
+                overflow: hidden;
+                position: relative;
+            }
+
+            :host .slider .wrapper {
+                @apply(--layout-horizontal);
+                box-sizing: border-box;
+                height: 100%;
+                position: absolute;
+            }
+        </style>
+
+    </template>
+
+</dom-module>

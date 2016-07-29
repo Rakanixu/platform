@@ -1,0 +1,252 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A stylesheet used to stylize a [Material Design input](http://www.google.com/design/spec/components/text-fields.html#text-fields-single-line-text-field).
+
+@stylesheet mat-input-styles
+@description A stylesheet used to stylize a Material Design input
+@keywords material design, material input, expandjs, web app, custom elements, web-components
+@group stylesheets
+
+@homepage http://expandjs.com/elements/mat-input-styles
+@repository https://github.com/ExpandJS/mat-input-behavior
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency iron-flex-layout PolymerElements/iron-flex-layout#^1.0.0
+@dependency mat-typography ExpandJS/mat-typography#0.10.0
+@dependency xp-input-behavior ExpandJS/xp-input-behavior#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../mat-typography/mat-typography.html">
+<link rel="import" href="../xp-input-behavior/xp-input-styles.html">
+
+<dom-module id="mat-input-styles">
+
+    <template strip-whitespace>
+
+        <style include="xp-input-styles"></style>
+
+        <style>
+            :host {
+                @apply(--mat-font-subhead);
+            }
+
+            :host ::content input {
+                @apply(--mat-font-subhead);
+                white-space: nowrap !important; /* override */
+            }
+
+            :host ::content textarea {
+                @apply(--mat-font-subhead);
+                white-space: pre !important; /* override */
+            }
+
+            :host([full-width]) {
+                display: block;
+                margin: 0;
+                width: auto !important;
+            }
+
+            :host .wrapper {
+                padding: 8px 0 4px 0;
+            }
+
+            :host([floating-label][label]:not([label=""])) .wrapper {
+                padding-top: 32px;
+            }
+
+            :host([full-width]) .wrapper {
+                padding: 16px;
+            }
+
+            :host([full-width]:not([mirrored])) .wrapper {
+                @apply(--layout-horizontal);
+            }
+
+            /* WRAPPER */
+
+            :host .wrapper .main {
+                position: relative;
+            }
+
+            :host([full-width]) .wrapper .main {
+                @apply(--layout-flex);
+            }
+
+            :host(:not([disabled])) .wrapper .main {
+                cursor: text;
+            }
+
+            :host(:not([full-width])) .wrapper .main {
+                margin: 4px 0;
+            }
+
+            :host .wrapper .underline {
+                margin: -2px 0 4px 0;
+            }
+
+            :host([full-width]) .wrapper .underline {
+                display: none !important;
+            }
+
+            :host .wrapper .helper {
+                @apply(--mat-font-caption);
+                min-height: 16px;
+                white-space: normal !important; /* override */
+            }
+
+            :host .wrapper .helper:after {
+                clear: both;
+                content: "";
+                display: block;
+                height: 0;
+            }
+
+            :host([full-width]) .wrapper .helper {
+                line-height: 24px !important; /* override */
+            }
+
+            :host([full-width][mirrored]) .wrapper .helper {
+                margin-bottom: -4px;
+            }
+
+            :host([helper-disabled]) .wrapper .helper {
+                display: none !important;
+            }
+
+            :host([invalid]) .wrapper .helper {
+                color: var(--mat-invalid-color, #EF5350);
+            }
+
+            /* WRAPPER - MAIN */
+
+            :host .wrapper .main .label,
+            :host .wrapper .main .prefix,
+            :host .wrapper .main .suffix {
+                overflow: hidden;
+                text-overflow: ellipsis !important; /* override */
+                white-space: nowrap !important; /* override */
+            }
+
+            :host .wrapper .main .label {
+                @apply(--layout-fit);
+                pointer-events: none !important;
+                transition: font-size 0.4s cubic-bezier(0.55, 0, 0.01, 1),
+                            font-weight 0.4s cubic-bezier(0.55, 0, 0.01, 1),
+                            letter-spacing 0.4s cubic-bezier(0.55, 0, 0.01, 1),
+                            line-height 0.4s cubic-bezier(0.55, 0, 0.01, 1),
+                            transform 0.4s cubic-bezier(0.55, 0, 0.01, 1);
+            }
+
+            :host([label=""]) .wrapper .main .label,
+            :host(:not([label])) .wrapper .main .label,
+            :host(:not([empty]):not([empty-selection]):not([floating-label])) .wrapper .main .label {
+                display: none !important;
+            }
+
+            :host([floated]) .wrapper .main .label {
+                @apply(--mat-font-caption);
+                transform: translateY(-20px);
+                transform-origin: 0 0 0;
+            }
+
+            :host([floated][focused]) .wrapper .main .label {
+                color: var(--mat-focused-color, #0091EA);
+            }
+
+            :host .wrapper .main .prefix {
+                float: left;
+            }
+
+            :host .wrapper .main .suffix {
+                float: right;
+            }
+
+            :host([input-prefix=""]) .wrapper .main .prefix,
+            :host([input-suffix=""]) .wrapper .main .suffix,
+            :host(:not([input-prefix])) .wrapper .main .prefix,
+            :host(:not([input-suffix])) .wrapper .main .suffix {
+                display: none !important;
+            }
+
+            :host .wrapper .main .mirror {
+                min-height: 24px;
+                opacity: 0 !important;
+                visibility: hidden !important;
+                word-wrap: break-word !important;
+            }
+
+            :host .wrapper .main .holder {
+                overflow: hidden;
+            }
+
+            :host .wrapper .main .mirror ~ .holder {
+                @apply(--layout-fit);
+            }
+
+            /* UNDERLINE */
+
+            :host .wrapper .underline .default {
+                border-top: 1px solid currentColor;
+                transition: border 0.4s cubic-bezier(0.55, 0, 0.01, 1);
+            }
+
+            :host([disabled]) .wrapper .underline .default {
+                border-top-style: dashed;
+            }
+
+            :host .wrapper .underline .focused {
+                border-top: 2px solid currentColor;
+                color: var(--mat-focused-color, #0091EA);
+                margin-top: -1px;
+                transform: scale(0, 1);
+                transition: transform 0.4s cubic-bezier(0.55, 0, 0.01, 1);
+            }
+
+            :host([focused]) .wrapper .underline .focused,
+            :host([invalid]) .wrapper .underline .focused {
+                transform: scale(1, 1);
+            }
+
+            :host([invalid]) .wrapper .underline .focused {
+                color: var(--mat-invalid-color, #EF5350);
+            }
+
+            /* WRAPPER - HELPER */
+
+            :host .wrapper .helper .counter {
+                float: right;
+                margin-left: 16px;
+            }
+
+            :host([max-length=""]) .wrapper .helper .counter,
+            :host([max-length="0"]) .wrapper .helper .counter,
+            :host(:not([max-length])) .wrapper .helper .counter {
+                display: none !important;
+            }
+
+            :host([full-width]) .wrapper .helper .description {
+                display: none !important;
+            }
+
+            /* DESKTOP */
+
+            @media (min-width: 960px) {
+
+                :host([full-width]) .wrapper {
+                    padding: 16px 24px;
+                }
+            }
+        </style>
+
+    </template>
+
+</dom-module>

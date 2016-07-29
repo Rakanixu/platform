@@ -1,0 +1,290 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A custom element used to display [Material Design tabs](http://www.google.com/design/spec/components/tabs.html).
+
+It must be used in conjunction with
+[mat-tab](http://expandjs.com/elements/mat-tab).
+
+```html
+<mat-tabs>
+    <mat-tab label="Music"></mat-tab>
+    <mat-tab label="Movies"></mat-tab>
+    <mat-tab label="Books"></mat-tab>
+</mat-tabs>
+```
+
+If you want to be able to scroll the visible tabs you can set `scrollable`.
+
+```html
+<mat-tabs scrollable>
+    <mat-tab label="Music"></mat-tab>
+    <mat-tab label="Movies"></mat-tab>
+    <mat-tab label="Books"></mat-tab>
+    <mat-tab label="Games"></mat-tab>
+</mat-tabs>
+```
+
+It can be used with [mat-pages](http://expandjs.com/elements/mat-pages) by binding the `selected` attributes.
+
+```html
+<mat-tabs selected="{{selected}}">
+    <mat-tab label="Music"></mat-tab>
+    <mat-tab label="Movies"></mat-tab>
+    <mat-tab label="Books"></mat-tab>
+</mat-tabs>
+
+<mat-pages selected="{{selected}}">
+    <mat-page id="music">...</mat-page>
+    <mat-page id="movies">...</mat-page>
+    <mat-page id="books">...</mat-page>
+</mat-pages>
+```
+
+It can also be used to create new tabs and new pages on the fly.
+
+```html
+<mat-tabs id="myTabs" selected="{{selected}}" scrollable></mat-tabs>
+<mat-pages id="myPages" selected="{{selected}}"></mat-pages>
+
+<script>
+    (function () {
+        var tabs  = XP.getElementById('myTabs'),
+            pages = XP.getElementById('myPages');
+
+        tabs.open({label: 'Dynamic page', content: 'app-page'}, true);
+    }());
+</script>
+```
+
+@element mat-tabs
+@description A custom element used to display Material Design tabs
+@keywords material design, material tabs, expandjs, web app, custom elements, web-components
+@group navigation
+@hot
+
+@homepage http://expandjs.com/elements/mat-tabs
+@repository https://github.com/ExpandJS/mat-tabs
+@demo http://expandjs.com/demo/mat-tabs
+
+@behavior xp-tabs-behavior /bower_components/xp-tabs-behavior/xp-tabs-behavior.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency mat-icon-button ExpandJS/mat-icon-button#0.10.0
+@dependency mat-icons ExpandJS/mat-icons#0.10.0
+@dependency xp-tabs-behavior ExpandJS/xp-tabs-behavior#0.10.0
+
+@devDependency mat-demo ExpandJS/mat-demo#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-icon-button/mat-icon-button.html">
+<link rel="import" href="../mat-icons/mat-icons.html">
+<link rel="import" href="../xp-tabs-behavior/xp-tabs-behavior.html">
+<link rel="import" href="../xp-tabs-behavior/xp-tabs-styles.html">
+<link rel="import" href="mat-tab.html">
+
+<dom-module id="mat-tabs">
+
+    <template strip-whitespace>
+
+        <style include="xp-tabs-styles"></style>
+
+        <style>
+            :host {
+                height: 48px;
+            }
+
+            :host .left {
+                margin: 4px 0 4px 16px;
+            }
+
+            :host .right {
+                margin: 4px 16px 4px 0;
+            }
+
+            :host .bar {
+                border-top: 2px solid currentColor;
+                bottom: 0;
+                left: 0;
+                position: absolute;
+                transform: scale3d(1, 1, 1) translateX(0px);
+                transform-origin: 0 0;
+                transition: transform 0.4s cubic-bezier(0.55, 0, 0.01, 1);
+            }
+
+            :host([empty-items]) .bar {
+                display: none !important;
+            }
+
+            /* MOBILE */
+
+            @media (max-width: 959px) {
+
+                :host([scrollable]) ::content .tab {
+                    min-width: 72px;
+                }
+
+                :host([scrollable]) ::content .tab[closable] {
+                    min-width: 96px;
+                }
+
+                :host(:not([scrollable])) ::content .tab {
+                    @apply(--layout-flex);
+                    max-width: none;
+                    min-width: 0;
+                }
+
+                :host .button {
+                    display: none !important;
+                }
+
+                :host([scrollable]) .slider .wrapper {
+                    padding-left: 60px;
+                }
+
+                :host(:not([scrollable])) .slider .wrapper {
+                    position: relative;
+                }
+            }
+        </style>
+
+        <mat-icon-button class="left button" icon="mat:chevron-left" on-xp-activate="slideLeft"></mat-icon-button>
+        <div class="slider" on-track="_trackHandler" on-xp-tab-close="_closeHandler">
+            <div class="wrapper">
+                <content></content>
+                <mat-ink class="bar"></mat-ink>
+            </div>
+        </div>
+        <mat-icon-button class="right button" icon="mat:chevron-right" on-xp-activate="slideRight"></mat-icon-button>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-tabs',
+
+            // BEHAVIORS
+            behaviors: [
+                Polymer.XPTabsBehavior
+            ],
+
+            /*********************************************************************/
+
+            // PROPERTIES
+            properties: {
+
+                /**
+                 * The tabs bar.
+                 *
+                 * @attribute bar
+                 * @type Element
+                 * @notifies
+                 * @readonly
+                 */
+                bar: {
+                    notify: true,
+                    readOnly: true
+                },
+
+                /**
+                 * The tag used to append new items.
+                 *
+                 * @attribute item-tag
+                 * @type string
+                 * @readonly
+                 */
+                itemTag: {
+                    readOnly: true,
+                    type: String,
+                    value: 'mat-tab'
+                },
+
+                /**
+                 * The tabs wrapper.
+                 *
+                 * @attribute wrapper
+                 * @type Element
+                 * @notifies
+                 * @readonly
+                 */
+                wrapper: {
+                    notify: true,
+                    readOnly: true
+                }
+            },
+
+            /*********************************************************************/
+
+            // LISTENER
+            attached: function () {
+
+                // Listening
+                this.listen(window, 'resize', '_resizeHandler');
+            },
+
+            // LISTENER
+            created: function () {
+
+                // Classifying
+                this.classList.add('extended');
+            },
+
+            // LISTENER
+            detached: function () {
+
+                // Unlistening
+                this.unlisten(window, 'resize', '_resizeHandler');
+            },
+
+            // LISTENER
+            ready: function () {
+
+                // Vars
+                var self = this;
+
+                // Setting
+                self._setBar(Polymer.dom(self.root).querySelector('.bar'));
+                self._setWrapper(Polymer.dom(self.root).querySelector('.wrapper'));
+            },
+
+            /*********************************************************************/
+
+            // HANDLER
+            _mutationHandler: function () {
+
+                // Vars
+                var self = this;
+
+                // Super
+                Polymer.XPTabsBehaviorImp._mutationHandler.apply(self, arguments);
+
+                // Vars
+                var item    = self.selection && XP.getBoundings(self.selection),
+                    wrapper = self.selection && XP.getBoundings(self.wrapper);
+
+                // Styling
+                self.bar.style.transform = 'translateX(' + (item ? item.left - wrapper.left : 0) + 'px)';
+                self.bar.style.width     = item ? item.width + 'px' : 0;
+            },
+
+            // HANDLER
+            _resizeHandler: XP.debounce(function () {
+
+                // Handling
+                this._mutationHandler();
+            })
+        });
+    </script>
+
+</dom-module>

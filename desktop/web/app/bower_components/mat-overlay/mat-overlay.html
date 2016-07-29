@@ -1,0 +1,131 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A custom element used to display a generic [Material Design overlay](http://www.google.com/design/spec/components/menus.html).
+
+__Important__: `mat-overlay` needs a `target` to work and align properly. Generally
+the target should be the element that toggles the overlay's view state, such as a
+button, or it can be any other DOM element that acts as an anchor for the overlay's
+positioning (`<body>` in case of dialogs and pickers).
+
+```html
+<mat-icon-button id="myButton" behavior="toggle" icon="navigation:more-vert" target="myOverlay"></mat-icon-button>
+<mat-overlay id="myOverlay" target="myButton">Lorem ipsum...</mat-overlay>
+```
+
+The overlay can be positioned relatively to the `target` using `position`.
+It can also be vertically/horizontally aligned using `auto-center`.
+
+The following snippet will horizontally center the overlay underneath the target.
+
+```html
+<mat-icon-button id="myButton" behavior="toggle" icon="navigation:more-vert" target="myOverlay"></mat-icon-button>
+<mat-overlay id="myOverlay" target="myButton" position="baseline" auto-center>Lorem ipsum...</mat-overlay>
+```
+
+@element mat-overlay
+@description A custom element used to display a generic Material Design overlay
+@keywords material design, material menu, material dropdown, expandjs, web app, custom elements, web-components
+@group containers
+
+@homepage http://expandjs.com/elements/mat-overlay
+@repository https://github.com/ExpandJS/mat-overlay
+
+@behavior mat-paper-behavior /bower_components/mat-paper/mat-paper-behavior.html
+@behavior xp-overlay-behavior /bower_components/xp-overlay/xp-overlay-behavior.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency mat-paper ExpandJS/mat-paper#0.10.0
+@dependency xp-overlay ExpandJS/xp-overlay#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-paper/mat-paper-behavior.html">
+<link rel="import" href="../mat-paper/mat-paper-styles.html">
+<link rel="import" href="../xp-overlay/xp-overlay-behavior.html">
+<link rel="import" href="../xp-overlay/xp-overlay-styles.html">
+
+<dom-module id="mat-overlay">
+
+    <template strip-whitespace>
+
+        <style include="mat-paper-styles"></style>
+        <style include="xp-overlay-styles"></style>
+
+        <style>
+            :host .body {
+                box-sizing: border-box;
+                padding: 8px 0;
+                position: relative;
+            }
+
+            :host-context([cascade]) .body {
+                padding: 16px 0;
+            }
+        </style>
+
+        <div class="wrapper">
+            <div class="body">
+                <content></content>
+            </div>
+        </div>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-overlay',
+
+            // BEHAVIORS
+            behaviors: [
+                Polymer.MatPaperBehavior,
+                Polymer.XPOverlayBehavior
+            ],
+
+            /*********************************************************************/
+
+            // PROPERTIES
+            properties: {
+
+                /**
+                 * The overlay's brightness.
+                 *
+                 * @attribute brightness
+                 * @type string
+                 * @default "overlay"
+                 */
+                brightness: {
+                    reflectToAttribute: true,
+                    type: String,
+                    value: 'overlay'
+                },
+
+                /**
+                 * The overlay's z-axis position.
+                 *
+                 * @attribute z
+                 * @type number
+                 * @default 8
+                 * @notifies
+                 */
+                z: {
+                    notify: true,
+                    reflectToAttribute: true,
+                    type: Number,
+                    value: 8
+                }
+            }
+        });
+    </script>
+
+</dom-module>

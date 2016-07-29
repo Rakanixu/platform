@@ -1,0 +1,203 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<!--
+A Polymer element to ease the use and configuration of WebSockets.
+
+Example:
+
+    <web-socket url="ws://echo.websocket.org"
+                auto json
+                on-open="_onOpen"
+                on-close="_onClose"
+                on-message="_onMessage"
+                on-error="_onError">
+    </web-socket>
+
+The above example shows how to establish a WebSocket connection with
+`<web-socket>` in a [Polymer](https://www.polymer-project.org) app. This simple
+declarative element definition is:
+
+- Establishing a connection to `ws://echo.websocket.org`.
+- Automatically connecting on page load and reconnecting on `url` change.
+- Parsing and stringifying JSON automatically.
+- Automatically reconnecting in the event of an unclean close event (a default
+  behaviour of this library - no configuration required through properties).
+- Setting up event handlers to functions declared externally (`_onOpen`,
+  `_onClose`, etc - defined by a parent element, such as a page).
+
+@element web-socket
+@demo demo/index.html
+-->
+
+<script>
+  Polymer({
+    is: 'web-socket',
+
+    properties: {
+      /**
+       * The URL to which to connect; this should be the URL to which the
+       * WebSocket server will respond.
+       */
+      url: {
+        type: String,
+        observer: '_urlChanged'
+      },
+
+      /**
+       * An array of protocol strings.
+       */
+      protocols: {
+        type: Array,
+        value: []
+      },
+
+      /**
+       * Automatically encode sent messages to JSON and attempt to parse
+       * incoming messages into an Object from JSON.
+       */
+      json: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * Automatically open WebSocket on `attach` or on `url` change.
+       */
+      auto: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * Initial delay before attempting to reopen the connection in the event
+       * that it was not closed cleanly. The interval will decay exponentially.
+       */
+      _reopenInterval: {
+        type: Number,
+        value: 100
+      }
+    },
+
+    attached: function () {
+      if (this.auto) {
+        this.open();
+      }
+    },
+
+    detached: function () {
+      this.close();
+    },
+
+    /**
+     * Instantiates an instance of WebSocket, establishing connection with the
+     * remote host if url is set and sets up event handlers. Replaces existing
+     * instance, if present.
+     */
+    open: function () {
+      if (!this.url) {
+        throw Error('url property is required');
+      }
+
+      this._websocket = new WebSocket(this.url, this.protocols);
+      this._websocket.onopen = this._onOpen.bind(this);
+      this._websocket.onclose = this._onClose.bind(this);
+      this._websocket.onmessage = this._onMessage.bind(this);
+      this._websocket.onerror = this._onError.bind(this);
+    },
+
+    /**
+     * Closes the WebSocket connection or connection attempt, if any. If the
+     * connection is already closed, this method does nothing.
+     */
+    close: function () {
+      if (this._websocket) {
+        this._websocket.close();
+        this._websocket = null;
+      }
+    },
+
+    /**
+     * Transmits data to the server over the WebSocket connection.
+     * @param {String} data A text string to send to the server.
+     */
+    send: function (data) {
+      if (!this._websocket) {
+        return;
+      }
+
+      if (this.json && data !== null && typeof data === 'object') {
+        data = JSON.stringify(data);
+      }
+
+      this._websocket.send(data);
+    },
+
+    /**
+     * Fired when the WebSocket is opened.
+     * @event open
+     */
+    _onOpen: function () {
+      // Reset reopen interval and remove any pending callbacks.
+      this._reopenInterval = this._config._reopenInterval;
+      this.cancelAsync(this._reopenAttempt);
+
+      this.fire('open');
+    },
+
+    /**
+     * Fired when the WebSocket is closed.
+     * @event close
+     * @param {Object} event A CloseEvent event object.
+     */
+    _onClose: function (event) {
+      if (!event.wasClean) {
+        this._reopenAttempt = this.async(this.open, this._reopenInterval);
+        this._reopenInterval *= 2;
+      }
+
+      this.fire('close');
+    },
+
+    /**
+     * Fired when a message is received.
+     * @event message
+     * @param {Object} event Text string message in `event.detail`.
+     */
+    _onMessage: function (event) {
+      if (!this._websocket) {
+        return;
+      }
+
+      var data = event.data;
+
+      if (this.json && typeof data === 'string' || data instanceof String) {
+        try {
+          data = JSON.parse(data);
+        } catch (error) {
+          this.fire('error', error);
+        }
+      }
+
+      this.fire('message', data);
+    },
+
+    /**
+     * Fired when the WebSocket raises an error.
+     * @event error
+     * @param {Object} event Error object in `event.detail`.
+     */
+    _onError: function (event) {
+      this.fire('error', event);
+    },
+
+    /**
+     * Fired when the value of the `url` property changes.
+     */
+    _urlChanged: function (url) {
+      if (this.auto) {
+        this.close();
+        this.open();
+      }
+    }
+  });
+</script>

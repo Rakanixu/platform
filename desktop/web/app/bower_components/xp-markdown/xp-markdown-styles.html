@@ -1,0 +1,163 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A stylesheet used to stylize a markdown element.
+
+@stylesheet xp-markdown-styles
+@description A stylesheet used to stylize a markdown element
+@keywords expandjs, web app, custom elements, web-components
+@group stylesheets
+
+@homepage http://expandjs.com/elements/xp-markdown-styles
+@repository https://github.com/ExpandJS/xp-markdown
+
+@dependency polymer Polymer/polymer#^1.2.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+
+<dom-module id="xp-markdown-styles">
+
+    <template strip-whitespace>
+
+        <style>
+
+            /* PRISM */
+
+            :host ::content code[class*="language-"],
+            :host ::content pre[class*="language-"] {
+                color: black;
+                direction: ltr;
+                font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+                -webkit-hyphens: none;
+                -moz-hyphens: none;
+                hyphens: none;
+                line-height: 1.5;
+                -moz-tab-size: 4;
+                -o-tab-size: 4;
+                tab-size: 4;
+                text-align: left;
+                text-shadow: 0 1px white;
+                white-space: pre;
+                word-break: normal;
+                word-spacing: normal;
+                word-wrap: normal;
+            }
+
+            :host ::content pre[class*="language-"]::-moz-selection,
+            :host ::content pre[class*="language-"]::selection,
+            :host ::content pre[class*="language-"] ::-moz-selection,
+            :host ::content pre[class*="language-"] ::selection,
+            :host ::content code[class*="language-"]::-moz-selection,
+            :host ::content code[class*="language-"]::selection,
+            :host ::content code[class*="language-"] ::-moz-selection,
+            :host ::content code[class*="language-"] ::selection {
+                background: #B3D4FC;
+                text-shadow: none;
+            }
+
+            :host ::content pre[class*="language-"] {
+                background: #F5F2F0;
+                margin: .5em 0;
+                overflow: auto;
+                padding: 1em;
+            }
+
+            :host ::content :not(pre) > code[class*="language-"] {
+                background: #F5F2F0;
+                border-radius: 0.3em;
+                padding: 0.1em;
+            }
+
+            :host ::content .token.cdata,
+            :host ::content .token.comment,
+            :host ::content .token.doctype,
+            :host ::content .token.prolog {
+                color: #708090;
+            }
+
+            :host ::content .token.punctuation {
+                color: #999999;
+            }
+
+            :host ::content .namespace {
+                opacity: 0.7;
+            }
+
+            :host ::content .token.boolean,
+            :host ::content .token.constant,
+            :host ::content .token.deleted,
+            :host ::content .token.number,
+            :host ::content .token.property,
+            :host ::content .token.symbol,
+            :host ::content .token.tag {
+                color: #990055;
+            }
+
+            :host ::content .token.attr-name,
+            :host ::content .token.builtin,
+            :host ::content .token.char,
+            :host ::content .token.inserted,
+            :host ::content .token.selector,
+            :host ::content .token.string {
+                color: #669900;
+            }
+
+            :host ::content .token.entity,
+            :host ::content .token.operator,
+            :host ::content .token.url,
+            :host ::content .language-css .token.string,
+            :host ::content .style .token.string {
+                color: #A67F59;
+                background: hsla(0, 0%, 100%, .5);
+            }
+
+            :host ::content .token.atrule,
+            :host ::content .token.attr-value,
+            :host ::content .token.keyword {
+                color: #0077AA;
+            }
+
+            :host ::content .token.function {
+                color: #DD4A68;
+            }
+
+            :host ::content .token.important,
+            :host ::content .token.regex,
+            :host ::content .token.variable {
+                color: #EE9900;
+            }
+
+            :host ::content .token.bold,
+            :host ::content .token.important {
+                font-weight: bold;
+            }
+
+            :host ::content .token.italic {
+                font-style: italic;
+            }
+
+            :host ::content .token.entity {
+                cursor: help;
+            }
+
+            /* PRINT */
+
+            @media print {
+
+                :host ::content pre[class*="language-"],
+                :host ::content code[class*="language-"] {
+                    text-shadow: none;
+                }
+            }
+        </style>
+
+    </template>
+
+</dom-module>

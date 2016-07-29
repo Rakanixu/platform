@@ -1,0 +1,247 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A behavior used to add tab capabilities on a custom element.
+
+@behavior xp-tabs-behavior
+@description A behavior used to add tab capabilities on a custom element
+@keywords expandjs, web app, custom elements, web-components
+@group behaviors
+
+@homepage http://expandjs.com/elements/xp-tabs-behavior
+@repository https://github.com/ExpandJS/xp-tabs-behavior
+
+@behavior xp-slave-behavior /bower_components/xp-slave-behavior/xp-slave-behavior.html
+@behavior xp-targeter-behavior /bower_components/xp-targeter-behavior/xp-targeter-behavior.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency xp-observer ExpandJS/xp-observer#0.10.0
+@dependency xp-slave-behavior ExpandJS/xp-slave-behavior#0.10.0
+@dependency xp-targeter-behavior ExpandJS/xp-targeter-behavior#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-observer/xp-observer.html">
+<link rel="import" href="../xp-slave-behavior/xp-slave-behavior.html">
+<link rel="import" href="../xp-targeter-behavior/xp-targeter-behavior.html">
+
+<script>
+    Polymer.XPTabBehaviorImp = {
+
+        /**
+         * Fired when the tab is closing.
+         *
+         * @event xp-tab-close
+         * @param {Element} firer
+         * @param {boolean} isActive
+         * @param {boolean} isModified
+         * @bubbles
+         */
+
+        /*********************************************************************/
+
+        /**
+         * Compares the tab's data with its memento.
+         *
+         * @method compare
+         * @returns {Element}
+         */
+        compare: function () {
+            var self = this;
+            self._setModified(!!self.dataObserver && !!self.mementoObserver && !XP.isEquivalent(self.data, self.memento));
+            return self;
+        },
+
+        /*********************************************************************/
+
+        // PROPERTIES
+        properties: {
+
+            /**
+             * If set to true, the tab can be closed.
+             *
+             * @attribute closable
+             * @type boolean
+             * @default false
+             * @notifies
+             */
+            closable: {
+                notify: true,
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * The `tagName` of the element to inject into the tab's target.
+             *
+             * @attribute content
+             * @type string
+             * @notifies
+             */
+            content: {
+                notify: true,
+                observer: '_contentObserver',
+                reflectToAttribute: true,
+                type: String
+            },
+
+            /**
+             * The tab's data.
+             *
+             * @attribute data
+             * @type *
+             */
+            data: {
+                observer: '_dataObserver'
+            },
+
+            /**
+             * The tab's label.
+             *
+             * @attribute label
+             * @type string
+             */
+            label: {
+                reflectToAttribute: true,
+                type: String
+            },
+
+            /**
+             * The tab's memento, used to know when the tab's data changes.
+             *
+             * @attribute memento
+             * @type *
+             * @notifies
+             */
+            memento: {
+                notify: true,
+                observer: '_mementoObserver'
+            },
+
+            /**
+             * If set to true, the tab's data and its memento are not equivalent.
+             *
+             * @attribute modified
+             * @type boolean
+             * @default false
+             * @notifies
+             * @readonly
+             */
+            modified: {
+                notify: true,
+                readOnly: true,
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * The master selector.
+             *
+             * @attribute selector
+             * @type Element
+             * @notifies
+             * @readonly
+             */
+            selector: {
+                notify: true,
+                readOnly: true
+            }
+        },
+
+        /*********************************************************************/
+
+        // OBSERVER
+        _contentObserver: function () {
+
+            // Vars
+            var self   = this,
+                target = self.findTarget();
+
+            // Setting
+            if (target) { target.content = self.content; }
+        },
+
+        // OBSERVER
+        _dataObserver: function (post, pre) {
+
+            // Vars
+            var self   = this,
+                target = self.findTarget();
+
+            // Setting
+            if (target && target.data === pre) { target.data = self.data; }
+
+            // Disconnecting
+            if (self.dataObserver) { self.dataObserver.disconnect(); }
+
+            // Observing
+            self.dataObserver = XP.isObject(self.data) ? new XPObserver(self.data, self.compare.bind(self), true) : null;
+
+            // Comparing
+            self.compare();
+        },
+
+        // OBSERVER
+        _mementoObserver: function () {
+
+            // Vars
+            var self = this;
+
+            // Disconnecting
+            if (self.mementoObserver) { self.mementoObserver.disconnect(); }
+
+            // Observing
+            self.mementoObserver = XP.isObject(self.memento) ? new XPObserver(self.memento, self.compare.bind(self), true) : null;
+
+            // Comparing
+            self.compare();
+        },
+
+        /*********************************************************************/
+
+        // LISTENER
+        created: function () {
+
+            // Classifying
+            this.classList.add('tab');
+        },
+
+        // LISTENER
+        ready: function () {
+
+            // Mapping
+            this.mastersMap.selector = '.tabs';
+        },
+
+        /*********************************************************************/
+
+        // HANDLER
+        _closeHandler: function (event) {
+
+            // Vars
+            var self = this;
+
+            // Stopping
+            event.stopPropagation();
+
+            // Firing
+            if (!event.detail.target) { self.fire('xp-tab-close', {firer: self, isActive: self.active, isModified: self.modified}); }
+        }
+    };
+
+    Polymer.XPTabBehavior = [
+        Polymer.XPSlaveBehavior,
+        Polymer.XPTargeterBehavior,
+        Polymer.XPTabBehaviorImp
+    ];
+</script>

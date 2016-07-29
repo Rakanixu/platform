@@ -1,0 +1,42 @@
+<link rel="import" href="../mat-demo/mat-demo.html">
+<link rel="import" href="mat-spinner.html">
+
+<dom-module id="mat-spinner-demo">
+
+    <template>
+
+        <style>
+            :host {
+                display: block;
+            }
+        </style>
+
+        <mat-demo name="mat-spinner" type="element" url="http://expandjs.com/elements/mat-spinner">
+
+            <mat-demo-panel label="Default">
+                <script type="text/html">
+                    <mat-spinner showed></mat-spinner>
+                </script>
+                <mat-spinner showed></mat-spinner>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Colored">
+                <script type="text/html">
+                    <mat-spinner color="red" showed></mat-spinner>
+                </script>
+                <mat-spinner color="red" showed></mat-spinner>
+            </mat-demo-panel>
+
+        </mat-demo>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-spinner-demo'
+        });
+    </script>
+
+</dom-module>

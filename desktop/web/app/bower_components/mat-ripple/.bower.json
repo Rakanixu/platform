@@ -1,0 +1,42 @@
+{
+  "name": "mat-ripple",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "mat-ripple.html",
+  "description": "A custom element used to display a ripple effect from the touch point",
+  "homepage": "http://expandjs.com/elements/mat-ripple",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "material design",
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "mat-pressed-behavior": "ExpandJS/mat-pressed-behavior#0.10.0",
+    "xp-anchor-behavior": "ExpandJS/xp-anchor-behavior#0.10.0",
+    "xp-overlay": "ExpandJS/xp-overlay#0.10.0",
+    "polymer": "Polymer/polymer#^1.2.0"
+  },
+  "devDependencies": {
+    "mat-demo": "ExpandJS/mat-demo#0.10.0"
+  },
+  "_release": "0.10.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.10.0",
+    "commit": "efe1d0544bce5d973ec08f5dbcff644bf0155717"
+  },
+  "_source": "git://github.com/ExpandJS/mat-ripple.git",
+  "_target": "0.10.0",
+  "_originalSource": "ExpandJS/mat-ripple"
+}

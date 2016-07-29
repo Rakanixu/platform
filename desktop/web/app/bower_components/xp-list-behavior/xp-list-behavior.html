@@ -1,0 +1,143 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A behavior used to add list capabilities on a custom element.
+
+@behavior xp-list-behavior
+@description A behavior used to add list capabilities on a custom element
+@keywords expandjs, web app, custom elements, web-components
+@group behaviors
+@homepage http://expandjs.com/elements/xp-list-behavior
+@repository https://github.com/ExpandJS/xp-list
+
+@behavior xp-master-behavior /bower_components/xp-master-behavior/xp-master-behavior.html
+@behavior xp-selector-multi-behavior /bower_components/xp-selector/xp-selector-multi-behavior.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency xp-master-behavior ExpandJS/xp-master-behavior#0.10.0
+@dependency xp-selector ExpandJS/xp-selector#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-master-behavior/xp-master-behavior.html">
+<link rel="import" href="../xp-selector/xp-selector-multi-behavior.html">
+
+<script>
+    Polymer.XPListBehaviorImp = {
+
+        /**
+         * Fired when the anchor is clicked.
+         *
+         * @event xp-redirect
+         * @param {Element} firer
+         * @param {Element} anchor
+         * @param {string} href
+         * @bubbles
+         * @cancelable
+         */
+
+        /*********************************************************************/
+
+        // PROPERTIES
+        properties: {
+
+            /**
+             * If set to true, when a sublist expands the siblings wont collapse.
+             *
+             * @attribute auto-collapse-disabled
+             * @type boolean
+             * @default false
+             */
+            autoCollapseDisabled: {
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * If set to true, the items will be deep searched.
+             *
+             * @attribute find-deep
+             * @type boolean
+             * @default true
+             * @readonly
+             */
+            findDeep: {
+                readOnly: true,
+                type: Boolean,
+                value: true
+            },
+
+            /**
+             * The selector used to recognize items.
+             *
+             * @attribute item-selector
+             * @type string
+             * @default ".item"
+             */
+            itemSelector: {
+                type: String,
+                value: '.item'
+            },
+
+            /**
+             * The slave sublists.
+             *
+             * @attribute sublists
+             * @type Array
+             * @notifies
+             * @readonly
+             */
+            sublists: {
+                notify: true,
+                readOnly: true,
+                value: function () { return []; }
+            }
+        },
+
+        /*********************************************************************/
+
+        // OBSERVER
+        _selectionObserver: function () {
+
+            // Vars
+            var self      = this,
+                superlist = self.selection && !self.multi && XP.findParentElement(self.selection, '.sublist[collapsible]', self);
+
+            // Super
+            Polymer.XPSelectorBehaviorImp._selectionObserver.apply(self, arguments);
+
+            // Expanding
+            if (superlist) { superlist.expand(); }
+        },
+
+        /*********************************************************************/
+
+        // LISTENER
+        created: function () {
+
+            // Classifying
+            this.classList.add('list');
+        },
+
+        // LISTENER
+        ready: function () {
+
+            // Mapping
+            this.slavesMap.sublists = '.sublist';
+        }
+    };
+
+    Polymer.XPListBehavior = [
+        Polymer.XPMasterBehavior,
+        Polymer.XPSelectorMultiBehavior,
+        Polymer.XPListBehaviorImp
+    ];
+</script>

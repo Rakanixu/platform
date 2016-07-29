@@ -1,0 +1,1 @@
+!function(){"use strict";var r=require("../assert/assertArgument"),e=require("../tester/isString");module.exports=function(t){return r(e(t,!0),1,"string"),"Bearer "+t}}();

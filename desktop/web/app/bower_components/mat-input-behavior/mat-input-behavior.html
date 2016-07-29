@@ -1,0 +1,215 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A behavior used to add [Material Design input](http://www.google.com/design/spec/components/text-fields.html#text-fields-single-line-text-field) capabilities on a custom element.
+
+@behavior mat-input-behavior
+@description A behavior used to add input capabilities on a custom element
+@keywords material design, material input, expandjs, web app, custom elements, web-components
+@group behaviors
+
+@homepage http://expandjs.com/elements/mat-input-behavior
+@repository https://github.com/ExpandJS/mat-input-behavior
+
+@behavior xp-input-behavior /bower_components/xp-input-behavior/xp-input-behavior.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency xp-input-behavior ExpandJS/xp-input-behavior#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-input-behavior/xp-input-behavior.html">
+
+<script>
+    Polymer.MatInputBehaviorImp = {
+
+        /**
+         * Used internally with auto growing inputs to keep the mirror updated.
+         *
+         * @method _mirror
+         * @param {string} value
+         * @returns {Element}
+         * @private
+         */
+        _mirror: function (value) {
+            var self = this;
+            if (self.mirror) { self.mirror.innerHTML = XP.escape(value).replace(/\n/g, '<br/>') + '&nbsp;'; }
+            return self;
+        },
+
+        /*********************************************************************/
+
+        // OBSERVERS
+        observers: [
+            '_maxRowsObserver(maxRows, mirror)',
+            '_minRowsObserver(minRows, mirror)'
+        ],
+
+        // PROPERTIES
+        properties: {
+
+            /**
+             * The input's holder.
+             *
+             * @attribute holder
+             * @type Element
+             * @notifies
+             * @readonly
+             */
+            holder: {
+                notify: true,
+                readOnly: true
+            },
+
+            /**
+             * The input's mirror.
+             *
+             * @attribute mirror
+             * @type Element
+             * @notifies
+             * @readonly
+             */
+            mirror: {
+                notify: true,
+                readOnly: true
+            },
+
+            /**
+             * If set to true, the input is mirrored.
+             *
+             * @attribute mirrored
+             * @type boolean
+             * @default false
+             * @notifies
+             * @readonly
+             */
+            mirrored: {
+                computed: '_computeMirrored(mirror)',
+                notify: true,
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            }
+        },
+
+        /*********************************************************************/
+
+        // COMPUTER
+        _computeCounter: function (chars, maxLength) {
+            return (maxLength && (chars + ' / ' + maxLength)) || '';
+        },
+
+        // COMPUTER
+        _computeDescription: function (description, error, invalid, invalidMessage) {
+            return (invalid && (error || invalidMessage)) || description || '';
+        },
+
+        // COMPUTER
+        _computeFloated: function (empty, floatingLabel, focused, fullWidth, label) {
+            return !!label && !!floatingLabel && !fullWidth && (!!focused || !empty);
+        },
+
+        // COMPUTER
+        _computeLabel: function (floated, inputPrefix, label) {
+            return ((!floated && inputPrefix) || '') + (label || '');
+        },
+
+        // COMPUTER
+        _computeLabelOpacity: function (floated) {
+            return floated ? 'secondary' : 'hint';
+        },
+
+        // COMPUTER
+        _computeMirrored: function (mirror) {
+            return !!mirror;
+        },
+
+        /*********************************************************************/
+
+        // OBSERVER
+        _inputObserver: function (post) {
+
+            // Vars
+            var self = this;
+
+            // Super
+            Polymer.XPInputBehaviorImp._inputObserver.apply(self, arguments);
+
+            // Listening
+            if (self.mirror) { self.listen(post, 'input', '_mirrorHandler'); }
+        },
+
+        // OBSERVER
+        _maxRowsObserver: function () {
+
+            // Vars
+            var self = this,
+                rows = XP.toInt(self.maxRows, true);
+
+            // Styling
+            self.mirror.style.maxHeight = rows ? (rows * 24) + 'px' : '';
+        },
+
+        // OBSERVER
+        _minRowsObserver: function () {
+
+            // Vars
+            var self = this,
+                rows = XP.toInt(self.minRows, true) || 1;
+
+            // Styling
+            self.mirror.style.minHeight = rows ? (rows * 24) + 'px' : '';
+        },
+
+        // OBSERVER
+        _valueObserver: function (post) {
+
+            // Vars
+            var self = this;
+
+            // Super
+            Polymer.XPInputBehaviorImp._valueObserver.apply(self, arguments);
+
+            // Mirroring
+            self._mirror(post);
+        },
+
+        /*********************************************************************/
+
+        // LISTENER
+        ready: function () {
+
+            // Vars
+            var self   = this,
+                root   = Polymer.dom(self.root),
+                holder = root.querySelector('.holder'),
+                mirror = root.querySelector('.mirror');
+
+            // Setting
+            if (holder) { self._setHolder(holder); }
+            if (mirror) { self._setMirror(mirror); }
+        },
+
+        /*********************************************************************/
+
+        // HANDLER
+        _mirrorHandler: function () {
+
+            // Mirroring
+            this._mirror(this.input.value);
+        }
+    };
+
+    Polymer.MatInputBehavior = [
+        Polymer.XPInputBehavior,
+        Polymer.MatInputBehaviorImp
+    ];
+</script>

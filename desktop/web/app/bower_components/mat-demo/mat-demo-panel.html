@@ -1,0 +1,288 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A custom element used to display a Material Design demo panel.
+
+It must be used in conjunction with
+[mat-demo](http://expandjs.com/elements/mat-demo).
+
+```html
+<mat-demo name="my-element" type="Element" url="http://example.com/elements/my-element">
+
+    <mat-demo-panel label="Default">
+        <script type="text/html">
+            <my-element></my-element>
+        </script>
+        <my-element></my-element>
+    </mat-demo-panel>
+
+    <mat-demo-panel label="Bizarre">
+        <script type="text/html">
+            <my-element mode="bizarre"></my-element>
+        </script>
+        <my-element mode="bizarre"></my-element>
+    </mat-demo-panel>
+
+</mat-demo>
+```
+
+@element mat-demo-panel
+@description A custom element used to display a Material Design demo panel
+@keywords material design, material demo, expandjs, web app, custom elements, web-components
+@group containers
+
+@homepage http://expandjs.com/elements/mat-demo-panel
+@repository https://github.com/ExpandJS/mat-demo
+
+@behavior xp-collapse-behavior /bower_components/xp-collapse-behavior/xp-collapse-behavior.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency mat-icon-button ExpandJS/mat-icon-button#0.10.0
+@dependency mat-icons ExpandJS/mat-icons#0.10.0
+@dependency mat-paper ExpandJS/mat-paper#0.10.0
+@dependency mat-toolbar ExpandJS/mat-toolbar#0.10.0
+@dependency mat-typography ExpandJS/mat-typography#0.10.0
+@dependency xp-collapse-behavior ExpandJS/xp-collapse-behavior#0.10.0
+@dependency xp-markdown ExpandJS/xp-markdown#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-icon-button/mat-icon-button.html">
+<link rel="import" href="../mat-icons/mat-icons.html">
+<link rel="import" href="../mat-paper/mat-paper-behavior.html">
+<link rel="import" href="../mat-paper/mat-paper-styles.html">
+<link rel="import" href="../mat-toolbar/mat-toolbar.html">
+<link rel="import" href="../mat-typography/mat-typography.html">
+<link rel="import" href="../xp-collapse-behavior/xp-collapse-behavior.html">
+<link rel="import" href="../xp-collapse-behavior/xp-collapse-styles.html">
+<link rel="import" href="../xp-markdown/xp-markdown.html">
+
+<dom-module id="mat-demo-panel">
+
+    <template strip-whitespace>
+
+        <style include="mat-paper-styles"></style>
+        <style include="xp-collapse-styles"></style>
+
+        <style>
+            :host .label {
+                @apply(--mat-font-subhead);
+            }
+
+            :host .collapsible {
+                margin: 0;
+            }
+
+            :host .body {
+                position: relative;
+            }
+
+            :host .markdown pre {
+                margin: 0;
+            }
+
+            :host(:not([padding-disabled])) .body {
+                @apply(--mat-padding-mobile);
+            }
+
+            /* DESKTOP */
+
+            @media (min-width: 960px) {
+
+                :host(:not([padding-disabled])) .body {
+                    @apply(--mat-padding-desktop);
+                }
+            }
+        </style>
+
+        <mat-toolbar class="header" background="[[toolbarBackground]]">
+            <h3 class="label">[[label]]</h3>
+            <mat-icon-button class="code button" icon="mat:code" on-xp-activate="toggle"></mat-icon-button>
+            <mat-icon-button class="theme button" active="[[active]]" active-icon="mat:brightness-3" icon="mat:brightness-5" on-xp-activate="switch"></mat-icon-button>
+        </mat-toolbar>
+
+        <div class="wrapper">
+            <xp-markdown class="collapsible" code="[[code]]"></xp-markdown>
+            <div class="body"><content></content></div>
+        </div>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-demo-panel',
+
+            // BEHAVIORS
+            behaviors: [
+                Polymer.MatPaperBehavior,
+                Polymer.XPCollapseBehavior
+            ],
+
+            /*********************************************************************/
+
+            /**
+             * Switches the theme.
+             *
+             * @method switch
+             * @return {Element}
+             */
+            switch: function () {
+                var self = this;
+                self.theme = self.foreground;
+                return self;
+            },
+
+            /*********************************************************************/
+
+            // OBSERVERS
+            observers: [
+                '_themeChanged(theme)'
+            ],
+
+            // PROPERTIES
+            properties: {
+
+                /**
+                 * If set to true, the collapse animation will be a slide instead of a compress.
+                 *
+                 * @attribute backward
+                 * @type boolean
+                 * @default true
+                 */
+                backward: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: true
+                },
+
+                /**
+                 * The demo's code.
+                 *
+                 * @attribute code
+                 * @type string
+                 * @notifies
+                 * @readonly
+                 */
+                code: {
+                    notify: true,
+                    readOnly: true,
+                    type: String
+                },
+
+                /**
+                 * If set to true, the element is collapsed.
+                 *
+                 * @attribute collapsed
+                 * @type boolean
+                 * @default true
+                 * @notifies
+                 */
+                collapsed: {
+                    notify: true,
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: true
+                },
+
+                /**
+                 * The demo's label.
+                 *
+                 * @attribute label
+                 * @type string
+                 */
+                label: {
+                    reflectToAttribute: true,
+                    type: String
+                },
+
+                /**
+                 * If set to true, the material spacing rules are disabled.
+                 *
+                 * @attribute padding-disabled
+                 * @type boolean
+                 * @default false
+                 */
+                paddingDisabled: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The demo's toolbar's background.
+                 *
+                 * @attribute toolbar-background
+                 * @type string
+                 * @default "indigo"
+                 */
+                toolbarBackground: {
+                    reflectToAttribute: true,
+                    type: String,
+                    value: 'indigo'
+                },
+
+                /**
+                 * The demo's z-axis position.
+                 *
+                 * @attribute z
+                 * @type number
+                 * @default 2
+                 * @notifies
+                 */
+                z: {
+                    notify: true,
+                    reflectToAttribute: true,
+                    type: Number,
+                    value: 2
+                }
+            },
+
+            /*********************************************************************/
+
+            // OBSERVER
+            _themeChanged: function () {
+
+                // Setting
+                this.active = this.theme === 'dark';
+            },
+
+            /*********************************************************************/
+
+            // LISTENER
+            created: function () {
+
+                // Classifying
+                this.classList.add('demo-panel');
+            },
+
+            // LISTENER
+            ready: function () {
+
+                // Vars
+                var self   = this,
+                    script = XP.findElement(Polymer.dom(self), 'script[type="text/html"]'),
+                    lines  = script ? script.innerHTML.split('\n') : [],
+                    first  = lines.shift(),
+                    last   = lines.pop(),
+                    spaces = XP.match(lines[0] || '', /^[ ]+/)[0] || '';
+
+                // Cleaning
+                lines.forEach(function (line, i) { lines[i] = line.replace(spaces, ''); });
+
+                // Setting
+                self._setCode('```html\n' + lines.join('\n') + '\n```');
+            }
+        });
+    </script>
+
+</dom-module>

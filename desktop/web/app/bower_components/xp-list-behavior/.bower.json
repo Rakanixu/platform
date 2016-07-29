@@ -1,0 +1,39 @@
+{
+  "name": "xp-list-behavior",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "xp-list-behavior.html",
+  "description": "A behavior used to add list capabilities on a custom element",
+  "homepage": "http://expandjs.com/elements/xp-list-behavior",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "xp-collapse-behavior": "ExpandJS/xp-collapse-behavior#0.10.0",
+    "xp-master-behavior": "ExpandJS/xp-master-behavior#0.10.0",
+    "xp-selector": "ExpandJS/xp-selector#0.10.0",
+    "xp-slave-behavior": "ExpandJS/xp-slave-behavior#0.10.0",
+    "polymer": "Polymer/polymer#^1.2.0"
+  },
+  "_release": "0.10.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.10.0",
+    "commit": "db252a7f5de10d25b0bac1d0cc8bfdc2d495eb6d"
+  },
+  "_source": "git://github.com/ExpandJS/xp-list-behavior.git",
+  "_target": "0.10.0",
+  "_originalSource": "ExpandJS/xp-list-behavior"
+}

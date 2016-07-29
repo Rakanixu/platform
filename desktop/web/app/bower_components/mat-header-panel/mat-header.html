@@ -1,0 +1,352 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A custom element used to display a [Material Design app bar](http://www.google.com/design/spec/layout/structure.html#structure-app-bar).
+
+It must be used in conjunction with
+[mat-header-panel](http://expandjs.com/elements/mat-header-panel).
+
+```html
+<mat-header-panel>
+    <mat-header>...</mat-header>
+    ...
+</mat-header-panel>
+```
+
+If used inside a [mat-drawer-panel](http://expandjs.com/elements/mat-drawer-panel), and a drawer is also present,
+the header will automatically create a *burger icon*, that will act as a toggle mechanism for the drawer.
+
+```html
+<mat-drawer-panel>
+
+    <mat-drawer>...</mat-drawer>
+
+    <mat-header-panel>
+        <mat-header>...</mat-header>
+        ...
+    </mat-header-panel>
+
+</mat-drawer-panel>
+```
+
+The header's contents can also be customized by adding any additional tags into the extended section of the header.
+
+```html
+<mat-header background="red">
+    <h1>Main title</h1>
+    <h2 class="extended">Secondary title</h2>
+</mat-header>
+```
+
+@element mat-header
+@description A custom element used to display a Material Design app bar
+@keywords material design, expandjs, web app, custom elements, web-components
+@group containers
+@hot
+
+@homepage http://expandjs.com/elements/mat-header
+@repository https://github.com/ExpandJS/mat-header
+@demo http://expandjs.com/demo/mat-header-panel
+
+@behavior mat-paper-behavior /bower_components/mat-paper/mat-paper-behavior.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency iron-flex-layout PolymerElements/iron-flex-layout#^1.0.0
+@dependency mat-icon-button ExpandJS/mat-icon-button#0.10.0
+@dependency mat-icons ExpandJS/mat-icons#0.10.0
+@dependency mat-paper ExpandJS/mat-paper#0.10.0
+@dependency mat-typography ExpandJS/mat-typography#0.10.0
+
+@devDependency mat-content ExpandJS/mat-content#0.10.0
+@devDependency mat-demo ExpandJS/mat-demo#0.10.0
+@devDependency mat-menu ExpandJS/mat-menu#0.10.0
+@devDependency mat-option ExpandJS/mat-option#0.10.0
+@devDependency mat-toolbar ExpandJS/mat-toolbar#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../mat-icon-button/mat-icon-button.html">
+<link rel="import" href="../mat-icons/mat-icons.html">
+<link rel="import" href="../mat-paper/mat-paper-behavior.html">
+<link rel="import" href="../mat-paper/mat-paper-styles.html">
+<link rel="import" href="../mat-typography/mat-typography.html">
+
+<dom-module id="mat-header">
+
+    <template strip-whitespace>
+
+        <style include="mat-paper-styles"></style>
+
+        <style>
+            :host {
+                @apply(--mat-font-headline);
+                line-height: 32px !important; /* override */
+                min-height: 56px;
+                padding: 0 4px 0 16px;
+            }
+
+            :host .wrapper {
+                @apply(--layout-vertical);
+                margin: 0 -4px 0 -16px;
+                position: relative;
+                width: calc(100% + 20px);
+            }
+
+            :host .main {
+                @apply(--layout-horizontal);
+                @apply(--layout-center);
+                height: 56px;
+                overflow: hidden;
+                padding: 0 4px 0 16px;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            :host .main ::content > .label {
+                @apply(--layout-flex);
+                overflow: hidden;
+                text-overflow: ellipsis !important; /* override */
+                white-space: nowrap !important; /* override */
+            }
+
+            :host .button {
+                height: 24px;
+                margin: 4px 24px 4px -8px;
+                padding: 8px;
+                width: 24px;
+            }
+
+            :host(:not([nav])) .button {
+                display: none !important;
+            }
+
+            :host .extended {
+                padding: 0 16px;
+            }
+
+            :host([inset]) .extended {
+                padding-left: 72px;
+            }
+
+            :host .extended ::content .tabs {
+                margin: 0 -16px;
+            }
+
+            :host([inset]) .extended ::content .tabs {
+                margin-left: -72px;
+            }
+
+            /* DESKTOP */
+
+            @media (min-width: 960px) {
+
+                :host {
+                    min-height: 64px;
+                    padding: 0 12px 0 24px;
+                }
+
+                :host .wrapper {
+                    margin: 0 -12px 0 -24px;
+                    width: calc(100% + 36px);
+                }
+
+                :host .main {
+                    height: 64px;
+                    padding: 0 12px 0 24px;
+                }
+
+                :host .extended {
+                    padding: 0 24px;
+                }
+
+                :host([inset]) .extended {
+                    padding-left: 80px;
+                }
+
+                :host .extended ::content .tabs {
+                    margin: 0 -24px;
+                }
+
+                :host([inset]) .extended ::content .tabs {
+                    margin-left: -80px;
+                }
+            }
+        </style>
+
+        <div class="wrapper">
+            <div class="main">
+                <mat-icon-button class="nav button" behavior="toggle" icon="mat:menu" target="[[drawer]]"></mat-icon-button>
+                <content select=":not(.extended)"></content>
+            </div>
+            <div class="extended">
+                <content select=".extended"></content>
+            </div>
+        </div>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-header',
+
+            // BEHAVIORS
+            behaviors: [
+                Polymer.MatPaperBehavior
+            ],
+
+            /*********************************************************************/
+
+            // PROPERTIES
+            properties: {
+
+                /**
+                 * The header's brightness.
+                 *
+                 * @attribute brightness
+                 * @type string
+                 * @default "toolbar"
+                 */
+                brightness: {
+                    reflectToAttribute: true,
+                    type: String,
+                    value: 'toolbar'
+                },
+
+                /**
+                 * The navigation drawer.
+                 *
+                 * @attribute drawer
+                 * @type Element
+                 * @notifies
+                 * @readonly
+                 */
+                drawer: {
+                    notify: true,
+                    observer: '_drawerChanged',
+                    readOnly: true
+                },
+
+                /**
+                 * If set to true, the extended is indented.
+                 *
+                 * @attribute inset
+                 * @type boolean
+                 * @default false
+                 */
+                inset: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * If set to true, the nav is showed.
+                 *
+                 * @attribute nav
+                 * @type boolean
+                 * @default false
+                 * @notifies
+                 * @readonly
+                 */
+                nav: {
+                    notify: true,
+                    readOnly: true,
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The header's panel's scroll amount.
+                 *
+                 * @attribute scrolled
+                 * @type number
+                 * @default 0
+                 * @readonly
+                 */
+                scrolled: {
+                    readOnly: true,
+                    type: Number,
+                    value: 0
+                },
+
+                /**
+                 * The header's top distance.
+                 *
+                 * @attribute top
+                 * @type number
+                 * @default 0
+                 * @readonly
+                 */
+                top: {
+                    readOnly: true,
+                    type: Number,
+                    value: 0
+                }
+            },
+
+            /*********************************************************************/
+
+            // OBSERVER
+            _drawerChanged: function () {
+
+                // Vars
+                var self   = this,
+                    empty  = (self.drawer && self.drawer.empty) || false,
+                    narrow = (self.drawer && self.drawer.narrow) || false;
+
+                // Disconnecting
+                if (self.drawerObserver) { self.drawerObserver.disconnect(); }
+
+                // Setting
+                self._setNav(narrow && !empty);
+
+                // Observing
+                if (self.drawer) { self.drawerObserver = XP.onMutation(self.drawer, self._drawerChanged.bind(self), {attributes: true, attributeFilter: ['empty', 'narrow']}); }
+            },
+
+            /*********************************************************************/
+
+            // LISTENER
+            attached: function () {
+
+                // Vars
+                var self   = this,
+                    drawer = XP.findParentElement(Polymer.dom(self), '.drawer'),
+                    panel  = XP.findParentElement(Polymer.dom(self), '.drawer-panel');
+
+                // Setting
+                self._setDrawer((!drawer && panel && panel.drawer) || null);
+
+                // Delaying
+                if (!self.drawwer) { XP.delay(function () { self._setDrawer((!drawer && panel && panel.drawer) || null); }, 2, true); }
+            },
+
+            // LISTENER
+            created: function () {
+
+                // Classifying
+                this.classList.add('header');
+            },
+
+            // LISTENER
+            detached: function () {
+
+                // Setting
+                this._setDrawer(null);
+            }
+        });
+    </script>
+
+</dom-module>

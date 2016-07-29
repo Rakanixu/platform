@@ -1,0 +1,136 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A custom element used to display a [Material Design snackbar](http://www.google.com/design/spec/components/snackbars-toasts.html).
+
+It should be used to send feedback to the user about a specific operation.
+
+```html
+<mat-snackbar label="Your draft has been discarded."></mat-snackbar>
+```
+
+The snackbar also provides an `action` button.
+
+```html
+<mat-snackbar label="Connection timed out. Showing limited messages." action-label="Retry"></mat-snackbar>
+```
+
+---
+
+## Styling
+
+The actions's color can be changed accordingly to the
+[Material Design palette](http://www.google.com/design/spec/style/color.html#color-color-palette).
+
+```html
+<mat-snackbar action-color="yellow" action-label="Undo" label="Archived"></mat-snackbar>
+```
+
+@element mat-snackbar
+@description A custom element used to display a Material Design snackbar
+@keywords material design, expandjs, web app, custom elements, web-components
+@group accessibility
+
+@homepage http://expandjs.com/elements/mat-snackbar
+@repository https://github.com/ExpandJS/mat-snackbar
+@demo http://expandjs.com/demo/mat-snackbar
+
+@behavior xp-snackbar-behavior /bower_components/xp-snackbar-behavior/xp-snackbar-behavior.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency iron-flex-layout PolymerElements/iron-flex-layout#^1.0.0
+@dependency mat-button ExpandJS/mat-button#0.10.0
+@dependency mat-typography ExpandJS/mat-typography#0.10.0
+@dependency xp-snackbar-behavior ExpandJS/xp-snackbar-behavior#0.10.0
+
+@devDependency mat-demo ExpandJS/mat-demo#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../mat-button/mat-button.html">
+<link rel="import" href="../mat-typography/mat-typography.html">
+<link rel="import" href="../xp-snackbar-behavior/xp-snackbar-behavior.html">
+<link rel="import" href="../xp-snackbar-behavior/xp-snackbar-styles.html">
+
+<dom-module id="mat-snackbar">
+
+    <template strip-whitespace>
+
+        <style include="xp-snackbar-styles"></style>
+
+        <style>
+            :host {
+                @apply(--mat-font-body);
+                background: hsla(0, 0%, 20%, 1);
+                bottom: 0;
+                color: hsla(0, 0%, 95%, 1);
+                left: 0;
+                max-height: 80px;
+                min-height: 48px;
+                padding: 14px 24px;
+                right: 0;
+                transform: translate(0, 100%);
+            }
+
+            :host .label {
+                @apply(--layout-flex);
+            }
+
+            :host .button {
+                color: var(--mat-accent-color, #FFC107);
+                margin: -8px -12px;
+            }
+
+            /* DESKTOP */
+
+            @media (min-width: 960px) {
+
+                :host {
+                    border-radius: 2px 2px 0 0;
+                    left: 50%;
+                    max-width: 568px;
+                    min-width: 288px;
+                    right: auto;
+                    transform: translate(-50%, 112px);
+                }
+
+                :host([showed]) {
+                    transform: translate(-50%, 0px);
+                }
+
+                :host .button {
+                    margin: -8px -12px -8px 36px;
+                }
+            }
+        </style>
+
+        <div class="wrapper">
+            <div class="label">[[label]]</div>
+            <mat-button class="button" data="[[data]]" label="[[button]]" target="[[target]]" on-xp-activate="_actionHandler"></mat-button>
+        </div>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-snackbar',
+
+            // BEHAVIORS
+            behaviors: [
+                Polymer.XPSnackbarBehavior
+            ]
+        });
+    </script>
+
+</dom-module>

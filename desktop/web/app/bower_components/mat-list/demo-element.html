@@ -1,0 +1,100 @@
+<link rel="import" href="../mat-demo/mat-demo.html">
+<link rel="import" href="../mat-icons/mat-icons.html">
+<link rel="import" href="../mat-item/mat-item.html">
+<link rel="import" href="mat-list.html">
+<link rel="import" href="mat-sublist.html">
+
+<dom-module id="mat-list-demo">
+
+    <template>
+
+        <style>
+            :host {
+                display: block;
+            }
+        </style>
+
+        <mat-demo name="mat-list" type="element" url="http://expandjs.com/elements/mat-list">
+
+            <mat-demo-panel label="Default" padding-disabled>
+                <script type="text/html">
+                    <mat-list label="Subheader" selectable>
+                        <mat-item label="Item 1"></mat-item>
+                        <mat-item label="Item 2"></mat-item>
+                        <mat-item label="Item 3"></mat-item>
+                    </mat-list>
+                </script>
+                <mat-list label="Subheader" selectable>
+                    <mat-item label="Item 1"></mat-item>
+                    <mat-item label="Item 2"></mat-item>
+                    <mat-item label="Item 3"></mat-item>
+                </mat-list>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Collpsible" padding-disabled>
+                <script type="text/html">
+                    <mat-list style="height: 272px" selectable>
+                        <mat-sublist label="Favorites" icon="mat:stars" collapsible>
+                            <mat-item label="Alvin Kelley"></mat-item>
+                            <mat-item label="Lois Roy"></mat-item>
+                            <mat-item label="Oscar Vaughn"></mat-item>
+                        </mat-sublist>
+                        <mat-sublist label="Contacts" icon="mat:people" collapsible collapsed>
+                            <mat-item label="Stanley Stokes"></mat-item>
+                            <mat-item label="Alvin Kelley"></mat-item>
+                            <mat-item label="Harold Gardner"></mat-item>
+                        </mat-sublist>
+                    </mat-list>
+                </script>
+                <mat-list style="height: 272px" selectable>
+                    <mat-sublist label="Favorites" icon="mat:stars" collapsible>
+                        <mat-item label="Alvin Kelley"></mat-item>
+                        <mat-item label="Lois Roy"></mat-item>
+                        <mat-item label="Oscar Vaughn"></mat-item>
+                    </mat-sublist>
+                    <mat-sublist label="Contacts" icon="mat:people" collapsible collapsed>
+                        <mat-item label="Stanley Stokes"></mat-item>
+                        <mat-item label="Alvin Kelley"></mat-item>
+                        <mat-item label="Harold Gardner"></mat-item>
+                    </mat-sublist>
+                </mat-list>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Sublists" padding-disabled>
+                <script type="text/html">
+                    <mat-list selectable switchable>
+                        <mat-sublist label="Items">
+                            <div class="item">Item 1</div>
+                            <div class="item">Item 2</div>
+                        </mat-sublist>
+                        <mat-sublist label="Links">
+                            <a class="item" href="http://expandjs.com/elements/mat-list" target="_blank">ExpandJS</a>
+                            <a class="item" href="https://www.polymer-project.org" target="_blank">Polymer</a>
+                        </mat-sublist>
+                    </mat-list>
+                </script>
+                <mat-list selectable switchable>
+                    <mat-sublist label="Items">
+                        <div class="item">Item 1</div>
+                        <div class="item">Item 2</div>
+                    </mat-sublist>
+                    <mat-sublist label="Links">
+                        <a class="item" href="http://expandjs.com/elements/mat-list" target="_blank">ExpandJS</a>
+                        <a class="item" href="https://www.polymer-project.org" target="_blank">Polymer</a>
+                    </mat-sublist>
+                </mat-list>
+            </mat-demo-panel>
+
+        </mat-demo>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-list-demo'
+        });
+    </script>
+
+</dom-module>

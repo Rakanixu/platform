@@ -1,0 +1,47 @@
+{
+  "name": "mat-dialog",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "mat-dialog.html",
+  "description": "A custom element used to display a Material Design dialog",
+  "homepage": "http://expandjs.com/elements/mat-dialog",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "material design",
+    "material dialog",
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "mat-divider": "ExpandJS/mat-divider#0.10.0",
+    "mat-paper": "ExpandJS/mat-paper#0.10.0",
+    "mat-typography": "ExpandJS/mat-typography#0.10.0",
+    "xp-array-behavior": "ExpandJS/xp-array-behavior#0.10.0",
+    "xp-dialog-behavior": "ExpandJS/xp-dialog-behavior#0.10.0",
+    "polymer": "Polymer/polymer#^1.2.0",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0"
+  },
+  "devDependencies": {
+    "mat-button": "ExpandJS/mat-button#0.10.0",
+    "mat-demo": "ExpandJS/mat-demo#0.10.0"
+  },
+  "_release": "0.10.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.10.0",
+    "commit": "55829990059fb1850928df30a97f0e834b51fbcf"
+  },
+  "_source": "git://github.com/ExpandJS/mat-dialog.git",
+  "_target": "0.10.0",
+  "_originalSource": "ExpandJS/mat-dialog"
+}

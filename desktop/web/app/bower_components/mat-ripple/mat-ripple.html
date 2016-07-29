@@ -1,0 +1,130 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A custom element used to display a [Material Design ripple effect](http://www.google.com/design/spec/animation/responsive-interaction.html#responsive-interaction-surface-reaction) from the touch point.
+
+```html
+<mat-ripple></mat-ripple>
+```
+
+The `auto-center` attribute can be set to create a [radial reaction](http://www.google.com/design/spec/animation/responsive-interaction.html#responsive-interaction-user-input),
+forcing the ripple to always start from the center.
+
+---
+
+## Styling
+
+The ripple's `color` can be changed accordingly to the
+[Material Design palette](http://www.google.com/design/spec/style/color.html#color-color-palette).
+
+```html
+<mat-ripple color="purple"></mat-ripple>
+```
+
+@element mat-ripple
+@description A custom element used to display a ripple effect from the touch point
+@keywords material design, expandjs, web app, custom elements, web-components
+@group contents
+
+@homepage http://expandjs.com/elements/mat-ripple
+@repository https://github.com/ExpandJS/mat-ripple
+@demo http://expandjs.com/demo/mat-ripple
+
+@behavior xp-anchor-behavior /bower_components/xp-anchor-behavior/xp-anchor-behavior.html
+@behavior xp-overlay-injector /bower_components/xp-overlay/xp-overlay-injector.html
+@behavior mat-pressed-ink-behavior /bower_components/mat-pressed-behavior/mat-pressed-ink-behavior.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency mat-pressed-behavior ExpandJS/mat-pressed-behavior#0.10.0
+@dependency xp-anchor-behavior ExpandJS/xp-anchor-behavior#0.10.0
+@dependency xp-overlay ExpandJS/xp-overlay#0.10.0
+
+@devDependency mat-demo ExpandJS/mat-demo#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-pressed-behavior/mat-pressed-ink-behavior.html">
+<link rel="import" href="../mat-pressed-behavior/mat-pressed-ink-styles.html">
+<link rel="import" href="../xp-anchor-behavior/xp-anchor-behavior.html">
+<link rel="import" href="../xp-anchor-behavior/xp-anchor-styles.html">
+<link rel="import" href="../xp-overlay/xp-overlay-injector.html">
+
+<dom-module id="mat-ripple">
+
+    <template strip-whitespace>
+
+        <style include="xp-anchor-styles"></style>
+        <style include="mat-pressed-ink-styles"></style>
+
+        <style>
+            :host,
+            :host .anchor {
+                border-radius: inherit;
+                bottom: 0;
+                display: block;
+                left: 0;
+                position: absolute;
+                right: 0;
+                top: 0;
+            }
+        </style>
+
+        <a class="anchor" tabindex="-1" on-click="_anchorHandler"></a>
+
+        <template is="dom-if" if="[[!autoCenter]]"><div class="ripple-ground" active$="[[active]]"></div></template>
+        <div class="ripple-waves"></div>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-ripple',
+
+            // BEHAVIORS
+            behaviors: [
+                Polymer.XPAnchorBehavior,
+                Polymer.XPOverlayInjector,
+                Polymer.MatPressedInkBehavior
+            ],
+
+            /*********************************************************************/
+
+            // PROPERTIES
+            properties: {
+
+                /**
+                 * If set to true, the ripple effect will start from center.
+                 *
+                 * @attribute auto-center
+                 * @type boolean
+                 * @default false
+                 */
+                autoCenter: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                }
+            },
+
+            /*********************************************************************/
+
+            // LISTENER
+            created: function () {
+
+                // Classifying
+                this.classList.add('ripple');
+            }
+        });
+    </script>
+
+</dom-module>

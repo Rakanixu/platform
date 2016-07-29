@@ -1,0 +1,46 @@
+<link rel="import" href="../mat-demo/mat-demo.html">
+<link rel="import" href="mat-snackbar.html">
+
+<dom-module id="mat-snackbar-demo">
+
+    <template>
+
+        <style>
+            :host {
+                display: block;
+            }
+        </style>
+
+        <mat-demo name="mat-snackbar" type="element" url="http://expandjs.com/elements/mat-snackbar">
+
+            <mat-demo-panel label="Default">
+                <script type="text/html">
+                    <mat-button behavior="toggle" label="Show snackbar" target="demoDefault"></mat-button>
+                    <mat-snackbar id="demoDefault" label="Lorem ipsum dolor sit amet..."></mat-snackbar>
+                </script>
+                <mat-button behavior="toggle" label="Show snackbar" target="demoDefault"></mat-button>
+                <mat-snackbar id="demoDefault" label="Lorem ipsum dolor sit amet..."></mat-snackbar>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Action">
+                <script type="text/html">
+                    <mat-button behavior="toggle" label="Show snackbar" target="demoAction"></mat-button>
+                    <mat-snackbar id="demoAction" button="Undo" label="Lorem ipsum dolor sit amet..."></mat-snackbar>
+                </script>
+                <mat-button behavior="toggle" label="Show snackbar" target="demoAction"></mat-button>
+                <mat-snackbar id="demoAction" button="Undo" label="Lorem ipsum dolor sit amet..."></mat-snackbar>
+            </mat-demo-panel>
+
+        </mat-demo>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-snackbar-demo'
+        });
+    </script>
+
+</dom-module>

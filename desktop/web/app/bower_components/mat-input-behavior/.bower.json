@@ -1,0 +1,40 @@
+{
+  "name": "mat-input-behavior",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "mat-input-behavior.html",
+  "description": "A behavior used to add input capabilities on a custom element",
+  "homepage": "http://expandjs.com/elements/mat-input-behavior",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "material design",
+    "material input",
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "mat-typography": "ExpandJS/mat-typography#0.10.0",
+    "xp-input-behavior": "ExpandJS/xp-input-behavior#0.10.0",
+    "polymer": "Polymer/polymer#^1.2.0",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0"
+  },
+  "_release": "0.10.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.10.0",
+    "commit": "c8d40c215de571bd8b62a3c845dfeecd3510d2e9"
+  },
+  "_source": "git://github.com/ExpandJS/mat-input-behavior.git",
+  "_target": "0.10.0",
+  "_originalSource": "ExpandJS/mat-input-behavior"
+}

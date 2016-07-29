@@ -1,0 +1,36 @@
+{
+  "name": "xp-dialog-behavior",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "xp-dialog-behavior.html",
+  "description": "A behavior used to add dialog capabilities on a custom element",
+  "homepage": "http://expandjs.com/elements/xp-dialog-behavior",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "xp-overlay": "ExpandJS/xp-overlay#0.10.0",
+    "polymer": "Polymer/polymer#^1.2.0"
+  },
+  "_release": "0.10.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.10.0",
+    "commit": "b751bc77c19e3f8255b39c670c3e5d9c04a55fb1"
+  },
+  "_source": "git://github.com/ExpandJS/xp-dialog-behavior.git",
+  "_target": "0.10.0",
+  "_originalSource": "ExpandJS/xp-dialog-behavior"
+}

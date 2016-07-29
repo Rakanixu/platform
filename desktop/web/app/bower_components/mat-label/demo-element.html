@@ -1,0 +1,43 @@
+<link rel="import" href="../mat-demo/mat-demo.html">
+<link rel="import" href="../mat-text-field/mat-text-field.html">
+<link rel="import" href="mat-label.html">
+
+<dom-module id="mat-label-demo">
+
+    <template>
+
+        <style>
+            :host {
+                display: block;
+            }
+        </style>
+
+        <mat-demo name="mat-label" type="element" url="http://expandjs.com/elements/mat-label">
+
+            <mat-demo-panel label="Default">
+                <script type="text/html">
+                    <label is="mat-label" for="username">Email</label>
+                    <mat-text-field id="username" type="email" inline></mat-text-field>
+                    <label is="mat-label" for="password">Password</label>
+                    <mat-text-field id="password" type="password" inline></mat-text-field>
+                </script>
+                <label is="mat-label" for="username">Email</label>
+                <mat-text-field id="username" type="email" inline></mat-text-field>
+                <label is="mat-label" for="password">Password</label>
+                <mat-text-field id="password" type="password" inline></mat-text-field>
+
+            </mat-demo-panel>
+
+        </mat-demo>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-label-demo'
+        });
+    </script>
+
+</dom-module>

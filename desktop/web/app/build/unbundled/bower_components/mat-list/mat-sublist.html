@@ -1,0 +1,57 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-divider/mat-divider.html">
+<link rel="import" href="../mat-icon/mat-icon.html">
+<link rel="import" href="../mat-icon-button/mat-icon-button.html">
+<link rel="import" href="../mat-icons/mat-icons.html">
+<link rel="import" href="../mat-item/mat-item.html">
+<link rel="import" href="../mat-subheader/mat-subheader.html">
+<link rel="import" href="../xp-list-behavior/xp-sublist-behavior.html">
+<link rel="import" href="../xp-list-behavior/xp-sublist-styles.html">
+
+</head><body><dom-module id="mat-sublist">
+
+    <template strip-whitespace="">
+
+        <style include="xp-sublist-styles"></style>
+
+        <style>:host .divider{transition:opacity 0.330s cubic-bezier(0.55, 0, 0.01, 1), transform 0.330s cubic-bezier(0.55, 0, 0.01, 1);}:host([collapsible][collapsed]) .divider,
+            :host([collapsible]:not([collapsed]):first-of-type) > .divider.cap,
+            :host([collapsible]:not([collapsed]):last-of-type) > .translate > .wrapper > .collapsible > .divider.baseline,
+            :host(:not([collapsible])) .divider.cap,
+            :host(:not([collapsible]):last-of-type) > .translate > .wrapper > .collapsible > .divider.baseline{height:0;opacity:0;padding:0;transform:translateY(0px);transition:transform 0.330s cubic-bezier(0.55, 0, 0.01, 1);}:host .translate{transform:translateY(0px);}:host .translate > :not(template){transition:transform 0.330s cubic-bezier(0.55, 0, 0.01, 1);}:host(:not([collapsed]):not(:first-of-type)) .translate{transform:translateY(-16px);}:host(:not([collapsed]):not(:first-of-type)) .translate > :not(template){transform:translateY(16px);}:host(:not([inset])) .collapser .primary{display:none !important;}:host .collapser .secondary{pointer-events:none !important;}:host([collapsed]) .collapser .secondary{transform:rotate(180deg);}</style>
+
+        <mat-divider class="cap divider"></mat-divider>
+
+        <div class="translate">
+
+            <template is="dom-if" if="[[_hasCollapser(collapsible, label)]]" restamp="">
+                <mat-item class="collapser" label="[[label]]" on-xp-activate="toggle">
+                    <mat-icon-button class="primary button" icon="[[icon]]" icon-src="[[iconSrc]]"></mat-icon-button>
+                    <mat-icon-button class="secondary button" icon="mat:expand-less"></mat-icon-button>
+                </mat-item>
+            </template>
+
+            <template is="dom-if" if="[[_hasHeader(collapsible, label)]]" restamp="">
+                <mat-subheader class="subheader" inset="[[inset]]" label="[[label]]"></mat-subheader>
+            </template>
+
+            <template is="dom-if" if="[[_hasIcon(icon, iconSrc, label)]]" restamp="">
+                <mat-icon class="icon" name="[[icon]]" src="[[iconSrc]]"></mat-icon>
+            </template>
+
+            <div class="wrapper">
+                <div class="collapsible">
+                    <content></content>
+                    <mat-divider class="baseline divider"></mat-divider>
+                </div>
+            </div>
+
+        </div>
+
+    </template>
+
+    <script>Polymer({is:"mat-sublist",behaviors:[Polymer.XPSublistBehavior],properties:{backward:{reflectToAttribute:!0,type:Boolean,value:!0},easing:{type:String,value:"cubic-bezier(0.55, 0, 0.01, 1)"},icon:{observer:"_iconChanged",reflectToAttribute:!0,type:String},iconSrc:{observer:"_iconChanged",reflectToAttribute:!0,type:String},inset:{notify:!0,readOnly:!0,reflectToAttribute:!0,type:Boolean,value:!1},label:{reflectToAttribute:!0,type:String}},_hasCollapser:function(e,t){return!!e&&!!t},_hasHeader:function(e,t){return!e&&!!t},_hasIcon:function(e,t,r){return!(!e&&!t||r)},_iconChanged:function(){this._setInset(!!this.icon||!!this.iconSrc)}});</script>
+
+</dom-module>
+</body></html>

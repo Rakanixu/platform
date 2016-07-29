@@ -1,0 +1,1 @@
+!function(){"use strict";var r=require("../error/CustomError");module.exports=function(o,t){r.call(this,"NotFoundError",o+" is not found",t)}}();

@@ -1,0 +1,1 @@
+!function(){"use strict";var i=require("../tester/isInfinite");module.exports=function(n,t){return i(n)?n:"-Infinity"===n?-(1/0):"Infinity"===n||t?1/0:void 0}}();

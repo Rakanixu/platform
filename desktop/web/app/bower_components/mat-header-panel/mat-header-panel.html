@@ -1,0 +1,430 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A custom element used to display a Material Design container with an
+[app bar](http://www.google.com/design/spec/layout/structure.html#structure-app-bar) and
+[scrollable content](http://www.google.com/design/spec/patterns/scrolling-techniques.html).
+
+It must be used in conjunction with
+[mat-header](http://expandjs.com/elements/mat-header).
+
+By default, the app bar scrolls out of the view with the content and, as soon as you scroll
+upwards, the app bar instantly shows itself.
+
+```html
+<mat-header-panel>
+    <mat-header>...</mat-header>
+    ...
+</mat-header-panel>
+```
+
+Additional [scrolling modes](http://www.google.com/design/spec/components/toolbars.html#toolbars-usage) are provided, such as:
+
+- **fixed**: the app bar will always will be on top of the content and will not scroll
+- **seamed**: the app bar is at the same level of the content and will freely scroll with it
+- **waterfall**: the app bar raises above the content as soon as the scrolling happens
+
+```html
+<mat-header-panel mode="fixed">
+    <mat-header>...</mat-header>
+    ...
+</mat-header-panel>
+```
+
+A footer can also be added, in the form of a [Material Design navigation bar](https://www.google.com/design/spec/layout/structure.html#structure-system-bars).
+
+```html
+<mat-header-panel>
+    <mat-header>...</mat-header>
+    ...
+    <mat-toolbar class="footer" justified="around">
+        <mat-icon-button icon="content:undo"></mat-icon-button>
+        <mat-icon-button icon="action:home"></mat-icon-button>
+        <mat-icon-button icon="content:send"></mat-icon-button>
+    </mat-toolbar>
+</mat-header-panel>
+```
+
+@element mat-header-panel
+@description A custom element used to display a Material Design container with an app bar and scrollable content
+@keywords material design, expandjs, web app, custom elements, web-components
+@group containers
+@hot
+
+@homepage http://expandjs.com/elements/mat-header-panel
+@repository https://github.com/ExpandJS/mat-header-panel
+@demo http://expandjs.com/demo/mat-header-panel
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency iron-flex-layout PolymerElements/iron-flex-layout#^1.0.0
+@dependency mat-shadow ExpandJS/mat-shadow#0.10.0
+@dependency mat-spacing ExpandJS/mat-spacing#0.10.0
+
+@devDependency mat-demo ExpandJS/mat-demo#0.10.0
+@devDependency mat-icon-button ExpandJS/mat-icon-button#0.10.0
+@devDependency mat-icons ExpandJS/mat-icons#0.10.0
+@devDependency mat-menu ExpandJS/mat-menu#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../mat-shadow/mat-shadow.html">
+<link rel="import" href="../mat-spacing/mat-spacing.html">
+<link rel="import" href="mat-header.html">
+
+<dom-module id="mat-header-panel">
+
+    <template strip-whitespace>
+
+        <style>
+            :host {
+                @apply(--layout-fit);
+                display: block;
+            }
+
+            :host([raised]) {
+                box-shadow: var(--mat-shadow-z4);
+            }
+
+            :host-context(.drawer) {
+                box-sizing: border-box;
+                height: 100%;
+                position: relative !important;
+            }
+
+            :host .wrapper {
+                @apply(--layout-vertical);
+                @apply(--layout-fit);
+                overflow: hidden;
+            }
+
+            :host .main {
+                @apply(--layout-vertical);
+                @apply(--layout-flex);
+            }
+
+            :host .header {
+                -webkit-order: 1;
+                order: 1;
+                position: relative;
+                transition: none;
+            }
+
+            :host .header[raised] {
+                box-shadow: var(--mat-shadow-z4);
+            }
+
+            :host .stretcher {
+                @apply(--layout-flex);
+                -webkit-order: 2;
+                order: 2;
+                position: relative;
+            }
+
+            :host .positioner {
+                @apply(--layout-fit);
+            }
+
+            :host .body {
+                box-sizing: border-box;
+                height: 100%;
+            }
+
+            :host([padding]) .body {
+                @apply(--mat-padding-mobile);
+            }
+
+            :host([padding][inset]) .body {
+                @apply(--mat-padding-mobile-inset);
+            }
+
+            :host .footer {
+                position: relative;
+                z-index: 0;
+            }
+
+            :host .scroller {
+                overflow-x: hidden;
+                overflow-y: auto;
+            }
+
+            /* DESKTOP */
+
+            @media (min-width: 960px) {
+
+                :host([padding]) .body {
+                    @apply(--mat-padding-desktop);
+                }
+
+                :host([padding][inset]) .body {
+                    @apply(--mat-padding-desktop-inset);
+                }
+            }
+        </style>
+
+        <div class="wrapper">
+            <div class="main" on-scroll="_handleScroll">
+                <div class="stretcher">
+                    <div class="positioner">
+                        <div class="body" on-scroll="_handleScroll">
+                            <content select=":not(.footer):not(.header)"></content>
+                        </div>
+                    </div>
+                </div>
+                <div class="header" raised$="[[_computeRaised(mode, scrolled, translated)]]">
+                    <content select=".header"></content>
+                </div>
+            </div>
+            <div class="footer">
+                <content select=".footer"></content>
+            </div>
+        </div>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-header-panel',
+
+            /*********************************************************************/
+
+            /**
+             * Resets the scroll.
+             *
+             * @method resetScroll
+             * @returns {Element}
+             */
+            resetScroll: function () {
+                var self = this;
+                self.scroller.scrollTop = 0;
+                return self;
+            },
+
+            /*********************************************************************/
+
+            // PROPERTIES
+            properties: {
+
+                /**
+                 * The panel's footer.
+                 *
+                 * @attribute footer
+                 * @type Element
+                 * @notifies
+                 * @readonly
+                 */
+                footer: {
+                    notify: true,
+                    readOnly: true
+                },
+
+                /**
+                 * The panel's header.
+                 *
+                 * @attribute header
+                 * @type Element
+                 * @notifies
+                 * @readonly
+                 */
+                header: {
+                    notify: true,
+                    readOnly: true
+                },
+
+                /**
+                 * If set to true, the body is indented.
+                 *
+                 * @attribute inset
+                 * @type boolean
+                 * @default false
+                 */
+                inset: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The panel's scroll mode.
+                 *
+                 * @attribute mode
+                 * @type "fixed" | "seamed" | "waterfall"
+                 * @notifies
+                 */
+                mode: {
+                    notify: true,
+                    observer: '_modeChanged',
+                    reflectToAttribute: true,
+                    type: String,
+                    value: null
+                },
+
+                /**
+                 * If set to true, the material spacing rules are applied.
+                 *
+                 * @attribute padding
+                 * @type boolean
+                 * @default false
+                 */
+                padding: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * If set to true, the panel is raised.
+                 *
+                 * @attribute raised
+                 * @type boolean
+                 * @default false
+                 * @notifies
+                 */
+                raised: {
+                    notify: true,
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The panel's scroll amount.
+                 *
+                 * @attribute scrolled
+                 * @type number
+                 * @default 0
+                 * @notifies
+                 * @readonly
+                 */
+                scrolled: {
+                    notify: true,
+                    readOnly: true,
+                    reflectToAttribute: true,
+                    type: Number,
+                    value: 0
+                },
+
+                /**
+                 * The panel's scrolling element.
+                 *
+                 * @attribute scroller
+                 * @type Element
+                 * @notifies
+                 * @readonly
+                 */
+                scroller: {
+                    notify: true,
+                    observer: '_scrollerChanged',
+                    readOnly: true
+                },
+
+                /**
+                 * The panel's header's translate amount.
+                 *
+                 * @attribute translated
+                 * @type number
+                 * @default 0
+                 * @notifies
+                 * @readonly
+                 */
+                translated: {
+                    notify: true,
+                    readOnly: true,
+                    reflectToAttribute: true,
+                    type: Number,
+                    value: 0
+                }
+            },
+
+            /**
+             * The list of scroll modes.
+             *
+             * @property modes
+             * @type Array
+             * @default ["fixed", "seamed", "waterfall"]
+             * @readonly
+             */
+            modes: ['fixed', 'seamed', 'waterfall'],
+
+            /*********************************************************************/
+
+            // COMPUTER
+            _computeRaised: function (mode, scrolled, translated) {
+                return mode === 'fixed' || (mode !== 'seamed' && (mode === 'waterfall' ? scrolled : translated) > 0);
+            },
+
+            /*********************************************************************/
+
+            // OBSERVER
+            _modeChanged: function () {
+
+                // Setting
+                this._setScroller(Polymer.dom(this.root).querySelector(this.mode === 'fixed' || this.mode === 'waterfall' ? '.body' : '.main'));
+            },
+
+            // OBSERVER
+            _scrollerChanged: function (post, pre) {
+
+                // Classifying
+                if (pre) { pre.classList.remove('scroller'); }
+                if (post) { post.classList.add('scroller'); }
+            },
+
+            /*********************************************************************/
+
+            // LISTENER
+            attached: function () {
+
+                // Handling
+                this._handleScroll();
+            },
+
+            // LISTENER
+            created: function () {
+
+                // Clasifying
+                this.classList.add('header-panel');
+            },
+
+            // LISTENER
+            ready: function () {
+
+                // Vars
+                var self = this;
+
+                // Setting
+                self._setFooter(Polymer.dom(self.root).querySelector('.footer'));
+                self._setHeader(Polymer.dom(self.root).querySelector('.header'));
+            },
+
+            /*********************************************************************/
+
+            // HANDLER
+            _handleScroll: function () {
+
+                // Vars
+                var self = this,
+                    pre  = self.scrolled,
+                    post = self.scroller.scrollTop;
+
+                // Setting
+                self._setScrolled(post);
+                self._setTranslated(!self.mode && pre > post ? post : self.translated);
+
+                // Styling
+                self.header.style.transform = self.translated ? 'translateY(' + self.translated + 'px)' : '';
+            }
+        });
+    </script>
+
+</dom-module>

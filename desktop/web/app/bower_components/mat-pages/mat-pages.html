@@ -1,0 +1,195 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A custom element used to manage separate [Material Design pages](http://www.google.com/design/spec/patterns/navigational-transitions.html#navigational-transitions-sibling-to-sibling).
+
+It must be used in conjunction with
+[mat-page](http://expandjs.com/elements/mat-page).
+
+```html
+<mat-pages>
+    <mat-page>First page</mat-page>
+    <mat-page>Second page</mat-page>
+    <mat-page>First page</mat-page>
+</mat-pages>
+```
+
+You can control the pages manually or automatically using
+[mat-tabs](http://expandjs.com/elements/mat-tabs) or
+[xp-router](http://expandjs.com/elements/xp-router),
+by binding the `selected` attribute.
+
+```html
+<mat-tabs selected="{{selected}}">
+    <mat-tab label="First"></mat-tab>
+    <mat-tab label="Second"></mat-tab>
+    <mat-tab label="Third"></mat-tab>
+</mat-tabs>
+
+<mat-pages selected="{{selected}}">
+    <mat-page>First page</mat-page>
+    <mat-page>Second page</mat-page>
+    <mat-page>Third page</mat-page>
+</mat-pages>
+```
+
+@element mat-pages
+@description A custom element used to manage separate Material Design pages
+@keywords material design, expandjs, web app, custom elements, web-components
+@group navigation
+@hot
+
+@homepage http://expandjs.com/elements/mat-pages
+@repository https://github.com/ExpandJS/mat-pages
+@demo http://expandjs.com/demo/mat-pages
+
+@behavior xp-pages-behavior /bower_components/xp-pages/xp-pages-behavior.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency iron-flex-layout PolymerElements/iron-flex-layout#^1.0.0
+@dependency xp-pages ExpandJS/xp-pages#0.10.0
+
+@devDependency mat-demo ExpandJS/mat-demo#0.10.0
+@devDependency mat-tabs ExpandJS/mat-tabs#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../xp-pages/xp-pages-behavior.html">
+<link rel="import" href="../xp-pages/xp-pages-styles.html">
+<link rel="import" href="mat-page.html">
+
+<dom-module id="mat-pages">
+
+    <template strip-whitespace>
+
+        <style include="xp-pages-styles"></style>
+
+        <style>
+            :host .slider {
+                @apply(--layout-horizontal);
+                @apply(--layout-fit);
+                right: auto;
+                transition: transform 0.33s;
+            }
+
+            :host .slider ::content > .page:not([active]) {
+                display: block !important;
+            }
+        </style>
+
+        <div class="wrapper">
+            <div class="slider">
+                <content></content>
+            </div>
+        </div>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-pages',
+
+            // BEHAVIORS
+            behaviors: [
+                Polymer.XPPagesBehavior
+            ],
+
+            /*********************************************************************/
+
+            // OBSERVERS
+            observers: [
+                '_selectionChanged(items.*, selection, slider)'
+            ],
+
+            // PROPERTIES
+            properties: {
+
+                /**
+                 * The tag used to append new items.
+                 *
+                 * @attribute item-tag
+                 * @type string
+                 * @default "mat-page"
+                 * @readonly
+                 */
+                itemTag: {
+                    readOnly: true,
+                    type: String,
+                    value: 'mat-page'
+                },
+
+                /**
+                 * The pages slider.
+                 *
+                 * @attribute slider
+                 * @type Element
+                 * @notifies
+                 * @readonly
+                 */
+                slider: {
+                    notify: true,
+                    readOnly: true
+                },
+
+                /**
+                 * If set to true, the pages are sliding.
+                 *
+                 * @attribute sliding
+                 * @type boolean
+                 * @default false
+                 * @notifies
+                 * @readonly
+                 */
+                sliding: {
+                    notify: true,
+                    readOnly: true,
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                }
+            },
+
+            /*********************************************************************/
+
+            // OBSERVER
+            _selectionChanged: function() {
+
+                // Vars
+                var self  = this,
+                    items = self.items || [],
+                    index = XP.indexOf(items, self.selection) || 0;
+
+                // Setting
+                self._setSliding(true);
+
+                // Styling
+                self.slider.style.transform = 'translateX(' + (index && (-index * 100 / items.length)) + '%)';
+                self.slider.style.width     = (items.length * 100) + '%';
+
+                // Debouncing
+                self.debounce('sliding', self._setSliding.bind(self, false), 330);
+            },
+
+            /*********************************************************************/
+
+            // LISTENER
+            ready: function () {
+
+                // Setting
+                this._setSlider(Polymer.dom(this.root).querySelector('.slider'));
+            }
+        });
+    </script>
+
+</dom-module>

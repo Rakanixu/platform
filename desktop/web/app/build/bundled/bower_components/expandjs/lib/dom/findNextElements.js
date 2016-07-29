@@ -1,0 +1,1 @@
+!function(){"use strict";var e=require("../assert/assertArgument"),r=require("../collection/filter"),t=require("../dom/filterElements"),i=require("../dom/getNextElements"),n=require("../tester/isNode"),s=require("../caster/toDOMPredicate");module.exports=function(u,o,c){var l=s(o);return e(n(u),1,"Element"),e(l,2,"Function, Object or string"),r(t(i(u),c),l)}}();

@@ -1,0 +1,1 @@
+!function(){"use strict";var r=require("../string/clean"),e=require("../tester/isString"),t=require("../tester/isVoid"),i=require("../operator/xnor");module.exports=function(n,u){return e(n)&&n===r(n)&&(t(u)||i(n.length,u))}}();

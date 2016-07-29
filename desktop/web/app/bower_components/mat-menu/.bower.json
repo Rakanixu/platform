@@ -1,0 +1,47 @@
+{
+  "name": "mat-menu",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "mat-menu.html",
+  "description": "A custom element used to display a Material Design menu",
+  "homepage": "http://expandjs.com/elements/mat-menu",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "material design",
+    "material menu",
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "mat-option": "ExpandJS/mat-option#0.10.0",
+    "mat-overlay": "ExpandJS/mat-overlay#0.10.0",
+    "mat-paper": "ExpandJS/mat-paper#0.10.0",
+    "xp-menu-behavior": "ExpandJS/xp-menu-behavior#0.10.0",
+    "polymer": "Polymer/polymer#^1.0.0"
+  },
+  "devDependencies": {
+    "mat-demo": "ExpandJS/mat-demo#0.10.0",
+    "mat-divider": "ExpandJS/mat-divider#0.10.0",
+    "mat-icon-button": "ExpandJS/mat-icon-button#0.10.0",
+    "mat-icons": "ExpandJS/mat-icons#0.10.0"
+  },
+  "_release": "0.10.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.10.0",
+    "commit": "369302c055ffce509ec3b730f152a0c1464bd5f5"
+  },
+  "_source": "git://github.com/ExpandJS/mat-menu.git",
+  "_target": "0.10.0",
+  "_originalSource": "ExpandJS/mat-menu"
+}

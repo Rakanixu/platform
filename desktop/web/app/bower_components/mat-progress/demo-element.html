@@ -1,0 +1,72 @@
+<link rel="import" href="../mat-demo/mat-demo.html">
+<link rel="import" href="mat-progress.html">
+
+<dom-module id="mat-progress-demo">
+
+    <template>
+
+        <style>
+            :host {
+                display: block;
+            }
+        </style>
+
+        <mat-demo name="mat-progress" type="element" url="http://expandjs.com/elements/mat-progress">
+
+            <mat-demo-panel label="Default">
+                <script type="text/html">
+                    <mat-progress value="50" showed></mat-progress>
+                </script>
+                <mat-progress value="50" showed></mat-progress>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Colored buffer">
+                <script type="text/html">
+                    <mat-progress buffer-color="red-100" buffer-value="66" color="red" mode="buffer" value="33" showed></mat-progress>
+                </script>
+                <mat-progress buffer-color="red-100" buffer-value="66" color="red" mode="buffer" value="33" showed></mat-progress>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Indeterminate">
+                <script type="text/html">
+                    <mat-progress mode="indeterminate" showed></mat-progress>
+                </script>
+                <mat-progress mode="indeterminate" showed></mat-progress>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Query then determinate">
+                <script type="text/html">
+                    <mat-progress mode="query" showed></mat-progress>
+                </script>
+                <mat-progress mode="query" showed></mat-progress>
+            </mat-demo-panel>
+
+        </mat-demo>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-progress-demo',
+
+            /*********************************************************************/
+
+            // LISTENER
+            ready: function () {
+
+                // Vars
+                var self   = this,
+                    bar    = Polymer.dom(self.root).querySelector('.progress[mode="query"]'),
+                    query1 = function () { bar.mode = 'query'; bar.value = null; XP.delay(query2, 4000);},
+                    query2 = function () { bar.mode = 'determinate'; bar.value = 0; XP.delay(query3, 0); },
+                    query3 = function () { if (bar.value < 100) { bar.value += 1; XP.delay(query3, 20); } else { XP.delay(query1, 0); } };
+
+                // Starting
+                query1();
+            }
+        });
+    </script>
+
+</dom-module>

@@ -1,0 +1,70 @@
+<link rel="import" href="../mat-demo/mat-demo.html">
+<link rel="import" href="mat-text-area.html">
+
+<dom-module id="mat-text-area-demo">
+
+    <template>
+
+        <style>
+            :host {
+                display: block;
+            }
+        </style>
+
+        <mat-demo name="mat-text-area" type="element" url="http://expandjs.com/elements/mat-text-area">
+
+            <mat-demo-panel label="Default">
+                <script type="text/html">
+                    <mat-text-area label="Default" inline></mat-text-area>
+                </script>
+                <mat-text-area label="Default" inline></mat-text-area>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Binding and default value">
+                <script type="text/html">
+                    <mat-text-area label="Default" model="{{myTextArea}}" value="Hello world" inline></mat-text-area>
+                </script>
+                <mat-text-area label="Default" model="{{myTextArea}}" value="Hello world" inline></mat-text-area>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Disabled">
+                <script type="text/html">
+                    <mat-text-area value="Disabled" disabled inline></mat-text-area>
+                </script>
+                <mat-text-area value="Disabled" disabled inline></mat-text-area>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Readonly">
+                <script type="text/html">
+                    <mat-text-area value="Readonly" floating-label inline readonly></mat-text-area>
+                </script>
+                <mat-text-area value="Readonly" floating-label inline readonly></mat-text-area>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Floating label with counter">
+                <script type="text/html">
+                    <mat-text-area label="Floating label" description="I am a description" max-length="10" floating-label inline></mat-text-area>
+                </script>
+                <mat-text-area label="Floating label" description="I am a description" max-length="10" floating-label inline></mat-text-area>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Full Width with counter" padding-disabled>
+                <script type="text/html">
+                    <mat-text-area label="Full width" max-length="120" full-width></mat-text-area>
+                </script>
+                <mat-text-area label="Full width" max-length="120" full-width></mat-text-area>
+            </mat-demo-panel>
+
+        </mat-demo>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-text-area-demo'
+        });
+    </script>
+
+</dom-module>

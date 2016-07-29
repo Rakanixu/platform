@@ -1,0 +1,161 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A behavior used to simulate a [Material Design ripple effect](http://www.google.com/design/spec/animation/responsive-interaction.html#responsive-interaction-surface-reaction) from the touch point.
+
+@behavior mat-pressed-behavior
+@description A behavior used to simulate a ripple effect from the touch point
+@keywords material design, expandjs, web app, custom elements, web-components
+@group behaviors
+
+@homepage http://expandjs.com/elements/mat-pressed-behavior
+@repository https://github.com/ExpandJS/mat-pressed-behavior
+
+@behavior xp-pressed-behavior /bower_components/xp-pressed-behavior/xp-pressed-behavior.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency xp-pressed-behavior ExpandJS/xp-pressed-behavior#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-pressed-behavior/xp-pressed-behavior.html">
+
+<script>
+    Polymer.MatPressedBehaviorImp = {
+
+        /**
+         * Ripples a wave.
+         *
+         * @method _ripple
+         * @param {number} [startX]
+         * @param {number} [startY]
+         * @returns {Element}
+         * @private
+         */
+        _ripple: function (startX, startY) {
+
+            // Vars
+            var self      = this,
+                root      = Polymer.dom(self.root),
+                waves     = Polymer.dom(root.querySelector('.ripple-waves')),
+                ground    = root.querySelector('.ripple-ground'),
+                wave      = waves.appendChild(document.createElement('div')),
+                boundings = XP.getBoundings(self),
+                centerX   = XP.isVoid(startX) || !ground,
+                centerY   = XP.isVoid(startY) || !ground,
+                data      = {};
+
+            // Setting
+            self.tsRipple = Date.now();
+
+            // Calculating
+            data.radius = Math.floor(Math.max(boundings.width, boundings.height)) * 1.5;
+            data.left   = (centerX ? (boundings.width / 2) : Math.max(startX, boundings.left) - Math.min(startX, boundings.left)) - (data.radius / 2);
+            data.top    = (centerY ? (boundings.height / 2) : Math.max(startY, boundings.top) - Math.min(startY, boundings.top)) - (data.radius / 2);
+            data.dx     = (boundings.width / 2) - data.left - (data.radius / 2);
+            data.dy     = (boundings.height / 2) - data.top - (data.radius / 2);
+
+            // Styling
+            wave.style.height = data.radius + 'px';
+            wave.style.top    = data.top + 'px';
+            wave.style.left   = data.left + 'px';
+            wave.style.width  = data.radius + 'px';
+
+            // Classifying
+            if (ground) { ground.classList.add('rippling'); }
+            waves.classList.add('rippling');
+            wave.classList.add('rippling');
+
+            // Frame 1
+            requestAnimationFrame(function () {
+
+                // Styling
+                wave.style.transform = 'translate(' + data.dx + 'px, ' + data.dy + 'px) scale(1)';
+
+                // Smoothing
+                if (!self.pressed) { self._smooth(); }
+            });
+
+            return self;
+        },
+
+        /**
+         * Smooths a wave.
+         *
+         * @method _smooth
+         * @param {boolean} [force = false]
+         * @returns {Element}
+         * @private
+         */
+        _smooth: function (force) {
+
+            // Vars
+            var self    = this,
+                elapsed = Date.now() - self.tsRipple,
+                root    = Polymer.dom(self.root),
+                waves   = Polymer.dom(root.querySelector('.ripple-waves')),
+                ground  = root.querySelector('.ripple-ground'),
+                wave    = waves.querySelector('.rippling'),
+                last    = waves.querySelectorAll('.rippling').length < 2;
+
+            // Checking
+            if (!wave) { return self; }
+
+            // Delaying
+            if (!force && elapsed < 250) { return self.async(self._smooth.bind(self, true), 250 - elapsed); }
+
+            // Classifying
+            if (ground && last) { ground.classList.remove('rippling'); }
+            wave.classList.remove('rippling');
+            wave.classList.add('smoothing');
+
+            // Delaying
+            self.async(function () { return waves.removeChild(wave) && (waves.children.length || waves.classList.remove('rippling')); }, 540);
+
+            return self;
+        },
+
+        /*********************************************************************/
+
+        /**
+         * The last ripple timestamp.
+         *
+         * @property tsRipple
+         * @type number
+         * @default 0
+         * @readonly
+         */
+        tsRipple: 0,
+
+        /*********************************************************************/
+
+        // HANDLER
+        _touchHandler: function (event) {
+
+            // Vars
+            var self = this;
+
+            // Super
+            Polymer.XPPressedBehaviorImp._touchHandler.apply(self, arguments);
+
+            // Checking
+            if (event.pressed !== self) { return; }
+
+            // Rippling
+            if (self.pressed) { self._ripple(event.detail.x, event.detail.y); } else { self._smooth(); }
+        }
+    };
+
+    Polymer.MatPressedBehavior = [
+        Polymer.XPPressedBehavior,
+        Polymer.MatPressedBehaviorImp
+    ];
+</script>

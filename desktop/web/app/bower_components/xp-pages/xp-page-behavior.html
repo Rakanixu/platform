@@ -1,0 +1,267 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A behavior used to add page capabilities on a custom element.
+
+@behavior xp-page-behavior
+@description A behavior used to add page capabilities on a custom element
+@keywords expandjs, web app, custom elements, web-components
+@group behaviors
+
+@homepage http://expandjs.com/elements/xp-page-behavior
+@repository https://github.com/ExpandJS/xp-pages
+
+@behavior xp-slave-behavior /bower_components/xp-slave-behavior/xp-slave-behavior.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency xp-slave-behavior ExpandJS/xp-slave-behavior#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-slave-behavior/xp-slave-behavior.html">
+
+<script>
+    Polymer.XPPageBehaviorImp = {
+
+        /**
+         * Fired when the something has been injected.
+         *
+         * @event xp-inject
+         * @param {Element} firer
+         * @param {Element} injected
+         * @bubbles
+         */
+
+        /*********************************************************************/
+
+        // LISTENERS
+        listeners: {
+            'xp-slave': '_slaveHandler'
+        },
+
+        // OBSERVERS
+        observers: [
+            '_contentObserver(active, content, lazy)',
+            '_dataObserver(data, injected)',
+            '_injectedObserver(active, injected)'
+        ],
+
+        // PROPERTIES
+        properties: {
+
+            /**
+             * If set to true, the page is active.
+             *
+             * @attribute active
+             * @type boolean
+             * @default false
+             * @notifies
+             */
+            active: {
+                notify: true,
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * If set to true, the page can be closed.
+             *
+             * @attribute closable
+             * @type boolean
+             * @default false
+             * @notifies
+             */
+            closable: {
+                notify: true,
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * The `tagName` of the element to inject into the page.
+             *
+             * @attribute content
+             * @type string
+             * @notifies
+             */
+            content: {
+                notify: true,
+                reflectToAttribute: true,
+                type: String
+            },
+
+            /**
+             * The page's data.
+             *
+             * @attribute data
+             * @type *
+             */
+            data: {},
+
+            /**
+             * If set to true, there's nothing injected.
+             *
+             * @attribute empty
+             * @type boolean
+             * @notifies
+             * @readonly
+             */
+            empty: {
+                computed: '_computeEmpty(injected)',
+                notify: true,
+                type: Boolean,
+                value: true
+            },
+
+            /**
+             * The injected element.
+             *
+             * @attribute injected
+             * @type Element
+             * @notifies
+             * @readonly
+             */
+            injected: {
+                notify: true,
+                readOnly: true
+            },
+
+            /**
+             * If set to true, the content will be injected on active.
+             *
+             * @attribute lazy
+             * @type boolean
+             * @default false
+             */
+            lazy: {
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * If set to true, the page is not scrollable.
+             *
+             * @attribute scroll-disabled
+             * @type boolean
+             * @default false
+             */
+            scrollDisabled: {
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * The master selector.
+             *
+             * @attribute selector
+             * @type Element
+             * @notifies
+             */
+            selector: {
+                notify: true,
+                readOnly: true
+            }
+        },
+
+        /*********************************************************************/
+
+        // COMPUTER
+        _computeEmpty: function (injected) {
+            return !injected;
+        },
+
+        /*********************************************************************/
+
+        // OBSERVER
+        _contentObserver: function () {
+
+            // Vars
+            var self = this;
+
+            // Frame 1
+            requestAnimationFrame(function () {
+
+                // Vars
+                var wrapped   = Polymer.dom(self),
+                    removable = self.injected && (!self.content || self.content.toUpperCase() !== self.injected.tagName || (self.lazy && !self.active)),
+                    injected  = self.content && (removable || !self.injected) && (self.active || !self.lazy) && document.createElement(self.content);
+
+                // Preparing
+                if (injected && XP.isDefined(self.data)) { injected.data = self.data; }
+
+                // Removing
+                if (removable) { wrapped.removeChild(self.injected); }
+
+                // Appending
+                if (injected) { wrapped.appendChild(injected); }
+
+                // Setting
+                if (injected || removable) { self._setInjected(injected || null); }
+
+                // Firing
+                if (injected) { self.fire('xp-inject', {firer: self, injected: injected}); }
+            });
+        },
+
+        // OBSERVER
+        _dataObserver: function () {
+
+            // Setting
+            if (this.injected) { this.injected.data = this.data; }
+        },
+
+        // OBSERVER
+        _injectedObserver: function () {
+
+            // Setting
+            XP.setAttribute(this.injected, 'active', this.active);
+        },
+
+        /*********************************************************************/
+
+        // LISTENER
+        created: function () {
+
+            // Classifying
+            this.classList.add('page');
+        },
+
+        // LISTENER
+        ready: function () {
+
+            // Mapping
+            this.mastersMap.selector = '.pages';
+        },
+
+        /*********************************************************************/
+
+        // HANDLER
+        _slaveHandler: function (event) {
+
+            // Vars
+            var self     = this,
+                firer    = event.detail.firer,
+                selector = event.detail.selector;
+
+            // Stopping
+            if (firer !== self && selector === '.pages' && firer.classList.contains('page')) { event.stopPropagation(); }
+        }
+    };
+
+    Polymer.XPPageBehavior = [
+        Polymer.XPSlaveBehavior,
+        Polymer.XPPageBehaviorImp
+    ];
+</script>

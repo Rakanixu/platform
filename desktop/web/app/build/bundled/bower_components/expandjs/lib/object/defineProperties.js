@@ -1,0 +1,1 @@
+!function(){"use strict";var e=require("../assert/assertArgument"),r=require("../object/defineProperty"),t=require("../object/forOwn"),i=require("../tester/isFunction"),n=require("../tester/isObject");module.exports=function(u,o){return e(i(u)||n(u),1,"Function or Object"),e(n(o),2,"Object"),t(o,function(e,t){r(u,t,e)}),u}}();

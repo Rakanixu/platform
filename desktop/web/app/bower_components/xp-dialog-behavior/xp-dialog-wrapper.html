@@ -1,0 +1,70 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A behavior used to add dialog wrapping capabilities on a custom element.
+
+@behavior xp-dialog-wrapper
+@description A behavior used to add dialog wrapping capabilities on a custom element
+@keywords expandjs, web app, custom elements, web-components
+@group behaviors
+@hot
+
+@homepage http://expandjs.com/elements/xp-dialog-wrapper
+@repository https://github.com/ExpandJS/xp-dialog-behavior
+
+@behavior xp-overlay-wrapper /bower_components/xp-overlay/xp-overlay-wrapper.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency xp-overlay ExpandJS/xp-overlay#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-overlay/xp-overlay-wrapper.html">
+
+<script>
+    Polymer.XPDialogWrapperImp = {
+
+        // PROPERTIES
+        properties: {
+
+            /**
+             * If set to true, the dialog is full screen.
+             *
+             * @attribute fullScreen
+             * @type Array
+             * @default false
+             * @notifies
+             * @readonly
+             */
+            fullScreen: {
+                notify: true,
+                readOnly: true,
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            }
+        },
+
+        /*********************************************************************/
+
+        // LISTENER
+        ready: function () {
+
+            // Mapping
+            this.attributesMap.overlay.push('fullScreen');
+        }
+    };
+
+    Polymer.XPDialogWrapper = [
+        Polymer.XPOverlayWrapper,
+        Polymer.XPDialogWrapperImp
+    ];
+</script>

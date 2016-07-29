@@ -1,0 +1,51 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A stylesheet used to stylize an application wrapper.
+
+@stylesheet xp-shell-styles
+@description A stylesheet used to stylize an application wrapper
+@keywords expandjs, web app, custom elements, web-components
+@group stylesheets
+
+@homepage http://expandjs.com/elements/xp-shell-styles
+@repository https://github.com/ExpandJS/xp-shell-behavior
+
+@dependency polymer Polymer/polymer#^1.2.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+
+<dom-module id="xp-shell-styles">
+
+    <template strip-whitespace>
+
+        <style>
+            :host {
+                bottom: 0;
+                left: 0;
+                overflow: hidden;
+                position: absolute;
+                right: 0;
+                top: 0;
+            }
+
+            :host ::content a {
+                color: inherit;
+                text-decoration: none;
+            }
+
+            :host ::content a[href]:hover {
+                text-decoration: underline;
+            }
+        </style>
+
+    </template>
+
+</dom-module>

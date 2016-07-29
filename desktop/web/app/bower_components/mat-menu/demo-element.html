@@ -1,0 +1,94 @@
+<link rel="import" href="../mat-demo/mat-demo.html">
+<link rel="import" href="../mat-divider/mat-divider.html">
+<link rel="import" href="../mat-icon-button/mat-icon-button.html">
+<link rel="import" href="../mat-icons/mat-icons.html">
+<link rel="import" href="mat-menu.html">
+<link rel="import" href="mat-submenu.html">
+
+<dom-module id="mat-menu-demo">
+
+    <template>
+
+        <style>
+            :host {
+                display: block;
+            }
+        </style>
+
+        <mat-demo name="mat-menu" type="element" url="http://expandjs.com/elements/mat-menu">
+
+            <mat-demo-panel label="Default">
+                <script type="text/html">
+                    <mat-icon-button behavior="toggle" icon="mat:more-vert" target="demoDefault"></mat-icon-button>
+                    <mat-menu id="demoDefault">
+                        <mat-option label="Option 1"></mat-option>
+                        <mat-option label="Option 2"></mat-option>
+                        <mat-option label="Option 3"></mat-option>
+                    </mat-menu>
+                </script>
+                <mat-icon-button behavior="toggle" icon="mat:more-vert" target="demoDefault"></mat-icon-button>
+                <mat-menu id="demoDefault">
+                    <mat-option label="Option 1"></mat-option>
+                    <mat-option label="Option 2"></mat-option>
+                    <mat-option label="Option 3"></mat-option>
+                </mat-menu>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Cascading">
+                <script type="text/html">
+                    <mat-icon-button behavior="toggle" icon="mat:more-vert" target="demoCascading"></mat-icon-button>
+                    <mat-menu id="demoCascading">
+                        <mat-option label="Option 1" toggleable active></mat-option>
+                        <mat-option label="Option 2" toggleable></mat-option>
+                        <mat-option label="Option 3" toggleable></mat-option>
+                        <mat-divider></mat-divider>
+                        <mat-submenu label="Option 4">
+                            <mat-option label="Sub option 1"></mat-option>
+                            <mat-option label="Sub option 2"></mat-option>
+                            <mat-option label="Sub option 3"></mat-option>
+                        </mat-submenu>
+                        <mat-submenu label="Option 5">
+                            <mat-option label="Sub option 1" toggleable active></mat-option>
+                            <mat-option label="Sub option 2" toggleable></mat-option>
+                            <mat-divider></mat-divider>
+                            <mat-option label="Sub option 3"></mat-option>
+                            <mat-option label="Sub option 4"></mat-option>
+                            <mat-option label="Sub option 5"></mat-option>
+                        </mat-submenu>
+                    </mat-menu>
+                </script>
+                <mat-icon-button behavior="toggle" icon="mat:more-vert" target="demoCascading"></mat-icon-button>
+                <mat-menu id="demoCascading">
+                    <mat-option label="Option 1" toggleable active></mat-option>
+                    <mat-option label="Option 2" toggleable></mat-option>
+                    <mat-option label="Option 3" toggleable></mat-option>
+                    <mat-divider></mat-divider>
+                    <mat-submenu label="Option 4">
+                        <mat-option label="Sub option 1"></mat-option>
+                        <mat-option label="Sub option 2"></mat-option>
+                        <mat-option label="Sub option 3"></mat-option>
+                    </mat-submenu>
+                    <mat-submenu label="Option 5">
+                        <mat-option label="Sub option 1" toggleable active></mat-option>
+                        <mat-option label="Sub option 2" toggleable></mat-option>
+                        <mat-divider></mat-divider>
+                        <mat-option label="Sub option 3"></mat-option>
+                        <mat-option label="Sub option 4"></mat-option>
+                        <mat-option label="Sub option 5"></mat-option>
+                    </mat-submenu>
+                </mat-menu>
+            </mat-demo-panel>
+
+        </mat-demo>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-menu-demo'
+        });
+    </script>
+
+</dom-module>

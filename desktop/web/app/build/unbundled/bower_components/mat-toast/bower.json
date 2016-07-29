@@ -1,0 +1,33 @@
+{
+  "name": "mat-toast",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "mat-toast.html",
+  "description": "A custom element used to display a Material Design toast",
+  "homepage": "http://expandjs.com/elements/mat-toast",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "material design",
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "mat-typography": "ExpandJS/mat-typography#0.10.0",
+    "xp-toast-behavior": "ExpandJS/xp-toast-behavior#0.10.0",
+    "polymer": "Polymer/polymer#^1.2.0"
+  },
+  "devDependencies": {
+    "mat-button": "ExpandJS/mat-button#0.10.0",
+    "mat-demo": "ExpandJS/mat-demo#0.10.0"
+  }
+}

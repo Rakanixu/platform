@@ -1,0 +1,109 @@
+<link rel="import" href="../mat-demo/mat-demo.html">
+<link rel="import" href="../mat-icons/mat-icons.html">
+<link rel="import" href="mat-tabs.html">
+
+<dom-module id="mat-tabs-demo">
+
+    <template>
+
+        <style>
+            :host {
+                display: block;
+            }
+        </style>
+
+        <mat-demo name="mat-tabs" type="element" url="http://expandjs.com/elements/mat-tabs">
+
+            <mat-demo-panel label="Default" padding-disabled>
+                <script type="text/html">
+                    <mat-tabs>
+                        <mat-tab label="First tab"></mat-tab>
+                        <mat-tab label="Second tab"></mat-tab>
+                        <mat-tab label="Third tab"></mat-tab>
+                    </mat-tabs>
+                </script>
+                <mat-tabs>
+                    <mat-tab label="First tab"></mat-tab>
+                    <mat-tab label="Second tab"></mat-tab>
+                    <mat-tab label="Third tab"></mat-tab>
+                </mat-tabs>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Closable" padding-disabled>
+                <script type="text/html">
+                    <mat-tabs>
+                        <mat-tab label="First tab" closable></mat-tab>
+                        <mat-tab label="Second tab" closable></mat-tab>
+                        <mat-tab label="Third tab" closable></mat-tab>
+                    </mat-tabs>
+                </script>
+                <mat-tabs>
+                    <mat-tab label="First tab" closable></mat-tab>
+                    <mat-tab label="Second tab" closable></mat-tab>
+                    <mat-tab label="Third tab" closable></mat-tab>
+                </mat-tabs>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Icons" padding-disabled>
+                <script type="text/html">
+                    <mat-tabs>
+                        <mat-tab icon="mat:home"></mat-tab>
+                        <mat-tab icon="mat:people"></mat-tab>
+                        <mat-tab icon="mat:favorite"></mat-tab>
+                    </mat-tabs>
+                </script>
+                <mat-tabs>
+                    <mat-tab icon="mat:home"></mat-tab>
+                    <mat-tab icon="mat:people"></mat-tab>
+                    <mat-tab icon="mat:favorite"></mat-tab>
+                </mat-tabs>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Scrollable" padding-disabled>
+                <script type="text/html">
+                    <mat-tabs scrollable>
+                        <mat-tab label="First tab"></mat-tab>
+                        <mat-tab label="Second tab"></mat-tab>
+                        <mat-tab label="Third tab"></mat-tab>
+                        <mat-tab label="Forth tab"></mat-tab>
+                        <mat-tab label="Fifth tab"></mat-tab>
+                        <mat-tab label="Sixth tab"></mat-tab>
+                        <mat-tab label="Seventh tab"></mat-tab>
+                        <mat-tab label="Eighth tab"></mat-tab>
+                        <mat-tab label="Ninth tab"></mat-tab>
+                        <mat-tab label="Tenth tab"></mat-tab>
+                        <mat-tab label="Eleventh tab"></mat-tab>
+                        <mat-tab label="Twelfth tab"></mat-tab>
+                        <mat-tab label="Thirteenth tab"></mat-tab>
+                    </mat-tabs>
+                </script>
+                <mat-tabs scrollable>
+                    <mat-tab label="First tab"></mat-tab>
+                    <mat-tab label="Second tab"></mat-tab>
+                    <mat-tab label="Third tab"></mat-tab>
+                    <mat-tab label="Forth tab"></mat-tab>
+                    <mat-tab label="Fifth tab"></mat-tab>
+                    <mat-tab label="Sixth tab"></mat-tab>
+                    <mat-tab label="Seventh tab"></mat-tab>
+                    <mat-tab label="Eighth tab"></mat-tab>
+                    <mat-tab label="Ninth tab"></mat-tab>
+                    <mat-tab label="Tenth tab"></mat-tab>
+                    <mat-tab label="Eleventh tab"></mat-tab>
+                    <mat-tab label="Twelfth tab"></mat-tab>
+                    <mat-tab label="Thirteenth tab"></mat-tab>
+                </mat-tabs>
+            </mat-demo-panel>
+
+        </mat-demo>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-tabs-demo'
+        });
+    </script>
+
+</dom-module>

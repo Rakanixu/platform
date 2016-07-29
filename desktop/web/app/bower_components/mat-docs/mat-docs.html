@@ -1,0 +1,554 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A custom element used to display Material Design documentation.
+
+@element mat-docs
+@description A custom element used to display a Material Design documentation
+@keywords JSDoc, material design, expandjs, web app, custom elements, web-components
+@group contents
+
+@homepage http://expandjs.com/elements/mat-docs
+@repository https://github.com/ExpandJS/mat-docs
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency iron-flex-layout PolymerElements/iron-flex-layout#^1.0.0
+@dependency mat-button ExpandJS/mat-button#0.10.0
+@dependency mat-icon-button ExpandJS/mat-icon-button#0.10.0
+@dependency mat-panel ExpandJS/mat-panel#0.10.0
+@dependency mat-toolbar ExpandJS/mat-toolbar#0.10.0
+@dependency mat-typography ExpandJS/mat-typography#0.10.0
+@dependency xp-doc-parser ExpandJS/xp-doc-parser#0.10.0
+@dependency xp-markdown ExpandJS/xp-markdown#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../mat-button/mat-button.html">
+<link rel="import" href="../mat-icon-button/mat-icon-button.html">
+<link rel="import" href="../mat-panel/mat-panel.html">
+<link rel="import" href="../mat-toolbar/mat-toolbar.html">
+<link rel="import" href="../mat-typography/mat-typography.html">
+<link rel="import" href="../xp-doc-parser/xp-doc-parser.html">
+<link rel="import" href="../xp-markdown/xp-markdown.html">
+
+<dom-module id="mat-docs">
+
+    <template strip-whitespace>
+
+        <style>
+
+            /* HOST */
+
+            :host {
+                display: block;
+                font-size: 16px;
+                font-weight: 400;
+                letter-spacing: 0.01em;
+                line-height: 24px;
+                text-overflow: clip;
+                text-rendering: optimizeLegibility;
+                white-space: normal;
+            }
+
+            :host([empty]) {
+                display: none !important;
+            }
+
+            /* RESET */
+
+            :host a {
+                color: #2979FF;
+                text-decoration: none;
+            }
+
+            :host a[href]:hover {
+                text-decoration: underline;
+            }
+
+            :host hr {
+                border: none;
+                border-top: 1px solid hsla(0, 0%, 0%, 0.12);
+                height: 0;
+                margin: 15px -16px 16px -16px;
+            }
+
+            :host h1, :host h2,
+            :host ol, :host ul {
+                margin: 0;
+            }
+
+            :host ul {
+                list-style-type: circle;
+            }
+
+            :host [hidden] {
+                display: none !important;
+            }
+
+            /* HEADER */
+
+            :host .header:after {
+                clear: both;
+                content: "";
+                display: block;
+                height: 0;
+            }
+
+            :host .header .name {
+                @apply(--mat-font-display2);
+            }
+
+            :host .header .type {
+                @apply(--mat-font-title);
+                float: left;
+                opacity: 0.30;
+                text-transform: capitalize;
+            }
+
+            :host .header .button {
+                float: right;
+                margin: -8px -8px -8px 8px;
+            }
+
+            /* PANEL */
+
+            :host .panel {
+                margin-top: 16px;
+            }
+
+            :host .panel .toolbar {
+                text-transform: capitalize;
+            }
+
+            :host .panel .toolbar .button {
+                margin-right: 6px;
+            }
+
+            :host .panel .extends,
+            :host .panel .adapts,
+            :host .panel .behaviors {
+                @apply(--layout-horizontal);
+                @apply(--layout-wrap);
+            }
+
+            :host .panel .behaviors .feature-type:not(:last-of-type):after {
+                content: ",";
+                margin: 0;
+            }
+
+            :host .panel .summary > :first-child {
+                margin-top: 0;
+            }
+
+            :host .panel .summary > :last-child {
+                margin-bottom: 0;
+            }
+
+            :host .panel .feature:last-of-type > hr {
+                display: none !important;
+            }
+
+            :host .panel .feature-name,
+            :host .panel .param-name {
+                font-weight: 600;
+                margin-right: 6px;
+                opacity: 0.80;
+            }
+
+            :host .panel .feature-type,
+            :host .panel .param-type {
+                margin-right: 6px;
+                opacity: 0.50;
+            }
+
+            :host .panel .feature-default,
+            :host .panel .feature-title {
+                font-style: italic;
+            }
+
+            :host .panel .feature-title {
+                margin-top: 16px;
+            }
+
+            :host .panel .feature-tag {
+                @apply(--layout-self-start);
+                @apply(--mat-font-caption);
+                background: hsla(0, 0%, 13%, 0.80);
+                border-radius: 2px;
+                box-sizing: border-box;
+                color: hsla(0, 0%, 100%, 1);
+                margin-right: 6px;
+                padding: 4px 8px;
+            }
+
+            :host .panel .feature-summary p,
+            :host .panel .feature-summary ol,
+            :host .panel .feature-summary ul {
+                margin: 0;
+            }
+
+            :host .panel .param-name[optional] {
+                font-style: italic;
+            }
+
+            :host .panel .param-name[optional]:after {
+                content: "]";
+            }
+
+            :host .panel .param-name[optional]:before {
+                content: "[";
+            }
+
+            :host .panel.features .private.button:not([private]) {
+                display: none !important;
+            }
+
+            :host .panel.features:not([private]) .feature[private] {
+                display: none !important;
+            }
+
+            :host .panel.features:not([private]):not([public]):not([type="constructs"]) .toolbar {
+                margin-bottom: -32px;
+            }
+
+            /* DESKTOP */
+
+            @media (min-width: 960px) {
+
+                :host .panel {
+                    margin-top: 24px;
+                }
+            }
+        </style>
+
+        <!-- PARSER -->
+        <xp-doc-parser url="[[url]]" on-data-changed="_handleData" recursive></xp-doc-parser>
+
+        <!-- HEADER -->
+        <template is="dom-if" if="[[data]]" restamp>
+            <header class="header">
+                <h1 class="name">[[data.name]]</h1>
+                <h2 class="type">[[data.type]]</h2>
+                <mat-icon-button class="repository" hidden="[[!data.repository]]" href="[[data.repository]]" target="_blank" title="GitHub" icon-src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAyNCIgaGVpZ2h0PSI5OTkiIHZpZXdCb3g9IjAgMCAxMDI0IDk5OSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4gICAgPGRlZnM+PC9kZWZzPiAgICA8ZyBpZD0iaWNvbi1naXRodWIiIGZpbGw9IiMwMDAwMDAiIG9wYWNpdHk9IjAuNTQiPiAgICAgICAgPHBhdGggZD0iTTUxMiwwIEMyMjkuMjUsMCAwLDIyOS4yNSAwLDUxMiBDMCw3MzguMjUgMTQ2LjY4OCw5MzAuMTI1IDM1MC4xNTYsOTk3LjgxMiBDMzc1Ljc1LDEwMDIuNSAzODUuMDk0LDk4Ni42ODcgMzg1LjA5NCw5NzMuMTg3IEMzODUuMDk0LDk2MC45OTkgMzg0LjYyNSw5MjAuNjI1IDM4NC4zNzUsODc3Ljg3NSBDMjQyLDkwOC44MTIgMjExLjkwNiw4MTcuNSAyMTEuOTA2LDgxNy41IEMxODguNTk0LDc1OC4zNzUgMTU1LjA2Miw3NDIuNjI1IDE1NS4wNjIsNzQyLjYyNSBDMTA4LjUzMSw3MTAuODc1IDE1OC41OTIsNzExLjUgMTU4LjU5Miw3MTEuNSBDMjA5Ljk5OCw3MTUuMDYyIDIzNy4wNjIsNzY0LjI1IDIzNy4wNjIsNzY0LjI1IEMyODIuNzUsODQyLjUgMzU2LjkzNyw4MTkuODc1IDM4Ni4wNjIsODA2Ljc1IEMzOTAuNzE2LDc3My43NSA0MDMuOTY2LDc1MS4xMjUgNDE4LjU2Miw3MzguMzc1IEMzMDQuOTA2LDcyNS40MzggMTg1LjM0NCw2ODEuNSAxODUuMzQ0LDQ4NS4zMTIgQzE4NS4zNDQsNDI5LjM3NCAyMDUuMzEzLDM4My43NSAyMzgsMzQ3LjkwNiBDMjMyLjc4MSwzMzQuOTA2IDIxNS4xNTYsMjgyLjgxMiAyNDMuMDYyLDIxMi4zNDQgQzI0My4wNjIsMjEyLjM0NCAyODYsMTk4LjU5NCAzODMuODc0LDI2NC44NDQgQzQyNC42ODYsMjUzLjQzOCA0NjguNDY4LDI0Ny44MTMgNTExLjk5OSwyNDcuNjI1IEM1NTUuNDk5LDI0Ny44MTMgNTk5LjMxMSwyNTMuNSA2NDAuMTg3LDI2NC45MDYgQzczNy44NzUsMTk4LjU5NCA3ODAuODc1LDIxMi40MDYgNzgwLjg3NSwyMTIuNDA2IEM4MDguODc1LDI4Mi45MzcgNzkxLjI1LDMzNC45NjggNzg2LDM0Ny45MDYgQzgxOC44MTIsMzgzLjc1IDgzOC42MjUsNDI5LjM3NSA4MzguNjI1LDQ4NS4zMTIgQzgzOC42MjUsNjgyIDcxOC44NzUsNzI1LjMxMiA2MDQuODEzLDczOCBDNjIzLjI1MSw3NTMuODc1IDYzOS41NjMsNzg1IDYzOS41NjMsODMyLjc1IEM2MzkuNTYzLDkwMS4xODggNjM4Ljg3NSw5NTYuMzc1IDYzOC44NzUsOTczLjI1IEM2MzguODc1LDk4Ni44NzUgNjQ4LjE4NywxMDAyLjgxMiA2NzQuMTI1LDk5Ny44MTIgQzg3Ny40MzgsOTMwIDEwMjQsNzM4LjEyNSAxMDI0LDUxMiBDMTAyNCwyMjkuMjUgNzk0Ljc1LDAgNTEyLDAgTDUxMiwwIFoiPjwvcGF0aD4gICAgPC9nPjwvc3ZnPg=="></mat-icon-button>
+                <mat-icon-button class="demo" hidden="[[!data.demo]]" href="[[data.demo]]" title="Demo" icon-src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZGVmcz48L2RlZnM+PGcgaWQ9InZpc2liaWxpdHkiIGZpbGw9IiMwMDAwMDAiIG9wYWNpdHk9IjAuNTQiPjxwYXRoIGQ9Ik0xMiA0LjVDNyA0LjUgMi43MyA3LjYxIDEgMTJjMS43MyA0LjM5IDYgNy41IDExIDcuNXM5LjI3LTMuMTEgMTEtNy41Yy0xLjczLTQuMzktNi03LjUtMTEtNy41ek0xMiAxN2MtMi43NiAwLTUtMi4yNC01LTVzMi4yNC01IDUtNSA1IDIuMjQgNSA1LTIuMjQgNS01IDV6bTAtOGMtMS42NiAwLTMgMS4zNC0zIDNzMS4zNCAzIDMgMyAzLTEuMzQgMy0zLTEuMzQtMy0zLTN6Ii8+PC9nPjwvc3ZnPg=="></mat-icon-button>
+            </header>
+        </template>
+
+        <!-- DESCRIPTION -->
+        <template is="dom-if" if="[[data]]" restamp>
+            <mat-panel class="description" padding>
+                <mat-toolbar background="[[toolbarBackground]]" justified="between">
+                    <span class="label">Description</span>
+                </mat-toolbar>
+                <div class="extends" hidden$="[[!data.extends]]">
+                    <span class="feature-name">Extends:</span>
+                    <span class="feature-type">[[data.extends.name]]</span>
+                </div>
+                <div class="adapts" hidden$="[[!data.adapts]]">
+                    <span class="feature-name">Adapts:</span>
+                    <span class="feature-type">[[data.adapts.name]]</span>
+                </div>
+                <div class="behaviors" hidden$="[[!data.behaviors.length]]">
+                    <span class="feature-name">Behaviors:</span>
+                    <template is="dom-repeat" items="[[data.behaviors]]" as="behavior">
+                        <span class="feature-type">[[behavior.name]]</span>
+                    </template>
+                </div>
+                <hr hidden$="[[!_hasInheritance(data)]]" />
+                <xp-markdown class="summary" code="[[data.summary]]"></xp-markdown>
+            </mat-panel>
+        </template>
+
+        <!-- ARGUMENTS -->
+        <template is="dom-if" if="[[data.params.length]]" restamp>
+            <mat-panel class="arguments" padding>
+                <mat-toolbar background="[[toolbarBackground]]" justified="between">
+                    <span class="label">Arguments</span>
+                </mat-toolbar>
+                <ol class="params">
+                    <template is="dom-repeat" items="[[data.params]]" as="param">
+                        <li class="param">
+                            <span class="param-name" optional$="[[_computeParamOptional(param)]]">[[_computeParamName(param)]]</span>
+                            <span class="param-type">[[param.type]]</span>
+                            <div class="param-summary">[[param.summary]]</div>
+                            <template is="dom-if" if="[[param.params.length]]" restamp>
+                                <ul class="params">
+                                    <template is="dom-repeat" items="[[param.params]]" as="subParam">
+                                        <li class="param">
+                                            <span class="param-name" optianal$="[[_computeParamOptional(subParam)]]">[[_computeParamName(param, subParam)]]</span>
+                                            <span class="param-type">[[subParam.type]]</span>
+                                            <div class="param-summary">[[subParam.summary]]</div>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </template>
+                        </li>
+                    </template>
+                </ol>
+            </mat-panel>
+        </template>
+
+        <!-- RETURNS -->
+        <template is="dom-if" if="[[data.returns]]" restamp>
+            <mat-panel class="returns" padding>
+                <mat-toolbar background="[[toolbarBackground]]" justified="between">
+                    <span class="label">Returns</span>
+                </mat-toolbar>
+                <ul class="params">
+                    <li class="param">
+                        <span class="param-type">[[data.returns.type]]</span>
+                        <div class="param-summary">[[data.returns.summary]]</div>
+                    </li>
+                </ul>
+            </mat-panel>
+        </template>
+
+        <!-- FEATURES -->
+        <template is="dom-repeat" items="[[features]]" as="feature">
+            <template is="dom-if" if="[[_hasFeature(data, feature)]]" restamp>
+                <mat-panel class="features" type$="[[feature]]" public$="[[_hasPublic(data, feature)]]" padding>
+                    <mat-toolbar background="[[toolbarBackground]]" justified="between">
+                        <span class="label">[[_computeFeatureTitle(feature)]]</span>
+                        <mat-button class="private" private$="[[_hasPrivate(data, feature)]]" label="Toggle private" on-xp-activate="_handlePrivate" toggleable></mat-button>
+                    </mat-toolbar>
+                    <template is="dom-repeat" items="[[_computeFeatures(data, feature)]]" as="feat">
+                        <div class="feature" private$="[[feat.private]]">
+                            <div class="feature-primary">
+                                <span class="feature-name">[[_computeFeatureName(data, feat, feature)]]</span>
+                                <span class="feature-type" hidden$="[[!feat.type]]">[[feat.type]]</span>
+                                <span class="feature-tag" hidden$="[[!feat.private]]">private</span>
+                                <span class="feature-tag" hidden$="[[!feat.abstract]]">abstract</span>
+                                <span class="feature-tag" hidden$="[[!feat.bubbles]]">bubbles</span>
+                                <span class="feature-tag" hidden$="[[!feat.cancelable]]">cancelable</span>
+                                <span class="feature-tag" hidden$="[[!feat.notifies]]">notifies</span>
+                                <span class="feature-tag" hidden$="[[!feat.readonly]]">readonly</span>
+                                <span class="feature-tag" hidden$="[[!feat.static]]">static</span>
+                                <div class="feature-default" hidden$="[[!feat.default]]">Default: [[feat.default]]</div>
+                                <xp-markdown class="feature-summary" code="[[feat.summary]]"></xp-markdown>
+                            </div>
+                            <template is="dom-if" if="[[feat.params.length]]" restamp>
+                                <div class="feature-title">Arguments</div>
+                                <ol class="params">
+                                    <template is="dom-repeat" items="[[feat.params]]" as="param">
+                                        <li class="param">
+                                            <span class="param-name" optional$="[[_computeParamOptional(param)]]">[[_computeParamName(param)]]</span>
+                                            <span class="param-type">[[param.type]]</span>
+                                            <div class="param-summary">[[param.summary]]</div>
+                                            <template is="dom-if" if="[[param.params.length]]" restamp>
+                                                <ul class="params">
+                                                    <template is="dom-repeat" items="[[param.params]]" as="subParam">
+                                                        <li class="param">
+                                                            <span class="param-name" optional$="[[_computeParamOptional(subParam)]]">[[_computeParamName(param, subParam)]]</span>
+                                                            <span class="param-type">[[subParam.type]]</span>
+                                                            <div class="param-summary">[[subParam.summary]]</div>
+                                                        </li>
+                                                    </template>
+                                                </ul>
+                                            </template>
+                                        </li>
+                                    </template>
+                                </ol>
+                            </template>
+                            <template is="dom-if" if="[[feat.returns]]" restamp>
+                                <div class="feature-title">Returns</div>
+                                <ul class="params">
+                                    <li class="param">
+                                        <span class="param-type">[[feat.returns.type]]</span>
+                                        <div class="param-summary">[[feat.returns.summary]]</div>
+                                    </li>
+                                </ul>
+                            </template>
+                            <hr/>
+                        </div>
+                    </template>
+                </mat-panel>
+            </template>
+        </template>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-docs',
+
+            /*********************************************************************/
+
+            // PROPERTIES
+            properties: {
+
+                /**
+                 * The element's data.
+                 *
+                 * @attribute data
+                 * @type Object
+                 * @notifies
+                 * @readonly
+                 */
+                data: {
+                    notify: true,
+                    readOnly: true,
+                    type: Object
+                },
+
+                /**
+                 * If set to true, the data are not ready yet.
+                 *
+                 * @attribute empty
+                 * @type boolean
+                 * @default true
+                 * @notifies
+                 * @readonly
+                 */
+                empty: {
+                    computed: '_computeEmpty(data)',
+                    notify: true,
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: true
+                },
+
+                /**
+                 * The list of features.
+                 *
+                 * @attribute features
+                 * @type Array
+                 * @default ["constructs", "events", "attributes", "properties", "methods"]
+                 * @notifies
+                 * @readonly
+                 */
+                features: {
+                    notify: true,
+                    readOnly: true,
+                    type: Array,
+                    value: function () { return ['constructs', 'events', 'attributes', 'properties', 'methods']; }
+                },
+
+                /**
+                 * The documentation parser.
+                 *
+                 * @attribute parser
+                 * @type Element
+                 * @notifies
+                 * @readonly
+                 */
+                parser: {
+                    notify: true,
+                    readOnly: true
+                },
+
+                /**
+                 * The toolbars' background.
+                 *
+                 * @attribute toolbar-background
+                 * @type string
+                 * @default "indigo"
+                 */
+                toolbarBackground: {
+                    type: String,
+                    value: 'indigo'
+                }
+            },
+
+            /*********************************************************************/
+
+            // COMPUTER
+            _computeEmpty: function (data) {
+                return !data;
+            },
+
+            // COMPUTER
+            _computeFeatureName: function (data, feat, feature) {
+                return feature === 'constructs' ? (data && 'new ' + data.name) || '' : (feat && feat.name) || '';
+            },
+
+            // COMPUTER
+            _computeFeatureTitle: function (feature) {
+                return feature === 'constructs' ? 'Constructor' : feature || '';
+            },
+
+            // COMPUTER
+            _computeFeatures: function (data, feature) {
+                return (data && (feature === 'constructs' ? [data[feature]] : data[feature])) || [];
+            },
+
+            // COMPUTER
+            _computeParamName: function (param, subParam) {
+                return (param && param.name ? param.name : '') + (subParam && subParam.name ? '.' + subParam.name : '') + ((subParam || param) && (subParam || param).default ? ' = ' + (subParam || param).default : '');
+            },
+
+            // COMPUTER
+            _computeParamOptional: function (param) {
+                return !!param && (!!param.optional || !!param.default);
+            },
+
+            // COMPUTER
+            _hasFeature: function (data, feature) {
+                return !!data && !!data[feature] && (feature === 'constructs' || !!data[feature].length);
+            },
+
+            // COMPUTER
+            _hasInheritance: function (data) {
+                return !!data && (!!data.adapts || !!data.extends || (!!data.behaviors && !!data.behaviors.length));
+            },
+
+            // COMPUTER
+            _hasMore: function (index, length) {
+                return index < length - 1;
+            },
+
+            // COMPUTER
+            _hasPrivate: function (data, feature) {
+                return !!data && !!data[feature] && !!XP.find(data[feature], function (feat) { return feat.private; });
+            },
+
+            // COMPUTER
+            _hasPublic: function (data, feature) {
+                return !!data && !!data[feature] && !!XP.find(data[feature], function (feat) { return !feat.private; });
+            },
+
+            /*********************************************************************/
+
+            // LISTENER
+            created: function () {
+
+                // Classifying
+                this.classList.add('docs');
+            },
+
+            // LISTENER
+            ready: function () {
+
+                // Setting
+                this._setParser(Polymer.dom(this.root).querySelector('.parser'));
+            },
+
+            /*********************************************************************/
+
+            // HANDLER
+            _handleData: function () {
+
+                // Setting
+                this._setData((this.parser && this.parser.data) || null);
+            },
+
+            // HANDLER
+            _handlePrivate: function (event) {
+
+                // Setting
+                XP.setAttribute(XP.findParentElement(event.currentTarget, '.panel'), 'private', !event.detail.isActive);
+            }
+        });
+    </script>
+
+</dom-module>

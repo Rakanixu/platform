@@ -1,0 +1,62 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A custom style used to provide css variables for [Material Design spacing](https://www.google.com/design/spec/layout/metrics-keylines.html#metrics-keylines-keylines-spacing).
+
+```html
+<style>
+    .paper.normal { @apply(--mat-padding-desktop); }
+    .paper.inset  { @apply(--mat-padding-desktop-inset); }
+</style>
+
+<mat-paper class="normal paper"></mat-paper>
+<mat-paper class="inset paper"></mat-paper>
+```
+
+@stylesheet mat-spacing
+@description A custom style used to provide css variables for Material Design spacing
+@keywords material design, material spacing, expandjs, web app, custom elements, web-components
+@group stylesheets
+
+@homepage http://expandjs.com/elements/mat-spacing
+@repository https://github.com/ExpandJS/mat-spacing
+
+@dependency polymer Polymer/polymer#^1.2.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+
+<style is="custom-style">
+    :root {
+
+        --mat-padding-mobile: {
+            box-sizing: border-box;
+            display: block;
+            padding: 16px;
+        };
+
+        --mat-padding-mobile-inset: {
+            box-sizing: border-box;
+            display: block;
+            padding: 16px 16px 16px 72px;
+        };
+
+        --mat-padding-desktop: {
+            box-sizing: border-box;
+            display: block;
+            padding: 24px;
+        };
+
+        --mat-padding-desktop-inset: {
+            box-sizing: border-box;
+            display: block;
+            padding: 24px 24px 24px 80px;
+        };
+    }
+</style>

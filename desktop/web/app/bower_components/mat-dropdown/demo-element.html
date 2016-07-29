@@ -1,0 +1,103 @@
+<link rel="import" href="../mat-demo/mat-demo.html">
+<link rel="import" href="mat-dropdown.html">
+
+<dom-module id="mat-dropdown-demo">
+
+    <template>
+
+        <style>
+            :host {
+                display: block;
+            }
+        </style>
+
+        <mat-demo name="mat-dropdown" type="element" url="http://expandjs.com/elements/mat-dropdown">
+
+            <mat-demo-panel label="Default">
+                <script type="text/html">
+                    <mat-dropdown label="Select a value..." inline>
+                        <mat-option value="1" label="Value 1"></mat-option>
+                        <mat-option value="2" label="Value 2"></mat-option>
+                        <mat-option value="3" label="Value 3"></mat-option>
+                    </mat-dropdown>
+                </script>
+                <mat-dropdown label="Select a value..." inline>
+                    <mat-option value="1" label="Value 1"></mat-option>
+                    <mat-option value="2" label="Value 2"></mat-option>
+                    <mat-option value="3" label="Value 3"></mat-option>
+                </mat-dropdown>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Binding and default value">
+                <script type="text/html">
+                    <mat-dropdown label="Select a value..." model="{{myDropdown}}" value="1" inline>
+                        <mat-option value="1" label="Value 1"></mat-option>
+                        <mat-option value="2" label="Value 2"></mat-option>
+                        <mat-option value="3" label="Value 3"></mat-option>
+                    </mat-dropdown>
+                </script>
+                <mat-dropdown label="Select a value..." model="{{myDropdown}}" value="1" inline>
+                    <mat-option value="1" label="Value 1"></mat-option>
+                    <mat-option value="2" label="Value 2"></mat-option>
+                    <mat-option value="3" label="Value 3"></mat-option>
+                </mat-dropdown>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Floating label">
+                <script type="text/html">
+                    <mat-dropdown label="Select a value..." floating-label inline>
+                        <mat-option value="1" label="Value 1"></mat-option>
+                        <mat-option value="2" label="Value 2"></mat-option>
+                        <mat-option value="3" label="Value 3"></mat-option>
+                    </mat-dropdown>
+                </script>
+                <mat-dropdown label="Select a value..." floating-label inline>
+                    <mat-option value="1" label="Value 1"></mat-option>
+                    <mat-option value="2" label="Value 2"></mat-option>
+                    <mat-option value="3" label="Value 3"></mat-option>
+                </mat-dropdown>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Pulldown" padding-disabled>
+                <script type="text/html">
+                    <mat-dropdown label="Select a value..." pulldown>
+                        <mat-option value="1" label="Value 1"></mat-option>
+                        <mat-option value="2" label="Value 2"></mat-option>
+                        <mat-option value="3" label="Value 3"></mat-option>
+                    </mat-dropdown>
+                </script>
+                <mat-dropdown label="Select a value..." pulldown>
+                    <mat-option value="1" label="Value 1"></mat-option>
+                    <mat-option value="2" label="Value 2"></mat-option>
+                    <mat-option value="3" label="Value 3"></mat-option>
+                </mat-dropdown>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Full Width" padding-disabled>
+                <script type="text/html">
+                    <mat-dropdown label="Select a value..." full-width>
+                        <mat-option value="1" label="Value 1"></mat-option>
+                        <mat-option value="2" label="Value 2"></mat-option>
+                        <mat-option value="3" label="Value 3"></mat-option>
+                    </mat-dropdown>
+                </script>
+                <mat-dropdown label="Select a value..." full-width>
+                    <mat-option value="1" label="Value 1"></mat-option>
+                    <mat-option value="2" label="Value 2"></mat-option>
+                    <mat-option value="3" label="Value 3"></mat-option>
+                </mat-dropdown>
+            </mat-demo-panel>
+
+        </mat-demo>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-dropdown-demo'
+        });
+    </script>
+
+</dom-module>

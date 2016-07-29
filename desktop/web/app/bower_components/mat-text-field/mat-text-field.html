@@ -1,0 +1,579 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A custom element used to display a [Material Design text field](http://www.google.com/design/spec/components/text-fields.html#text-fields-single-line-text-field).
+
+```html
+<mat-text-field label="First name"></mat-text-field>
+```
+
+It comes with a bundle of useful helpers, such as `label`, `description`, `character counter`
+and also provides all the validators from a native `<input>`.
+
+By default the label will act as a placeholder, however if you want it to be persistent, you can do
+it by setting `floating-label`. This way, it will place itself above the input when a value is present.
+
+```html
+<mat-text-field label="Location" floating-label></mat-text-field>
+```
+
+A short `description` can also be set underneath the input, to explain in a human readable way the
+validation process.
+
+```html
+<mat-text-field label="PIN Code" description="4-digit number" floating-label></mat-text-field>
+```
+
+If an error occurs, by default it will be shown underneath the input, however if the `description` is set,
+it will be highlighted with red instead of showing the error message.
+
+Prefixes and suffixes can also be set on the input, for those cases when a part of the input's value is
+already known or you need to put emphasis on the kind of data requested.
+
+```html
+<mat-text-field label="Username" input-suffix="@expandjs.com"></mat-text-field>
+<mat-text-field label="0.00" input-prefix="$ " step="0.01" fixed></mat-text-field>
+```
+
+The character counter will be automatically created when `max-length` is set.
+
+```html
+<mat-text-field label="Message" max-length="140" full-width></mat-text-field>
+```
+
+To access the actual value, you have two attributes:
+
+- **value** is the current value as string
+- **model** does the same, however it adds some additional behaviors
+
+If the initial value was `null`, when the input is empty, the `model` returns to `null`
+instead of an empty string.
+
+This is useful for binding data that has not yet been initialized, needs to be created on
+the fly or comes from external sources.
+
+Generally, we recommend to use the `model` for data binding and `value` to set the default.
+
+```html
+<mat-text-field label="My input" model="{{myInput}}" value="..."></mat-text-field>
+```
+
+@element mat-text-field
+@description A custom element used to display a Material Design text-field
+@keywords material design, material input, expandjs, web app, custom elements, web-components
+@group inputs
+@hot
+
+@homepage http://expandjs.com/elements/mat-text-field
+@repository https://github.com/ExpandJS/mat-text-field
+@demo http://expandjs.com/demo/mat-text-field
+
+@behavior mat-input-behavior /bower_components/mat-input-behavior/mat-input-behavior.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency mat-ink ExpandJS/mat-ink#0.10.0
+@dependency mat-input-behavior ExpandJS/mat-input-behavior#0.10.0
+
+@devDependency mat-demo ExpandJS/mat-demo#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-ink/mat-ink.html">
+<link rel="import" href="../mat-input-behavior/mat-input-behavior.html">
+<link rel="import" href="../mat-input-behavior/mat-input-styles.html">
+
+<dom-module id="mat-text-field">
+
+    <template strip-whitespace>
+
+        <style include="mat-input-styles"></style>
+
+        <div class="wrapper">
+            <div class="main">
+                <mat-ink class="label" disabled="[[disabled]]" opacity="[[_computeLabelOpacity(floated)]]">[[_computeLabel(floated, inputPrefix, label)]]</mat-ink>
+                <mat-ink class="prefix" disabled="[[disabled]]">[[inputPrefix]]</mat-ink>
+                <mat-ink class="suffix" disabled="[[disabled]]" opacity="secondary">[[inputSuffix]]</mat-ink>
+                <mat-ink class="holder" disabled="[[disabled]]"><content select="input"></content></mat-ink>
+            </div>
+            <div class="underline">
+                <mat-ink class="default" opacity="divider"></mat-ink>
+                <mat-ink class="focused" opacity="divider"></mat-ink>
+            </div>
+            <mat-ink class="helper" disabled="[[disabled]]" opacity="hint">
+                <div class="counter">[[_computeCounter(chars, maxLength)]]</div>
+                <div class="description">[[_computeDescription(description, error, invalid, invalidMessage)]]</div>
+            </mat-ink>
+        </div>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-text-field',
+
+            // BEHAVIORS
+            behaviors: [
+                Polymer.MatInputBehavior
+            ],
+
+            /*********************************************************************/
+
+            /**
+             * Reflects the native input's `value` onto the element.
+             *
+             * @method _commitFrom
+             * @returns {Element}
+             * @private
+             */
+            _commitFrom: function () {
+
+                // Vars
+                var self = this;
+
+                // Setting
+                self.value = self.input.value;
+
+                return self;
+            },
+
+            /**
+             * Reflects the element's `tabIndex` onto the native input.
+             *
+             * @method _commitIndex
+             * @param {number} value
+             * @returns {Element}
+             * @private
+             */
+            _commitIndex: function (value) {
+
+                // Vars
+                var self = this;
+
+                // Setting
+                self.input.tabIndex = value;
+
+                return self;
+            },
+
+            /**
+             * Reflects the element's `value` onto the native input.
+             *
+             * @method _commitTo
+             * @returns {Element}
+             * @private
+             */
+            _commitTo: function () {
+
+                // Vars
+                var self = this;
+
+                // Setting
+                if (self.value !== self.input.value) { self.input.value = self.value; }
+
+                return self;
+            },
+
+            /**
+             * Injects the native input.
+             *
+             * @method _inject
+             * @returns {Element}
+             * @private
+             */
+            _inject: function () {
+
+                // Vars
+                var self  = this,
+                    input = document.createElement('input');
+
+                // Setting
+                XP.setAttribute(input, 'type', self.type);
+                XP.setAttribute(input, 'value', self.value);
+
+                // Appending
+                self._setInput(Polymer.dom(self).appendChild(input));
+
+                return self;
+            },
+
+            /**
+             * Sanitize the native input's `value`.
+             *
+             * @method _sanitize
+             * @returns {Element}
+             * @private
+             */
+            _sanitize: function () {
+
+                // Vars
+                var self = this;
+
+                // Setting
+                if (self.deburr) { self.value = XP.deburr(self.input.value); }
+                if (self.fixed && self.precision && XP.isNumeric(self.value)) { self.value = XP.fixed(XP.toNumber(self.value), self.precision); }
+
+                return self;
+            },
+
+            /**
+             * Updates the native input's attributes.
+             *
+             * @method _update
+             * @returns {Element}
+             * @private
+             */
+            _update: function () {
+
+                // Vars
+                var self = this;
+
+                // Setting
+                XP.setAttribute(self.input, 'disabled', self.disabled);
+                XP.setAttribute(self.input, 'max', self.max);
+                XP.setAttribute(self.input, 'min', self.min);
+                XP.setAttribute(self.input, 'minLength', self.minLength);
+                XP.setAttribute(self.input, 'name', self.name);
+                XP.setAttribute(self.input, 'pattern', self.patterns[self.pattern] || self.pattern);
+                XP.setAttribute(self.input, 'readonly', self.readonly);
+                XP.setAttribute(self.input, 'required', self.required);
+                XP.setAttribute(self.input, 'step', self.step);
+                XP.setAttribute(self.input, 'type', self.type);
+
+                // Delaying
+                self.async(function () {
+
+                    // Vars
+                    var step = XP.getAttribute(self.input, 'step') || '1';
+
+                    // Setting
+                    self._setPrecision(step.lastIndexOf('.') ? XP.last(step.split('.')).length : 0);
+                });
+
+                return self;
+            },
+
+            /**
+             * Validates the native input's `value`.
+             *
+             * @method _validate
+             * @param {boolean | string} [invalidMessage]
+             * @returns {Element}
+             * @private
+             */
+            _validate: function (invalidMessage) {
+
+                // Asserting
+                XP.assertArgument(XP.isVoid(invalidMessage) || XP.isFalse(invalidMessage) || XP.isString(invalidMessage), 1, 'string');
+
+                // Vars
+                var self = this;
+
+                // Customizing
+                if (XP.isDefined(invalidMessage)) { self.input.setCustomValidity(invalidMessage || ''); }
+
+                // Setting
+                self._setInvalidMessage(self.input.validationMessage || null);
+                self._setInvalid(self.input.validity.valid === false);
+
+                // Handling
+                self._inputHandler();
+
+                return self;
+            },
+
+            /*********************************************************************/
+
+            // OBSERVERS
+            observers: [
+                'update(deburr, max, maxLength, min, minLength, pattern, readonly, required, step)'
+            ],
+
+            // PROPERTIES
+            properties: {
+
+                /**
+                 * If set to true, the diacritics will be replaced with standard latin characters.
+                 *
+                 * @attribute deburr
+                 * @type boolean
+                 * @default false
+                 */
+                deburr: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The input's description.
+                 *
+                 * @attribute description
+                 * @type string
+                 */
+                description: {
+                    reflectToAttribute: true,
+                    type: String,
+                    value: null
+                },
+
+                /**
+                 * If set to true, the input has fixed decimals.
+                 *
+                 * @attribute fixed
+                 * @type boolean
+                 * @default false
+                 */
+                fixed: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * If set to true, the input's label is floated.
+                 *
+                 * @attribute floated
+                 * @type boolean
+                 * @default false
+                 * @notifies
+                 * @readonly
+                 */
+                floated: {
+                    computed: '_computeFloated(empty, floatingLabel, focused, fullWidth, label)',
+                    notify: true,
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * If set to true, the input's label will float above the input.
+                 *
+                 * @attribute floating-label
+                 * @type boolean
+                 * @default false
+                 */
+                floatingLabel: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * If set to true, the input is full width.
+                 *
+                 * @attribute full-width
+                 * @type boolean
+                 * @default false
+                 */
+                fullWidth: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * If set to true, the helper is hidden.
+                 *
+                 * @attribute helper-disabled
+                 * @type boolean
+                 * @default false
+                 */
+                helperDisabled: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The input's prefix.
+                 *
+                 * @attribute input-prefix
+                 * @type string
+                 */
+                inputPrefix: {
+                    reflectToAttribute: true,
+                    type: String,
+                    value: null
+                },
+
+                /**
+                 * The input's suffix.
+                 *
+                 * @attribute input-suffix
+                 * @type string
+                 */
+                inputSuffix: {
+                    reflectToAttribute: true,
+                    type: String,
+                    value: null
+                },
+
+                /**
+                 * The input's max value.
+                 *
+                 * @attribute max
+                 * @type number
+                 */
+                max: {
+                    reflectToAttribute: true,
+                    type: Number
+                },
+
+                /**
+                 * The input's max characters number.
+                 *
+                 * @attribute max-length
+                 * @type number
+                 */
+                maxLength: {
+                    reflectToAttribute: true,
+                    type: Number
+                },
+
+                /**
+                 * The input's min value.
+                 *
+                 * @attribute min
+                 * @type number
+                 */
+                min: {
+                    reflectToAttribute: true,
+                    type: Number
+                },
+
+                /**
+                 * The input's min characters number.
+                 *
+                 * @attribute min-length
+                 * @type number
+                 */
+                minLength: {
+                    reflectToAttribute: true,
+                    type: Number
+                },
+
+                /**
+                 * The input's validation pattern.
+                 *
+                 * @attribute pattern
+                 * @type string
+                 */
+                pattern: {
+                    reflectToAttribute: true,
+                    type: String
+                },
+
+                /**
+                 * The input's decimal precision.
+                 *
+                 * @attribute precision
+                 * @type number
+                 * @notifies
+                 * @readonly
+                 */
+                precision: {
+                    notify: true,
+                    readOnly: true,
+                    type: Number
+                },
+
+                /**
+                 * If set to true, the input is readonly.
+                 *
+                 * @attribute readonly
+                 * @type boolean
+                 * @default false
+                 */
+                readonly: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * If set to true, the input is required.
+                 *
+                 * @attribute required
+                 * @type boolean
+                 * @default false
+                 */
+                required: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The input's step value.
+                 *
+                 * @attribute step
+                 * @type number
+                 * @default 1
+                 */
+                step: {
+                    reflectToAttribute: true,
+                    type: Number,
+                    value: 1
+                }
+            },
+
+            /**
+             * The map of patterns.
+             *
+             * @property patterns
+             * @type Object
+             * @readonly
+             */
+            patterns: {
+                camelCase: XP.camelCaseRegex.source,
+                capitalize: XP.capitalizeRegex.source,
+                kebabCase: XP.kebabCaseRegex.source,
+                keyCase: XP.keyCaseRegex.source,
+                lowerCase: XP.lowerCaseRegex.source,
+                snakeCase: XP.snakeCaseRegex.source,
+                startCase: XP.startCaseRegex.source,
+                trim: XP.trimRegex.source,
+                upperCase: XP.upperCaseRegex.source,
+                uuid: XP.uuidRegex.source
+            },
+
+            /*********************************************************************/
+
+            // LISTENER
+            created: function () {
+
+                // Classifying
+                this.classList.add('text-field');
+            },
+
+            /*********************************************************************/
+
+            // HANDLER
+            _inputHandler: function () {
+
+                // Vars
+                var self = this;
+
+                // Super
+                Polymer.XPInputBehaviorImp._inputHandler.apply(self, arguments);
+
+                // Setting
+                self._setChars(self.input.value.length);
+                self._setEmpty(self.input.value.length === 0 && !self.input.validity.badInput);
+                self._setInvalid(!!self.invalidMessage || (self.maxLength > 0 && self.chars > self.maxLength));
+            }
+        });
+    </script>
+
+</dom-module>

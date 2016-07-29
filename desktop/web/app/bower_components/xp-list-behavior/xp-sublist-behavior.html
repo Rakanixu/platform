@@ -1,0 +1,254 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A behavior used to add sublist capabilities on a custom element.
+
+@behavior xp-sublist-behavior
+@description A behavior used to add sublist capabilities on a custom element
+@keywords expandjs, web app, custom elements, web-components
+@group behaviors
+
+@homepage http://expandjs.com/elements/xp-sublist-behavior
+@repository https://github.com/ExpandJS/xp-list
+
+@behavior xp-collapse-behavior /bower_components/xp-collapse-behavior/xp-collapse-behavior.html
+@behavior xp-master-behavior /bower_components/xp-master-behavior/xp-master-behavior.html
+@behavior xp-slave-behavior /bower_components/xp-slave-behavior/xp-slave-behavior.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency xp-collapse-behavior ExpandJS/xp-collapse-behavior#0.10.0
+@dependency xp-master-behavior ExpandJS/xp-master-behavior#0.10.0
+@dependency xp-slave-behavior ExpandJS/xp-slave-behavior#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-collapse-behavior/xp-collapse-behavior.html">
+<link rel="import" href="../xp-master-behavior/xp-master-behavior.html">
+<link rel="import" href="../xp-slave-behavior/xp-slave-behavior.html">
+
+<script>
+    Polymer.XPSublistBehaviorImp = {
+
+        // OBSERVERS
+        observers: [
+            '_listObserver(collapsed, collapsible, list)',
+            '_transitionObserver(collapsed, collapser, duration, easing)'
+        ],
+
+        // PROPERTIES
+        properties: {
+
+            /**
+             * If set to true, the element is collapsible.
+             *
+             * @attribute collapsible
+             * @type string
+             * @default false
+             * @notifies
+             */
+            collapsible: {
+                notify: true,
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * The master list.
+             *
+             * @attribute list
+             * @type Element
+             * @notifies
+             * @readonly
+             */
+            list: {
+                notify: true,
+                readOnly: true
+            },
+
+            /**
+             * The slave sublists.
+             *
+             * @attribute sublists
+             * @type Array
+             * @notifies
+             * @readonly
+             */
+            sublists: {
+                notify: true,
+                readOnly: true,
+                value: function () { return []; }
+            },
+
+            /**
+             * The master sublist.
+             *
+             * @attribute superlist
+             * @type Element
+             * @notifies
+             * @readonly
+             */
+            superlist: {
+                notify: true,
+                observer: '_superlistObserver',
+                readOnly: true
+            }
+        },
+
+        /*********************************************************************/
+
+        // OBSERVER
+        _collapsedObserver: function () {
+
+            // Checking
+            if (!this.isAttached) { return; }
+
+            // Vars
+            var self       = this,
+                collapsed  = self.collapsed,
+                duration   = self.duration,
+                easing     = self.easing,
+                next       = XP.findNextElement(self, '.sublist[collapsible]:not([collapsed])'),
+                previous   = XP.findPreviousElement(self, '.sublist[collapsible]:not([collapsed])'),
+                elements   = XP.takeWhile(XP.findNextElements(self, ':not([template])'), function (item) { return !next || item.previousElementSibling !== next; });
+
+            // Firing
+            if (self.collapser) { self.fire('xp-collapse', {firer: self, isCollapsed: collapsed}); }
+
+            // Setting
+            if (self.collapser && !self.collapseDisabled) { self._setCollapsing(true); } else { return; }
+
+            // Frame 1
+            requestAnimationFrame(function () {
+
+                // Vars
+                var base   = previous ? -Polymer.dom(previous.root).querySelector('.collapsible').scrollHeight : 0,
+                    height = -self.collapser.scrollHeight;
+
+                // Styling
+                XP.forEach(elements, function (elem) {
+                	elem.style.transition = 'transform 0s';
+                    elem.style.transform  = 'translateY(' + (collapsed ? base : height) + 'px)';
+                });
+
+                // Translating
+                self.collapser.style.transform = 'translateY(' + (collapsed ? '-100' : '0') + '%)';
+
+                // Frame 2
+                requestAnimationFrame(function () {
+
+                    // Styling
+                    XP.forEach(elements, function (elem) {
+                    	elem.style.transition = 'transform ' + (duration / 1000) + 's ' + easing;
+                    	elem.style.transform  = 'translateY(' + (collapsed ? height : base) + 'px)';
+                    });
+
+                    // Debouncing
+                    self.debounce('collapsing', function () {
+
+                        // Setting
+                        self._setCollapsing(false);
+
+                        // Styling
+                        XP.forEach(elements, function (elem) {
+                            elem.style.transition = 'transform 0s';
+                            elem.style.transform  = 'translateY(0)';
+                        });
+
+                    }, duration);
+                });
+            });
+        },
+
+        // OBSERVER
+        _listObserver: function () {
+
+            // Vars
+            var self = this;
+
+            // Checking
+            if (!self.isAttached) { return; }
+
+            // Ensuring
+            if (!self.collapsible) { return self.collapsed = false; }
+
+            // Collapsing
+            if (!self.collapsed && !self.list.autoCollapseDisabled) { XP.invoke(XP.findSiblingElements(self, '.sublist'), 'collapse'); }
+
+            // Expanding
+            if (!self.collapsed && self.superlist) { self.superlist.expand(); }
+        },
+
+        // OBSERVER
+        _superlistObserver: function () {
+
+            // Mutating
+            Polymer.XPSublistBehaviorImp.mutated.apply(this);
+        },
+
+        // OBSERVER
+        _transitionObserver: function () {
+
+            // Vars
+            var self = this;
+
+            // Styling
+            self.collapser.style.transition = 'transform ' + (self.duration / 1000) + 's ' + self.easing;
+        },
+
+        /*********************************************************************/
+
+        // LISTENER
+        created: function () {
+
+            // Classifying
+            this.classList.add('sublist');
+        },
+
+        // LISTENER
+        mutated: function () {
+
+            // Vars
+            var self = this;
+
+            // Disconnecting
+            if (self.collapsedObserver) { self.collapsedObserver.disconnect(); }
+
+            // Collapsing
+            if (self.superlist && self.collapsible && self.superlist.collapsed) { self.collapse(); }
+
+            // Observing
+            if (self.superlist) { self.collapsedObserver = XP.onMutation(self.superlist, Polymer.XPSublistBehaviorImp.mutated.bind(self), {attributes: true, attributeFilter: ['collapsed']}); }
+        },
+
+        // LISTENER
+        ready: function () {
+
+            // Vars
+            var self = this;
+
+            // Mapping
+            self.mastersMap.list      = '.list';
+            self.mastersMap.superlist = '.sublist';
+            self.slavesMap.sublists   = '.sublist';
+
+            // Translating
+            self.collapser.style.transform = 'translateY(' + (self.collapsed ? '-100' : '0') + '%)';
+        }
+    };
+
+    Polymer.XPSublistBehavior = [
+        Polymer.XPCollapseBehavior,
+        Polymer.XPMasterBehavior,
+        Polymer.XPSlaveBehavior,
+        Polymer.XPSublistBehaviorImp
+    ];
+</script>

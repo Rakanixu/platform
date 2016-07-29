@@ -1,0 +1,121 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A stylesheet used to stylize a [Material Design paper](http://www.google.com/design/spec/what-is-material/material-properties.html).
+
+@stylesheet mat-paper-styles
+@description A stylesheet used to stylize a Material Design paper
+@keywords material design, material paper, expandjs, web app, custom elements, web-components
+@group stylesheets
+
+@homepage http://expandjs.com/elements/mat-paper-styles
+@repository https://github.com/ExpandJS/mat-paper
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency mat-shadow ExpandJS/mat-shadow#0.10.0
+@dependency mat-typography ExpandJS/mat-typography#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../mat-shadow/mat-shadow.html">
+<link rel="import" href="../mat-typography/mat-typography.html">
+
+<dom-module id="mat-paper-styles">
+
+    <template strip-whitespace>
+
+        <style>
+
+            /* HOST */
+
+            :host {
+                border: 0 solid transparent;
+                box-shadow: none;
+                display: block;
+                position: relative;
+                text-align: left;
+                transition: border 0.4s cubic-bezier(0.55, 0, 0.01, 1),
+                            box-shadow 0.4s cubic-bezier(0.55, 0, 0.01, 1),
+                            opacity 0.4s cubic-bezier(0.55, 0, 0.01, 1),
+                            visibility 0.4s cubic-bezier(0.55, 0, 0.01, 1),
+                            border-radius 0.8s cubic-bezier(0.55, 0, 0.01, 1),
+                            height 0.8s cubic-bezier(0.55, 0, 0.01, 1),
+                            transform 0.8s cubic-bezier(0.55, 0, 0.01, 1),
+                            width 0.8s cubic-bezier(0.55, 0, 0.01, 1);
+            }
+
+            /* ANCHORS */
+
+            :host a { text-decoration: none; }
+            :host a[href]:hover { text-decoration: underline; }
+
+            /* SHADOW */
+
+            :host([z="1"]) { box-shadow: var(--mat-shadow-z1); }
+            :host([z="2"]) { box-shadow: var(--mat-shadow-z2); }
+            :host([z="3"]) { box-shadow: var(--mat-shadow-z3); }
+            :host([z="4"]) { box-shadow: var(--mat-shadow-z4); }
+            :host([z="5"]) { box-shadow: var(--mat-shadow-z5); }
+            :host([z="6"]) { box-shadow: var(--mat-shadow-z6); }
+            :host([z="7"]) { box-shadow: var(--mat-shadow-z7); }
+            :host([z="8"]) { box-shadow: var(--mat-shadow-z8); }
+            :host([z="9"]) { box-shadow: var(--mat-shadow-z9); }
+            :host([z="10"]) { box-shadow: var(--mat-shadow-z10); }
+            :host([z="11"]) { box-shadow: var(--mat-shadow-z11); }
+            :host([z="12"]) { box-shadow: var(--mat-shadow-z12); }
+            :host([z="13"]) { box-shadow: var(--mat-shadow-z13); }
+            :host([z="14"]) { box-shadow: var(--mat-shadow-z14); }
+            :host([z="15"]) { box-shadow: var(--mat-shadow-z15); }
+            :host([z="16"]) { box-shadow: var(--mat-shadow-z16); }
+            :host([z="17"]) { box-shadow: var(--mat-shadow-z17); }
+            :host([z="18"]) { box-shadow: var(--mat-shadow-z18); }
+            :host([z="19"]) { box-shadow: var(--mat-shadow-z19); }
+            :host([z="20"]) { box-shadow: var(--mat-shadow-z20); }
+            :host([z="21"]) { box-shadow: var(--mat-shadow-z21); }
+            :host([z="22"]) { box-shadow: var(--mat-shadow-z22); }
+            :host([z="23"]) { box-shadow: var(--mat-shadow-z23); }
+            :host([z="24"]) { box-shadow: var(--mat-shadow-z24); }
+
+            /* DARK FOREGROUND */
+
+            :host([foreground="dark"]) { background: hsla(0, 0%, 100%, 1); border-color: hsla(0, 0%, 0%, 0.12); color: hsla(0, 0%, 0%, 0.87); }
+            :host([foreground="dark"][brightness="backdrop"]) { background: hsla(0, 0%, 98%, 1); }
+            :host([foreground="dark"][brightness="placeholder"]) { background: hsla(0, 0%, 88%, 1); }
+            :host([foreground="dark"][brightness="toolbar"]) { background: hsla(0, 0%, 96%, 1); }
+            :host([foreground="dark"][brightness="transparent"]) { background: hsla(0, 0%, 98%, 0); }
+            :host([foreground="dark"][disabled]) { background: hsla(0, 0%, 0%, 0.12) !important; color: hsla(0, 0%, 0%, 0.26); }
+
+            /* LIGHT FOREGROUND */
+
+            :host([foreground="light"]) { background: hsla(0, 0%, 26%, 1); border-color: hsla(0, 0%, 100%, 0.12); color: hsla(0, 0%, 100%, 1); }
+            :host([foreground="light"][brightness="backdrop"]) { background: hsla(0, 0%, 19%, 1); }
+            :host([foreground="light"][brightness="placeholder"]) { background: hsla(0, 0%, 46%, 1); }
+            :host([foreground="light"][brightness="toolbar"]) { background: hsla(0, 0%, 13%, 1); }
+            :host([foreground="light"][brightness="transparent"]) { background: hsla(0, 0%, 19%, 0); }
+            :host([foreground="light"][disabled]) { background: hsla(0, 0%, 100%, 0.12) !important; color: hsla(0, 0%, 100%, 0.30); }
+
+            /* DISABLED */
+
+            :host([disabled]) {
+                box-shadow: none !important;
+                -webkit-filter: grayscale(100%);
+                filter: grayscale(100%);
+                pointer-events: none !important;
+            }
+
+            /* HIDDEN */
+
+            :host([hidden]) {
+                display: none !important;
+            }
+        </style>
+
+    </template>
+
+</dom-module>

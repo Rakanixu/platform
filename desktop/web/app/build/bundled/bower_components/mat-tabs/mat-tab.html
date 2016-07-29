@@ -1,0 +1,37 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-icon/mat-icon.html">
+<link rel="import" href="../mat-icon-button/mat-icon-button.html">
+<link rel="import" href="../mat-icons/mat-icons.html">
+<link rel="import" href="../mat-ink/mat-ink.html">
+<link rel="import" href="../mat-pressed-behavior/mat-pressed-behavior.html">
+<link rel="import" href="../mat-pressed-behavior/mat-pressed-styles.html">
+<link rel="import" href="../mat-typography/mat-typography.html">
+<link rel="import" href="../xp-tabs-behavior/xp-tab-behavior.html">
+<link rel="import" href="../xp-tabs-behavior/xp-tab-styles.html">
+
+</head><body><dom-module id="mat-tab">
+
+    <template strip-whitespace="">
+
+        <style include="mat-pressed-styles"></style>
+        <style include="xp-tab-styles"></style>
+
+        <style>:host{@apply (--mat-font-button);height:48px;line-height:50px !important;max-width:264px;min-width:160px;opacity:0.6;}:host([active]){opacity:1;}:host([closable]){min-width:184px;}:host .wrapper{padding:0 24px;}:host ::content .closer{height:16px;margin:0;position:absolute;right:16px;top:16px;width:16px;}:host([closable]) .label{margin-right:24px;}:host([label=""]) .label,
+            :host(:not([label])) .label{display:none !important;}:host .icon{margin:12px 0;}@media (max-width: 959px){:host{min-width:72px;}:host .wrapper{padding:0 12px;}}</style>
+
+        <div class="wrapper">
+            <mat-icon class="icon" name="[[icon]]" src="[[iconSrc]]"></mat-icon>
+            <div class="label">[[label]]</div>
+            <content select=".closer"></content>
+        </div>
+
+        <div class="ripple-ground"></div>
+        <div class="ripple-waves"></div>
+
+    </template>
+
+    <script>Polymer({is:"mat-tab",behaviors:[Polymer.MatPressedBehavior,Polymer.XPTabBehavior],observers:["_closableChanged(closerDisabled, closable, modified)","_dataChanged(closer, data)"],properties:{closer:{notify:!0,readOnly:!0},closerActiveIcon:{reflectToAttribute:!0,type:String},closerActiveIconSrc:{reflectToAttribute:!0,type:String},closerBehavior:{reflectToAttribute:!0,type:String,value:"toggle"},closerDisabled:{reflectToAttribute:!0,type:Boolean,value:!1},closerIcon:{reflectToAttribute:!0,type:String},closerIconSrc:{reflectToAttribute:!0,type:String},closerTarget:{notify:!0},icon:{reflectToAttribute:!0,type:String},iconSrc:{reflectToAttribute:!0,type:String}},_closableChanged:function(){var e=this,t=e.closer||e.closable&&document.createElement("mat-icon-button");if(e.closable){if(t.classList.add("closer"),t.active=e.modified,t.activeIcon=e.closerTarget&&!e.closerActiveIcon?"mat:arrow-drop-down-circle":e.closerActiveIcon,t.activeIconSrc=e.closerActiveIconSrc,t.behavior=e.closerBehavior,t.disabled=e.closerDisabled,t.icon=e.closerIcon||"mat:cancel",t.iconSrc=e.closerIconSrc,t.target=e.modified?e.closerTarget:null,e.closer)return;e.listen(t,"xp-activate","_closeHandler"),e._setCloser(Polymer.dom(e).appendChild(t))}else t&&(e.unlisten(t,"xp-activate","_closeHandler"),e._setCloser(Polymer.dom(e).removeChild(t)&&null))},_dataChanged:function(){this.closer&&(this.closer.data=this.data)}});</script>
+
+</dom-module>
+</body></html>

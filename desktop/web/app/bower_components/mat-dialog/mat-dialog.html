@@ -1,0 +1,358 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A custom element used to display a [Material Design dialog](http://www.google.com/design/spec/components/dialogs.html).
+
+It can be used to create
+[simple alerts](http://www.google.com/design/spec/components/dialogs.html#dialogs-alerts),
+[confirmation dialogs](http://www.google.com/design/spec/components/dialogs.html#dialogs-confirmation-dialogs) and
+[full screen dialogs](http://www.google.com/design/spec/components/dialogs.html#dialogs-full-screen-dialogs).
+
+```html
+<mat-dialog id="myDialog" backdrop-disabled>
+    <div>This is an alert</div>
+    <mat-button behavior="toggle" class="action" label="OK" target="myDialog"></mat-button>
+</mat-dialog>
+```
+
+To create a confirmation dialog which requires a response from the user to close itself, you can set
+`auto-hide-disabled` and it will only close when the user interacts with the given actions.
+
+```html
+<mat-dialog id="myDialog" label="Accept or decline" auto-hide-disabled>
+    <div>This is a confirmation dialog</div>
+    <mat-button behavior="toggle" class="action" label="Cancel" target="myDialog"></mat-button>
+    <mat-button behavior="toggle" class="action" label="Confirm" target="myDialog"></mat-button>
+</mat-dialog>
+```
+
+The dialog can also cover the whole screen, creating the illusion of a new page.
+
+```html
+<mat-dialog id="myDialog" full-screen>
+    <mat-header-panel>
+        <mat-header>
+            <mat-icon-button behavior="toggle" icon="navigation:arrow-back" target="myDialog"></mat-icon-button>
+            <span>Header</span>
+        </mat-header>
+        <mat-content>
+            <p>This is a full screen dialog.</p>
+        </mat-content>
+    </mat-header-panel>
+</mat-dialog>
+```
+
+@element mat-dialog
+@description A custom element used to display a Material Design dialog
+@keywords material design, material dialog, expandjs, web app, custom elements, web-components
+@group containers
+@hot
+
+@homepage http://expandjs.com/elements/mat-dialog
+@repository https://github.com/ExpandJS/mat-dialog
+@demo http://expandjs.com/demo/mat-dialog
+
+@behavior mat-paper-behavior /bower_components/mat-paper/mat-paper-behavior.html
+@behavior xp-array-behavior /bower_components/xp-array-behavior/xp-array-behavior.html
+@behavior xp-dialog-behavior /bower_components/xp-dialog-behavior/xp-dialog-behavior.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency iron-flex-layout PolymerElements/iron-flex-layout#^1.0.0
+@dependency mat-divider ExpandJS/mat-divider#0.10.0
+@dependency mat-paper ExpandJS/mat-paper#0.10.0
+@dependency mat-typography ExpandJS/mat-typography#0.10.0
+@dependency xp-array-behavior ExpandJS/xp-array-behavior#0.10.0
+@dependency xp-dialog-behavior ExpandJS/xp-dialog-behavior#0.10.0
+
+@devDependency mat-button ExpandJS/mat-button#0.10.0
+@devDependency mat-demo ExpandJS/mat-demo#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../mat-divider/mat-divider.html">
+<link rel="import" href="../mat-paper/mat-paper-behavior.html">
+<link rel="import" href="../mat-paper/mat-paper-styles.html">
+<link rel="import" href="../mat-typography/mat-typography.html">
+<link rel="import" href="../xp-array-behavior/xp-array-behavior.html">
+<link rel="import" href="../xp-dialog-behavior/xp-dialog-behavior.html">
+<link rel="import" href="../xp-dialog-behavior/xp-dialog-styles.html">
+
+<dom-module id="mat-dialog">
+
+    <template strip-whitespace>
+
+        <style include="mat-paper-styles"></style>
+        <style include="xp-dialog-styles"></style>
+
+        <style>
+            :host .body {
+                box-sizing: border-box;
+                padding: 24px;
+            }
+
+            :host(:not([empty-actions])) .body {
+                height: calc(100% - 48px);
+                padding-bottom: 16px;
+            }
+
+            :host .label {
+                @apply(--mat-font-headline);
+                margin: -4px 0 12px 0;
+            }
+
+            :host([label=""]) .label,
+            :host(:not([label])) .label {
+                display: none !important;
+            }
+
+            :host .actions {
+                @apply(--layout-horizontal);
+                @apply(--layout-center);
+                @apply(--layout-end-justified);
+                min-height: 48px;
+                padding: 2px 8px 2px 24px;
+                position: relative;
+            }
+
+            :host([empty-actions]) .actions,
+            :host(:not([scrollable])) .divider {
+                display: none !important;
+            }
+
+            /* CONTENT */
+
+            :host .actions ::content .action {
+                display: block;
+            }
+
+            :host .actions ::content .action ~ .action {
+                margin-left: 8px;
+            }
+        </style>
+
+        <div class="backdrop" on-click="_backdropHandler"></div>
+
+        <div class="wrapper">
+            <div class="body">
+                <div class="label">[[label]]</div>
+                <content select=":not(.action)"></content>
+            </div>
+            <div class="actions">
+                <mat-divider class="divider" cap></mat-divider>
+                <content select=".action"></content>
+            </div>
+        </div>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-dialog',
+
+            // BEHAVIORS
+            behaviors: [
+                Polymer.MatPaperBehavior,
+                Polymer.XPArrayBehavior,
+                Polymer.XPDialogBehavior
+            ],
+
+            /*********************************************************************/
+
+            // PROPERTIES
+            properties: {
+
+                /**
+                 * The list of actions.
+                 *
+                 * @attribute actions
+                 * @type Array
+                 * @notifies
+                 * @readonly
+                 */
+                actions: {
+                    notify: true,
+                    readOnly: true,
+                    value: function () { return []; }
+                },
+
+                /**
+                 * The dialog's background color.
+                 *
+                 * @attribute background
+                 * @type string
+                 */
+                background: {
+                    reflectToAttribute: true,
+                    type: Boolean
+                },
+
+                /**
+                 * The dialog's body.
+                 *
+                 * @attribute body
+                 * @type Element
+                 * @notifies
+                 * @readonly
+                 */
+                body: {
+                    notify: true,
+                    readOnly: true
+                },
+
+                /**
+                 * If set to true, there are no actions.
+                 *
+                 * @attribute empty-actions
+                 * @type boolean
+                 * @notifies
+                 * @readonly
+                 */
+                emptyActions: {
+                    notify: true,
+                    readOnly: true,
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * If set to true, the dialog is full screen.
+                 *
+                 * @attribute full-screen
+                 * @type boolean
+                 * @default false
+                 */
+                fullScreen: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The dialog's height. If `0` the dialog will resize itself based on it's content.
+                 *
+                 * @attribute height
+                 * @type number
+                 */
+                height: {
+                    reflectToAttribute: true,
+                    type: Number
+                },
+
+                /**
+                 * The dialog's label
+                 *
+                 * @attribute label
+                 * @type string
+                 */
+                label: {
+                    reflectToAttribute: true,
+                    type: String
+                },
+
+                /**
+                 * If set to true, the dialog body is scrollable.
+                 *
+                 * @attribute scrollable
+                 * @type boolean
+                 * @default false
+                 * @notifies
+                 * @readonly
+                 */
+                scrollable: {
+                    notify: true,
+                    readOnly: true,
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The dialog's width. If `0` the dialog will resize itself based on it's content.
+                 *
+                 * @attribute width
+                 * @type number
+                 */
+                width: {
+                    reflectToAttribute: true,
+                    type: Number
+                },
+
+                /**
+                 * The dialog's z-axis position.
+                 *
+                 * @attribute z
+                 * @type number
+                 * @default 24
+                 * @notifies
+                 */
+                z: {
+                    notify: true,
+                    reflectToAttribute: true,
+                    type: Number,
+                    value: 24
+                }
+            },
+
+            /*********************************************************************/
+
+            // LISTENER
+            attached: function () {
+
+                // Scrolling
+                this.scrolling();
+            },
+
+            // LISTENER
+            mutated: function () {
+
+                // Vars
+                var self = this;
+
+                // Finding
+                self.overwrite('actions', XP.findElements(Polymer.dom(self), '.action'));
+
+                // Setting
+                self._setEmptyActions(!self.actions.length);
+            },
+
+            // LISTENER
+            ready: function () {
+
+                // Vars
+                var self = this;
+
+                // Setting
+                self._setBody(Polymer.dom(self.root).querySelector('.body'));
+
+                // Observing
+                Polymer.dom(self).observeNodes(self.mutated.bind(self));
+            },
+
+            // LISTENER
+            scrolling: function () {
+
+                // Vars
+                var self = this;
+
+                // Setting
+                self._setScrollable(self.body.clientHeight < self.body.scrollHeight);
+
+                // Observing
+                XP.onMutation(self, self.scrolling.bind(self), {attributes: true, characterData: true, childList: true, subtree: true});
+            }
+        });
+    </script>
+
+</dom-module>

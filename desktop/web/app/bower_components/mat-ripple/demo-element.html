@@ -1,0 +1,52 @@
+<link rel="import" href="../mat-demo/mat-demo.html">
+<link rel="import" href="mat-ripple.html">
+
+<dom-module id="mat-ripple-demo">
+
+    <template>
+
+        <style>
+            :host {
+                display: block;
+            }
+
+            :host .label {
+                height: 100px;
+                line-height: 100px;
+                text-align: center;
+            }
+        </style>
+
+        <mat-demo name="mat-ripple" type="element" url="http://expandjs.com/elements/mat-ripple">
+
+            <mat-demo-panel label="Default">
+                <script type="text/html">
+                    <div class="label">Tap me!</div>
+                    <mat-ripple></mat-ripple>
+                </script>
+                <div class="label">Tap me!</div>
+                <mat-ripple></mat-ripple>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Auto center">
+                <script type="text/html">
+                    <div class="label">Tap me!</div>
+                    <mat-ripple auto-center></mat-ripple>
+                </script>
+                <div class="label">Tap me!</div>
+                <mat-ripple auto-center></mat-ripple>
+            </mat-demo-panel>
+
+        </mat-demo>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-ripple-demo'
+        });
+    </script>
+
+</dom-module>

@@ -1,0 +1,1 @@
+!function(){"use strict";var e=require("../tester/isDefined"),r=require("../tester/isInfinite"),t=require("../tester/isNaN");module.exports=function(i){return!e(i)||t(i)||r(i)}}();

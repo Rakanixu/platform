@@ -1,0 +1,19 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-master-behavior/xp-master-behavior.html">
+<link rel="import" href="mat-panel.html">
+
+</head><body><dom-module id="mat-panel-group">
+
+    <template strip-whitespace="">
+
+        <style>:host{display:block;}</style>
+
+        <content></content>
+
+    </template>
+
+    <script>Polymer({is:"mat-panel-group",behaviors:[Polymer.XPMasterBehavior],properties:{autoCollapseDisabled:{type:Boolean,value:!1},panels:{notify:!0,readOnly:!0,value:function(){return[]}}},created:function(){this.classList.add("panels")},ready:function(){this.slavesMap.panels=".panel"}});</script>
+
+</dom-module>
+</body></html>

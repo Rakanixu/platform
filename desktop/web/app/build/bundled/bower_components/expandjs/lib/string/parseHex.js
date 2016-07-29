@@ -1,0 +1,1 @@
+!function(){"use strict";var e=require("../assert/assertArgument"),r=require("../tester/isHex"),t=require("../tester/isString"),s=require("../tester/isVoid");module.exports=function(i){return e(s(i)||t(i),1,"string"),r(i)?parseInt(i,16):void 0}}();

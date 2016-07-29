@@ -1,0 +1,38 @@
+{
+  "name": "xp-request",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "xp-request.html",
+  "description": "A custom element used to perform XHR requests",
+  "homepage": "http://expandjs.com/elements/xp-request",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "nodejs",
+    "web app",
+    "javascript",
+    "expandjs",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "xp-emitter": "ExpandJS/xp-emitter#0.10.0",
+    "polymer": "Polymer/polymer#^1.2.0"
+  },
+  "_release": "0.10.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.10.0",
+    "commit": "0b96bbb351d9651cfadcf5d8cd78190d73ac22c4"
+  },
+  "_source": "git://github.com/ExpandJS/xp-request.git",
+  "_target": "0.10.0",
+  "_originalSource": "ExpandJS/xp-request"
+}

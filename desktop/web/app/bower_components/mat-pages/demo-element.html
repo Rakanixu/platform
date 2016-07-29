@@ -1,0 +1,64 @@
+<link rel="import" href="../mat-demo/mat-demo.html">
+<link rel="import" href="../mat-tabs/mat-tabs.html">
+<link rel="import" href="mat-pages.html">
+
+<dom-module id="mat-pages-demo">
+
+    <template>
+
+        <style>
+            :host {
+                display: block;
+            }
+
+            :host .pages {
+                height: 256px;
+                line-height: 256px;
+                position: relative;
+            }
+
+            :host .page {
+                text-align: center;
+            }
+        </style>
+
+        <mat-demo name="mat-pages" type="element" url="http://expandjs.com/elements/mat-pages">
+
+            <mat-demo-panel label="Default" padding-disabled>
+                <script type="text/html">
+                    <mat-tabs target="demoPages">
+                        <mat-tab label="First page"></mat-tab>
+                        <mat-tab label="Second page"></mat-tab>
+                        <mat-tab label="Third page"></mat-tab>
+                    </mat-tabs>
+                    <mat-pages id="demoPages">
+                        <mat-page background="light-green">First page</mat-page>
+                        <mat-page background="amber">Second page</mat-page>
+                        <mat-page background="orange">Third page</mat-page>
+                    </mat-pages>
+                </script>
+                <mat-tabs target="demoPages">
+                    <mat-tab label="First page"></mat-tab>
+                    <mat-tab label="Second page"></mat-tab>
+                    <mat-tab label="Third page"></mat-tab>
+                </mat-tabs>
+                <mat-pages id="demoPages">
+                    <mat-page background="light-green">First page</mat-page>
+                    <mat-page background="amber">Second page</mat-page>
+                    <mat-page background="orange">Third page</mat-page>
+                </mat-pages>
+            </mat-demo-panel>
+
+        </mat-demo>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-pages-demo'
+        });
+    </script>
+
+</dom-module>

@@ -1,0 +1,45 @@
+{
+  "name": "mat-demo",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "mat-demo.html",
+  "description": "A custom element used to display a Material Design demo",
+  "homepage": "http://expandjs.com/elements/mat-demo",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "material design",
+    "material demo",
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "mat-icon-button": "ExpandJS/mat-icon-button#0.10.0",
+    "mat-icons": "ExpandJS/mat-icons#0.10.0",
+    "mat-paper": "ExpandJS/mat-paper#0.10.0",
+    "mat-toolbar": "ExpandJS/mat-toolbar#0.10.0",
+    "mat-typography": "ExpandJS/mat-typography#0.10.0",
+    "xp-collapse-behavior": "ExpandJS/xp-collapse-behavior#0.10.0",
+    "xp-markdown": "ExpandJS/xp-markdown#0.10.0",
+    "polymer": "Polymer/polymer#^1.2.0",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0"
+  },
+  "_release": "0.10.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.10.0",
+    "commit": "439b3d2d4a7e6f61d1591ed1ab53b4547ed0ab5e"
+  },
+  "_source": "git://github.com/ExpandJS/mat-demo.git",
+  "_target": "0.10.0",
+  "_originalSource": "ExpandJS/mat-demo"
+}

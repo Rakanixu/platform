@@ -1,0 +1,668 @@
+<!--
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A custom element used to display a [Material Design item](http://www.google.com/design/spec/components/lists.html#lists-content).
+
+It can be used in conjunction with
+[mat-avatar](https://expandjs.com/elements/mat-avatar),
+[mat-checkbox](https://expandjs.com/elements/mat-checkbox),
+[mat-icon-button](https://expandjs.com/elements/mat-icon-button) and
+[mat-icon](https://expandjs.com/elements/mat-icon).
+
+You can set an item to make it fit your needs.
+
+```html
+<mat-item label="Label"></mat-item>
+<mat-item label="Label" description="Description"></mat-item>
+<mat-item label="Label" description="Description"><span>Content</span></mat-item>
+```
+
+The elements inside the item with `primary` or `secondary` class, will be automatically positioned,
+as per the Material Design specs.
+
+The following item will have an avatar on its left side...
+
+```html
+<mat-item label="My directory">
+    <mat-avatar class="primary" icon="file:folder"></mat-avatar>
+</mat-item>
+```
+
+...this one instead, will have also a checkbox on to the right side.
+
+```html
+<mat-item label="Michelle">
+    <mat-avatar class="primary" icon-src="/contacts/michelle.png"></mat-avatar>
+    <mat-checkbox class="secondary"></mat-checkbox>
+</mat-item>
+```
+
+The item can be used to do a lot of things, such as linking to external resources, opening additional
+overlays, doing custom actions via listeners etc.
+
+Also, the combination of `primary` and `secondary`, plus the custom content, creates endless possibilities.
+
+```html
+<mat-item behavior="toggle" label="Michelle" description="Lorem ipsum dolor sit amet..." target="contactInfo">
+    <mat-avatar class="primary" icon-src="/contacts/michelle.png"></mat-avatar>
+    <mat-icon-button class="secondary" behavior="toggle" icon="navigation:more-vert" target="contactMenu"></mat-icon-button>
+</mat-item>
+
+<mat-dialog id="contactInfo" full-screen>...</mat-dialog>
+<mat-menu id="contactMenu">...</mat-menu>
+```
+
+@element mat-item
+@description A custom element used to display a Material Design item
+@keywords material design, expandjs, web app, custom elements, web-components
+@group containers
+@hot
+
+@homepage http://expandjs.com/elements/mat-item
+@repository https://github.com/ExpandJS/mat-item
+@demo http://expandjs.com/demo/mat-item
+
+@behavior xp-anchor-behavior /bower_components/xp-anchor-behavior/xp-anchor-behavior.html
+@behavior xp-overlay-injector /bower_components/xp-overlay/xp-overlay-injector.html
+@behavior xp-refirer-behavior /bower_components/xp-refirer-behavior/xp-refirer-behavior.html
+@behavior mat-pressed-behavior /bower_components/mat-pressed-behavior/mat-pressed-behavior.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency iron-flex-layout PolymerElements/iron-flex-layout#^1.0.0
+@dependency mat-divider ExpandJS/mat-divider#0.10.0
+@dependency mat-ink ExpandJS/mat-ink#0.10.0
+@dependency mat-pressed-behavior ExpandJS/mat-pressed-behavior#0.10.0
+@dependency mat-typography ExpandJS/mat-typography#0.10.0
+@dependency xp-anchor-behavior ExpandJS/xp-anchor-behavior#0.10.0
+@dependency xp-overlay ExpandJS/xp-overlay#0.10.0
+@dependency xp-refirer-behavior ExpandJS/xp-refirer-behavior#0.10.0
+
+@devDependency mat-avatar ExpandJS/mat-avatar#0.10.0
+@devDependency mat-checkbox ExpandJS/mat-checkbox#0.10.0
+@devDependency mat-demo ExpandJS/mat-demo#0.10.0
+@devDependency mat-icon-button ExpandJS/mat-icon-button#0.10.0
+@devDependency mat-icon ExpandJS/mat-icon#0.10.0
+@devDependency mat-icons ExpandJS/mat-icons#0.10.0
+@devDependency mat-list ExpandJS/mat-list#0.10.0
+@devDependency mat-menu ExpandJS/mat-menu#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../mat-divider/mat-divider.html">
+<link rel="import" href="../mat-ink/mat-ink.html">
+<link rel="import" href="../mat-pressed-behavior/mat-pressed-behavior.html">
+<link rel="import" href="../mat-pressed-behavior/mat-pressed-styles.html">
+<link rel="import" href="../mat-typography/mat-typography.html">
+<link rel="import" href="../xp-anchor-behavior/xp-anchor-behavior.html">
+<link rel="import" href="../xp-anchor-behavior/xp-anchor-styles.html">
+<link rel="import" href="../xp-overlay/xp-overlay-injector.html">
+<link rel="import" href="../xp-refirer-behavior/xp-refirer-behavior.html">
+
+<dom-module id="mat-item">
+
+    <template strip-whitespace>
+
+        <style include="xp-anchor-styles"></style>
+        <style include="mat-pressed-styles"></style>
+
+        <style>
+            :host {
+                display: block;
+                text-align: left;
+            }
+
+            :host .anchor:after {
+                display: none !important;
+            }
+
+            :host .main {
+                @apply(--layout-horizontal);
+                @apply(--layout-center);
+                overflow: hidden;
+                box-sizing: border-box;
+                height: 100%;
+            }
+
+            :host .action {
+                pointer-events: none !important;
+            }
+
+            :host(:not([inset])) .action {
+                display: none !important;
+            }
+
+            :host .content {
+                @apply(--layout-horizontal);
+                @apply(--layout-center);
+                @apply(--layout-flex);
+                min-height: 48px;
+                overflow: hidden;
+                position: relative;
+                width: 100%;
+            }
+
+            :host([inset]) .content {
+                margin-left: 16px;
+            }
+
+            :host([primary-type="avatar"]) .content,
+            :host([secondary-type="avatar"]) .content {
+                min-height: 56px;
+            }
+
+            :host .body {
+                @apply(--layout-flex);
+                overflow: hidden;
+                padding: 11px 16px 13px 16px;
+                overflow: hidden;
+            }
+
+            :host([inline]) .body {
+                @apply(--layout-horizontal);
+                @apply(--layout-center);
+            }
+
+            :host([empty][description]:not([description=""]):not([inline])) .body {
+                padding: 15px 16px 13px 16px;
+            }
+
+            :host([inset]) .body {
+                padding-left: 0 !important;
+            }
+
+            :host-context([inset]) .body:not([inset]) {
+                padding-left: 72px !important;
+            }
+
+            :host .label,
+            :host([inline]) .description,
+            :host([inline]) .text {
+                @apply(--mat-font-subhead);
+            }
+
+            :host(:not([inline])) .description,
+            :host(:not([inline])) .text {
+                @apply(--mat-font-body);
+            }
+
+            :host .label,
+            :host .description,
+            :host([inline]) .text {
+                overflow: hidden;
+                text-overflow: ellipsis !important; /* override */
+                white-space: nowrap !important; /* override */
+            }
+
+            :host([inline]) .text {
+                @apply(--layout-horizontal);
+                @apply(--layout-center);
+                @apply(--layout-flex);
+            }
+
+            :host([label=""]) .label,
+            :host(:not([label])) .label,
+            :host([description=""]) .description,
+            :host(:not([description])) .description,
+            :host([empty]) .text {
+                display: none !important;
+            }
+
+            :host .aside {
+                pointer-events: none;
+                text-align: right;
+            }
+
+            :host(:not([empty]):not([inline])) .action,
+            :host(:not([empty]):not([inline])) .aside,
+            :host([secondary-text]:not([secondary-text=""]):not([inline])) .aside {
+                @apply(--layout-self-start);
+            }
+
+            :host .secondary-text {
+                @apply(--mat-font-caption);
+                display: block;
+                margin: 18px 16px 0 0;
+            }
+
+            :host([secondary-text=""]) .secondary-text,
+            :host(:not([secondary-text])) .secondary-text {
+                display: none !important;
+            }
+
+            :host([inline]) .secondary-text {
+                margin-top: -4px;
+            }
+
+            :host(:not([empty]):not([inline])) .secondary-text {
+                margin-top: 14px;
+            }
+
+            :host .divider {
+                display: none;
+            }
+
+            :host-context(.list) .divider {
+                display: block;
+            }
+
+            :host(:last-of-type) .divider,
+            :host-context(.sublist) .divider {
+                display: none !important;
+            }
+
+            /* CONTENT */
+
+            :host ::content .primary,
+            :host ::content .secondary {
+                display: block;
+                margin: 4px 8px;
+            }
+
+            :host ::content .secondary {
+                pointer-events: auto;
+            }
+
+            :host ::content .primary.avatar {
+                margin: 8px 0 8px 16px;
+            }
+
+            :host ::content .secondary.avatar {
+                margin: 8px 16px 8px 0;
+            }
+
+            :host ::content .primary.icon,
+            :host ::content .secondary.icon {
+                margin: 12px 16px;
+            }
+
+            :host(:not([empty]):not([inline])) ::content .primary,
+            :host(:not([empty]):not([inline])) ::content .secondary {
+                margin-top: 8px;
+            }
+
+            :host(:not([empty]):not([inline])) ::content .primary.avatar,
+            :host(:not([empty]):not([inline])) ::content .primary.icon,
+            :host(:not([empty]):not([inline])) ::content .secondary.avatar,
+            :host(:not([empty]):not([inline])) ::content .secondary.icon {
+                margin-top: 16px;
+            }
+
+            :host([secondary-text]:not([secondary-text=""])) ::content .secondary {
+                margin-top: 13px;
+            }
+
+            :host([secondary-text]:not([secondary-text=""])) ::content .secondary.avatar {
+                display: none !important;
+            }
+        </style>
+
+        <a class="anchor" tabindex="-1" on-click="_handleAnchor">
+            <div class="main">
+                <div class="action" on-xp-active="_handleStop">
+                    <content select=".primary"></content>
+                </div>
+                <div class="content">
+                    <div class="body" inset$="[[inset]]">
+                        <mat-ink class="label" disabled="[[disabled]]">[[label]]</mat-ink>
+                        <mat-ink class="description" disabled="[[disabled]]" opacity="secondary">[[description]]</mat-ink>
+                        <mat-ink class="text" disabled="[[disabled]]"><content select=":not(.secondary)"></content></mat-ink>
+                    </div>
+                    <div class="aside" on-click="_handlePrevent" on-xp-active="_handleRefire" on-xp-activate="_handleRefire">
+                        <mat-ink class="secondary-text" disabled="[[disabled]]" opacity="secondary">[[secondaryText]]</mat-ink>
+                        <content select=".secondary"></content>
+                    </div>
+                    <mat-divider class="divider" baseline></mat-divider>
+                </div>
+            </div>
+        </a>
+
+        <div class="ripple-ground" active$="[[_computeActive(active, primaryType)]]"></div>
+        <div class="ripple-waves"></div>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-item',
+
+            // BEHAVIORS
+            behaviors: [
+                Polymer.XPAnchorBehavior,
+                Polymer.XPOverlayInjector,
+                Polymer.XPRefirerBehavior,
+                Polymer.MatPressedBehavior
+            ],
+
+            /*********************************************************************/
+
+            /**
+             * Fired when the active state changes.
+             *
+             * @event xp-active
+             * @param {Element} firer
+             * @param {boolean} isActive
+             * @param {boolean} isSecondary
+             * @bubbles
+             */
+
+            /**
+             * Fired when the element is clicked.
+             *
+             * @event xp-activate
+             * @param {Element} firer
+             * @param {Element} target
+             * @param {*} data
+             * @param {boolean} isActive
+             * @param {boolean} isSecondary
+             * @bubbles
+             * @cancelable
+             */
+
+            /*********************************************************************/
+
+            // OBSERVERS
+            observers: [
+                '_primaryChanged(active, disabled, primaryAction, primaryType, toggleable)',
+                '_secondaryChanged(disabled, secondaryAction)',
+                '_secondaryDataChanged(data, secondaryAction)'
+            ],
+
+            // PROPERTIES
+            properties: {
+
+                /**
+                 * The item's description.
+                 *
+                 * @attribute description
+                 * @type string
+                 */
+                description: {
+                    reflectToAttribute: true,
+                    type: String
+                },
+
+                /**
+                 * If set to true, the text is empty.
+                 *
+                 * @attribute empty
+                 * @type boolean
+                 * @default true
+                 * @notifies
+                 * @readonly
+                 */
+                empty: {
+                    notify: true,
+                    readOnly: true,
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: true
+                },
+
+                /**
+                 * If set to true, the element's content is positioned inline.
+                 *
+                 * @attribute inline
+                 * @type boolean
+                 * @default false
+                 */
+                inline: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * If set to true, the element is indented.
+                 *
+                 * @attribute inset
+                 * @type boolean
+                 * @default false
+                 * @notifies
+                 * @readonly
+                 */
+                inset: {
+                    notify: true,
+                    readOnly: true,
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The item's label.
+                 *
+                 * @attribute label
+                 * @type string
+                 */
+                label: {
+                    reflectToAttribute: true,
+                    type: String
+                },
+
+                /**
+                 * The item's primary action.
+                 *
+                 * @attribute primary-action
+                 * @type Element
+                 * @notifies
+                 * @readonly
+                 */
+                primaryAction: {
+                    notify: true,
+                    readOnly: true
+                },
+
+                /**
+                 * The item's primary action's type.
+                 *
+                 * @attribute primary-type
+                 * @type string
+                 * @notifies
+                 * @readonly
+                 */
+                primaryType: {
+                    computed: '_computeType(primaryAction)',
+                    notify: true,
+                    reflectToAttribute: true,
+                    type: String
+                },
+
+                /**
+                 * The item's secondary action.
+                 *
+                 * @attribute secondary-action
+                 * @type Element
+                 * @notifies
+                 * @readonly
+                 */
+                secondaryAction: {
+                    notify: true,
+                    readOnly: true
+                },
+
+                /**
+                 * The item's secondary text.
+                 *
+                 * @attribute secondary-text
+                 * @type string
+                 */
+                secondaryText: {
+                    reflectToAttribute: true,
+                    type: String
+                },
+
+                /**
+                 * The item's secondary action's type.
+                 *
+                 * @attribute secondary-type
+                 * @type string
+                 * @notifies
+                 * @readonly
+                 */
+                secondaryType: {
+                    computed: '_computeType(secondaryAction)',
+                    notify: true,
+                    reflectToAttribute: true,
+                    type: String
+                },
+
+                /**
+                 * The item's text.
+                 *
+                 * @attribute text
+                 * @type Element
+                 * @notifies
+                 * @readonly
+                 */
+                text: {
+                    notify: true,
+                    readOnly: true
+                }
+            },
+
+            /*********************************************************************/
+
+            // COMPUTER
+            _computeActive: function (active, type) {
+                return !!active && type !== 'checkbox';
+            },
+
+            // COMPUTER
+            _computeType: function (action) {
+                if (!action) { return null; }
+                if (action.type === 'checkbox') { return 'checkbox'; }
+                if (action.classList.contains('avatar')) { return 'avatar'; }
+                return 'button';
+            },
+
+            /*********************************************************************/
+
+            // OBSERVER
+            _primaryChanged: function () {
+
+                // Vars
+                var self = this;
+
+                // Setting
+                self._setInset(!!self.primaryAction);
+
+                // Checking
+                if (!self.primaryAction) { return; }
+
+                // Overriding
+                if (self.primaryType === 'checkbox') { self.toggleable = true; }
+
+                // Setting
+                self.primaryAction.toggleable = self.toggleable;
+                self.primaryAction.disabled   = self.disabled;
+                self.primaryAction.data       = self.data;
+                self.primaryAction.checked    = self.active;
+                self.primaryAction.active     = self.active;
+            },
+
+            // OBSERVER
+            _secondaryChanged: function () {
+
+                // Vars
+                var self = this;
+
+                // Checking
+                if (!self.secondaryAction) { return; }
+
+                // Setting
+                self.secondaryAction.disabled = self.disabled;
+                self.secondaryAction.data     = self.data;
+            },
+
+            // OBSERVER
+            _secondaryDataChanged: function () {
+
+                // Setting
+                if (this.secondaryAction) { this.secondaryAction.data = this.data; }
+            },
+
+            /*********************************************************************/
+
+            // LISTENER
+            created: function () {
+
+                // Classifying
+                this.classList.add('item');
+            },
+
+            // LISTENER
+            mutated: function () {
+
+                // Vars
+                var self = this;
+
+                // Setting
+                self._setEmpty(!XP.hasChildren(Polymer.dom(self.text)));
+                self._setPrimaryAction(XP.findElement(Polymer.dom(self), '.primary'));
+                self._setSecondaryAction(XP.findElement(Polymer.dom(self), '.secondary'));
+            },
+
+            // LISTENER
+            ready: function () {
+
+                // Vars
+                var self = this;
+
+                // Setting
+                self._setText(Polymer.dom(self.root).querySelector('.text'));
+
+                // Observing
+                Polymer.dom(self).observeNodes(self.mutated.bind(self));
+            },
+
+            /*********************************************************************/
+
+            // HANDLER
+            _handleAnchor: function (event) {
+
+                // Vars
+                var self = this;
+
+                // Checking
+                if (self.secondaryAction && Polymer.dom(event).path.indexOf(self.secondaryAction) >= 0) { return; }
+
+                // Super
+                Polymer.XPAnchorBehavior._anchorHandler.apply(self, arguments);
+            },
+
+            // HANDLER
+            _handlePrevent: function (event) {
+
+                // Preventing
+                event.selectPrevented = true;
+            },
+
+            // HANDLER
+            _handleRefire: function (event) {
+
+                // Refiring
+                this.refire(event, event.type, {firer: this, isSecondary: true});
+            },
+
+            // HANDLER
+            _handleStop: function (event) {
+
+                // Stopping
+                event.stopPropagation();
+            }
+        });
+    </script>
+
+</dom-module>

@@ -1,0 +1,50 @@
+<link rel="import" href="../mat-demo/mat-demo.html">
+<link rel="import" href="mat-radio.html">
+
+<dom-module id="mat-radio-demo">
+
+    <template>
+
+        <style>
+            :host {
+                display: block;
+            }
+        </style>
+
+        <mat-demo name="mat-radio" type="element" url="http://expandjs.com/elements/mat-radio">
+
+            <mat-demo-panel label="Default">
+                <script type="text/html">
+                    <mat-radio name="default" label="Normal"></mat-radio>
+                    <mat-radio name="default" label="Checked" checked></mat-radio>
+                    <mat-radio name="default" label="Disabled" disabled></mat-radio>
+                </script>
+                <mat-radio name="default" label="Normal"></mat-radio>
+                <mat-radio name="default" label="Checked" checked></mat-radio>
+                <mat-radio name="default" label="Disabled" disabled></mat-radio>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Flip">
+                <script type="text/html">
+                    <mat-radio name="flip" label="Normal" flip></mat-radio>
+                    <mat-radio name="flip" label="Checked" checked flip></mat-radio>
+                    <mat-radio name="flip" label="Disabled" disabled flip></mat-radio>
+                </script>
+                <mat-radio name="flip" label="Normal" flip></mat-radio>
+                <mat-radio name="flip" label="Checked" checked flip></mat-radio>
+                <mat-radio name="flip" label="Disabled" disabled flip></mat-radio>
+            </mat-demo-panel>
+
+        </mat-demo>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-radio-demo'
+        });
+    </script>
+
+</dom-module>

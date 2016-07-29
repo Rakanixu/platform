@@ -1,0 +1,1 @@
+!function(){"use strict";var n=require("lodash");module.exports=function(r){return n.isFunction(r)}}();

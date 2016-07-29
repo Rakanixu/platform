@@ -1,0 +1,167 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A custom element used to scaffold a [Material Design application](http://www.google.com/design/spec/layout/structure.html#structure-ui-regions).
+
+It must be used in conjunction with
+[mat-drawer](http://expandjs.com/elements/mat-drawer).
+
+```html
+<mat-drawer-panel>
+
+    <mat-drawer>...</mat-drawer>
+
+    <mat-header-panel>
+        <mat-header>...</mat-header>
+        ...
+    </mat-header-panel>
+
+    <mat-drawer right>...</mat-drawer>
+
+</mat-drawer-panel>
+```
+
+@element mat-drawer-panel
+@description A custom element used to scaffold a Material Design application
+@keywords material design, expandjs, web app, custom elements, web-components
+@group containers
+@hot
+
+@homepage http://expandjs.com/elements/mat-drawer-panel
+@repository https://github.com/ExpandJS/mat-drawer-panel
+
+@behavior mat-paper-behavior /bower_components/mat-paper/mat-paper-behavior.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency mat-paper ExpandJS/mat-paper#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-paper/mat-paper-behavior.html">
+<link rel="import" href="../mat-paper/mat-paper-styles.html">
+<link rel="import" href="mat-drawer.html">
+
+<dom-module id="mat-drawer-panel">
+
+    <template strip-whitespace>
+
+        <style include="mat-paper-styles"></style>
+
+        <style>
+            :host {
+                bottom: 0;
+                left: 0;
+                position: absolute;
+                right: 0;
+                top: 0;
+            }
+
+            :host .wrapper {
+                box-sizing: border-box;
+                height: 100%;
+                position: relative;
+            }
+        </style>
+
+        <div class="wrapper">
+            <content select=".drawer[right]"></content>
+            <content select=":not(.drawer)"></content>
+            <content select=".drawer"></content>
+        </div>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-drawer-panel',
+
+            // BEHAVIORS
+            behaviors: [
+                Polymer.MatPaperBehavior
+            ],
+
+            /*********************************************************************/
+
+            // PROPERTIES
+            properties: {
+
+                /**
+                 * The application's brightness.
+                 *
+                 * @attribute brightness
+                 * @type string
+                 * @default "backdrop"
+                 */
+                brightness: {
+                    reflectToAttribute: true,
+                    type: String,
+                    value: 'backdrop'
+                },
+
+                /**
+                 * The application's left drawer.
+                 *
+                 * @attribute drawer
+                 * @type Element
+                 * @notifies
+                 * @readonly
+                 */
+                drawer: {
+                    notify: true,
+                    readOnly: true
+                },
+
+                /**
+                 * The application's right drawer.
+                 *
+                 * @attribute right-drawer
+                 * @type Element
+                 * @notifies
+                 * @readonly
+                 */
+                rightDrawer: {
+                    notify: true,
+                    readOnly: true
+                }
+            },
+
+            /*********************************************************************/
+
+            // LISTENER
+            created: function () {
+
+                // Classifying
+                this.classList.add('drawer-panel');
+            },
+
+            // LISTENER
+            ready: function () {
+
+                // Observing
+                Polymer.dom(this).observeNodes(this.mutated.bind(this));
+            },
+
+            // LISTENER
+            mutated: function () {
+
+                // Vars
+                var self = this;
+
+                // Setting
+                self._setDrawer(XP.findElement(Polymer.dom(self), '.drawer:not([right])'));
+                self._setRightDrawer(XP.findElement(Polymer.dom(self), '.drawer[right]'));
+            }
+        });
+    </script>
+
+</dom-module>

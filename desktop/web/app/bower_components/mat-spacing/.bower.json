@@ -1,0 +1,36 @@
+{
+  "name": "mat-spacing",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "mat-spacing.html",
+  "description": "A custom style used to provide css variables for Material Design spacing",
+  "homepage": "http://expandjs.com/elements/mat-spacing",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "material design",
+    "material spacing",
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.2.0"
+  },
+  "_release": "0.10.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.10.0",
+    "commit": "1483d833a046d9d6653748df1d9929ad0c8b2856"
+  },
+  "_source": "git://github.com/ExpandJS/mat-spacing.git",
+  "_target": "0.10.0",
+  "_originalSource": "ExpandJS/mat-spacing"
+}

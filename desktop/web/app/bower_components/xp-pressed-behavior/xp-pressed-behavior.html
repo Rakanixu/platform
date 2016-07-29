@@ -1,0 +1,262 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A behavior used to add press capabilities on a custom element.
+
+@behavior xp-pressed-behavior
+@description A behavior used to add press capabilities on a custom element
+@keywords expandjs, web app, custom elements, web-components
+@group behaviors
+
+@homepage http://expandjs.com/elements/xp-pressed-behavior
+@repository https://github.com/ExpandJS/xp-pressed-behavior
+
+@behavior xp-array-behavior /bower_components/xp-array-behavior/xp-array-behavior.html
+@behavior xp-focused-behavior /bower_components/xp-focused-behavior/xp-focused-behavior.html
+@behavior xp-refirer-behavior /bower_components/xp-refirer-behavior/xp-refirer-behavior.html
+@behavior xp-targeter-behavior /bower_components/xp-targeter-behavior/xp-targeter-behavior.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency xp-array-behavior ExpandJS/xp-array-behavior#0.10.0
+@dependency xp-focused-behavior ExpandJS/xp-focused-behavior#0.10.0
+@dependency xp-refirer-behavior ExpandJS/xp-refirer-behavior#0.10.0
+@dependency xp-targeter-behavior ExpandJS/xp-targeter-behavior#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-array-behavior/xp-array-behavior.html">
+<link rel="import" href="../xp-focused-behavior/xp-focused-behavior.html">
+<link rel="import" href="../xp-refirer-behavior/xp-refirer-behavior.html">
+<link rel="import" href="../xp-targeter-behavior/xp-targeter-behavior.html">
+
+<script>
+    (function () {
+
+        // Prototype
+        Polymer.XPPressedBehaviorImp = {
+
+            /**
+             * Fired when the active state changes.
+             *
+             * @event xp-active
+             * @param {Element} firer
+             * @param {boolean} isActive
+             * @bubbles
+             */
+
+            /**
+             * Fired when the element is clicked.
+             *
+             * @event xp-activate
+             * @param {Element} firer
+             * @param {Element} target
+             * @param {*} data
+             * @param {boolean} isActive
+             * @bubbles
+             * @cancelable
+             */
+
+            /*********************************************************************/
+
+            /**
+             * Makes the element pressed.
+             *
+             * @method press
+             * @returns {Element}
+             */
+            press: function () {
+
+                // Vars
+                var self   = this,
+                    target = self.target;
+
+                // Finding
+                if (self.behavior !== 'inject') { target = self.findTarget() || target; }
+
+                // Firing
+                if (self.fire('xp-activate', {firer: self, target: target, data: self.data, isActive: self.active}, {cancelable: true}).defaultPrevented) { return self; }
+
+                // Setting
+                if (self.toggleable)  { self.active   = !self.active; }
+                if (self.autoDisable) { self.disabled = true; }
+
+                // Checking
+                if (!target) { return self; }
+
+                // Scoping
+                if (self.behavior === 'inject' && self.inject)   { self.inject(target, self.data); }
+                if (self.behavior === 'reset'  && target.reset)  { target.reset(); }
+                if (self.behavior === 'submit' && target.submit) { target.submit(self.data); }
+                if (self.behavior === 'toggle' && target.toggle) { target.toggle(self, self.data); }
+
+                return self;
+            },
+
+            /*********************************************************************/
+
+            // LISTENERS
+            listeners: {
+                'click': '_clickHandler',
+                'down': '_touchHandler',
+                'up': '_touchHandler'
+            },
+
+            // PROPERTIES
+            properties: {
+
+                /**
+                 * If set to true, the element is active.
+                 *
+                 * @attribute active
+                 * @type boolean
+                 * @default false
+                 * @notifies
+                 */
+                active: {
+                    notify: true,
+                    observer: '_activeObserver',
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * If set to true, pressing the element will disable it.
+                 *
+                 * @attribute auto-disable
+                 * @type boolean
+                 * @default false
+                 */
+                autoDisable: {
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * Determines how the element behaves in relation to its target.
+                 *
+                 * @attribute behavior
+                 * @type "inject" | "reset" | "submit" | "toggle"
+                 */
+                behavior: {
+                    type: String
+                },
+
+                /**
+                 * The element's data.
+                 *
+                 * @attribute data
+                 * @type *
+                 * @notifies
+                 */
+                data: {
+                    notify: true
+                },
+
+                /**
+                 * If set to true, the element is pressed.
+                 *
+                 * @attribute pressed
+                 * @type boolean
+                 * @default false
+                 * @notifies
+                 * @readonly
+                 */
+                pressed: {
+                    notify: true,
+                    readOnly: true,
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * If set to true, the element can't be pressed by tap.
+                 *
+                 * @attribute tap-disabled
+                 * @type boolean
+                 * @default false
+                 */
+                tapDisabled: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * If set to true, pressing the element will toggle its active state.
+                 *
+                 * @attribute toggleable
+                 * @type boolean
+                 * @default false
+                 */
+                toggleable: {
+                    observer: '_toggleableObserver',
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                }
+            },
+
+            /*********************************************************************/
+
+            // OBSERVER
+            _activeObserver: function () {
+
+                // Firing
+                this.fire('xp-active', {firer: this, isActive: this.active});
+            },
+
+            // OBSERVER
+            _toggleableObserver: function () {
+
+                // Setting
+                if (!this.toggleable) { this.active = false; }
+            },
+
+            /*********************************************************************/
+
+            // HANDLER
+            _clickHandler: function (event) {
+
+                // Vars
+                var self = this;
+
+                // Preventing
+                if (!event.button) { event.pressed = event.pressed || self; }
+
+                // Pressing
+                if (event.pressed === self) { self.press(); }
+            },
+
+            // HANDLER
+            _touchHandler: function (event) {
+
+                // Vars
+                var self = this;
+
+                // Preventing
+                event.pressed = event.pressed || self;
+
+                // Setting
+                if (event.pressed === self) { self._setPressed(event.type === 'down'); }
+            }
+        };
+
+        Polymer.XPPressedBehavior = [
+            Polymer.XPArrayBehavior,
+            Polymer.XPFocusedBehavior,
+            Polymer.XPRefirerBehavior,
+            Polymer.XPTargeterBehavior,
+            Polymer.XPPressedBehaviorImp
+        ];
+    }());
+</script>

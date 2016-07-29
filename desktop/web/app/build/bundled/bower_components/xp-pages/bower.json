@@ -1,0 +1,29 @@
+{
+  "name": "xp-pages",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "xp-pages.html",
+  "description": "A custom element used to manage separate pages",
+  "homepage": "http://expandjs.com/elements/xp-pages",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "xp-master-behavior": "ExpandJS/xp-master-behavior#0.10.0",
+    "xp-selector": "ExpandJS/xp-selector#0.10.0",
+    "xp-slave-behavior": "ExpandJS/xp-slave-behavior#0.10.0",
+    "polymer": "Polymer/polymer#^1.2.0"
+  }
+}

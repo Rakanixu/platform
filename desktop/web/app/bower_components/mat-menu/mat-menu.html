@@ -1,0 +1,162 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A custom element used to display a [Material Design menu](http://www.google.com/design/spec/components/menus.html).
+
+It can be used in conjunction with
+[mat-icon-button](http://expandjs.com/elements/mat-icon-button) and
+[mat-option](/http://expandjs.comelements/mat-option).
+
+```html
+<mat-icon-button behavior="toggle" icon="navigation:more-vert" target="myMenu"></mat-icon-button>
+<mat-menu id="myMenu">
+    <mat-option label="First option"></mat-option>
+    <mat-option label="Second option"></mat-option>
+    <mat-option label="Third option"></mat-option>
+</mat-menu>
+```
+
+In addition to the default view mode, it provides a
+[cascade](http://www.google.com/design/spec/components/menus.html#menus-menu-items) one,
+which is similar to most desktop applications' menus.
+
+```html
+<mat-icon-button behavior="toggle" icon="navigation:more-vert" target="myMenu"></mat-icon-button>
+<mat-menu id="myMenu" cascade>
+    <mat-option label="First option"></mat-option>
+    <mat-option label="Second option"></mat-option>
+    <mat-option label="Third option"></mat-option>
+</mat-menu>
+```
+
+Menus can also contain [mat-submenu](http://expandjs.com/elements/mat-submenu), allowing for multi level menu.
+
+```html
+<mat-icon-button behavior="toggle" icon="navigation:more-vert" target="myMenu"></mat-icon-button>
+<mat-menu id="myMenu">
+    <mat-option label="First option"></mat-option>
+    <mat-option label="Second option"></mat-option>
+    <mat-option label="Third option"></mat-option>
+    <mat-submenu label="Fourth option">
+        <mat-option label="Sub option 1"></mat-option>
+        <mat-option label="Sub option 2"></mat-option>
+        <mat-option label="Sub option 3"></mat-option>
+    </mat-submenu>
+</mat-menu>
+```
+
+@element mat-menu
+@description A custom element used to display a Material Design menu
+@keywords material design, material menu, expandjs, web app, custom elements, web-components
+@group containers
+@hot
+
+@homepage http://expandjs.com/elements/mat-menu
+@repository https://github.com/ExpandJS/mat-menu
+@demo http://expandjs.com/demo/mat-menu
+
+@behavior mat-paper-behavior /bower_components/mat-paper/mat-paper-behavior.html
+@behavior xp-menu-behavior /bower_components/xp-menu-behavior/xp-menu-behavior.html
+
+@dependency polymer Polymer/polymer#^1.0.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency mat-option ExpandJS/mat-option#0.10.0
+@dependency mat-paper ExpandJS/mat-paper#0.10.0
+@dependency xp-menu-behavior ExpandJS/xp-menu-behavior#0.10.0
+
+@devDependency mat-demo ExpandJS/mat-demo#0.10.0
+@devDependency mat-divider ExpandJS/mat-divider#0.10.0
+@devDependency mat-icon-button ExpandJS/mat-icon-button#0.10.0
+@devDependency mat-icons ExpandJS/mat-icons#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-option/mat-option.html">
+<link rel="import" href="../mat-paper/mat-paper-behavior.html">
+<link rel="import" href="../mat-paper/mat-paper-styles.html">
+<link rel="import" href="../xp-menu-behavior/xp-menu-behavior.html">
+<link rel="import" href="../xp-menu-behavior/xp-menu-styles.html">
+
+<dom-module id="mat-menu">
+
+    <template strip-whitespace>
+
+        <style include="mat-paper-styles"></style>
+        <style include="xp-menu-styles"></style>
+
+        <style>
+            :host .body {
+                box-sizing: border-box;
+                padding: 8px 0;
+                position: relative;
+            }
+
+            :host-context([cascade]) .body {
+                padding: 16px 0;
+            }
+        </style>
+
+        <div class="wrapper">
+            <div class="body">
+                <content></content>
+            </div>
+        </div>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-menu',
+
+            // BEHAVIORS
+            behaviors: [
+                Polymer.MatPaperBehavior,
+                Polymer.XPMenuBehavior
+            ],
+
+            /*********************************************************************/
+
+            // PROPERTIES
+            properties: {
+
+                /**
+                 * The menu's brightness.
+                 *
+                 * @attribute brightness
+                 * @type string
+                 * @default "overlay"
+                 */
+                brightness: {
+                    reflectToAttribute: true,
+                    type: String,
+                    value: 'overlay'
+                },
+
+                /**
+                 * The menu's z-axis position.
+                 *
+                 * @attribute z
+                 * @type number
+                 * @default 8
+                 * @notifies
+                 */
+                z: {
+                    notify: true,
+                    reflectToAttribute: true,
+                    type: Number,
+                    value: 8
+                }
+            }
+        });
+    </script>
+
+</dom-module>

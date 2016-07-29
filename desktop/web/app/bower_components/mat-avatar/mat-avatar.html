@@ -1,0 +1,241 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A custom element used to display a [Material Design avatar](http://www.google.com/design/spec/style/imagery.html#imagery-ui-integration).
+
+It comes in two sizes, the default one of 40x40 and a `big` one of 64x64.
+
+```html
+<mat-avatar icon="social:person"></mat-avatar>
+<mat-avatar icon-src="http://example.com/avatars/michael.png" big></mat-avatar>
+```
+
+The avatar can also act as a standard anchor element linking to other resources.
+
+```html
+<mat-avatar href="https://github.com/ExpandJS" icon-src="https://avatars3.githubusercontent.com/u/10746153?v=3&s=40" target="_blank"></mat-avatar>
+```
+
+---
+
+## Styling
+
+The avatar's background and icon color can be changed accordingly to the
+[Material Design palette](http://www.google.com/design/spec/style/color.html#color-color-palette),
+both of which can be changed based on the `active` state.
+
+```html
+<mat-avatar icon="social:person" active-background="red" toggleable></mat-avatar>
+<mat-avatar icon="social:favorite" active-color="red" toggleable></mat-avatar>
+```
+
+@element mat-avatar
+@description A custom element used to display a Material Design avatar
+@keywords material design, material avatar, expandjs, web app, custom elements, web-components
+@group contents
+
+@homepage http://expandjs.com/elements/mat-avatar
+@repository https://github.com/ExpandJS/mat-avatar
+@demo http://expandjs.com/demo/mat-avatar
+
+@behavior xp-anchor-behavior /bower_components/xp-anchor-behavior/xp-anchor-behavior.html
+@behavior xp-overlay-injector /bower_components/xp-overlay/xp-overlay-injector.html
+@behavior mat-pressed-paper-behavior /bower_components/mat-pressed-behavior/mat-pressed-paper-behavior.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency iron-flex-layout PolymerElements/iron-flex-layout#^1.0.0
+@dependency mat-icon ExpandJS/mat-icon#0.10.0
+@dependency mat-pressed-behavior ExpandJS/mat-pressed-behavior#0.10.0
+@dependency xp-anchor-behavior ExpandJS/xp-anchor-behavior#0.10.0
+@dependency xp-overlay ExpandJS/xp-overlay#0.10.0
+
+@devDependency mat-demo ExpandJS/mat-demo#0.10.0
+@devDependency mat-icons ExpandJS/mat-icons#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../mat-icon/mat-icon.html">
+<link rel="import" href="../mat-pressed-behavior/mat-pressed-paper-behavior.html">
+<link rel="import" href="../mat-pressed-behavior/mat-pressed-paper-styles.html">
+<link rel="import" href="../xp-anchor-behavior/xp-anchor-behavior.html">
+<link rel="import" href="../xp-anchor-behavior/xp-anchor-styles.html">
+<link rel="import" href="../xp-overlay/xp-overlay-injector.html">
+
+<dom-module id="mat-avatar">
+
+    <template strip-whitespace>
+
+        <style include="xp-anchor-styles"></style>
+        <style include="mat-pressed-paper-styles"></style>
+
+        <style>
+            :host {
+                border-radius: 50%;
+                display: inline-block;
+                height: 40px;
+                margin: 4px;
+                width: 40px;
+            }
+
+            :host([big]) {
+                height: 64px;
+                margin: 0;
+                width: 64px;
+            }
+
+            :host([raster]) {
+                background: transparent !important;
+            }
+
+            :host .anchor:after {
+                min-height: 48px;
+                min-width: 48px;
+            }
+
+            :host .main {
+                @apply(--layout-horizontal);
+                @apply(--layout-center-center);
+                border-radius: inherit;
+                box-sizing: border-box;
+                height: 100%;
+            }
+
+            :host .icon {
+                display: block;
+            }
+
+            :host([raster]) .icon {
+                border-radius: inherit;
+                box-sizing: border-box;
+                height: 100%;
+                width: 100%;
+            }
+
+            :host([raster]) .icon > * {
+                box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.12) inset;
+            }
+        </style>
+
+        <a class="anchor" tabindex="-1" on-click="_anchorHandler">
+            <div class="main">
+                <mat-icon class="icon" color="[[currentColor]]" disabled="[[disabled]]" name="[[icon]]" raster="{{raster}}" src="[[iconSrc]]"></mat-icon>
+            </div>
+        </a>
+
+        <div class="ripple-waves"></div>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-avatar',
+
+            // BEHAVIORS
+            behaviors: [
+                Polymer.XPAnchorBehavior,
+                Polymer.XPOverlayInjector,
+                Polymer.MatPressedPaperBehavior
+            ],
+
+            /*********************************************************************/
+
+            // PROPERTIES
+            properties: {
+
+                /**
+                 * If set to true, the element has 64px diameter instead of 40px.
+                 *
+                 * @attribute big
+                 * @type boolean
+                 * @default false
+                 */
+                big: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The avatar's brightness.
+                 *
+                 * @attribute brightness
+                 * @type string
+                 * @default "placeholder"
+                 */
+                brightness: {
+                    reflectToAttribute: true,
+                    type: String,
+                    value: 'placeholder'
+                },
+
+                /**
+                 * The avatar's color.
+                 *
+                 * @attribute color
+                 * @type string
+                 */
+                color: {
+                    reflectToAttribute: true,
+                    type: String
+                },
+
+                /**
+                 * The button's icon.
+                 *
+                 * @attribute icon
+                 * @type string
+                 */
+                icon: {
+                    reflectToAttribute: true,
+                    type: String
+                },
+
+                /**
+                 * The button's icon's src.
+                 *
+                 * @attribute icon-src
+                 * @type string
+                 */
+                iconSrc: {
+                    reflectToAttribute: true,
+                    type: String
+                },
+
+                /**
+                 * If set to true, the icon is a raster one instead of svg.
+                 *
+                 * @attribute raster
+                 * @type boolean
+                 * @default false
+                 * @notifies
+                 */
+                raster: {
+                    notify: true,
+                    reflectToAttribute: true,
+                    type: Boolean
+                }
+            },
+
+            /*********************************************************************/
+
+            // LISTENER
+            created: function () {
+
+                // Classifying
+                this.classList.add('avatar');
+            }
+        });
+    </script>
+
+</dom-module>

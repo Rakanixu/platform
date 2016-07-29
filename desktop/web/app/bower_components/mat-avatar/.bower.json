@@ -1,0 +1,46 @@
+{
+  "name": "mat-avatar",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "mat-avatar.html",
+  "description": "A custom element used to display a Material Design avatar",
+  "homepage": "http://expandjs.com/elements/mat-avatar",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "material design",
+    "material avatar",
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "mat-icon": "ExpandJS/mat-icon#0.10.0",
+    "mat-pressed-behavior": "ExpandJS/mat-pressed-behavior#0.10.0",
+    "xp-anchor-behavior": "ExpandJS/xp-anchor-behavior#0.10.0",
+    "xp-overlay": "ExpandJS/xp-overlay#0.10.0",
+    "polymer": "Polymer/polymer#^1.2.0",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0"
+  },
+  "devDependencies": {
+    "mat-demo": "ExpandJS/mat-demo#0.10.0",
+    "mat-icons": "ExpandJS/mat-icons#0.10.0"
+  },
+  "_release": "0.10.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.10.0",
+    "commit": "1969cff3286b89a2b1e364045cecf2adc0688550"
+  },
+  "_source": "git://github.com/ExpandJS/mat-avatar.git",
+  "_target": "0.10.0",
+  "_originalSource": "ExpandJS/mat-avatar"
+}

@@ -1,0 +1,38 @@
+{
+  "name": "mat-divider",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "mat-divider.html",
+  "description": "A custom element used to display a Material Design divider",
+  "homepage": "http://expandjs.com/elements/mat-divider",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "material design",
+    "material divider",
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "mat-ink": "ExpandJS/mat-ink#0.10.0",
+    "polymer": "Polymer/polymer#^1.2.0"
+  },
+  "_release": "0.10.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.10.0",
+    "commit": "1cb88a44072e7c9147b2990e360611f63e961eb8"
+  },
+  "_source": "git://github.com/ExpandJS/mat-divider.git",
+  "_target": "0.10.0",
+  "_originalSource": "ExpandJS/mat-divider"
+}

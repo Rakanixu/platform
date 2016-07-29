@@ -1,0 +1,121 @@
+<link rel="import" href="../mat-button/mat-button.html">
+<link rel="import" href="../mat-demo/mat-demo.html">
+<link rel="import" href="mat-dialog.html">
+
+<dom-module id="mat-dialog-demo">
+
+    <template>
+
+        <style>
+            :host {
+                display: block;
+            }
+        </style>
+
+        <mat-demo name="mat-dialog" type="element" url="http://expandjs.com/elements/mat-dialog">
+
+            <mat-demo-panel label="Default">
+                <script type="text/html">
+                    <mat-button behavior="toggle" label="Show dialog" target="demoDefault"></mat-button>
+                    <mat-dialog id="demoDefault" label="Default">
+                        <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus dignissim vestibulum purus vel pulvinar. Donec cursus malesuada sem eget placerat. Maecenas et lobortis ex. Proin tincidunt, nunc at euismod condimentum, justo est ultrices arcu, non interdum mi sem eget velit. Morbi laoreet, nibh at luctus ornare, enim risus tincidunt sapien, ac hendrerit purus ipsum sed justo. Etiam sagittis dolor neque, vitae congue purus ornare eget. Aenean non enim ex. Sed porta dignissim efficitur. Nullam sagittis justo turpis, dapibus volutpat nulla luctus non. Suspendisse nec sagittis mauris. Suspendisse ut velit quis elit dapibus viverra. Duis eget orci eros. Vivamus scelerisque blandit magna at auctor.</div>
+                        <mat-button class="action" behavior="toggle" label="Close" target="demoDefault"></mat-button>
+                    </mat-dialog>
+                </script>
+                <mat-button behavior="toggle" label="Show dialog" target="demoDefault"></mat-button>
+                <mat-dialog id="demoDefault" label="Default">
+                    <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus dignissim vestibulum purus vel pulvinar. Donec cursus malesuada sem eget placerat. Maecenas et lobortis ex. Proin tincidunt, nunc at euismod condimentum, justo est ultrices arcu, non interdum mi sem eget velit. Morbi laoreet, nibh at luctus ornare, enim risus tincidunt sapien, ac hendrerit purus ipsum sed justo. Etiam sagittis dolor neque, vitae congue purus ornare eget. Aenean non enim ex. Sed porta dignissim efficitur. Nullam sagittis justo turpis, dapibus volutpat nulla luctus non. Suspendisse nec sagittis mauris. Suspendisse ut velit quis elit dapibus viverra. Duis eget orci eros. Vivamus scelerisque blandit magna at auctor.</div>
+                    <mat-button class="action" behavior="toggle" label="Close" target="demoDefault"></mat-button>
+                </mat-dialog>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Auto hide disabled">
+                <script type="text/html">
+                    <mat-button behavior="toggle" label="Show dialog" target="demoAutoHide"></mat-button>
+                    <mat-dialog id="demoAutoHide" label="Auto hide disabled" auto-hide-disabled>
+                        <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus dignissim vestibulum purus vel pulvinar. Donec cursus malesuada sem eget placerat. Maecenas et lobortis ex. Proin tincidunt, nunc at euismod condimentum, justo est ultrices arcu, non interdum mi sem eget velit. Morbi laoreet, nibh at luctus ornare, enim risus tincidunt sapien, ac hendrerit purus ipsum sed justo. Etiam sagittis dolor neque, vitae congue purus ornare eget. Aenean non enim ex. Sed porta dignissim efficitur. Nullam sagittis justo turpis, dapibus volutpat nulla luctus non. Suspendisse nec sagittis mauris. Suspendisse ut velit quis elit dapibus viverra. Duis eget orci eros. Vivamus scelerisque blandit magna at auctor.</div>
+                        <mat-button class="action" behavior="toggle" label="Close" target="demoAutoHide"></mat-button>
+                    </mat-dialog>
+                </script>
+                <mat-button behavior="toggle" label="Show dialog" target="demoAutoHide"></mat-button>
+                <mat-dialog id="demoAutoHide" label="Auto hide disabled" auto-hide-disabled>
+                    <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus dignissim vestibulum purus vel pulvinar. Donec cursus malesuada sem eget placerat. Maecenas et lobortis ex. Proin tincidunt, nunc at euismod condimentum, justo est ultrices arcu, non interdum mi sem eget velit. Morbi laoreet, nibh at luctus ornare, enim risus tincidunt sapien, ac hendrerit purus ipsum sed justo. Etiam sagittis dolor neque, vitae congue purus ornare eget. Aenean non enim ex. Sed porta dignissim efficitur. Nullam sagittis justo turpis, dapibus volutpat nulla luctus non. Suspendisse nec sagittis mauris. Suspendisse ut velit quis elit dapibus viverra. Duis eget orci eros. Vivamus scelerisque blandit magna at auctor.</div>
+                    <mat-button class="action" behavior="toggle" label="Close" target="demoAutoHide"></mat-button>
+                </mat-dialog>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Backdrop disabled">
+                <script type="text/html">
+                    <mat-button behavior="toggle" label="Show dialog" target="demoBackdrop"></mat-button>
+                    <mat-dialog id="demoBackdrop" label="Backdrop disabled" backdrop-disabled>
+                        <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus dignissim vestibulum purus vel pulvinar. Donec cursus malesuada sem eget placerat. Maecenas et lobortis ex. Proin tincidunt, nunc at euismod condimentum, justo est ultrices arcu, non interdum mi sem eget velit. Morbi laoreet, nibh at luctus ornare, enim risus tincidunt sapien, ac hendrerit purus ipsum sed justo. Etiam sagittis dolor neque, vitae congue purus ornare eget. Aenean non enim ex. Sed porta dignissim efficitur. Nullam sagittis justo turpis, dapibus volutpat nulla luctus non. Suspendisse nec sagittis mauris. Suspendisse ut velit quis elit dapibus viverra. Duis eget orci eros. Vivamus scelerisque blandit magna at auctor.</div>
+                        <mat-button class="action" behavior="toggle" label="Close" target="demoBackdrop"></mat-button>
+                    </mat-dialog>
+                </script>
+                <mat-button behavior="toggle" label="Show dialog" target="demoBackdrop"></mat-button>
+                <mat-dialog id="demoBackdrop" label="Backdrop disabled" backdrop-disabled>
+                    <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus dignissim vestibulum purus vel pulvinar. Donec cursus malesuada sem eget placerat. Maecenas et lobortis ex. Proin tincidunt, nunc at euismod condimentum, justo est ultrices arcu, non interdum mi sem eget velit. Morbi laoreet, nibh at luctus ornare, enim risus tincidunt sapien, ac hendrerit purus ipsum sed justo. Etiam sagittis dolor neque, vitae congue purus ornare eget. Aenean non enim ex. Sed porta dignissim efficitur. Nullam sagittis justo turpis, dapibus volutpat nulla luctus non. Suspendisse nec sagittis mauris. Suspendisse ut velit quis elit dapibus viverra. Duis eget orci eros. Vivamus scelerisque blandit magna at auctor.</div>
+                    <mat-button class="action" behavior="toggle" label="Close" target="demoBackdrop"></mat-button>
+                </mat-dialog>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Actions">
+                <script type="text/html">
+                    <mat-button behavior="toggle" label="Show dialog" target="demoAction"></mat-button>
+                    <mat-dialog id="demoAction" label="Actions">
+                        <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus dignissim vestibulum purus vel pulvinar. Donec cursus malesuada sem eget placerat. Maecenas et lobortis ex. Proin tincidunt, nunc at euismod condimentum, justo est ultrices arcu, non interdum mi sem eget velit. Morbi laoreet, nibh at luctus ornare, enim risus tincidunt sapien, ac hendrerit purus ipsum sed justo. Etiam sagittis dolor neque, vitae congue purus ornare eget. Aenean non enim ex. Sed porta dignissim efficitur. Nullam sagittis justo turpis, dapibus volutpat nulla luctus non. Suspendisse nec sagittis mauris. Suspendisse ut velit quis elit dapibus viverra. Duis eget orci eros. Vivamus scelerisque blandit magna at auctor.</div>
+                        <mat-button class="action" behavior="toggle" label="Disagree" target="demoAction"></mat-button>
+                        <mat-button class="action" behavior="toggle" label="Agree" target="demoAction"></mat-button>
+                    </mat-dialog>
+                </script>
+                <mat-button behavior="toggle" label="Show dialog" target="demoAction"></mat-button>
+                <mat-dialog id="demoAction" label="Actions">
+                    <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus dignissim vestibulum purus vel pulvinar. Donec cursus malesuada sem eget placerat. Maecenas et lobortis ex. Proin tincidunt, nunc at euismod condimentum, justo est ultrices arcu, non interdum mi sem eget velit. Morbi laoreet, nibh at luctus ornare, enim risus tincidunt sapien, ac hendrerit purus ipsum sed justo. Etiam sagittis dolor neque, vitae congue purus ornare eget. Aenean non enim ex. Sed porta dignissim efficitur. Nullam sagittis justo turpis, dapibus volutpat nulla luctus non. Suspendisse nec sagittis mauris. Suspendisse ut velit quis elit dapibus viverra. Duis eget orci eros. Vivamus scelerisque blandit magna at auctor.</div>
+                    <mat-button class="action" behavior="toggle" label="Disagree" target="demoAction"></mat-button>
+                    <mat-button class="action" behavior="toggle" label="Agree" target="demoAction"></mat-button>
+                </mat-dialog>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Fixed dimensions">
+                <script type="text/html">
+                    <mat-button behavior="toggle" label="Show dialog" target="demoFixed"></mat-button>
+                    <mat-dialog id="demoFixed" label="Fixed dimensions" width="320" height="240">
+                        <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus dignissim vestibulum purus vel pulvinar. Donec cursus malesuada sem eget placerat. Maecenas et lobortis ex. Proin tincidunt, nunc at euismod condimentum, justo est ultrices arcu, non interdum mi sem eget velit. Morbi laoreet, nibh at luctus ornare, enim risus tincidunt sapien, ac hendrerit purus ipsum sed justo. Etiam sagittis dolor neque, vitae congue purus ornare eget. Aenean non enim ex. Sed porta dignissim efficitur. Nullam sagittis justo turpis, dapibus volutpat nulla luctus non. Suspendisse nec sagittis mauris. Suspendisse ut velit quis elit dapibus viverra. Duis eget orci eros. Vivamus scelerisque blandit magna at auctor.</div>
+                        <mat-button class="action" behavior="toggle" label="Close" target="demoFixed"></mat-button>
+                    </mat-dialog>
+                </script>
+                <mat-button behavior="toggle" label="Show dialog" target="demoFixed"></mat-button>
+                <mat-dialog id="demoFixed" label="Fixed dimensions" width="320" height="240">
+                    <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus dignissim vestibulum purus vel pulvinar. Donec cursus malesuada sem eget placerat. Maecenas et lobortis ex. Proin tincidunt, nunc at euismod condimentum, justo est ultrices arcu, non interdum mi sem eget velit. Morbi laoreet, nibh at luctus ornare, enim risus tincidunt sapien, ac hendrerit purus ipsum sed justo. Etiam sagittis dolor neque, vitae congue purus ornare eget. Aenean non enim ex. Sed porta dignissim efficitur. Nullam sagittis justo turpis, dapibus volutpat nulla luctus non. Suspendisse nec sagittis mauris. Suspendisse ut velit quis elit dapibus viverra. Duis eget orci eros. Vivamus scelerisque blandit magna at auctor.</div>
+                    <mat-button class="action" behavior="toggle" label="Close" target="demoFixed"></mat-button>
+                </mat-dialog>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Fullscreen">
+                <script type="text/html">
+                    <mat-button behavior="toggle" label="Show dialog" target="demoFullscreen"></mat-button>
+                    <mat-dialog id="demoFullscreen" label="Fullscreen" full-screen>
+                        <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus dignissim vestibulum purus vel pulvinar. Donec cursus malesuada sem eget placerat. Maecenas et lobortis ex. Proin tincidunt, nunc at euismod condimentum, justo est ultrices arcu, non interdum mi sem eget velit. Morbi laoreet, nibh at luctus ornare, enim risus tincidunt sapien, ac hendrerit purus ipsum sed justo. Etiam sagittis dolor neque, vitae congue purus ornare eget. Aenean non enim ex. Sed porta dignissim efficitur. Nullam sagittis justo turpis, dapibus volutpat nulla luctus non. Suspendisse nec sagittis mauris. Suspendisse ut velit quis elit dapibus viverra. Duis eget orci eros. Vivamus scelerisque blandit magna at auctor.</div>
+                        <mat-button class="action" behavior="toggle" label="Close" target="demoFullscreen"></mat-button>
+                    </mat-dialog>
+                </script>
+                <mat-button behavior="toggle" label="Show dialog" target="demoFullscreen"></mat-button>
+                <mat-dialog id="demoFullscreen" label="Fullscreen" full-screen>
+                    <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus dignissim vestibulum purus vel pulvinar. Donec cursus malesuada sem eget placerat. Maecenas et lobortis ex. Proin tincidunt, nunc at euismod condimentum, justo est ultrices arcu, non interdum mi sem eget velit. Morbi laoreet, nibh at luctus ornare, enim risus tincidunt sapien, ac hendrerit purus ipsum sed justo. Etiam sagittis dolor neque, vitae congue purus ornare eget. Aenean non enim ex. Sed porta dignissim efficitur. Nullam sagittis justo turpis, dapibus volutpat nulla luctus non. Suspendisse nec sagittis mauris. Suspendisse ut velit quis elit dapibus viverra. Duis eget orci eros. Vivamus scelerisque blandit magna at auctor.</div>
+                    <mat-button class="action" behavior="toggle" label="Close" target="demoFullscreen"></mat-button>
+                </mat-dialog>
+            </mat-demo-panel>
+
+        </mat-demo>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-dialog-demo'
+        });
+    </script>
+
+</dom-module>

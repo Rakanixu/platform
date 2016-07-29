@@ -1,0 +1,37 @@
+{
+  "name": "xp-snackbar-behavior",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "xp-snackbar-behavior.html",
+  "description": "A behavior used to add snackbar capabilities on a custom element",
+  "homepage": "http://expandjs.com/elements/xp-snackbar-behavior",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "xp-refirer-behavior": "ExpandJS/xp-refirer-behavior#0.10.0",
+    "xp-toast-behavior": "ExpandJS/xp-toast-behavior#0.10.0",
+    "polymer": "Polymer/polymer#^1.2.0"
+  },
+  "_release": "0.10.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.10.0",
+    "commit": "861ffe4bf77fcd6bc839eb515cff3d7dba9d5c10"
+  },
+  "_source": "git://github.com/ExpandJS/xp-snackbar-behavior.git",
+  "_target": "0.10.0",
+  "_originalSource": "ExpandJS/xp-snackbar-behavior"
+}

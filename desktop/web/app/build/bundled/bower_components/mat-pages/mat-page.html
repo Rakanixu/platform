@@ -1,0 +1,26 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../mat-paper/mat-paper-behavior.html">
+<link rel="import" href="../mat-paper/mat-paper-styles.html">
+<link rel="import" href="../mat-spacing/mat-spacing.html">
+<link rel="import" href="../xp-pages/xp-page-behavior.html">
+<link rel="import" href="../xp-pages/xp-page-styles.html">
+
+</head><body><dom-module id="mat-page">
+
+    <template strip-whitespace="">
+
+        <style include="mat-paper-styles"></style>
+        <style include="xp-page-styles"></style>
+
+        <style>:host{@apply (--layout-flex);box-sizing:border-box;height:100%;}:host(:not([active])) .wrapper{display:none;}:host-context([sliding]) .wrapper{display:block;}:host([padding]) .wrapper{@apply (--mat-padding-mobile);}@media (min-width: 960px){:host([padding]) .wrapper{@apply (--mat-padding-desktop);}}</style>
+
+        <div class="wrapper"><content></content></div>
+
+    </template>
+
+    <script>Polymer({is:"mat-page",behaviors:[Polymer.MatPaperBehavior,Polymer.XPPageBehavior],properties:{brightness:{reflectToAttribute:!0,type:String,value:"transparent"},padding:{reflectToAttribute:!0,type:Boolean,value:!1}}});</script>
+
+</dom-module>
+</body></html>

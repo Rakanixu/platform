@@ -1,0 +1,36 @@
+{
+  "name": "xp-shell-behavior",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "xp-shell-behavior.html",
+  "description": "A behavior used to add application wrapping capabilities on a custom element",
+  "homepage": "http://expandjs.com/elements/xp-shell-behavior",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "xp-shared-behavior": "ExpandJS/xp-shared-behavior#0.10.0",
+    "polymer": "Polymer/polymer#^1.2.0"
+  },
+  "_release": "0.10.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.10.0",
+    "commit": "cd9b4198664cc6a4fce1d8839002ac1491493f7a"
+  },
+  "_source": "git://github.com/ExpandJS/xp-shell-behavior.git",
+  "_target": "0.10.0",
+  "_originalSource": "ExpandJS/xp-shell-behavior"
+}

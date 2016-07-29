@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <title>web-socket Demo</title>
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="../../paper-card/paper-card.html">
+    <link rel="import" href="../../paper-input/paper-input.html">
+    <link rel="import" href="../../paper-button/paper-button.html">
+    <link rel="import" href="../web-socket.html">
+    <style is="custom-style">
+      paper-card {
+        display: block;
+        width: 500px;
+        margin: 0 auto;
+        font-family: Roboto;
+      }
+
+      .container {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      paper-input {
+        flex-basis: 65%;
+      }
+
+      paper-button {
+        flex-basis: 25%;
+        height: 40px;
+        margin-top: 20px;
+      }
+
+      div[status] {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 12px;
+      }
+
+      div[status=connected] {
+        color: green;
+      }
+
+      div[status=disconnected] {
+        color: red;
+      }
+    </style>
+  </head>
+  <body unresolved>
+    <template is="dom-bind">
+      <web-socket id="ws"
+                  url="ws://echo.websocket.org"
+                  auto
+                  on-open="_onOpen"
+                  on-message="_onMessage">
+      </web-socket>
+      <paper-card heading="web-socket demo">
+        <div status$="[[status]]">[[status]]</div>
+        <div class="card-content">
+          <p>This WebSocket server echoes back everything you throw at it.</p>
+          <template is="dom-repeat" items="[[messages]]">
+            <pre>[[item.author]]: [[item.text]]</pre>
+          </template>
+          <div class="container">
+            <paper-input id="message" label="Message" autofocus></paper-input>
+            <paper-button raised on-tap="send">Send</paper-button>
+          </div>
+        </div>
+      </paper-card>
+    </template>
+    <script>
+      var scope = document.querySelector('template[is=dom-bind]');
+      scope.set('messages', []);
+      scope.set('status', 'disconnected');
+
+      scope.send = function () {
+        scope.$.ws.send(scope.$.message.value);
+        scope.push('messages', { author: 'you', text: scope.$.message.value});
+        scope.$.message.value = '';
+        scope.$.message.focus();
+      }
+
+      scope._onOpen = function () {
+        scope.set('status', 'connected');
+      };
+
+      scope._onMessage = function (event) {
+        scope.push('messages', { author: 'server', text: event.detail });
+      };
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1 @@
+!function(){"use strict";var e=require("../assert/assertArgument"),t=require("../tester/isElement"),r=require("../tester/isString"),i=require("../tester/isVoid");module.exports=function(s,u){return e(i(s)||t(s),1,"Element"),e(i(u)||r(u),2,"string"),s&&u&&s[s.hasAttribute(u)?"removeAttribute":"setAttribute"](u,""),s}}();

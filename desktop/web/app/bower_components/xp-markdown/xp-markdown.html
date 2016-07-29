@@ -1,0 +1,354 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A custom element used to parse and display a markdown formatted text.
+
+@element xp-markdown
+@description A custom element used to parse and display a markdown formatted text
+@keywords expandjs, web app, custom elements, web-components
+@group contents
+
+@homepage http://expandjs.com/elements/xp-markdown
+@repository https://github.com/ExpandJS/xp-markdown
+
+@dependency prism PrismJS/prism#^1.0.0
+@dependency markdown-it Markdown-it/markdown-it#^4.0.0
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="xp-markdown-styles.html">
+
+<script src="../prism/prism.js"></script>
+<script src="../markdown-it/dist/markdown-it.min.js"></script>
+
+<dom-module id="xp-markdown">
+
+    <template strip-whitespace>
+
+        <style include="xp-markdown-styles"></style>
+
+        <style>
+            :host {
+                display: block;
+            }
+
+            :host([empty]) {
+                display: none !important;
+            }
+
+            :host ::content p > code {
+                background: hsla(24, 20%, 95%, 1);
+                padding: 0 4px;
+            }
+
+            :host ::content pre {
+                background: hsla(24, 20%, 95%, 1);
+                font-size: 14px;
+                font-weight: 400;
+                letter-spacing: 0.01em;
+                line-height: 20px;
+                overflow-x: scroll;
+                overflow-y: auto;
+                padding: 16px 24px;
+            }
+        </style>
+
+        <content></content>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'xp-markdown',
+
+            /*********************************************************************/
+
+            /**
+             * Detects the language definition.
+             *
+             * @method _detect
+             * @param {string} code
+             * @param {string} [lang]
+             * @returns {Object}
+             * @private
+             */
+            _detect: function (code, lang) {
+                if (!lang) { return code.match(/^\s*</) ? Prism.languages.markup : Prism.languages.javascript; }
+                if (lang === 'js' || lang.substr(0, 2) === 'es') { return Prism.languages.javascript; }
+                if (lang === 'css') { return Prism.languages.css; }
+                if (lang === 'c') { return Prism.languages.clike; }
+                return Prism.languages.markup;
+            },
+
+            /*********************************************************************/
+
+            // OBSERVERS
+            observers: [
+                '_codeChanged(code, parser)',
+                '_parserChanged(breaks, html, linkify, quotes, typographer, xhtmlOut)'
+            ],
+
+            // LISTENERS
+            listeners: {
+                'click': '_handleClick'
+            },
+
+            // PROPERTIES
+            properties: {
+
+                /**
+                 * If set to true, converts `\n` into `<br>`.
+                 *
+                 * @attribute breaks
+                 * @type boolean
+                 * @default false
+                 */
+                breaks: {
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The markdown's code to render.
+                 *
+                 * @attribute parsed
+                 * @type string
+                 * @notifies
+                 */
+                code: {
+                    notify: true,
+                    type: String
+                },
+
+                /**
+                 * If set to true, the element is hidden.
+                 *
+                 * @attribute empty
+                 * @type boolean
+                 * @default true
+                 * @notifies
+                 * @readonly
+                 */
+                empty: {
+                    computed: '_computeEmpty(source)',
+                    notify: true,
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: true
+                },
+
+                /**
+                 * If set to true, enables html tags in source.
+                 *
+                 * @attribute html
+                 * @type boolean
+                 * @default false
+                 */
+                html: {
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * If set to true, converts URL-like text into links.
+                 *
+                 * @attribute linkify
+                 * @type boolean
+                 * @default false
+                 */
+                linkify: {
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The markdown parser.
+                 *
+                 * @attribute parser
+                 * @type Object
+                 * @notifies
+                 * @readonly
+                 */
+                parser: {
+                    notify: true,
+                    readOnly: true
+                },
+
+                /**
+                 * Double plus single quotes replacement pairs, when typographer is enabled.
+                 *
+                 * @attribute quotes
+                 * @type string
+                 * @default "\u201c\u201d\u2018\u2019"
+                 */
+                quotes: {
+                    type: String,
+                    value: '\u201c\u201d\u2018\u2019'
+                },
+
+                /**
+                 * The html rendered from markdown's code.
+                 *
+                 * @attribute source
+                 * @type string
+                 * @notifies
+                 * @readonly
+                 */
+                source: {
+                    notify: true,
+                    observer: '_sourceChanged',
+                    readOnly: true,
+                    type: String
+                },
+
+                /**
+                 * If set to true, enables some language-neutral replacement plus quotes beautification.
+                 *
+                 * @attribute typographer
+                 * @type boolean
+                 * @default false
+                 */
+                typographer: {
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The markdown's wrapper.
+                 *
+                 * @attribute wrapper
+                 * @type Element
+                 * @notifies
+                 * @readonly
+                 */
+                wrapper: {
+                    notify: true,
+                    readOnly: true
+                },
+
+                /**
+                 * If set to true, uses `/` to close single tags like `<br>`.
+                 *
+                 * @attribute xhtml-out
+                 * @type boolean
+                 * @default false
+                 */
+                xhtmlOut: {
+                    type: Boolean,
+                    value: false
+                }
+            },
+
+            /*********************************************************************/
+
+            // COMPUTER
+            _computeEmpty: function (source) {
+                return !source;
+            },
+
+            /*********************************************************************/
+
+            // OBSERVER
+            _codeChanged: function () {
+
+                // Setting
+                if (this.parser) { this._setSource(this.parser.render(this.code || '')); }
+            },
+
+            // OBSERVER
+            _parserChanged: function() {
+
+                // Vars
+                var self   = this,
+                    parser = markdownit({
+                        breaks: self.breaks,
+                        highlight: function (code, lang) { return Prism.highlight(code, self._detect(code, lang)); },
+                        html: self.html,
+                        linkify: self.linkify,
+                        quotes: self.quotes,
+                        typographer: self.typographer,
+                        xhtmlOut: self.xhtmlOut
+                    });
+
+                // Plugin (adds anchor support)
+                parser.core.ruler.push('heading_anchors', function (state) {
+                    for (var i = 0; i < state.tokens.length - 1; i += 1) {
+                        if (state.tokens[i].type === 'heading_open' && state.tokens[i+1].type === 'inline' && state.tokens[i+1].content) {
+                            var anchorName = state.tokens[i+1].content.replace(/ /g, '');
+                            state.tokens[i].attrPush(['id', anchorName]);
+                            var anchorToken = new state.Token('html_inline', '', 0);
+                            anchorToken.content = '<a href="#" name="' + anchorName + '"></a>';
+                            state.tokens[i+1].children.unshift(anchorToken);
+                            i += 2;
+                        }
+                    }
+                });
+
+                // Setting
+                self._setParser(parser);
+            },
+
+            // OBSERVER
+            _sourceChanged: function () {
+
+                // Appending
+                if (this.isAttached) { Polymer.dom(this).innerHTML = this.source || ''; }
+            },
+
+            /*********************************************************************/
+
+            // LISTENER
+            attached: function () {
+
+                // Vars
+                var self   = this,
+                    source = self.source;
+
+                // Setting
+                self.code = self.code || Polymer.dom(self).innerHTML;
+
+                // Appending
+                if (self.source === source) { self._sourceChanged(); }
+            },
+
+            // LISTENER
+            created: function () {
+
+                // Classifying
+                this.classList.add('markdown');
+            },
+
+            /*********************************************************************/
+
+            // HANDLER
+            _handleClick: function (event) {
+
+                // Checking
+                if (event.button) { return; }
+
+                // Vars
+                var self   = this,
+                    target = Polymer.dom(event).rootTarget,
+                    anchor = target.tagName === 'A' ? target : XP.findParentElement(target, 'a', self);
+
+                // Checking
+                if (!anchor || !anchor.href) { return; }
+
+                // Firing
+                if (self.fire('xp-redirect', {firer: self, anchor: anchor, href: anchor.href}, {cancelable: true}).defaultPrevented) { event.preventDefault(); }
+            }
+        });
+    </script>
+
+</dom-module>

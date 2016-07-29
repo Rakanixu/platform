@@ -1,0 +1,61 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A stylesheet used to stylize a dialog element.
+
+@stylesheet xp-dialog-styles
+@description A stylesheet used to stylize a dialog element
+@keywords expandjs, web app, custom elements, web-components
+@group stylesheets
+
+@homepage http://expandjs.com/elements/xp-dialog-styles
+@repository https://github.com/ExpandJS/xp-dialog-behavior
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency xp-overlay ExpandJS/xp-overlay#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../xp-overlay/xp-overlay-styles.html">
+
+<dom-module id="xp-dialog-styles">
+
+    <template strip-whitespace>
+
+        <style include="xp-overlay-styles"></style>
+
+        <style>
+            :host {
+                margin: 24px 40px;
+            }
+
+            :host([full-screen]) {
+                height: 100vh !important;
+                margin: 0 !important;
+                width: 100vw !important;
+            }
+
+            :host .backdrop {
+                background: hsla(0, 0%, 0%, 0.5);
+                bottom: 0;
+                display: block;
+                left: 0;
+                position: fixed;
+                right: 0;
+                top: 0;
+            }
+
+            :host([backdrop-disabled]) .backdrop {
+                background: transparent !important;
+            }
+        </style>
+
+    </template>
+
+</dom-module>

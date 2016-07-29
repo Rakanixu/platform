@@ -1,0 +1,58 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A custom element used to display a page.
+
+It can be used in conjunction with
+[xp-pages](http://expandjs.com/elements/xp-pages).
+
+@element xp-page
+@description A custom element used to display a page
+@keywords expandjs, web app, custom elements, web-components
+@group navigation
+@hot
+
+@homepage http://expandjs.com/elements/xp-page
+@repository https://github.com/ExpandJS/xp-pages
+
+@behavior xp-page-behavior /bower_components/xp-pages/xp-page-behavior.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="xp-page-behavior.html">
+<link rel="import" href="xp-page-styles.html">
+
+<dom-module id="xp-page">
+
+    <template strip-whitespace>
+
+        <style include="xp-page-styles"></style>
+
+        <div class="wrapper"><content></content></div>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'xp-page',
+
+            // BEHAVIORS
+            behaviors: [
+                Polymer.XPPageBehavior
+            ]
+        });
+    </script>
+
+</dom-module>

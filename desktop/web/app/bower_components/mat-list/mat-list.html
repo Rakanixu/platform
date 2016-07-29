@@ -1,0 +1,143 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A custom element used to display a [Material Design list](http://www.google.com/design/spec/components/lists.html).
+
+It can be used in conjunction with
+[mat-item](http://expandjs.com/elements/mat-item) and
+[mat-sublist](http://expandjs.com/elements/mat-sublist).
+
+```html
+<mat-list selectable>
+    <mat-sublist label="Today">
+        <mat-item label="Item 1"></mat-item>
+        <mat-item label="Item 2"></mat-item>
+        ...
+        <mat-item label="Item n"></mat-item>
+    </mat-sublist>
+    <mat-sublist label="Yesterday">
+        ...
+    <mat-sublist>
+</mat-list>
+```
+
+By default the list unselects an item if another one has been selected, however if you want to
+be able to `select`/`unselect` by tapping on the same item, you can set `switchable`.
+
+```html
+<mat-list selectable switchable>
+    <mat-item label="Item 1"></mat-item>
+    <mat-item label="Item 2"></mat-item>
+    ...
+    <mat-item label="Item n"></mat-item>
+</mat-list>
+```
+
+If you want to be able to select more than one item at a time, you can set `multi`.
+
+```html
+<mat-list selectable multi>
+    <mat-item label="Item 1"></mat-item>
+    <mat-item label="Item 2"></mat-item>
+    ...
+    <mat-item label="Item n"></mat-item>
+</mat-list>
+```
+
+@element mat-list
+@description A custom element used to display a Material Design list
+@keywords material design, material list, expandjs, web app, custom elements, web-components
+@group navigation
+@hot
+
+@homepage http://expandjs.com/elements/mat-list
+@repository https://github.com/ExpandJS/mat-list
+@demo http://expandjs.com/demo/mat-list
+
+@behavior xp-list-behavior /bower_components/xp-list-behavior/xp-list-behavior.html
+
+@dependency polymer Polymer/polymer#^1.0.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency mat-ink ExpandJS/mat-ink#0.10.0
+@dependency mat-typography ExpandJS/mat-typography#0.10.0
+@dependency xp-list-behavior ExpandJS/xp-list-behavior#0.10.0
+
+@devDependency mat-demo ExpandJS/mat-demo#0.10.0
+@devDependency mat-icons ExpandJS/mat-icons#0.10.0
+@devDependency mat-item ExpandJS/mat-item#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-ink/mat-ink.html">
+<link rel="import" href="../mat-typography/mat-typography.html">
+<link rel="import" href="../xp-list-behavior/xp-list-behavior.html">
+<link rel="import" href="../xp-list-behavior/xp-list-styles.html">
+
+<dom-module id="mat-list">
+
+    <template strip-whitespace>
+
+        <style include="xp-list-styles"></style>
+
+        <style>
+            :host .wrapper {
+                box-sizing: border-box;
+                height: 100%;
+                padding: 8px 0;
+            }
+
+            /* CONTENT */
+
+            :host .wrapper ::content .item:not(mat-item) {
+                @apply(--mat-font-subhead);
+                color: inherit;
+                line-height: 48px !important; /* override */
+                min-height: 48px;
+                padding: 0 16px;
+                overflow: hidden;
+                text-overflow: ellipsis !important; /* override */
+                white-space: nowrap !important; /* override */
+            }
+
+            :host .wrapper ::content > .subheader,
+            :host .wrapper ::content .sublist[label]:not([label=""]):not([collapsible]) {
+                margin-top: -8px;
+            }
+
+            /* DARK FOREGROUND */
+
+            :host .wrapper[foreground="dark"] ::content .item:not(mat-item)[active] { background: hsla(0, 0%, 0%, 0.12); }
+            :host .wrapper[foreground="dark"] ::content > .item:not(mat-item):not(:last-of-type) { border-bottom: 1px solid hsla(0, 0%, 0%, 0.12); margin-bottom: -1px; }
+
+            /* LIGHT FOREGROUND */
+
+            :host .wrapper[foreground="light"] ::content .item:not(mat-item)[active] { background: hsla(0, 0%, 100%, 0.12); }
+            :host .wrapper[foreground="light"] ::content > .item:not(mat-item):not(:last-of-type) { border-bottom: 1px solid hsla(0, 0%, 100%, 0.12); margin-bottom: -1px; }
+
+        </style>
+
+        <mat-ink class="wrapper"><content></content></mat-ink>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-list',
+
+            // BEHAVIORS
+            behaviors: [
+                Polymer.XPListBehavior
+            ]
+        });
+    </script>
+
+</dom-module>

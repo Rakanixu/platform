@@ -1,0 +1,611 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A custom element used to parse the documentation inside an html or javascript file.
+
+@element xp-doc-parser
+@description A custom element used to parse the documentation inside an html or javascript file
+@keywords JSDoc, expandjs, web app, custom elements, web-components
+@group functionality
+
+@homepage http://expandjs.com/elements/xp-doc-parser
+@repository https://github.com/ExpandJS/xp-doc-parser
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency xp-request ExpandJS/xp-request#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-request/xp-request.html">
+
+<dom-module id="xp-doc-parser">
+
+    <template strip-whitespace>
+
+        <style>
+            :host {
+                display: none !important;
+            }
+        </style>
+
+        <xp-request url="[[url]]" on-data-changed="_handleData" auto></xp-request>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'xp-doc-parser',
+
+            /*********************************************************************/
+
+            /**
+             * Fired when data has been parsed.
+             *
+             * @event xp-doc-parse
+             * @param {Element} firer
+             * @param {Object} data
+             * @bubbles
+             */
+
+            /*********************************************************************/
+
+            /**
+             * Parses text.
+             *
+             * @method parse
+             * @param {string} [text = ""]
+             * @returns {Object}
+             */
+            parse: function (text) {
+
+                // Asserting
+                XP.assertArgument(XP.isVoid(text) || XP.isString(text), 1, 'string');
+
+                // Vars
+                var self         = this,
+                    regExpScript = '\\/\\*\\*([\\s\\S]*?)\\*\\/',
+                    regExpHtml   = '<!--([\\s\\S]*?)-->',
+                    regExp       = text ? new RegExp(regExpScript + '|' + regExpHtml, 'g') : null,
+                    blocks       = text ? XP.map(XP.match(text, regExp), function (block) { return self.parseBlock(block); }) : [],
+                    entity       = text ? XP.find(blocks, function (block) { return self.entities.indexOf(block.type) >= 0; }) : null;
+
+                // Interpreting
+                if (entity) { self._interpretEntity(entity, XP.pull(blocks, entity)); }
+
+                return entity || {type: 'Unknown', name: 'Unknown', summary: '**Undocumented**'};
+            },
+
+            /**
+             * Parses a comment block.
+             *
+             * @method parseBlock
+             * @param {string} [block = ""]
+             * @returns {Object}
+             */
+            parseBlock: function (block) {
+
+                // Asserting
+                XP.assertArgument(XP.isVoid(block) || XP.isString(block), 1, 'string');
+
+                // Preparing
+                block = block || '';
+                block = block.replace(/\r\n/g, '\n'); // Unifies line ends
+                block = block.replace(/^\s*\/\*\*|^\s*\*\/|^\s*\* ?|^\s*<!-\-|^s*\-\->/gm, ''); // Removes all comment characters
+
+                // Vars
+                var lines  = block.split('\n'),
+                    result = {};
+
+                // Filtering
+                lines = XP.filter(lines, function (line) {
+
+                    // Vars
+                    var parts = XP.match(line, /^@(\w+)(.*)|^\s+\s+@(\w+)(.*)/);
+
+                    // Checking
+                    if (!parts.length) { return true; }
+
+                    // Setting
+                    if (result.pragma) {
+                        result.pragma.push({type: parts[1] || parts[3], value: XP.clean(parts[2] || parts[4]) || true});
+                    } else {
+                        result.type   = parts[1] || parts[3];
+                        result.name   = XP.clean(parts[2] || parts[4]);
+                        result.pragma = [];
+                    }
+                });
+
+                // Setting
+                result.type    = result.type || '';
+                result.name    = result.name || '';
+                result.summary = XP.trim(lines.join('\n'));
+
+                return result;
+            },
+
+            /*********************************************************************/
+
+            /**
+             * Interprets an `adapts` pragma.
+             *
+             * @method _interpretAdapts
+             * @param {Object} context
+             * @param {Object} pragma
+             * @private
+             */
+            _interpretAdapts: function (context, pragma) {
+                this._interpretDependency(context, pragma);
+            },
+
+            /**
+             * Interprets a `behavior` pragma.
+             *
+             * @method _interpretBehavior
+             * @param {Object} context
+             * @param {Object} pragma
+             * @private
+             */
+            _interpretBehavior: function (context, pragma) {
+                this._interpretDependency(context, pragma);
+            },
+
+            /**
+             * Interprets a `dependency` pragma.
+             *
+             * @method _interpretDependency
+             * @param {Object} context
+             * @param {Object} pragma
+             * @private
+             */
+            _interpretDependency: function (context, pragma) {
+
+                // Vars
+                var self  = this,
+                    parts = pragma.value.split(' ');
+
+                // Overriding
+                pragma.value = {
+                    name: XP.trim(parts[0]),
+                    url: XP.trim(parts[1])
+                };
+
+                // Super
+                self._interpretPragma(context, pragma);
+            },
+
+            /**
+             * Interprets a `devDependency` pragma.
+             *
+             * @method _interpretDevDependency
+             * @param {Object} context
+             * @param {Object} pragma
+             * @private
+             */
+            _interpretDevDependency: function (context, pragma) {
+                this._interpretDependency(context, pragma);
+            },
+
+            /**
+             * Interprets an entity.
+             *
+             * @method _interpretEntity
+             * @param {Object} entity
+             * @param {Array} [features]
+             * @private
+             */
+            _interpretEntity: function (entity, features) {
+
+                // Asserting
+                XP.assertArgument(XP.isObject(entity), 1, 'Object');
+                XP.assertArgument(XP.isVoid(features) || XP.isArrayable(features), 2, 'Arrayable');
+
+                // Vars
+                var self   = this,
+                    pragma = XP.withdraw(entity, 'pragma');
+
+                // Interpreting
+                XP.forEach(pragma || [], function (pragma) { XP.apply(self, self._computeInterpreter(pragma.type) || '_interpretPragma', [entity, pragma]); });
+                XP.forEach(features || [], function (feature) { XP.apply(self, self._computeInterpreter(feature.type) || '_interpretFeature', [entity, feature]); });
+            },
+
+            /**
+             * Interprets an `extends` pragma.
+             *
+             * @method _interpretExtends
+             * @param {Object} context
+             * @param {Object} pragma
+             * @private
+             */
+            _interpretExtends: function (context, pragma) {
+                this._interpretDependency(context, pragma);
+            },
+
+            /**
+             * Interprets a feature.
+             *
+             * @method _interpretFeature
+             * @param {Object} entity
+             * @param {Object} feature
+             * @private
+             */
+            _interpretFeature: function (entity, feature) {
+
+                // Asserting
+                XP.assertArgument(XP.isObject(entity), 1, 'Object');
+                XP.assertArgument(XP.isObject(feature), 2, 'Object');
+
+                // Vars
+                var self   = this,
+                    name   = feature.name || XP.withdraw(feature, 'name'),
+                    pragma = XP.withdraw(feature, 'pragma'),
+                    type   = XP.withdraw(feature, 'type'),
+                    plural = self.plurals[type || ''];
+
+                // Checking
+                if (!type) { return; }
+
+                // Interpreting
+                XP.forEach(pragma || [], function (pragma) { XP.apply(self, self._computeInterpreter(pragma.type) || '_interpretPragma', [feature, pragma]); });
+
+                // Setting
+                if (plural) {
+                    entity[plural] = entity[plural] || [];
+                    entity[plural].push(feature);
+                } else {
+                    entity[type] = feature;
+                }
+            },
+
+            /**
+             * Interprets a `keywords` pragma.
+             *
+             * @method _interpretKeywords
+             * @param {Object} context
+             * @param {Object} pragma
+             * @private
+             */
+            _interpretKeywords: function (context, pragma) {
+
+                // Vars
+                var self = this;
+
+                // Overriding
+                pragma.value = XP.map(XP.split(pragma.value, ','), function (keyword) { return XP.trim(keyword); });
+
+                // Super
+                self._interpretPragma(context, pragma);
+            },
+
+            /**
+             * Interprets a `param` pragma.
+             *
+             * @method _interpretParam
+             * @param {Object} context
+             * @param {Object} pragma
+             * @private
+             */
+            _interpretParam: function (context, pragma) {
+
+                // Vars
+                var self   = this,
+                    regExp = /\{(.+)\}\s+(\[.+\]|\w+\.\w+|\w+)\s*(.*)$/,
+                    parts1 = XP.match(pragma.value, regExp),
+                    parts2 = XP.split(XP.trim(parts1[2], '[]'), '=', true),
+                    parts3 = XP.split(XP.trim(parts2[0]), '.', true);
+
+                // Overriding
+                pragma.value = {
+                    type: XP.trim(parts1[1]),
+                    name: XP.trim(parts3[parts3.length > 1 ? 1 : 0]),
+                    summary: XP.trim(parts1[3]),
+                    optional: XP.startsWith(parts1[2], '['),
+                    default: XP.trim(parts2[1])
+                };
+
+                // Deleting
+                if (!pragma.value.optional) { delete pragma.value.optional; }
+                if (!pragma.value.default) { delete pragma.value.default; }
+
+                // Context
+                if (parts3.length > 1) { context = XP.findLast(context.params || [], {name: XP.trim(parts3[0])}) || {}; }
+
+                // Super
+                self._interpretPragma(context, pragma);
+            },
+
+            /**
+             * Interprets a pragma.
+             *
+             * @method _interpretPragma
+             * @param {Object} context
+             * @param {Object} pragma
+             * @private
+             */
+            _interpretPragma: function (context, pragma) {
+
+                // Asserting
+                XP.assertArgument(XP.isObject(context), 1, 'Object');
+                XP.assertArgument(XP.isObject(pragma), 2, 'Object');
+
+                // Vars
+                var self   = this,
+                    type   = XP.withdraw(pragma, 'type'),
+                    plural = self.plurals[type || ''];
+
+                // Setting
+                if (plural) {
+                    context[plural] = context[plural] || [];
+                    context[plural].push(pragma.value);
+                } else {
+                    context[type] = pragma.value;
+                }
+            },
+
+            /**
+             * Interprets a `returns` pragma.
+             *
+             * @method _interpretReturns
+             * @param {Object} context
+             * @param {Object} pragma
+             * @private
+             */
+            _interpretReturns: function (context, pragma) {
+
+                // Vars
+                var self   = this,
+                    regExp = /\{(.+)\}\s*(.*)$/,
+                    parts  = pragma.value.match(regExp) || [];
+
+                // Overriding
+                pragma.value = {
+                    type: XP.trim(parts[1]),
+                    summary: XP.trim(parts[2])
+                };
+
+                // Super
+                self._interpretPragma(context, pragma);
+            },
+
+            /**
+             * Merges the passed data with parsers data.
+             *
+             * @method _mergeData
+             * @param {Object} data
+             * @param {Array} parsers
+             * @returns {Object}
+             */
+            _mergeData: function (data, parsers) {
+
+                // Asserting
+                XP.assertArgument(XP.isObject(data), 1, 'Object');
+                XP.assertArgument(XP.isArray(parsers), 2, 'Array');
+
+                // Vars
+                var self = this;
+
+                // Merging
+                XP.forEachRight(parsers, function (parser) {
+
+                    // Inherited
+                    XP.forEach(self.inheritance, function (feature) {
+                        XP.forEach(parser.data[feature] || [], function (feat) {
+                            if (XP.find(data[feature] || [], {name: feat.name})) { return; }
+                            data[feature] = data[feature] || [];
+                            data[feature].push(feat);
+                        });
+                    });
+                });
+
+                return data;
+            },
+
+            /**
+             * Sorts the passed data.
+             *
+             * @method _sortData
+             * @param {Object} data
+             * @param {boolean} [useful = false]
+             * @returns {Object}
+             * @private
+             */
+            _sortData: function (data, useful) {
+
+                // Asserting
+                XP.assertArgument(XP.isObject(data), 1, 'Object');
+
+                // Vars
+                var self = this;
+
+                // Checking
+                if (useful && self.inherited) { return data; }
+
+                // Sorting
+                XP.forEach(self.inheritance, function (feature) {
+                    if (data[feature]) {
+                        data[feature].sort(function (a, b) {
+                            if (!a.private && b.private) { return 1; }
+                            if (a.private && !b.private) { return -1; }
+                            if (a.name > b.name) { return 1; }
+                            if (a.name < b.name) { return -1; }
+                        });
+                    }
+                });
+
+                return data;
+            },
+
+            /******************************************************************/
+
+            // PROPERTIES
+            properties: {
+
+                /**
+                 * The documentation's data.
+                 *
+                 * @attribute data
+                 * @type Object
+                 * @notifies
+                 * @readonly
+                 */
+                data: {
+                    notify: true,
+                    observer: '_dataChanged',
+                    readOnly: true,
+                    type: Object
+                },
+
+                /**
+                 * If set to true, the data are not ready yet.
+                 *
+                 * @attribute empty
+                 * @type boolean
+                 * @default true
+                 * @notifies
+                 * @readonly
+                 */
+                empty: {
+                    computed: '_computeEmpty(data)',
+                    notify: true,
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: true
+                },
+
+                /**
+                 * If set to true, the data are requested recursively.
+                 *
+                 * @attribute recursive
+                 * @type boolean
+                 * @default false
+                 */
+                recursive: {
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The documentation's URL.
+                 *
+                 * @attribute url
+                 * @type string
+                 */
+                url: {
+                    type: String
+                }
+            },
+
+            /**
+             * The list of entities.
+             *
+             * @property entities
+             * @type Array
+             * @default ["behavior", "class", "element", "function", "module", "object", "stylesheet"]
+             * @readonly
+             */
+            entities: ['behavior', 'class', 'element', 'function', 'module', 'object', 'stylesheet'],
+
+            /**
+             * The list of inheritance.
+             *
+             * @property inheritance
+             * @type Array
+             * @default ["attributes", "events", "methods", "properties"]
+             * @readonly
+             */
+            inheritance: ['attributes', 'events', 'methods', 'properties'],
+
+            /**
+             * The map of plurals.
+             *
+             * @property plurals
+             * @type Object
+             * @readonly
+             */
+            plurals: {
+                attribute: 'attributes',
+                behavior: 'behaviors',
+                dependency: 'dependencies',
+                devDependency: 'devDependencies',
+                event: 'events',
+                method: 'methods',
+                param: 'params',
+                property: 'properties'
+            },
+
+            /*********************************************************************/
+
+            // COMPUTER
+            _computeEmpty: function (data) {
+                return !data;
+            },
+
+            // COMPUTER
+            _computeInterpreter: function (name) {
+                var self = this, result = '_interpret' + XP.capitalize(name);
+                return XP.isFunction(self[result]) ? result : undefined;
+            },
+
+            /*********************************************************************/
+
+            // OBSERVER
+            _dataChanged: function () {
+
+                // Firing
+                if (this.data) { this.fire('xp-doc-parse', {firer: this, data: this.data}); }
+            },
+
+            /*********************************************************************/
+
+            // LISTENER
+            created: function () {
+
+                // Classifying
+                this.classList.add('parser');
+            },
+
+            /*********************************************************************/
+
+            // HANDLER
+            _handleData: function (event) {
+
+                // Vars
+                var self    = this,
+                    data    = (event.detail.value && self.parse(event.detail.value)) || null,
+                    parsed  = 0,
+                    parser  = null,
+                    parsers = [];
+
+                // Merging (extends)
+                if (self.recursive && data && data.extends && data.extends.url) {
+                    parser = document.createElement('xp-doc-parser');
+                    parser.addEventListener('xp-doc-parse', function () { if ((parsed += 1) === parsers.length) { self._setData(self._sortData(self._mergeData(data, parsers), true)); } });
+                    parsers.push(XP.assign(parser, {inherited: true, recursive: true, url: data.extends.url}));
+                }
+
+                // Merging (behaviors)
+                if (self.recursive && data && data.behaviors) {
+                    data.behaviors.forEach(function (behavior) {
+                        if (!behavior.url) { return; }
+                        parser = document.createElement('xp-doc-parser');
+                        parser.addEventListener('xp-doc-parse', function () { if ((parsed += 1) === parsers.length) { self._setData(self._sortData(self._mergeData(data, parsers), true)); } });
+                        parsers.push(XP.assign(parser, {inherited: true, recursive: true, url: behavior.url}));
+                    });
+                }
+
+                // Setting
+                if (!parsers.length) { self._setData(data && self._sortData(data, true)); }
+            }
+        });
+    </script>
+
+</dom-module>

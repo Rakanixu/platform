@@ -1,0 +1,166 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A behavior used to add dialog capabilities on a custom element.
+
+@behavior xp-dialog-behavior
+@description A behavior used to add dialog capabilities on a custom element
+@keywords expandjs, web app, custom elements, web-components
+@group behaviors
+
+@homepage http://expandjs.com/elements/xp-dialog-behavior
+@repository https://github.com/ExpandJS/xp-dialog-behavior
+
+@behavior xp-overlay-behavior /bower_components/xp-overlay/xp-overlay-behavior.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency xp-overlay ExpandJS/xp-overlay#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-overlay/xp-overlay-behavior.html">
+
+<script>
+    Polymer.XPDialogBehaviorImp = {
+
+        /**
+         * Aligns the overlay.
+         *
+         * @method align
+         * @returns {Element}
+         */
+        align: function () {
+
+            // Vars
+            var self = this;
+
+            // Aligning
+            if (self.showed) { self.async(XP.alignElement.bind(null, self)); }
+
+            return self;
+        },
+
+        /*********************************************************************/
+
+        // OBSERVERS
+        observers: [
+            '_sizeObserver(fullScreen, height, width)'
+        ],
+
+        // PROPERTIES
+        properties: {
+
+            /**
+             * If set to true, the dialog's backdrop is transparent.
+             *
+             * @attribute backdrop-disabled
+             * @type boolean
+             * @default false
+             */
+            backdropDisabled: {
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * If set to true, the dialog is full screen.
+             *
+             * @attribute full-screen
+             * @type boolean
+             * @default false
+             */
+            fullScreen: {
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * The dialog's height. If `0` the dialog will resize itself based on it's content.
+             *
+             * @attribute height
+             * @type number
+             * @default 0
+             */
+            height: {
+                reflectToAttribute: true,
+                type: Number,
+                value: 0
+            },
+
+            /**
+             * The dialog's width. If `0` the dialog will resize itself based on it's content.
+             *
+             * @attribute width
+             * @type number
+             * @default 0
+             */
+            width: {
+                reflectToAttribute: true,
+                type: Number,
+                value: 0
+            }
+        },
+
+        /*********************************************************************/
+
+        // OBSERVER
+        _sizeObserver: function () {
+
+            // Vars
+            var self   = this,
+                margin = XP.getMargin(self);
+
+            // Stylizing
+            self.style.height    = self.height && !self.fullScreen ? 'calc(100% - ' + (margin.top + margin.bottom) + 'px)' : '';
+            self.style.margin    = self.fullScreen ? '0' : '';
+            self.style.maxHeight = self.height && !self.fullScreen ? self.height + 'px' : '';
+            self.style.maxWidth  = self.width && !self.fullScreen ? self.width + 'px' : '';
+            self.style.width     = self.width && !self.fullScreen ? 'calc(100% - ' + (margin.left + margin.right) + 'px)' : '';
+
+            // Aligning
+            self.align();
+
+            return self;
+        },
+
+        /*********************************************************************/
+
+        // LISTENER
+        attached: function () {
+
+            // Resizing
+            this._sizeObserver();
+        },
+
+        // LISTENER
+        created: function () {
+
+            // Classifying
+            this.classList.add('dialog');
+        },
+
+        /*********************************************************************/
+
+        // HANDLER
+        _backdropHandler: function (event) {
+
+            // Hiding
+            if (!event.button && !this.autoHideDisabled) { this.hide(); }
+        }
+    };
+
+    Polymer.XPDialogBehavior = [
+        Polymer.XPOverlayBehavior,
+        Polymer.XPDialogBehaviorImp
+    ];
+</script>

@@ -1,0 +1,9 @@
+<html><head><link rel="import" href="../../../bower_components/polymer/polymer.html">
+</head><body><dom-module id="ws-element">
+	<style>:host{display:none;}</style>
+	<template>
+
+	</template>
+</dom-module>
+<script type="text/javascript">!function(){Polymer({is:"ws-element",socket:null,properties:{protocol:{type:String},url:{type:String}},ready:function(){this.socket=new WebSocket(this.url),this.socket.onerror=this.onError.bind(this),this.socket.onopen=this.onOpen.bind(this),this.socket.onmessage=this.onMessage.bind(this)},onError:function(e){this.fire("onerror",e)},onOpen:function(e){this.fire("onopen")},onMessage:function(e){this.fire("onmessage",e.data)},send:function(e){this.socket.send(e)},close:function(){this.socket.close()}})}();</script>
+</body></html>

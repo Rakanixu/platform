@@ -1,0 +1,36 @@
+{
+  "name": "mat-docs",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "mat-docs.html",
+  "description": "A custom element used to display a Material Design documentation",
+  "homepage": "http://expandjs.com/elements/mat-docs",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "JSDoc",
+    "material design",
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "mat-button": "ExpandJS/mat-button#0.10.0",
+    "mat-icon-button": "ExpandJS/mat-icon-button#0.10.0",
+    "mat-panel": "ExpandJS/mat-panel#0.10.0",
+    "mat-toolbar": "ExpandJS/mat-toolbar#0.10.0",
+    "mat-typography": "ExpandJS/mat-typography#0.10.0",
+    "xp-doc-parser": "ExpandJS/xp-doc-parser#0.10.0",
+    "xp-markdown": "ExpandJS/xp-markdown#0.10.0",
+    "polymer": "Polymer/polymer#^1.2.0",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0"
+  }
+}

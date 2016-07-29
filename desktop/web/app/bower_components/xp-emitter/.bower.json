@@ -1,0 +1,36 @@
+{
+  "name": "xp-emitter",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "xp-emitter.html",
+  "description": "A class used to provide event emitting",
+  "homepage": "http://expandjs.com/classes/xp-emitter",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "nodejs",
+    "web app",
+    "javascript",
+    "expandjs",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0"
+  },
+  "_release": "0.10.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.10.0",
+    "commit": "081250f777ce8e7f6a080525dd71879f3e7a045c"
+  },
+  "_source": "git://github.com/ExpandJS/xp-emitter.git",
+  "_target": "0.10.0",
+  "_originalSource": "ExpandJS/xp-emitter"
+}

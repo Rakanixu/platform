@@ -1,0 +1,392 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A custom element used to display a [Material Design tab](http://www.google.com/design/spec/components/tabs.html).
+
+It must be used in conjunction with
+[mat-tabs](http://expandjs.com/elements/mat-tabs).
+
+```html
+<mat-tabs>
+    <mat-tab label="Music"></mat-tab>
+    <mat-tab label="Movies"></mat-tab>
+    <mat-tab label="Books"></mat-tab>
+</mat-tabs>
+```
+
+A tab can have an `icon` instead of a `label`.
+
+```html
+<mat-tabs>
+    <mat-tab icon="communication:call"></mat-tab>
+    <mat-tab icon="action:favorite"></mat-tab>
+    <mat-tab icon="maps:person-pin"></mat-tab>
+</mat-tabs>
+```
+
+It can also contain data and be aware if it has changed, by setting `data` and `memento` on the tab.
+The `data` will be automatically checked against the `memento`, which represents a specific state of `data`.
+Whenever they are different, `modified` will be set on the tab.
+
+```html
+<mat-tabs>
+    <mat-tab id="file123" label="My File"></mat-tab>
+    ...
+</mat-tabs>
+
+<script>
+    var tab = XP.getElementById('file123');
+
+    tab.data    = {name: "file123", text: "Hello world!"};
+    tab.memento = {name: "file123", text: "Hello"};
+</script>
+```
+
+Tabs can also be `closable` and combined with [mat-pages](http://expandjs.com/elements/mat-pages)
+to create a generic tab view. The attribute is automatically set on dynamically opened tabs.
+
+```html
+<mat-tabs selected="{{selected}}">
+    <mat-tab icon="communication:call" closable></mat-tab>
+    <mat-tab icon="action:favorite" closable></mat-tab>
+    <mat-tab icon="maps:person-pin" closable></mat-tab>
+</mat-tabs>
+
+<mat-pages selected="{{selected}}">
+    <mat-page content="app-calls"></mat-page>
+    <mat-page content="app-favorites"></mat-page>
+    <mat-page content="app-nearby"></mat-page>
+</mat-pages>
+```
+
+The `closer` can do different actions: instead of closing the tab, it could open a menu with more options.
+
+```html
+<mat-tabs>
+    <mat-tab label="myFile" closer-target="tabMenu" closable></mat-tab>
+    ...
+</mat-tabs>
+
+<mat-menu id="tabMenu">
+    <mat-option label="Close"></mat-option>
+    <mat-option label="Save"></mat-option>
+    <mat-option label="Info"></mat-option>
+</mat-menu>
+```
+
+@element mat-tab
+@description A custom element used to display a single Material Design tab
+@keywords material design, material tabs, expandjs, web app, custom elements, web-components
+@group navigation
+@hot
+
+@homepage http://expandjs.com/elements/mat-tab
+@repository https://github.com/ExpandJS/mat-tab
+@demo http://expandjs.com/demo/mat-tabs
+
+@behavior mat-pressed-behavior /bower_components/mat-pressed-behavior/mat-pressed-behavior.html
+@behavior xp-tab-behavior /bower_components/xp-tabs-behavior/xp-tab-behavior.html
+
+@dependency polymer Polymer/polymer#^1.0.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency mat-icon ExpandJS/mat-icon#0.10.0
+@dependency mat-icon-button ExpandJS/mat-icon-button#0.10.0
+@dependency mat-icons ExpandJS/mat-icons#0.10.0
+@dependency mat-ink ExpandJS/mat-ink#0.10.0
+@dependency mat-pressed-behavior ExpandJS/mat-pressed-behavior#0.10.0
+@dependency mat-typography ExpandJS/mat-typography#0.10.0
+@dependency xp-tabs-behavior ExpandJS/xp-tabs-behavior#0.10.0
+
+@devDependency mat-demo ExpandJS/mat-demo#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-icon/mat-icon.html">
+<link rel="import" href="../mat-icon-button/mat-icon-button.html">
+<link rel="import" href="../mat-icons/mat-icons.html">
+<link rel="import" href="../mat-ink/mat-ink.html">
+<link rel="import" href="../mat-pressed-behavior/mat-pressed-behavior.html">
+<link rel="import" href="../mat-pressed-behavior/mat-pressed-styles.html">
+<link rel="import" href="../mat-typography/mat-typography.html">
+<link rel="import" href="../xp-tabs-behavior/xp-tab-behavior.html">
+<link rel="import" href="../xp-tabs-behavior/xp-tab-styles.html">
+
+<dom-module id="mat-tab">
+
+    <template strip-whitespace>
+
+        <style include="mat-pressed-styles"></style>
+        <style include="xp-tab-styles"></style>
+
+        <style>
+            :host {
+                @apply(--mat-font-button);
+                height: 48px;
+                line-height: 50px !important; /* override */
+                max-width: 264px;
+                min-width: 160px;
+                opacity: 0.6;
+            }
+
+            :host([active]) {
+                opacity: 1;
+            }
+
+            :host([closable]) {
+                min-width: 184px;
+            }
+
+            :host .wrapper {
+                padding: 0 24px;
+            }
+
+            :host ::content .closer {
+                height: 16px;
+                margin: 0;
+                position: absolute;
+                right: 16px;
+                top: 16px;
+                width: 16px;
+            }
+
+            :host([closable]) .label {
+                margin-right: 24px;
+            }
+
+            :host([label=""]) .label,
+            :host(:not([label])) .label {
+                display: none !important;
+            }
+
+            :host .icon {
+                margin: 12px 0;
+            }
+
+            /* MOBILE */
+
+            @media (max-width: 959px) {
+
+                :host {
+                    min-width: 72px;
+                }
+
+                :host .wrapper {
+                    padding: 0 12px;
+                }
+            }
+        </style>
+
+        <div class="wrapper">
+            <mat-icon class="icon" name="[[icon]]" src="[[iconSrc]]"></mat-icon>
+            <div class="label">[[label]]</div>
+            <content select=".closer"></content>
+        </div>
+
+        <div class="ripple-ground"></div>
+        <div class="ripple-waves"></div>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-tab',
+
+            // BEHAVIORS
+            behaviors: [
+                Polymer.MatPressedBehavior,
+                Polymer.XPTabBehavior
+            ],
+
+            /*********************************************************************/
+
+            // OBSERVERS
+            observers: [
+                '_closableChanged(closerDisabled, closable, modified)',
+                '_dataChanged(closer, data)'
+            ],
+
+            // PROPERTIES
+            properties: {
+
+                /**
+                 * The tab's closer.
+                 *
+                 * @attribute closer
+                 * @type Element
+                 * @notifies
+                 * @readonly
+                 */
+                closer: {
+                    notify: true,
+                    readOnly: true
+                },
+
+                /**
+                 * The tab's closer's active icon, used when modified is true.
+                 *
+                 * @attribute closer-active-icon
+                 * @type string
+                 */
+                closerActiveIcon: {
+                    reflectToAttribute: true,
+                    type: String
+                },
+
+                /**
+                 * The tab's closer's active icon's src, used when modified is true.
+                 *
+                 * @attribute closer-active-icon-src
+                 * @type string
+                 */
+                closerActiveIconSrc: {
+                    reflectToAttribute: true,
+                    type: String
+                },
+
+                /**
+                 * Determines how the closer behaves in relation to its target.
+                 *
+                 * @attribute closer-behavior
+                 * @type "inject" | "toggle"
+                 * @default "toggle"
+                 */
+                closerBehavior: {
+                    reflectToAttribute: true,
+                    type: String,
+                    value: 'toggle'
+                },
+
+                /**
+                 * If set to true, the tab's closer is disabled.
+                 *
+                 * @attribute closer-disabled
+                 * @type boolean
+                 * @default false
+                 */
+                closerDisabled: {
+                    reflectToAttribute: true,
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The tab's closer's icon
+                 *
+                 * @attribute closer-icon
+                 * @type string
+                 */
+                closerIcon: {
+                    reflectToAttribute: true,
+                    type: String
+                },
+
+                /**
+                 * The tab's closer's icon's src
+                 *
+                 * @attribute closer-icon-src
+                 * @type string
+                 */
+                closerIconSrc: {
+                    reflectToAttribute: true,
+                    type: String
+                },
+
+                /**
+                 * The tab's closer's target.
+                 *
+                 * @attribute closer-target
+                 * @type Element | string
+                 * @notifies
+                 */
+                closerTarget: {
+                    notify: true
+                },
+
+                /**
+                 * The tab's icon.
+                 *
+                 * @attribute icon
+                 * @type string
+                 */
+                icon: {
+                    reflectToAttribute: true,
+                    type: String
+                },
+
+                /**
+                 * The tab's icon's src.
+                 *
+                 * @attribute icon-src
+                 * @type string
+                 */
+                iconSrc: {
+                    reflectToAttribute: true,
+                    type: String
+                }
+            },
+
+            /*********************************************************************/
+
+            // OBSERVER
+            _closableChanged: function () {
+
+                // Vars
+                var self   = this,
+                    closer = self.closer || (self.closable && document.createElement('mat-icon-button'));
+
+                // CASE: closable
+                if (self.closable) {
+
+                    // Classifying
+                    closer.classList.add('closer');
+
+                    // Setting
+                    closer.active        = self.modified;
+                    closer.activeIcon    = self.closerTarget && !self.closerActiveIcon ? 'mat:arrow-drop-down-circle' : self.closerActiveIcon;
+                    closer.activeIconSrc = self.closerActiveIconSrc;
+                    closer.behavior      = self.closerBehavior;
+                    closer.disabled      = self.closerDisabled;
+                    closer.icon          = self.closerIcon || 'mat:cancel';
+                    closer.iconSrc       = self.closerIconSrc;
+                    closer.target        = self.modified ? self.closerTarget : null;
+
+                    // Checking
+                    if (self.closer) { return; }
+
+                    // Listening
+                    self.listen(closer, 'xp-activate', '_closeHandler');
+
+                    // Appending
+                    self._setCloser(Polymer.dom(self).appendChild(closer));
+                }
+
+                // CASE: not closable
+                else if (closer) {
+
+                    // Unlistening
+                    self.unlisten(closer, 'xp-activate', '_closeHandler');
+
+                    // Removing
+                    self._setCloser(Polymer.dom(self).removeChild(closer) && null);
+                }
+            },
+
+            // OBSERVER
+            _dataChanged: function () {
+
+                // Setting
+                if (this.closer) { this.closer.data = this.data; }
+            }
+        });
+    </script>
+
+</dom-module>

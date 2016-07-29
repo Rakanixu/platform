@@ -1,0 +1,61 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-divider/mat-divider.html">
+<link rel="import" href="../mat-icon/mat-icon.html">
+<link rel="import" href="../mat-icons/mat-icons.html">
+<link rel="import" href="../mat-input-behavior/mat-input-behavior.html">
+<link rel="import" href="../mat-input-behavior/mat-input-styles.html">
+<link rel="import" href="../mat-menu/mat-menu.html">
+<link rel="import" href="../mat-option/mat-option.html">
+<link rel="import" href="../mat-typography/mat-typography.html">
+<link rel="import" href="../xp-refirer-behavior/xp-refirer-behavior.html">
+<link rel="import" href="../xp-selector/xp-selector-behavior.html">
+
+</head><body><dom-module id="mat-dropdown">
+
+    <template strip-whitespace="">
+
+        <style include="mat-input-styles"></style>
+
+        <style>:host ::content input,
+            :host([empty-items]){display:none !important;}:host([inline]){width:auto;}:host .wrapper{overflow:hidden;}:host([full-width]) .wrapper,
+            :host([pulldown]) .wrapper{padding:0 !important;}:host .wrapper .main{margin:0 !important;}:host .wrapper .main .spacer{@apply (--mat-font-subhead);height:0;overflow-x:hidden;overflow-y:scroll;}:host .wrapper .main .dummy{height:0;overflow:hidden;padding:0 24px 0 16px;text-overflow:ellipsis;white-space:nowrap;}:host([pulldown]) .wrapper .main .dummy{padding:0 56px 0 24px;}:host([floated]) .wrapper .main .label{transform:translateY(-16px);}:host([floated][empty-selection]:not([showed])) .wrapper .main .label,
+            :host(:not([floated])) .wrapper .main .label{@apply (--mat-font-subhead);line-height:32px !important;transform:translateY(0);}:host([full-width]) .wrapper .main .label{line-height:56px !important;padding:0 16px;}:host([pulldown]) .wrapper .main .label{line-height:56px !important;padding:0 16px 0 24px;}:host .wrapper .main .holder{height:32px;margin:0 -16px;}:host([full-width]) .wrapper .main .holder{height:56px;margin:0;}:host([pulldown]) .wrapper .main .holder{height:56px;margin:0;padding-left:8px;}:host([pulldown]) .wrapper .underline,
+            :host([pulldown]) .wrapper .helper,
+            :host([full-width]) .wrapper .helper{display:none !important;}:host .overlay .arrow{position:absolute;right:16px;top:16px;}:host .overlay .divider{top:56px;}:host([empty-selection]) .overlay .first,
+            :host(:not([pulldown])) .overlay .first,
+            :host(:not([pulldown])) .overlay .divider,
+            :host(:not([pulldown])) .overlay .arrow{display:none !important;}:host .overlay .options ::content .option{padding-right:8px;}:host([pulldown]) .overlay .first,
+            :host([pulldown]) .overlay .options ::content .option{height:56px;margin:-8px 0 8px 0;padding:0 32px 0 8px;}:host([pulldown]) .overlay .options ::content .option + .option,
+            :host([pulldown]:not([empty-selection])) .overlay .options ::content .option{height:32px;margin:0;}:host([pulldown]) .overlay .options ::content .option[active]{display:none !important;}@media (min-width: 960px){:host([full-width]) .wrapper .main .label{padding:0 24px;}:host([full-width]) .wrapper .main .holder{padding:0 8px;}}</style>
+
+        <content select="input"></content>
+
+        <div class="wrapper">
+            <div class="main">
+                <div class="spacer"><div class="dummy">[[label]]</div><template is="dom-repeat" items="[[items]]" observe="label value"><div class="dummy">[[_computeLabel(item)]]</div></template></div>
+                <mat-ink class="label" disabled="[[disabled]]" opacity="[[_computeLabelOpacity(floated)]]">[[label]]</mat-ink>
+                <mat-option class="holder" arrow="[[_computeArrow(emptySelection, singleItem)]]" bold="[[selectedBold]]" color="[[selectedColor]]" disabled="[[disabled]]" hint="[[emptySelection]]" label="[[selectedLabel]]" value="[[selectedValue]]" on-blur="_blurHandler" on-focus="_focusHandler" on-xp-activate="_handleShow"></mat-option>
+            </div>
+            <div class="underline">
+                <mat-ink class="default" opacity="divider"></mat-ink>
+                <mat-ink class="focused" opacity="divider"></mat-ink>
+            </div>
+            <mat-ink class="helper" disabled="[[disabled]]" opacity="hint">
+                <div class="description">[[_computeDescription(description, error, invalid, invalidMessage)]]</div>
+            </mat-ink>
+        </div>
+
+        <mat-menu class="overlay" showed="{{showed}}" target="[[holder]]" on-xp-hide="_handleRefire" on-xp-show="_handleRefire">
+            <mat-icon class="arrow icon" name="mat:arrow-drop-up" opacity="hint"></mat-icon>
+            <mat-option class="first option" bold="[[selectedBold]]" color="[[selectedColor]]" label="[[selectedLabel]]" value="[[selectedValue]]"></mat-option>
+            <div class="options" on-xp-activate="_handleActivate"><content></content></div>
+            <mat-divider class="divider" cap=""></mat-divider>
+        </mat-menu>
+
+    </template>
+
+    <script>Polymer({is:"mat-dropdown",behaviors:[Polymer.MatInputBehavior,Polymer.XPRefirerBehavior,Polymer.XPSelectorBehavior],blur:function(){var e=this;return e.holder.blur(),e},focus:function(){var e=this;return e.holder.focus(),e},hide:function(){var e=this;return e.showed=!1,e._resize()},show:function(){var e=this;return e.showed=!0,e._resize()},toggle:function(){var e=this;return e.showed=!e.showed,e._resize()},_commitFrom:function(){var e=this;return e.value=e.input.value,e},_commitIndex:function(e){var t=this;return t.holder.tabIndex=e,t.first.tabIndex=e,t},_commitTo:function(){var e=this;return e.value!==e.input.value&&(e.input.value=e.value),e},_inject:function(){var e=this,t=document.createElement("input");return XP.setAttribute(t,"type",e.type),XP.setAttribute(t,"value",e.value),e._setInput(Polymer.dom(e).appendChild(t)),e},_resize:function(){var e=this;return e.overlay.style.width=e.holder.clientWidth-(e.fullWidth||e.pulldown?0:16)+"px",e},_update:function(){var e=this;return XP.setAttribute(e.input,"disabled",e.disabled),XP.setAttribute(e.input,"name",e.name),XP.setAttribute(e.input,"required",e.required),e},_validate:function(e){XP.assertArgument(XP.isVoid(e)||XP.isFalse(e)||XP.isString(e),1,"string");var t=this;return void 0!==e&&t.input.setCustomValidity(e||""),t._setInvalidMessage(t.input.validationMessage||null),t._setInvalid(t.input.validity.valid===!1),t},observers:["update(required)","_optionsChanged(items.*, value)","_selectionChanged(selection)"],properties:{description:{reflectToAttribute:!0,type:String},first:{notify:!0,readOnly:!0},floated:{computed:"_computeFloated(empty, floatingLabel, focused, fullWidth, label)",notify:!0,reflectToAttribute:!0,type:Boolean,value:!1},floatingLabel:{reflectToAttribute:!0,type:Boolean,value:!1},fullWidth:{reflectToAttribute:!0,type:Boolean,value:!1},helperDisabled:{reflectToAttribute:!0,type:Boolean,value:!1},indexAttribute:{type:String,value:"value"},itemSelector:{type:String,value:".option"},overlay:{notify:!0,readOnly:!0},pulldown:{observer:"_pulldownChanged",reflectToAttribute:!0,type:Boolean,value:!1},required:{reflectToAttribute:!0,type:Boolean,value:!1},selectedBold:{notify:!0,readOnly:!0,type:Boolean},selectedColor:{notify:!0,readOnly:!0,type:String},selectedLabel:{notify:!0,readOnly:!0,type:String},selectedValue:{notify:!0,readOnly:!0,type:String,value:""},showed:{notify:!0,reflectToAttribute:!0,type:Boolean,value:!1}},_computeArrow:function(e,t){return e||!t?"down":null},_computeLabel:function(e){return e&&XP.isString(e.label||e.value)?e.label||e.value:""},_computeValue:function(e){return e&&XP.isInput(e.value)?e.value:""},_optionsChanged:function(){var e=this,t=XP.isInput(e.value)?e.value.toString():"",i=e.selection&&e.selection.value.toString()===t,n=i?e.selection:e.findItem(function(e){return e.getAttribute("value")===t});return i?n:(e.selection&&e.unselect(e.selection,!0,!0),void(n&&e.select(n,!0)))},_pulldownChanged:function(){this.pulldown&&(this.floatingLabel=!1)},_selectionChanged:function(){this.selection&&(this.value=this._computeValue(this.selection))},created:function(){this.classList.add("dropdown")},mutated:function(){var e=this;e._setSelectedBold(e.selection&&e.selection.bold||!1),e._setSelectedColor(e.selection&&e.selection.color||null),e._setSelectedLabel(e._computeLabel(e.selection)),e._setSelectedValue(e._computeValue(e.selection)),XP.onMutation(e,e.mutated.bind(e),{attributes:!0,attributeFilter:["active","bold","current-color","label","value"],subtree:!0})},ready:function(){var e=this,t=Polymer.dom(e.root);e._setFirst(t.querySelector(".first")),e._setOverlay(t.querySelector(".overlay")),e.mutated()},_handleActivate:function(e){this.select(e.detail.firer)},_handleRefire:function(e){this.refire(e,e.type,{firer:this})},_handleShow:function(e){return e.stopPropagation()||this.show()}});</script>
+
+</dom-module>
+</body></html>

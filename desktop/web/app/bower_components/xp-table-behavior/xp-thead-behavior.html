@@ -1,0 +1,160 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A behavior used to add table header capabilities on a custom element.
+
+@behavior xp-thead-behavior
+@description A behavior used to add table header capabilities on a custom element
+@keywords expandjs, web app, custom elements, web-components
+@group behaviors
+
+@homepage http://expandjs.com/elements/xp-thead-behavior
+@repository https://github.com/ExpandJS/xp-table-behavior
+
+@behavior xp-master-behavior /bower_components/xp-master-behavior/xp-master-behavior.html
+@behavior xp-refirer-behavior /bower_components/xp-refirer-behavior/xp-refirer-behavior.html
+@behavior xp-slave-behavior /bower_components/xp-slave-behavior/xp-slave-behavior.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency xp-master-behavior ExpandJS/xp-master-behavior#0.10.0
+@dependency xp-refirer-behavior ExpandJS/xp-refirer-behavior#0.10.0
+@dependency xp-slave-behavior ExpandJS/xp-slave-behavior#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-master-behavior/xp-master-behavior.html">
+<link rel="import" href="../xp-refirer-behavior/xp-refirer-behavior.html">
+<link rel="import" href="../xp-slave-behavior/xp-slave-behavior.html">
+
+<script>
+    Polymer.XPTableHeaderBehaviorImp = {
+
+        /**
+         * Fired when a sortable column header is pressed.
+         *
+         * @event xp-table-sort
+         * @param {Element} firer
+         * @param {string} index
+         * @param {string} order
+         * @bubbles
+         */
+
+        /**
+         * Fired when the active state changes.
+         *
+         * @event xp-active
+         * @param {Element} firer
+         * @param {boolean} isActive
+         * @bubbles
+         */
+
+        /*********************************************************************/
+
+        // LISTENERS
+        listeners: {
+            'click': '_sortHandler'
+        },
+
+        // PROPERTIES
+        properties: {
+
+            /**
+             * If set to true, the header is active.
+             *
+             * @attribute active
+             * @type boolean
+             * @default false
+             * @notifies
+             */
+            active: {
+                notify: true,
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * The slave cells.
+             *
+             * @attribute cells
+             * @type Array
+             * @notifies
+             * @readonly
+             */
+            cells: {
+                notify: true,
+                readOnly: true,
+                value: function () { return []; }
+            },
+
+            /**
+             * The master table.
+             *
+             * @attribute table
+             * @type Element
+             * @notifies
+             * @readonly
+             */
+            table: {
+                notify: true,
+                readOnly: true
+            }
+        },
+
+        /*********************************************************************/
+
+        // LISTENER
+        created: function () {
+
+            // Classifying
+            this.classList.add('table-header');
+        },
+
+        // LISTENER
+        ready: function () {
+
+            // Vars
+            var self = this;
+
+            // Mapping
+            self.mastersMap.table = '.table';
+            self.slavesMap.cells  = '.table-cell';
+        },
+
+        /*********************************************************************/
+
+        // HANDLER
+        _sortHandler: function (event) {
+
+            // Vars
+            var self   = this,
+                target = Polymer.dom(event).rootTarget,
+                cell   = target.classList.contains('table-cell') ? target : XP.findParentElement(target, '.table-cell', self);
+
+            // Sorting
+            if (cell && cell.index) { self.table.sort(cell.index); }
+        },
+
+        // HANDLER
+        _switchHandler: function (event) {
+
+            // Refiring
+            this.refire(event, event.type, {firer: this});
+        }
+    };
+
+    Polymer.XPTableHeaderBehavior = [
+        Polymer.XPMasterBehavior,
+        Polymer.XPRefirerBehavior,
+        Polymer.XPSlaveBehavior,
+        Polymer.XPTableHeaderBehaviorImp
+    ];
+</script>

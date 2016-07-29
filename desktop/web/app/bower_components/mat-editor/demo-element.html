@@ -1,0 +1,65 @@
+<link rel="import" href="../mat-demo/mat-demo.html">
+<link rel="import" href="mat-editor.html">
+
+<dom-module id="mat-editor-demo">
+
+    <template>
+
+        <style>
+            :host {
+                display: block;
+            }
+        </style>
+
+        <mat-demo name="mat-editor" type="element" url="http://expandjs.com/elements/mat-editor">
+
+            <mat-demo-panel label="Default" padding-disabled>
+                <script type="text/html">
+                    <mat-editor height="300" model="{{codeHTML}}"></mat-editor>
+                </script>
+                <mat-editor height="300" model="{{codeHTML}}"></mat-editor>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Javascript" padding-disabled>
+                <script type="text/html">
+                    <mat-editor mode="javascript" height="300" model="{{codeJS}}"></mat-editor>
+                </script>
+                <mat-editor mode="javascript" height="300" model="{{codeJS}}"></mat-editor>
+            </mat-demo-panel>
+
+        </mat-demo>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-editor-demo',
+
+            /*********************************************************************/
+
+            // LISTENER
+            ready: function () {
+
+                // Vars
+                var self = this;
+
+                // Setting (HTML)
+                self.codeHTML  = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n';
+                self.codeHTML += 'Vivamus dignissim vestibulum purus vel pulvinar.\n';
+                self.codeHTML += 'Donec cursus malesuada sem eget placerat. Maecenas et lobortis ex.\n';
+                self.codeHTML += 'Etiam sagittis dolor neque, vitae congue purus ornare eget.\n';
+                self.codeHTML += 'Aenean non enim ex. Sed porta dignissim efficitur.\n';
+                self.codeHTML += 'Nullam sagittis justo turpis, dapibus volutpat nulla luctus non.\n';
+                self.codeHTML += 'Suspendisse nec sagittis mauris.\n';
+                self.codeHTML += 'Suspendisse ut velit quis elit dapibus viverra.\n';
+                self.codeHTML += 'Duis eget orci eros. Vivamus scelerisque blandit magna at auctor.';
+
+                // Setting (JS)
+                self.codeJS = '(function () {\n    console.log("Hello world!");\n}());';
+            }
+        });
+    </script>
+
+</dom-module>

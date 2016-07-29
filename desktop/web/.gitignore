@@ -1,4 +1,5 @@
-bower_components
+elasticsearch
+bin
 dist
+release
 node_modules
-build

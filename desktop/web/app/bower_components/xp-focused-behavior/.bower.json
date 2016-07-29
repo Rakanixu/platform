@@ -1,0 +1,35 @@
+{
+  "name": "xp-focused-behavior",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "xp-focused-behavior.html",
+  "description": "A behavior used to add focus capabilities on a custom element",
+  "homepage": "http://expandjs.com/elements/xp-focused-behavior",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "polymer": "Polymer/polymer#^1.2.0"
+  },
+  "_release": "0.10.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.10.0",
+    "commit": "375215a38cf7af134036c2ed86930795829def9f"
+  },
+  "_source": "git://github.com/ExpandJS/xp-focused-behavior.git",
+  "_target": "0.10.0",
+  "_originalSource": "ExpandJS/xp-focused-behavior"
+}

@@ -1,0 +1,151 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A behavior used to add focus capabilities on a custom element.
+
+@behavior xp-focused-behavior
+@description A behavior used to add focus capabilities on a custom element
+@keywords expandjs, web app, custom elements, web-components
+@group behaviors
+
+@homepage http://expandjs.com/elements/xp-focused-behavior
+@repository https://github.com/ExpandJS/xp-focused-behavior
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+
+<script>
+    Polymer.XPFocusedBehavior = {
+
+        // LISTENERS
+        listeners: {
+            blur: '_blurHandler',
+            focus: '_focusHandler'
+        },
+
+        // PROPERTIES
+        properties: {
+
+            /**
+             * If set to true, the element is disabled.
+             *
+             * @attribute disabled
+             * @type boolean
+             * @default false
+             * @notifies
+             */
+            disabled: {
+                notify: true,
+                observer: '_disabledObserver',
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * If set to true, the element is focused.
+             *
+             * @attribute focused
+             * @type boolean
+             * @default false
+             * @notifies
+             * @readonly
+             */
+            focused: {
+                notify: true,
+                readOnly: true,
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * If set to true, the element is hidden.
+             *
+             * @attribute hidden
+             * @type boolean
+             * @default false
+             * @notifies
+             */
+            hidden: {
+                notify: true,
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            }
+        },
+
+        /**
+         * The last value of tabIndex.
+         *
+         * @property tabIndexLast
+         * @type number
+         * @default 0
+         * @readonly
+         */
+        tabIndexLast: 0,
+
+        /*********************************************************************/
+
+        // OBSERVER
+        _disabledObserver: function () {
+
+            // Vars
+            var self = this;
+
+            // Focusing
+            self._setFocused(self.focused && !self.disabled);
+
+            // Setting
+            self.tabIndexLast = self.disabled ? self.tabIndex : self.tabIndexLast;
+            self.tabIndex     = self.disabled ? -1 : self.tabIndexLast;
+
+            // Styling
+            self.style.pointerEvents = self.disabled ? 'none' : '';
+        },
+
+        /*********************************************************************/
+
+        // LISTENER
+        mutated: function () {
+
+            // Vars
+            var self = this;
+
+            // Setting
+            self.tabIndex = self.disabled ? -1 : self.tabIndex || 0;
+
+            // Observing
+            XP.onMutation(self, Polymer.XPFocusedBehavior.mutated.bind(self), {attributes: true, attributeFilter: ['tabindex']});
+        },
+
+        // LISTENER
+        ready: function () {
+
+            // Mutating
+            Polymer.XPFocusedBehavior.mutated.apply(this);
+        },
+
+        /*********************************************************************/
+
+        // HANDLER
+        _blurHandler: function () {
+            this._setFocused(false);
+        },
+
+        // HANDLER
+        _focusHandler: function () {
+            this._setFocused(!this.disabled);
+        }
+    };
+</script>

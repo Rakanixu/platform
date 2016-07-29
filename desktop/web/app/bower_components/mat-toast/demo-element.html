@@ -1,0 +1,38 @@
+<link rel="import" href="../mat-button/mat-button.html">
+<link rel="import" href="../mat-demo/mat-demo.html">
+<link rel="import" href="mat-toast.html">
+
+<dom-module id="mat-toast-demo">
+
+    <template>
+
+        <style>
+            :host {
+                display: block;
+            }
+        </style>
+
+        <mat-demo name="mat-toast" type="element" url="http://expandjs.com/elements/mat-toast">
+
+            <mat-demo-panel label="Default">
+                <script type="text/html">
+                    <mat-button behavior="toggle" label="Show toast" target="demoDefault"></mat-button>
+                    <mat-toast id="demoDefault" label="Lorem ipsum dolor sit amet..."></mat-toast>
+                </script>
+                <mat-button behavior="toggle" label="Show toast" target="demoDefault"></mat-button>
+                <mat-toast id="demoDefault" label="Lorem ipsum dolor sit amet..."></mat-toast>
+            </mat-demo-panel>
+
+        </mat-demo>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-toast-demo'
+        });
+    </script>
+
+</dom-module>

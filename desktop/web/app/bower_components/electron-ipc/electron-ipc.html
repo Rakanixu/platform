@@ -1,0 +1,269 @@
+
+<!--
+An element used to communicate through the `ipc` module for electron. It can
+send or receive data from a single or multiple events at once.
+
+By default the element will send data to the specified events whenever it's
+required to do so, or it automatically send the data if `auto` is set.
+
+```HTML
+<electron-ipc id="target" events="myEvent" data="myData"></electron-ipc>
+<script>
+    document.querySelector('#target').send();
+</script>
+
+<electron-ipc events="myEvent" data="myData" auto></electron-ipc>
+```
+
+If you need to listen to events instead of sending them, just transform the
+element into a `receiver` and it will keep `data` up to date whenever it
+receives new information.
+
+```HTML
+<electron-ipc id="target" receiver></electron-ipc>
+
+<script>
+    var el = document.querySelector('#target');
+
+    el.events = ['firstEvent', 'secondEvent'];
+
+    /**
+     * From the main process:
+     * ipc.send('firstEvent', 'Hello!');
+     */
+
+    console.log(el.data); // 'Hello!'
+
+    /**
+     * From the main process:
+     * ipc.fire('secondEvent', 'World!');
+     */
+
+    console.log(el.data); // 'World!'
+</script>
+```
+
+@element electron-ipc
+@description An element used to communicate through the ipc module for electron.
+@keywords electron, ipc, web-components
+@homepage https://github.com/Pupix/electron-ipc
+@repository https://github.com/Pupix/electron-ipc
+
+@dependency polymer Polymer/polymer#^1.0.0
+@dependency expandjs ExpandJS/expandjs#0.9.5
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+
+<script>
+
+    Polymer({
+
+        //ELEMENT
+        is: 'electron-ipc',
+
+        /**********************************************************************/
+
+        /**
+         * Fired when data is received through ipc.
+         *
+         * @event ipc-data-received
+         * @param {Element} firer
+         * @param {*} data
+         * @param {string} event
+         * @bubbles
+         */
+
+        /**
+         * Fired when data is sent through ipc.
+         *
+         * @event ipc-data-sent
+         * @param {Element} firer
+         * @param {*} data
+         * @param {string} event
+         * @bubbles
+         */
+
+        /**********************************************************************/
+
+        /**
+         * Sends an ipc message using data. If no data is passed then the `data`
+         * set on the element will be sent.
+         *
+         * @method submit
+         * @param {*} [data]
+         */
+        send: function (data) {
+            var self = this;
+
+            if (!self.events) { return; }
+
+            data = arguments.length ? data : self.data;
+
+            XP.toArray(self.events, true).forEach(function (event) {
+                if (XP.isString(event)) {
+                    self._ipc.send(event, data);
+
+                    /**
+                     * Listeners don't seem to hear this the very
+                     * first time the element is initialized w/o
+                     * the delay.
+                     */
+                    XP.delay(function () {
+                        self.fire('ipc-data-sent', {firer: self, data: data, event: event});
+                    });
+                }
+            });
+
+        },
+
+        /**********************************************************************/
+
+        /**
+         * Refreshes the ipc listeners.
+         *
+         * @method _refreshListeners
+         * @private
+         */
+        _refreshListeners: function (toAdd, toRemove) {
+            var self = this;
+
+            if (toRemove) {
+                XP.toArray(toRemove, true).forEach(function (listener) {
+                    self._ipc.removeListener(listener, self.refs[listener]);
+                });
+            }
+
+            if (!toAdd) { return; }
+
+            XP.toArray(toAdd, true).forEach(function (listener) {
+
+                /** Read #179 **/
+                self.refs[listener] = function (data) {
+                    self.data = data;
+                    self.fire('ipc-data-received', {firer: self, data: data, event: listener});
+                };
+
+                self._ipc.on(listener, self.refs[listener]);
+            });
+        },
+
+        /**********************************************************************/
+
+        properties: {
+
+            /**
+             * The element's data, either received from events or set by the user.
+             *
+             * @attribute data
+             * @notifies
+             */
+            data: {
+                notify: true,
+                observer: '_dataChanged'
+            },
+
+            /**
+             * If set to true the element becomes a `receiver` and is able to
+             * receive messages.
+             *
+             * @attribute receiver
+             * @type boolean
+             * @default false
+             */
+            receiver: {
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * If set to true a the element will automatically send a message
+             * when `data` is changed.
+             *
+             * @attribute auto
+             * @type boolean
+             * @default false
+             */
+            auto: {
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * The events associated to the element, either for listening or
+             * sending messages.
+             *
+             * @attribute events
+             * @type string | Array
+             * @default false
+             */
+            events: {
+                type: String,
+                notify: true,
+                value: null,
+                observer: '_eventsChanged'
+            }
+        },
+
+        /**********************************************************************/
+
+        //OBSERVER
+        _dataChanged: function () {
+            var self = this;
+            return !self.receiver && self.auto && self._jobSend();
+        },
+
+        //OBSERVER
+        _eventsChanged: function (post, pre) {
+            var self = this;
+
+            XP.assert(XP.isString(post) || XP.isArray(post) || XP.isVoid(post), function () {
+                XP.CustomError.call(self, "ArgumentError", "events must be string or Array of strings");
+            });
+
+            if (self.events && !self.receiver && self.auto) {
+                return self._jobSend();
+            }
+
+            if (self.receiver) {
+                self._refreshListeners(post, pre);
+            }
+        },
+
+        /**********************************************************************/
+
+        //LISTENER
+        created: function () {
+            var self = this;
+
+            self._ipc = require('electron');
+            self._jobSend = XP.debounce(self.send.bind(self), 0);
+
+            /**
+             * By default `ipc` doesn't explicitly states which event generated
+             * the response in the callback function. We are using this to save
+             * a key/value pair of the events and callbacks to be able to
+             * recognize different events.
+             *
+             * This limits us to have only one listener per named event.
+             *
+             * If this is fixed replace all references to `refs` with `_handleDataBound`
+             * self._handleDataBound = self._handleData.bind(self);
+             */
+            self.refs = {};
+        },
+
+        /**********************************************************************/
+
+        // HANDLER (Currently not used)
+        _handleData: function (data) {
+            var self = this;
+
+            self.data = data;
+            self.fire('ipc-data-received', {firer: self, data: data});
+        }
+
+    });
+
+</script>

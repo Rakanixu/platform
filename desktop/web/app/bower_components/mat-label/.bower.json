@@ -1,0 +1,43 @@
+{
+  "name": "mat-label",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "mat-label.html",
+  "description": "A custom element used to display a Material Design label",
+  "homepage": "http://expandjs.com/elements/mat-label",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "material design",
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "mat-ink": "ExpandJS/mat-ink#0.10.0",
+    "mat-typography": "ExpandJS/mat-typography#0.10.0",
+    "xp-label-behavior": "ExpandJS/xp-label-behavior#0.10.0",
+    "polymer": "Polymer/polymer#^1.2.0"
+  },
+  "devDependencies": {
+    "mat-demo": "ExpandJS/mat-demo#0.10.0",
+    "mat-text-field": "ExpandJS/mat-text-field#0.10.0"
+  },
+  "_release": "0.10.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.10.0",
+    "commit": "d1ec1fd7c751fd609d6035dd8e61399b1b144659"
+  },
+  "_source": "git://github.com/ExpandJS/mat-label.git",
+  "_target": "0.10.0",
+  "_originalSource": "ExpandJS/mat-label"
+}

@@ -1,0 +1,454 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A behavior used to add tabs capabilities on a custom element.
+
+@behavior xp-tabs-behavior
+@description A behavior used to add tabs capabilities on a custom element
+@keywords expandjs, web app, custom elements, web-components
+@group behaviors
+
+@homepage http://expandjs.com/elements/xp-tabs-behavior
+@repository https://github.com/ExpandJS/xp-tabs-behavior
+
+@behavior xp-master-behavior /bower_components/xp-master-behavior/xp-master-behavior.html
+@behavior xp-selector-behavior /bower_components/xp-selector/xp-selector-behavior.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency xp-master-behavior ExpandJS/xp-master-behavior#0.10.0
+@dependency xp-selector ExpandJS/xp-selector#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-master-behavior/xp-master-behavior.html">
+<link rel="import" href="../xp-selector/xp-selector-behavior.html">
+
+<script>
+    Polymer.XPTabsBehaviorImp = {
+
+        /**
+         * Fired when a tab is closing.
+         *
+         * @event xp-tab-close
+         * @param {Element} firer
+         * @param {number | string} index
+         * @param {boolean} isActive
+         * @param {boolean} isModified
+         * @bubbles
+         * @cancelable
+         */
+
+        /*********************************************************************/
+
+        /**
+         * Closes a tab.
+         *
+         * @method close
+         * @param {Element | Function | number | string} identity
+         * @returns {Element}
+         */
+        close: function (identity) {
+
+            // Vars
+            var self       = this,
+                item       = self.findItem(identity),
+                index      = self.findIndex(item, true),
+                isSelected = self.isSelected(item, true),
+                target     = self.findTarget();
+
+            // Checking
+            if (!item || !item.closable) { return null; }
+
+            // Firing
+            if (self.fire('xp-tab-close', {firer: item, index: index, isActive: !!item.active, isModified: !!item.modified}, {cancelable: true}).defaultPrevented) { return null; }
+
+            // Propagating
+            if (target && target.close && !target.close(index)) { return null; }
+
+            // Selecting
+            if (isSelected && self.items.length > 1) { self[XP.isLast(item, self.items) ? 'selectPrevious' : 'selectNext'](); }
+
+            // Removing
+            return Polymer.dom(Polymer.dom(item).parentNode).removeChild(item);
+        },
+
+        /**
+         * Opens a tab.
+         *
+         * @method open
+         * @param {Object} [properties]
+         * @param {boolean} [autoSelect = false]
+         * @returns {Element}
+         */
+        open: function (properties, autoSelect) {
+
+            // Vars
+            var self = this;
+
+            // Frame 1
+            requestAnimationFrame(function () {
+
+                // Vars
+                var item   = self.itemTag && document.createElement(self.itemTag),
+                    tab    = item && XP.assign(item, properties, {closable: true}),
+                    target = item && self.findTarget();
+
+                // Appending
+                if (tab) { self.append('items', Polymer.dom(self).appendChild(tab)); } else { return null; }
+
+                // Propagating
+                if (target && target.open) { tab.target = target.open({content: tab.content, data: tab.data}); }
+
+                // Selecting
+                if (autoSelect) { requestAnimationFrame(self.select.bind(self, tab, true)); }
+            });
+
+            return self;
+        },
+
+        /**
+         * Slides to the left.
+         *
+         * @method slideLeft
+         * @returns {Element}
+         */
+        slideLeft: function () {
+
+            // Sliding
+            return this.slideTo(XP.findLast(this.items, this._bleedsLeft.bind(this)));
+        },
+
+        /**
+         * Slides to the right.
+         *
+         * @method slideRight
+         * @returns {Element}
+         */
+        slideRight: function () {
+
+            // Sliding
+            return this.slideTo(XP.find(this.items, this._bleedsRight.bind(this)));
+        },
+
+        /**
+         * Slides to a tab.
+         *
+         * @method slideTo
+         * @param {Element | Function | number | string} identity
+         * @returns {Element}
+         */
+        slideTo: function (identity) {
+
+            // Vars
+            var self = this,
+                item = self.findItem(identity);
+
+            // Scrolling
+            if (item) { self.slider.scrollLeft = item.offsetLeft - (self.slider.clientWidth / 2) + (item.clientWidth / 2); }
+
+            // Updating
+            if (item) { self._scrolledObserver(); }
+
+            return item;
+        },
+
+        /*********************************************************************/
+
+        /**
+         * Returns true if the tab is bleeding out of the slider's left side.
+         *
+         * @method _bleedsLeft
+         * @param {Element} item
+         * @returns {boolean}
+         * @private
+         */
+        _bleedsLeft: function (item) {
+            return item.offsetLeft < this.slider.scrollLeft;
+        },
+
+        /**
+         * Returns true if the tab is bleeding out of the slider's right side.
+         *
+         * @method _bleedsRight
+         * @param {Element} item
+         * @returns {boolean}
+         * @private
+         */
+        _bleedsRight: function (item) {
+            return item.offsetLeft + item.clientWidth > this.slider.scrollLeft + this.slider.clientWidth;
+        },
+
+        /*********************************************************************/
+
+        // OBSERVERS
+        observers: [
+            '_scrolledObserver(scrolled, slider)'
+        ],
+
+        // PROPERTIES
+        properties: {
+
+            /**
+             * The index of the item to select by default.
+             *
+             * @attribute default-selected
+             * @type number | string
+             * @default 0
+             */
+            defaultSelected: {
+                value: 0
+            },
+
+            /**
+             * The selector used to recognize items.
+             *
+             * @attribute item-selector
+             * @type string
+             * @default ".tab"
+             */
+            itemSelector: {
+                reflectToAttribute: true,
+                type: String,
+                value: '.tab'
+            },
+
+            /**
+             * The tag used to append new items.
+             *
+             * @attribute item-tag
+             * @type string
+             * @readonly
+             */
+            itemTag: {
+                readOnly: true,
+                type: String
+            },
+
+            /**
+             * The found items.
+             *
+             * @attribute items
+             * @type Array
+             * @notifies
+             */
+            items: {
+                value: function () { return []; }
+            },
+
+            /**
+             * If set to true, the tabs can be slided on the left.
+             *
+             * @attribute more-left
+             * @type boolean
+             * @default false
+             * @notifies
+             * @readonly
+             */
+            moreLeft: {
+                notify: true,
+                readOnly: true,
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * If set to true, the tabs can be slided on the right.
+             *
+             * @attribute more-right
+             * @type boolean
+             * @default false
+             * @notifies
+             * @readonly
+             */
+            moreRight: {
+                notify: true,
+                readOnly: true,
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * If set to true, the tabs container is scrollable.
+             *
+             * @attribute scrollable
+             * @type boolean
+             * @default false
+             */
+            scrollable: {
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            },
+
+            /**
+             * The tabs scroll amount.
+             *
+             * @attribute scrolled
+             * @type number
+             * @default 0
+             * @notifies
+             * @readonly
+             */
+            scrolled: {
+                notify: true,
+                readOnly: true,
+                type: Number,
+                value: 0
+            },
+
+            /**
+             * If set to true, the items will be selected on tap.
+             *
+             * @attribute selectable
+             * @type boolean
+             * @default true
+             */
+            selectable: {
+                reflectToAttribute: true,
+                type: Boolean,
+                value: true
+            },
+
+            /**
+             * The tabs slider.
+             *
+             * @attribute slider
+             * @type Element
+             * @notifies
+             * @readonly
+             */
+            slider: {
+                notify: true,
+                readOnly: true
+            },
+
+            /**
+             * If set to true, the track event is running.
+             *
+             * @attribute tracking
+             * @type boolean
+             * @notifies
+             * @readonly
+             */
+            tracking: {
+                notify: true,
+                readOnly: true,
+                type: Boolean,
+                value: false
+            }
+        },
+
+        /*********************************************************************/
+
+        // OBSERVER
+        _scrolledObserver: function () {
+
+            // Vars
+            var self = this;
+
+            // Setting
+            self._setScrolled(self.slider.scrollLeft);
+            self._setMoreLeft(self.scrolled > 0);
+            self._setMoreRight(self.scrolled + self.slider.clientWidth < self.slider.scrollWidth);
+        },
+
+        /*********************************************************************/
+
+        // LISTENER
+        attached: function () {
+
+            // Mutating
+            Polymer.XPTabsBehaviorImp.mutated.apply(this);
+        },
+
+        // LISTENER
+        created: function () {
+
+            // Classifying
+            this.classList.add('tabs');
+        },
+
+        // LISTENER
+        mutated: function () {
+
+            // Vars
+            var self = this;
+
+            // Handling
+            self._mutationHandler();
+
+            // Observing
+            XP.onMutation(self, Polymer.XPTabsBehaviorImp.mutated.bind(self), {attributes: true, childList: true, subtree: true});
+        },
+
+        // LISTENER
+        ready: function () {
+
+            // Vars
+            var self = this;
+
+            // Mapping
+            self.slavesMap.items = '.tab';
+
+            // Setting
+            self._setSlider(Polymer.dom(self.root).querySelector('.slider'));
+        },
+
+        /*********************************************************************/
+
+        // HANDLER
+        _closeHandler: function (event) {
+
+            // Vars
+            var self = this;
+
+            // Stopping
+            event.stopPropagation();
+
+            // Closing
+            self.close(event.detail.firer);
+        },
+
+        // HANDLER
+        _mutationHandler: function () {
+
+            // Updating
+            this._scrolledObserver();
+        },
+
+        // HANDLER
+        _trackHandler: function (event) {
+
+            // Vars
+            var self = this;
+
+            // Scrolling
+            self.slider.scrollLeft -= event.detail.ddx || 0;
+
+            // Updating
+            self._scrolledObserver();
+
+            // Checking
+            if (event.detail.state === 'track') { return; }
+
+            // Frame 1
+            requestAnimationFrame(self._setTracking.bind(self, event.detail.state === 'start'));
+        }
+    };
+
+    Polymer.XPTabsBehavior = [
+        Polymer.XPMasterBehavior,
+        Polymer.XPSelectorBehavior,
+        Polymer.XPTabsBehaviorImp
+    ];
+</script>

@@ -1,0 +1,1 @@
+!function(){"use strict";var e=require("lodash");module.exports=function(t){return!!t&&e.has(t,"node")&&e.has(Object.getPrototypeOf(t),"_queryElement")}}();

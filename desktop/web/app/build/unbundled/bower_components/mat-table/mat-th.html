@@ -1,0 +1,30 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../mat-icon/mat-icon.html">
+<link rel="import" href="../mat-icons/mat-icons.html">
+<link rel="import" href="../mat-ink/mat-ink.html">
+<link rel="import" href="../mat-tooltip/mat-tooltip.html">
+<link rel="import" href="../xp-table-behavior/xp-th-behavior.html">
+<link rel="import" href="../xp-table-behavior/xp-th-styles.html">
+
+</head><body><dom-module id="mat-th">
+
+    <template strip-whitespace="">
+
+        <style include="xp-th-styles"></style>
+
+        <style>:host{height:56px;padding-left:28px;padding-right:28px;}:host(:nth-of-type(1)){padding-left:24px;padding-right:0;width:100%;}:host(:nth-of-type(2)){padding-left:24px;}:host(:last-of-type){padding-right:24px;}:host .tooltip{@apply (--layout-horizontal);display:block;height:16px;}:host .tooltip{--mat-tooltip-margin:22px;}:host .icon{height:16px;margin:-2px 5px 0 -21px;transform:rotate(90deg);visibility:hidden;width:16px;}:host(:hover) .icon,
+            :host([order]) .icon{visibility:inherit;}</style>
+
+        <mat-tooltip class="tooltip" tip="[[tip]]">
+            <template is="dom-if" if="[[index]]"><mat-icon class="icon" name="[[_computeArrowIcon(order)]]" opacity="[[_computeArrowOpacity(order)]]"></mat-icon></template>
+            <mat-ink class="label" opacity="[[_computeOpacity(hover, order)]]"><content></content></mat-ink>
+        </mat-tooltip>
+
+    </template>
+
+    <script>Polymer({is:"mat-th",behaviors:[Polymer.XPTableHeaderCellBehavior],listeners:{mouseover:"_hoverHandler",mouseout:"_hoverHandler"},properties:{hover:{notify:!0,readOnly:!0,type:Boolean,value:!1}},_computeArrowIcon:function(e){return"desc"===e?"mat:arrow-forward":"mat:arrow-back"},_computeArrowOpacity:function(e){return e?"icon":"hint"},_computeOpacity:function(e,r){return e||r?null:"secondary"},_hoverHandler:function(e){this._setHover("mouseover"===e.type)}});</script>
+
+</dom-module>
+</body></html>

@@ -1,0 +1,41 @@
+{
+  "name": "mat-drawer-panel",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "mat-drawer-panel.html",
+  "description": "A custom element used to scaffold a Material Design application",
+  "homepage": "http://expandjs.com/elements/mat-drawer-panel",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "material design",
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "mat-paper": "ExpandJS/mat-paper#0.10.0",
+    "mat-spacing": "ExpandJS/mat-spacing#0.10.0",
+    "xp-media-query": "ExpandJS/xp-media-query#0.10.0",
+    "xp-refirer-behavior": "ExpandJS/xp-refirer-behavior#0.10.0",
+    "polymer": "Polymer/polymer#^1.2.0",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.0.0"
+  },
+  "_release": "0.10.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.10.0",
+    "commit": "cf6ef931ebfb218185b507c9bed366674f209d16"
+  },
+  "_source": "git://github.com/ExpandJS/mat-drawer-panel.git",
+  "_target": "0.10.0",
+  "_originalSource": "ExpandJS/mat-drawer-panel"
+}

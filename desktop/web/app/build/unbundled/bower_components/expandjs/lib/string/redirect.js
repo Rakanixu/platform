@@ -1,0 +1,1 @@
+!function(e){"use strict";var r=require("../assert/assertArgument"),t=require("../tester/isBrowser"),i=require("../tester/isString");module.exports=function(s,n){r(i(s),1,"string"),t()&&(e.location[n?"hash":"href"]=s)}}("undefined"!=typeof window?window:global);

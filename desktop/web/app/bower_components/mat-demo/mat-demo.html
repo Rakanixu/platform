@@ -1,0 +1,196 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A custom element used to display a Material Design demo.
+
+It must be used in conjunction with
+[mat-demo-panel](http://expandjs.com/elements/mat-demo-panel).
+
+```html
+<mat-demo name="my-element" type="Element" url="http://example.com/elements/my-element">
+
+    <mat-demo-panel label="Default">
+        <script type="text/html">
+            <my-element></my-element>
+        </script>
+        <my-element></my-element>
+    </mat-demo-panel>
+
+    <mat-demo-panel label="Bizarre">
+        <script type="text/html">
+            <my-element mode="bizarre"></my-element>
+        </script>
+        <my-element mode="bizarre"></my-element>
+    </mat-demo-panel>
+
+</mat-demo>
+```
+
+@element mat-demo
+@description A custom element used to display a Material Design demo
+@keywords material design, material demo, expandjs, web app, custom elements, web-components
+@group containers
+
+@homepage http://expandjs.com/elements/mat-demo
+@repository https://github.com/ExpandJS/mat-demo
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency iron-flex-layout PolymerElements/iron-flex-layout#^1.0.0
+@dependency mat-icons ExpandJS/mat-icons#0.10.0
+@dependency mat-typography ExpandJS/mat-typography#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../mat-icons/mat-icons.html">
+<link rel="import" href="../mat-typography/mat-typography.html">
+<link rel="import" href="mat-demo-panel.html">
+
+<dom-module id="mat-demo">
+
+    <template>
+
+        <style>
+            :host {
+                display: block;
+            }
+
+            :host .wrapper {
+                @apply(--layout-vertical);
+                box-sizing: border-box;
+                height: 100%;
+            }
+
+            :host .header {
+                position: relative;
+            }
+
+            :host .header:after {
+                clear: both;
+                content: "";
+                display: block;
+                height: 0;
+            }
+
+            :host .name {
+                @apply(--mat-font-display2);
+                margin: 0;
+                overflow: hidden;
+                text-overflow: ellipsis !important; /* override */
+                white-space: nowrap !important; /* override */
+            }
+
+            :host .type {
+                @apply(--mat-font-title);
+                float: left;
+                margin: 0;
+                opacity: 0.30;
+                text-transform: capitalize;
+            }
+
+            :host .button {
+                float: right;
+                margin: -8px -8px -8px 8px;
+            }
+
+            :host .icon {
+                display: block;
+            }
+
+            :host .body {
+                position: relative;
+            }
+
+            :host ::content .demo-panel {
+                margin-top: 16px;
+            }
+
+            /* DESKTOP */
+
+            @media (min-width: 960px) {
+
+                :host ::content .demo-panel {
+                    margin-top: 24px;
+                }
+            }
+        </style>
+
+        <div class="wrapper">
+            <div class="header">
+                <h1 class="name">[[name]]</h1>
+                <h2 class="type">[[type]]</h2>
+                <mat-icon-button class="docs" href="[[url]]" title="Docs" icon="mat:description"></mat-icon-button>
+            </div>
+            <div class="body">
+                <content></content>
+            </div>
+        </div>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-demo',
+
+            /*********************************************************************/
+
+            // PROPERTIES
+            properties: {
+
+                /**
+                 * The demo subject's name.
+                 *
+                 * @attribute name
+                 * @type string
+                 * @default ""
+                 */
+                name: {
+                    reflectToAttribute: true,
+                    type: String,
+                    value: ''
+                },
+
+                /**
+                 * The demo subject's type.
+                 *
+                 * @attribute type
+                 * @type string
+                 */
+                type: {
+                    reflectToAttribute: true,
+                    type: String
+                },
+
+                /**
+                 * The demo subject's url.
+                 *
+                 * @attribute type
+                 * @type string
+                 */
+                url: {
+                    type: String
+                }
+            },
+
+            /*********************************************************************/
+
+            // LISTENER
+            created: function () {
+
+                // Classifying
+                this.classList.add('demo');
+            }
+        });
+    </script>
+
+</dom-module>

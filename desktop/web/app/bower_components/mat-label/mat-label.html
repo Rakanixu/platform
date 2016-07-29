@@ -1,0 +1,100 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A custom element used to display a [Material Design label](http://www.google.it/design/spec/components/text-fields.html#text-fields-floating-labels).
+
+Extends a standard `<label>` tag.
+
+It works either by explicitly specifying the `id` of an input...
+
+```html
+<label is="mat-label" for="myInput">Context for the text field</label>
+<mat-text-field id="myInput"></mat-text-field>
+```
+
+...or by wrapping the interested input.
+
+```html
+<label is="mat-label">
+    <div>Context for the text field</div>
+    <mat-text-field></mat-text-field>
+</label>
+```
+
+@element mat-label
+@description A custom element used to display a Material Design label
+@keywords material design, expandjs, web app, custom elements, web-components
+@group accessibility
+@hot
+
+@homepage http://expandjs.com/elements/mat-label
+@repository https://github.com/ExpandJS/mat-label
+@demo http://expandjs.com/demo/mat-label
+
+@extends label
+@behavior xp-label-behavior /bower_components/xp-label-behavior/xp-label-behavior.html
+
+@dependency polymer Polymer/polymer#^1.2.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency mat-ink ExpandJS/mat-ink#0.10.0
+@dependency mat-typography ExpandJS/mat-typography#0.10.0
+@dependency xp-label-behavior ExpandJS/xp-label-behavior#0.10.0
+
+@devDependency mat-demo ExpandJS/mat-demo#0.10.0
+@devDependency mat-text-field ExpandJS/mat-text-field#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-ink/mat-ink.html">
+<link rel="import" href="../mat-typography/mat-typography.html">
+<link rel="import" href="../xp-label-behavior/xp-label-behavior.html">
+<link rel="import" href="../xp-label-behavior/xp-label-styles.html">
+
+<dom-module id="mat-label">
+
+    <template strip-whitespace>
+
+        <style include="xp-label-styles"></style>
+
+        <style>
+            :host {
+                @apply(--mat-font-caption);
+                display: block;
+                height: 16px;
+                margin-bottom: -8px;
+                padding-top: 16px;
+            }
+
+            :host([focused]) .wrapper {
+                color: var(--mat-focused-color, #0091EA);
+            }
+        </style>
+
+        <mat-ink class="wrapper" disabled="[[disabled]]" opacity="secondary"><content></content></mat-ink>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-label',
+
+            // EXTENDS
+            extends: 'label',
+
+            // BEHAVIORS
+            behaviors: [
+                Polymer.XPLabelBehavior
+            ]
+        });
+    </script>
+
+</dom-module>

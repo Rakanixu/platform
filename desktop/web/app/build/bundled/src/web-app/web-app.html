@@ -1,0 +1,80 @@
+<html><head><link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
+<link rel="import" href="../../bower_components/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
+
+<link rel="import" href="../../bower_components/mat-list/mat-list.html">
+<link rel="import" href="../../bower_components/mat-icon/mat-icon.html">
+<link rel="import" href="../../bower_components/mat-icons/mat-icons.html">
+<link rel="import" href="../../bower_components/mat-avatar/mat-avatar.html">
+<link rel="import" href="../../bower_components/mat-icon-button/mat-icon-button.html">
+<link rel="import" href="../../bower_components/mat-item/mat-item.html">
+<link rel="import" href="../../bower_components/mat-breadcrumb/mat-breadcrumb.html">
+<link rel="import" href="../../bower_components/web-socket/web-socket.html">
+
+
+
+</head><body><dom-module id="web-app">
+  <template>
+    <style>:host{display:block;}paper-toolbar{--paper-toolbar-background:var(--primary-color);}.nav{border-right:1px solid #ccc;}.list-panel{background-color:#fafafa;}.list-panel{--paper-header-panel-standard-container:{border-right:1px solid #ccc;};}paper-toolbar{background-color:#42A5F5;background-color:var(--primary-color-dark);}.list{padding:0;}.list paper-item{height:80px;border-bottom:1px solid #dedede;background-color:#fafafa;}.main-drawer-panel:not([narrow]) [list-toggle]{display:none;}.content{height:3000px;}</style>
+<paper-drawer-panel id="navDrawerPanel" responsive-width="1280px">
+	<div class="nav" drawer="">
+        
+      	</div>
+
+      <paper-drawer-panel id="mainDrawerPanel" class="main-drawer-panel" main="" responsive-width="600px" drawer-width="[[_computeListWidth(_isMobile)]]" drawer-toggle-attribute="list-toggle" narrow="{{_isMobile}}">
+
+        <paper-header-panel class="list-panel" drawer="">
+
+          
+         <paper-toolbar class="medium-tall">
+         <paper-icon-button icon="menu" paper-drawer-toggle=""></paper-icon-button>
+	<mat-breadcrumb class="extended bottom title" shift="">
+        <mat-breadcrumb-step label="My files"></mat-breadcrumb-step>
+        <mat-breadcrumb-step label="Photos"></mat-breadcrumb-step>
+        <mat-breadcrumb-step label="Beach"></mat-breadcrumb-step>
+    	</mat-breadcrumb>
+
+          </paper-toolbar>
+
+          
+<mat-list>
+    <mat-item label="Normal">
+        <mat-avatar class="primary" icon="mat:folder"></mat-avatar>
+    </mat-item>
+    <mat-item label="Toggleable" description="Description" toggleable="">
+        <mat-avatar class="primary" icon="mat:folder" active-background="light-blue"></mat-avatar>
+    </mat-item>
+    <mat-item label="Image" description="Description">
+        <mat-avatar class="primary" icon-src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSrMWEFsQUah7yjvKE8SX9jptOcgpMC-CdP5MxPyJzHsRXFT03Rrw"></mat-avatar>
+        <span>Content</span>
+    </mat-item>
+</mat-list>
+        </paper-header-panel>
+
+        <paper-header-panel class="content-panel" main="">
+
+          
+          <paper-toolbar>
+            <paper-icon-button icon="arrow-back" list-toggle=""></paper-icon-button>
+          </paper-toolbar>
+
+          
+          <div class="content"></div>
+
+        </paper-header-panel>
+
+      </paper-drawer-panel>
+</paper-drawer-panel>
+<web-socket url="ws://localhost:8082/desktop/status" auto="" json="" on-open="_onOpen" on-close="_onClose" on-message="_onMessage" on-error="_onError">
+</web-socket>
+  </template>
+
+  <script>Polymer({is:"web-app",ready:function(){"undefined"!=typeof window&&window.process&&"renderer"===window.process.type&&(console.log("We are in Electron ! Let's Go ! "),ipcRenderer.on("disks-message",function(e,o){console.log(o),this.disks=o}))},_computeListWidth:function(e){return e?"100%":"66%"},_listTap:function(){this.$.mainDrawerPanel.closeDrawer()},_onOpen:function(){console.log("Opening WS")},_onClose:function(){console.log("Closing WS")},_onMessage:function(e){console.log("Message from WS ",e.detail)},_onError:function(e){console.log(e)},properties:{prop1:{type:String,value:"web-app"},disks:{type:Array,value:[]}}});</script>
+</dom-module>
+</body></html>

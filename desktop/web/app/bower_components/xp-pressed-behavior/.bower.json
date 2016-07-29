@@ -1,0 +1,39 @@
+{
+  "name": "xp-pressed-behavior",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "xp-pressed-behavior.html",
+  "description": "A behavior used to add press capabilities on a custom element",
+  "homepage": "http://expandjs.com/elements/xp-pressed-behavior",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "xp-array-behavior": "ExpandJS/xp-array-behavior#0.10.0",
+    "xp-focused-behavior": "ExpandJS/xp-focused-behavior#0.10.0",
+    "xp-refirer-behavior": "ExpandJS/xp-refirer-behavior#0.10.0",
+    "xp-targeter-behavior": "ExpandJS/xp-targeter-behavior#0.10.0",
+    "polymer": "Polymer/polymer#^1.2.0"
+  },
+  "_release": "0.10.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.10.0",
+    "commit": "b0bc0eac6195ac44b86488808f7ad30038bf6f4e"
+  },
+  "_source": "git://github.com/ExpandJS/xp-pressed-behavior.git",
+  "_target": "0.10.0",
+  "_originalSource": "ExpandJS/xp-pressed-behavior"
+}

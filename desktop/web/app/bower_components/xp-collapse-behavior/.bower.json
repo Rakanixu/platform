@@ -1,0 +1,35 @@
+{
+  "name": "xp-collapse-behavior",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "xp-collapse-behavior.html",
+  "description": "A behavior used to add collapse capabilities on a custom element",
+  "homepage": "http://expandjs.com/elements/xp-collapse-behavior",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "polymer": "Polymer/polymer#^1.2.0"
+  },
+  "_release": "0.10.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.10.0",
+    "commit": "32f324a11cbc51c6261b21a1725300fdaff815ac"
+  },
+  "_source": "git://github.com/ExpandJS/xp-collapse-behavior.git",
+  "_target": "0.10.0",
+  "_originalSource": "ExpandJS/xp-collapse-behavior"
+}

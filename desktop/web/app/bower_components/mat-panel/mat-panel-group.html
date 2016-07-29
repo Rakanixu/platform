@@ -1,0 +1,127 @@
+<!--
+@license
+Copyright (c) 2015 The ExpandJS authors. All rights reserved.
+This code may only be used under the BSD style license found at https://expandjs.github.io/LICENSE.txt
+The complete set of authors may be found at https://expandjs.github.io/AUTHORS.txt
+The complete set of contributors may be found at https://expandjs.github.io/CONTRIBUTORS.txt
+-->
+
+<!--
+A custom element used to group separate [Material Design panels](https://www.google.com/design/spec/layout/structure.html#structure-toolbars).
+
+By default, the `mat-panel-group` will keep only one panel open at a time.
+
+```html
+<mat-panel-group>
+    <mat-panel>...</mat-panel>
+    <mat-panel>...</mat-panel>
+    <mat-panel>...</mat-panel>
+</mat-panel-group>
+```
+
+If you want to open multiple panels at once, you can use `auto-collapse-disabled`.
+
+```html
+<mat-panel-group auto-collapse-disabled>
+    <mat-panel>...</mat-panel>
+    <mat-panel>...</mat-panel>
+    <mat-panel>...</mat-panel>
+</mat-panel-group>
+```
+
+@element mat-panel-group
+@description A custom element used to group separate Material Design panels
+@keywords material design, expandjs, web app, custom elements, web-components
+@group containers
+
+@homepage http://expandjs.com/elements/mat-panel-group
+@repository https://github.com/ExpandJS/mat-panel-group
+
+@behavior xp-master-behavior /bower_components/xp-master-behavior/xp-master-behavior.html
+
+@dependency polymer Polymer/polymer#^1.0.0
+@dependency expandjs ExpandJS/expandjs#0.10.0
+@dependency xp-master-behavior ExpandJS/xp-master-behavior#0.10.0
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-master-behavior/xp-master-behavior.html">
+<link rel="import" href="mat-panel.html">
+
+<dom-module id="mat-panel-group">
+
+    <template strip-whitespace>
+
+        <style>
+            :host {
+                display: block;
+            }
+        </style>
+
+        <content></content>
+
+    </template>
+
+    <script>
+        Polymer({
+
+            // ELEMENT
+            is: 'mat-panel-group',
+
+            // BEHAVIORS
+            behaviors: [
+                Polymer.XPMasterBehavior
+            ],
+
+            /*********************************************************************/
+
+            // PROPERTIES
+            properties: {
+
+                /**
+                 * If set to true, when a panel expands the siblings wont collapse.
+                 *
+                 * @attribute auto-collapse-disabled
+                 * @type boolean
+                 * @default false
+                 */
+                autoCollapseDisabled: {
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The slave panels.
+                 *
+                 * @attribute panels
+                 * @type Array
+                 * @notifies
+                 * @readonly
+                 */
+                panels: {
+                    notify: true,
+                    readOnly: true,
+                    value: function () { return []; }
+                }
+            },
+
+            /*********************************************************************/
+
+            // LISTENER
+            created: function () {
+
+                // Classifying
+                this.classList.add('panels');
+            },
+
+            // LISTENER
+            ready: function () {
+
+                // Mapping
+                this.slavesMap.panels = '.panel';
+            }
+        });
+    </script>
+
+</dom-module>
