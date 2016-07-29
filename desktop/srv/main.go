@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	crawler "github.com/kazoup/platform/crawler/srv/handler"
+	crawler_proto "github.com/kazoup/platform/crawler/srv/proto/crawler"
 	crawler_subscriber "github.com/kazoup/platform/crawler/srv/subscriber"
 	elastic "github.com/kazoup/platform/elastic/srv/elastic"
 	search "github.com/kazoup/platform/elastic/srv/handler"
@@ -82,11 +83,7 @@ func main() {
 	)
 
 	// Attach crawler handler
-	service.Server().Handle(
-		service.Server().NewHandler(
-			new(crawler.Crawl),
-		),
-	)
+	crawler_proto.RegisterCrawlHandler(service.Server(), new(crawler.Crawl))
 
 	// Attach indexer subsciber
 	if err := service.Server().Subscribe(

@@ -34,7 +34,7 @@ func Status(ws *websocket.Conn) {
 	//
 	// Create new request to service go.micro.srv.example, method Example.Call
 	// Request can be empty as its actually ignored and merely used to call the handler
-	req := client.NewRequest("go.micro.srv.crawler", "Crawl.Status", &crawl.StatusRequest{})
+	req := client.NewRequest("go.micro.srv.desktop", "Crawl.Status", &crawl.StatusRequest{})
 
 	stream, err := client.Stream(context.Background(), req)
 	if err != nil {
