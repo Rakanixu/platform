@@ -1,0 +1,35 @@
+<script>
+  'use strict';
+
+  (function(window) {
+    window.KazoupBehaviors = window.KazoupBehaviors || {};
+    KazoupBehaviors.EmailTo = KazoupBehaviors.EmailTo || {};
+
+    KazoupBehaviors.EmailTo = {
+      shareByMail: function() {
+        // http://stackoverflow.com/questions/15819251/why-does-removeeventlistener-not-work-in-this-object-context
+        this.checkMailClientResponseRef = this.checkMailClientResponse.bind(this);
+        // Blur event is fired if mailto worked succesfully, making OS to open the default mail client
+        // When blur is not fired, OS couldn't open mail client, so after 1.5 secs we show a error msg to user
+        window.addEventListener('blur', this.checkMailClientResponseRef);
+
+        // https://www.uncinc.nl/en/articles/dealing-with-mailto-links-if-no-mail-client-is-available
+        this.showMailToMsgError = setTimeout(function() {
+          Polymer.dom(document).querySelector('#paperToast').text =
+            'It seems no mail client is configured on your machine';
+          Polymer.dom(document).querySelector('#paperToast').show();
+
+          window.removeEventListener('blur', this.checkMailClientResponseRef);
+        }, 1500);
+
+        document.location.href =
+          encodeURI('mailto:?Subject=Kazoup Link&body=') +
+          document.location.href.replace(/&/g, '%26');
+      },
+      checkMailClientResponse: function() {
+        clearTimeout(this.showMailToMsgError);
+        window.removeEventListener('blur', this.checkMailClientResponseRef);
+      }
+    };
+  }(window));
+</script>

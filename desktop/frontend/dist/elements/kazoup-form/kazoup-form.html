@@ -1,0 +1,411 @@
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-a11y-keys/iron-a11y-keys.html">
+<link rel="import" href="../../bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../../bower_components/paper-slider/paper-slider.html">
+<link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="../kazoup-ajax/kazoup-ajax.html">
+<link rel="import" href="../kazoup-spinner-button/kazoup-spinner-button.html">
+
+<dom-module id="kazoup-form">
+  <link rel="import" type="css" href="kazoup-form.css">
+
+  <template>
+    <!-- Be sure the form does not submit himself. Keyboard events HAVE TO BE managed by iron-a11y-keys -->
+    <form id="customForm"
+          action="[[url]]"
+          method="[[method]]"
+          headers="[[headers]]"
+          enctype="application/json"
+          onsubmit="return false;">
+
+      <template is="dom-repeat" items="{{fields}}" as="item">
+
+        <template is="dom-if" if="[[_computeInput(item)]]">
+          <paper-input-container invalid="[[_computeError(item.error)]]">
+            <label>[[item.label]]</label>
+            <input is="iron-input"
+                   bind-value="{{item.value}}"
+                   disabled$="[[_computeDisabled(item)]]">
+            <paper-input-error>[[item.error]]</paper-input-error>
+          </paper-input-container>
+        </template>
+
+        <template is="dom-if" if="[[_computeSlider(item)]]">
+          <div class="slider-container">
+            <span>[[item.label]]</span>
+            <paper-slider id="[[item.attr]]"
+                          role="slider"
+                          pin="true"
+                          value="{{item.value}}"
+                          bind-value="{{item.value}}"
+                          min="[[item.min_value]]"
+                          max="[[item.max_value]]"></paper-slider>
+          </div>
+        </template>
+
+        <template is="dom-if" if="[[_computeInputPassword(item)]]">
+          <paper-input-container invalid="[[_computeError(item.error)]]">
+            <label>[[item.label]]</label>
+            <input is="iron-input"
+                   bind-value="{{item.value}}"
+                   disabled$="[[_computeDisabled(item)]]" type="password">
+            <paper-input-error>[[item.error]]</paper-input-error>
+          </paper-input-container>
+        </template>
+
+        <template is="dom-if" if="[[_computeCheckbox(item)]]">
+          <paper-checkbox id="[[item.attr]]"
+                          role="checkbox"
+                          error="[[item.error]]"
+                          isinvalid="[[item.error]]"
+                          checked$="{{item.value}}"
+                          data-attrid$="[[item.attr]]">[[item.label]]</paper-checkbox>
+        </template>
+
+        <template is="dom-if" if="[[_computeInputChoice(item)]]">
+          <paper-dropdown-menu label="[[item.label]]">
+            <paper-menu id="menu"
+                        class="dropdown-content"
+                        selected="{{choiceSelected}}"
+                        data-attrid="[[item.attr]]"
+                        on-tap="getElement">
+              <template is="dom-repeat" items="[[item.choices]]" as="choice">
+                <paper-item>[[choice.display_name]]</paper-item>
+              </template>
+            </paper-menu>
+          </paper-dropdown-menu>
+          <span class="paper-dropdown-menu-error"
+                visible$="[[_computeError(item.error)]]">
+            [[item.error]]
+          </span>
+        </template>
+
+      </template>
+
+      <kazoup-spinner-button id="kazoupSubmitButton" label="[[label]]"></kazoup-spinner-button>
+    </form>
+
+    <kazoup-ajax id="options"
+                 method="OPTIONS"
+                 url="[[url]]"
+                 handle-as="json"
+                 is-authorize="[[isAuthorize]]"></kazoup-ajax>
+
+    <kazoup-ajax id="values"
+                 method="GET"
+                 url="[[url]]"
+                 handle-as="json"
+                 is-authorize="[[isAuthorize]]"></kazoup-ajax>
+
+    <kazoup-ajax id="ajaxForm"
+                 method="[[method]]"
+                 url="[[url]]"
+                 is-authorize="[[isAuthorize]]"
+                 handle-as="json"></kazoup-ajax>
+
+    <iron-a11y-keys keys="enter"
+                    target="[[keyboardTarget]]"
+                    on-keys-pressed="submitForm"></iron-a11y-keys>
+
+  </template>
+  <script>
+    'use strict';
+
+    (function() {
+      /* global kazoupSubmitButton */
+      Polymer({
+        is: 'kazoup-form',
+        behaviors: [KazoupBehaviors.APIUrls],
+        properties: {
+          actions: {
+            type: Object,
+            value: function() {
+              return {};
+            }
+          },
+          buildFromOptions: {
+            type: Boolean,
+            notify: true,
+            value: false
+          },
+          choiceSelected: {
+            type: Number,
+            notify: true,
+            observer: 'choiceSelectedChanged' 
+          },
+          fields: {
+            type: Array,
+            notify: true,
+            value: function() {
+              return [];
+            }
+          },
+          ignoreFields: {
+            type: Array,
+            notify: true,
+            value: function() {
+              return [];
+            }
+          },
+          isAuthorize: {
+            type: Boolean,
+            notify: true
+          },
+          method: {
+            type: String,
+            notify: true 
+          },
+          showReadOnlyFields: {
+            type: Boolean,
+            notify: true 
+          },
+          url: {
+            type: String,
+            notify: true 
+          },
+          keyboardTarget: {
+            type: Object,
+            notify: false
+          }
+        },
+        choiceSelectedChanged: function() {
+          this.setChoiceValue(this.choiceSelected);
+        },
+        getElement: function(e, detail) {
+          for (var i = 0; i < this.fields.length; i++) {
+            if (this.fields[i].attr === e.model.__data__.item.attr) {
+              this.lastChoiceFieldModified = this.fields[i];
+            }
+          }
+        },
+        setChoiceValue: function(index) {
+          for (var i = 0; i < this.fields.length; i++) {
+            if (this.fields[i].attr === this.lastChoiceFieldModified.attr) {
+              this.set('fields.' + i + '.choiceValue', index);
+            }
+          }
+        },
+        submitForm: function() {
+          // proxy for keyboard input
+          this.$.kazoupSubmitButton.submitForm();
+        },
+        init: function() {
+          this.authToken = localStorage.getItem('authToken');
+
+          if (this.authToken) {
+            this.headers = '{"Authorization": "JWT ' + this.authToken + '"}';
+          }
+          var options = this.$.options;
+          var values = this.$.values;
+          var customForm = this.$.customForm;
+          var kazoupSubmitButton = this.$.kazoupSubmitButton;
+          var _self = this;
+
+          var setAPIValues = function(e) {
+            try {
+              for (var i = 0; i < _self.fields.length; i++) {
+                if (e.response[_self.fields[i].attr]) {
+                  _self.set('fields.' + i + '.value', e.response[_self.fields[i].attr]);
+                }
+              }
+            } catch (e) {
+              console.log('Form values cannot be fill in from API');
+            }
+          };
+
+          var initForm = function(e) {
+            var availableMethods = [];
+
+            if (!e) {
+              return;
+            }
+
+            if (e.response && e.response.actions) {
+              _self.actions = e.response.actions;
+              availableMethods = Object.keys(_self.actions);
+            }
+            if (availableMethods.length === 1) {
+              _self.method = availableMethods[0];
+            }
+
+            // We create a new instace of fields for every element.
+            // If not, fields are share though all instances of the element, which results in
+            // a merge of all form defined in the same page.
+            if (_self.buildFromOptions) {
+              _self.fields = [];
+            }
+
+            for (var attr in _self.actions[_self.method]) {
+              // ignore fields
+              if (_self.ignoreFields.indexOf(attr) === -1) {
+
+                // push object options within its attribute name
+                if (!_self.actions[_self.method][attr].read_only) {
+                  _self.push(
+                    'fields',
+                    _.extend(
+                      {},
+                      { attr: attr, value: '' },
+                      _self.actions[_self.method][attr]
+                    )
+                  );
+                }
+
+                // If read only fields wants to be shown, add disable attr
+                if (_self.showReadOnlyFields && _self.actions[_self.method][attr].read_only) {
+                  _self.push(
+                    'fields',
+                    _.extend(
+                      {},
+                      {attr: attr, disabled: true},
+                      _self.actions[_self.method][attr]
+                    )
+                  );
+                }
+              }
+            }
+
+            if (_self.buildFromOptions) {
+              values.generateRequest().then(setAPIValues);
+            }
+          };
+
+          if (!_self.fields.length) {
+            _self.buildFromOptions = true;
+            options.generateRequest().then(initForm);
+          } else {
+            _self.buildFromOptions = false;
+            initForm();
+          }
+        },
+        attached: function() {
+          var requestCallback = function(e) {
+            // Extract nested object attrs and returns them in a flat object
+            var plainifyObj = function(obj, plainObj) {
+              for (var attr in obj) {
+                if (!(obj[attr] instanceof Array)) {
+                  plainifyObj(obj[attr], plainObj);
+                } else {
+                  plainObj[attr] = obj[attr];
+                }
+              }
+              return plainObj;
+            };
+
+            switch (e.status) {
+              // created or edited
+              case 200:
+              case 201:
+                _.forEach(this.fields, function(field, index) {
+                  this.set('fields.' + index + '.error', null);
+                }, this);
+
+                this.fire('request-success', {
+                  response: e.response
+                });
+                break;
+              // bad request
+              case 400:
+                // when receive status code 400 (non_field_errors) for restoreApplianceStep1 form
+                // means the Archive endpoint already exists,
+                // so go to step 2 as it was successfull request
+                // more special cases can be added here
+                if (this.url.indexOf(this.restoreApplianceStep1) !== -1 &&
+                  e.response.non_field_errors) {
+                  this.fire('request-success', {});
+                } else {
+                  var obj = plainifyObj(e.response, {});
+                  var counter = 0;
+                  for (var field in this.fields) {
+                    // check if error exists for a given form attribute
+                    if (obj[this.fields[field].attr]) {
+                      this.fields[field].error = obj[this.fields[field].attr][0];
+                    } else {
+                      this.fields[field].error = null;
+                    }
+                    // Notify error changes
+                    this.notifyPath('fields.' + counter + '.error', this.fields[field].error);
+                    counter++;
+                  }
+                  if (obj.non_field_errors) {
+                    Polymer.dom(document).querySelector('#paperToast').text = obj.non_field_errors[0];
+                    Polymer.dom(document).querySelector('#paperToast').show();
+                  }
+                }
+                break;
+            }
+
+            kazoupSubmitButton.onFinished();
+          };
+
+          var submitCallback = function(e) {
+            var body = {};
+            kazoupSubmitButton.onFinished = e.detail.callback;
+            // trigger submitting form event
+            // Assign to body all the required attributes and its submitted values
+            for (var field in this.fields) {
+              // Execute callback
+              // this callbacks process field.value following field requirements
+              if (this.fields[field].beforeSubmitCallback &&
+                typeof this.fields[field].beforeSubmitCallback === 'function') {
+                this.fields[field].beforeSubmitCallback();
+              }
+
+              if (this.fields[field].type === 'choice') {
+                if (this.fields[field].choiceValue !== undefined) {
+                  body[this.fields[field].attr] = this.fields[field].choices[this.fields[field].choiceValue].value;
+                }
+              } else if (this.fields[field].type === 'boolean') {
+                // needs to set false if value no defined
+                body[this.fields[field].attr] = Polymer.dom(this.root)
+                  .querySelector('#' + this.fields[field].attr).checked || false;
+              } else if (this.fields[field].type === 'integer' &&
+                  this.fields[field].min_value !== undefined &&
+                  this.fields[field].max_value !== undefined) {
+                body[this.fields[field].attr] = Polymer.dom(this.root)
+                  .querySelector('#' + this.fields[field].attr).value;
+              } else {
+                if (!this.fields[field].read_only) {
+                  body[this.fields[field].attr] = this.fields[field].value;
+                }
+              }
+            }
+
+            this.$.ajaxForm.setParams(body);
+            // Same general callback if promise is resolve or reject
+            this.$.ajaxForm.generateRequest()
+              .then(requestCallback.bind(this), requestCallback.bind(this));
+          };
+
+          this.$.customForm.addEventListener('submitForm', submitCallback.bind(this));
+        },
+        _computeInput: function(field) {
+          return field.type === 'string' && field.attr !== 'password' || field.type === 'email' ||
+              field.type === 'integer' && (field.max_value === undefined || field.min_value === undefined);
+        },
+        _computeSlider: function(field) {
+          return field.type === 'integer' && field.max_value !== undefined && field.min_value !== undefined;
+        },
+        _computeInputPassword: function(field) {
+          return field.type === 'password' || field.attr === 'password';
+        },
+        _computeCheckbox: function(field) {
+          return field.type === 'boolean';
+        },
+        _computeInputChoice: function(field) {
+          return field.type === 'choice';
+        },
+        _computeLabelvisible: function(field) {
+          return field.value ? false : true;
+        },
+        _computeDisabled: function(field) {
+          return field.disabled ? true : false;
+        },
+        _computeError: function(errorText) {
+          return errorText ? true : false;
+        }
+      });
+    }());
+  </script>
+</dom-module>
+

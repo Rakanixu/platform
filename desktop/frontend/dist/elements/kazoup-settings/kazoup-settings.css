@@ -1,0 +1,1 @@
+:host{display:block}:host::content paper-toolbar{position:fixed!important;width:100%;z-index:1}:host::content paper-toolbar #middleBar{padding:0}:host::content paper-toolbar #middleBar paper-tabs{width:100%;margin-top:15px}.container{position:relative;top:128px}@media (max-width:600px){.container{top:112px}}

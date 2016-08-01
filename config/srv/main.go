@@ -36,9 +36,11 @@ func main() {
 	// Attach handler
 	service.Server().Handle(
 		service.Server().NewHandler(&handler.Config{
-			ESSettings: &es_settings,
-			ESFlags:    &es_flags,
-			ESMapping:  &es_mapping,
+			Client:             service.Client(),
+			ESSettings:         &es_settings,
+			ESFlags:            &es_flags,
+			ESMapping:          &es_mapping,
+			ElasticServiceName: "go.micro.srv.elastic",
 		}),
 	)
 

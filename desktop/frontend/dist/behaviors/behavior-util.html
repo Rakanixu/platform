@@ -1,0 +1,326 @@
+<script>
+  'use strict';
+
+  (function(window) {
+    var monthNames = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'July',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
+
+    function requestFullScreen() {
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+      } else if (document.documentElement.webkitRequestFullscreen) {
+        document.documentElement.webkitRequestFullscreen();
+      } else if (document.documentElement.mozRequestFullscreen) {
+        document.documentElement.mozRequestFullscreen();
+      } else if (document.documentElement.msRequestFullscreen) {
+        document.documentElement.msRequestFullscreen();
+      }
+    }
+
+    function generateYearLabel(years) {
+      var outputText = '';
+
+      if (years === 0) {
+        outputText = 'Now';
+      } else if (years === 1) {
+        outputText = years + ' year ago';
+      } else if (years > 1) {
+        outputText = years + ' years ago';
+      }
+
+      return outputText;
+    }
+
+    function generateFullLabel(fromDateArray) {
+      var outputText = '';
+
+      _.forEach(fromDateArray, function(value, index) {
+        var int = parseInt(value.split(' ')[0], 10);
+        var text = value.split(' ')[1];
+
+        if (int === 1) {
+          outputText += ' ' + int + ' ' + text + ',';
+        } else if (int > 1){
+          outputText += ' ' + int + ' ' + text + 's,';
+        }
+      }, this);
+
+      if (outputText) {
+        if (outputText[outputText.length - 1] === ',') {
+          outputText = outputText.slice(0, outputText.length - 1);
+        }
+        outputText += ' ago';
+      } else {
+        outputText += 'Now';
+      }
+
+      return outputText;
+    }
+
+    window.KazoupBehaviors = window.KazoupBehaviors || {};
+    KazoupBehaviors.Util = KazoupBehaviors.Util || {};
+
+    KazoupBehaviors.Util = {
+      getDimensionLabel: function(value) {
+        var label = '';
+
+        switch (value) {
+          case 'q':
+            label = 'Search query';
+            break;
+          case 'doc_type':
+            label = 'Category';
+            break;
+          case 'extension':
+            label = 'Extension';
+            break;
+          case 'allow':
+            label = 'Permission';
+            break;
+          case 'unique':
+            label = 'Duplicates';
+            break;
+          case 'checksum':
+            label = 'Duplicate';
+            break;
+          case 'archive_status':
+            label = 'Archive';
+            break;
+          case 'file_size':
+            label = 'Size';
+            break;
+          case 'places_person':
+            label = 'Person';
+            break;
+          case 'places_organisation':
+            label = 'Organisation';
+            break;
+          case 'places_location':
+            label = 'Place';
+            break;
+        }
+
+        return label;
+      },
+      analyticsLabel: function(txt) {
+        switch (txt) {
+          case 'not_unique':
+            txt = 'duplicated';
+            break;
+          case 'not_archived':
+            txt = 'not archived';
+            break;
+        }
+
+        return txt;
+      },
+      generateRelativeDate: function(date) {
+        var timestampToday = new Date().setHours(0, 0, 0, 0);
+        var timestampDate = new Date(date).getTime();
+        var days = Math.round((timestampToday - timestampDate) / (1000 * 60 * 60 * 24));
+
+        // Now all dates will be in terms of days for granularity reasons
+        return 'now-' + days + 'd/d';
+      },
+      setDateLabels: function(from, to) {
+        var fromDay, toDay, fromDateArray, toDateArray;
+        var fromText = '';
+        var toText = '';
+
+        // Convert from and to to ES format to standarize postprocessing
+        if (typeof from === 'number' && typeof to === 'number') {
+          // absolute
+          from = new Date(from);
+          from = new Date(from.getTime() - (from.getTimezoneOffset() * 60 * 1000));
+          to = new Date(to);
+          to = new Date(to.getTime() - (to.getTimezoneOffset() * 60 * 1000));
+
+          this.set(
+            'fromDateLabel',
+            from.getUTCDate() + ' ' + monthNames[from.getMonth()] + ', ' + from.getUTCFullYear()
+          );
+          this.set(
+            'toDateLabel',
+            to.getUTCDate() + ' ' + monthNames[to.getMonth()] + ', ' + to.getUTCFullYear()
+          );
+
+          return;
+        }
+
+        // We support days, months and years granularity within ES date format
+        // eg now-1y/d now-31d/d now-1234d/d
+        if (typeof from === 'string' && typeof to === 'string') {
+          if (from.indexOf('y/d') !== -1 && to.indexOf('y/d') !== -1) {
+            fromDay = parseInt(from.replace('now-', '').replace('y/d', ''), 10);
+            toDay = parseInt(to.replace('now-', '').replace('y/d', ''), 10);
+
+            fromText = generateYearLabel(fromDay);
+            toText = generateYearLabel(toDay);
+          } else if (from.indexOf('M/d') !== -1 && to.indexOf('M/d') !== -1) {
+            fromDay = parseInt(from.replace('now-', '').replace('M/d', ''), 10);
+            toDay = parseInt(to.replace('now-', '').replace('M/d', ''), 10);
+
+            fromDateArray = moment.duration(fromDay, 'months').format('Y [year],M [month],d [day]').split(',');
+            toDateArray = moment.duration(toDay, 'months').format('Y [year],M [month],d [day]').split(',');
+
+            fromText = generateFullLabel(fromDateArray);
+            toText = generateFullLabel(toDateArray);
+          } else if (from.indexOf('d/d') !== -1 && to.indexOf('d/d') !== -1) {
+            // Following code generate exact relative date labels, which are too long to show to the user
+            // eg; 6 years, 1 month, 12 days ago
+            fromDay = parseInt(from.replace('now-', '').replace('d/d', ''), 10);
+            toDay = parseInt(to.replace('now-', '').replace('d/d', ''), 10);
+
+            fromDateArray = moment.duration(fromDay, 'days').format('Y [year],M [month],d [day]').split(',');
+            toDateArray = moment.duration(toDay, 'days').format('Y [year],M [month],d [day]').split(',');
+
+            fromText = generateFullLabel(fromDateArray);
+            toText = generateFullLabel(toDateArray);
+          }
+
+          this.set('fromDateLabel', fromText);
+          this.set('toDateLabel', toText);
+        }
+      },
+      formatDate: function(date) {
+        var d = new Date(date);
+
+        return (d.getUTCHours() > 9 ? d.getUTCHours() : '0' + d.getUTCHours())  + ':' +
+          (d.getUTCMinutes() > 9 ? d.getUTCMinutes() : '0' + d.getUTCMinutes()) + ':' +
+          (d.getUTCSeconds() > 9 ? d.getUTCSeconds() : '0' + d.getUTCSeconds()) + ' ' +
+          monthNames[d.getMonth()] + ' ' +
+          d.getUTCDate() + ', ' +
+          d.getUTCFullYear();
+      },
+      formatMonthYear: function(date) {
+        var d = new Date(date);
+
+        return monthNames[d.getMonth()] + ', ' + d.getUTCFullYear();
+      },
+      formatDayMonthYear: function(date) {
+        var d = new Date(date);
+
+        return d.getDate() + ' ' + monthNames[d.getMonth()] + ', ' + d.getUTCFullYear();
+      },
+      timestampToHumanTime: function(timestamp) {
+        var date = new Date(timestamp);
+
+        return (date.getUTCHours() > 9 ? date.getUTCHours() : '0' + date.getUTCHours()) +
+          ':' +
+          (date.getUTCMinutes() > 9 ? date.getUTCMinutes() : '0' + date.getUTCMinutes()) +
+          ':' +
+          (date.getUTCSeconds() > 9 ? date.getUTCSeconds() : '0' + date.getUTCSeconds()) +
+          ' ' +
+          monthNames[date.getMonth()] + ' ' + date.getUTCDate() + ', ' + date.getUTCFullYear();
+      },
+      timeSince: function(date) {
+        var seconds = Math.floor((new Date() - new Date(date)) / 1000);
+        var interval = Math.floor(seconds / 31536000);
+        if (interval > 1) {
+          return interval + ' years';
+        }
+        interval = Math.floor(seconds / 2592000);
+        if (interval > 1) {
+          return interval + ' months';
+        }
+        interval = Math.floor(seconds / 86400);
+        if (interval > 1) {
+          return interval + ' days';
+        }
+        interval = Math.floor(seconds / 3600);
+        if (interval > 1) {
+          return interval + ' hours';
+        }
+        interval = Math.floor(seconds / 60);
+        if (interval > 1) {
+          return interval + ' minutes';
+        }
+        return Math.floor(seconds) + ' seconds';
+      },
+      timestampToHumanDate: function(timestamp) {
+        var date = new Date(timestamp);
+
+        return monthNames[date.getMonth()] + ' ' + date.getUTCDate() + ', ' + date.getUTCFullYear();
+      },
+      archiveCompletePercentage: function(value, max) {
+        var msg = '';
+
+        if (value !== undefined && max !== undefined) {
+          if (value === null) {
+            value = 0;
+          }
+          msg = this.fileSize(value) +
+            ' out of ' +
+            this.fileSize(max);
+        }
+
+        return msg;
+      },
+      fileSize: function(bytes) {
+        var fileSize;
+
+        if (typeof bytes === 'number') {
+          fileSize = filesize(bytes, {
+            output: 'array'
+          });
+
+          return fileSize[0] + ' ' + fileSize[1];
+        }
+      },
+      dataSourceAvailability: function(availability) {
+        if (availability) {
+          availability = availability.replace('_', ' ');
+
+          return availability.charAt(0).toUpperCase() + availability.slice(1);
+        }
+      },
+      customDirectoryName: function(input) {
+        if (input) {
+          return input.split('/')[input.split('/').length - 1];
+        }
+      },
+      fullScreen: function() {
+        if (KazoupBehaviors.Devices.isMobileDevice().any()) {
+          document.addEventListener('touchstart', requestFullScreen);
+        }
+      },
+      // Bind dinamically generated template
+      injectBoundHTML: function(html, element) {
+        var template = document.createElement('template', 'dom-bind');
+        var doc = template.content.ownerDocument;
+        var div = doc.createElement('div');
+
+        div.innerHTML = html;
+        template.content.appendChild(div);
+
+        while (element.firstChild) {
+          element.removeChild(element.firstChild);
+        }
+
+        element.appendChild(Polymer.Base.instanceTemplate(template));
+      },
+      getTextWidth: function(text, font) {
+        var canvas = this.getTextWidth.canvas ||
+          (this.getTextWidth.canvas = document.createElement('canvas'));
+        var context = canvas.getContext('2d');
+
+        context.font = font;
+
+        return context.measureText(text).width;
+      }
+    };
+  }(window));
+
+</script>

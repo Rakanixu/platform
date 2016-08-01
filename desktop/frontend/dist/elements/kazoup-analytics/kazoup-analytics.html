@@ -1,0 +1,365 @@
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html">
+<link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
+<link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
+<link rel='import' href='../../bower_components/lib-d3/lib-d3.html'>
+<link rel="import" href="../kazoup-filters-converter/kazoup-filters-converter.html">
+<link rel="import" href="../kazoup-analytics-data/kazoup-analytics-data.html">
+<link rel="import" href="../kazoup-analytics-filters-menu/kazoup-analytics-filters-menu.html">
+<link rel="import" href="../kazoup-analytics-filters/kazoup-analytics-filters.html">
+<link rel="import" href="../kazoup-d3-charts/kazoup-d3-charts.html">
+<link rel="import" href="../kazoup-d3-histogram/kazoup-d3-histogram.html">
+<link rel="import" href="../kazoup-timestamp-data/kazoup-timestamp-data.html">
+<link rel="import" href="../kazoup-breadcrumbs/kazoup-breadcrumbs.html">
+<link rel="import" href="../kazoup-download-report/kazoup-download-report.html">
+<link rel="import" href="../kazoup-empty-state/kazoup-empty-state.html">
+<link rel="import" href="../kazoup-policies-dialog/kazoup-policies-dialog.html">
+<link rel="import" href="../kazoup-time-range-selector/kazoup-time-range-selector.html">
+
+<dom-module id="kazoup-analytics">
+  <link rel="import" type="css" href="kazoup-analytics.css">
+
+  <template>
+    <paper-toolbar class$="medium-tall [[computeIsWiderDevice(tabletScreen)]]">
+      <paper-icon-button icon="menu" on-tap="openDrawerPanel" paper-drawer-toggle></paper-icon-button>
+      <div class="title">Analytics</div>
+
+      <div id="time-range-container"
+           class$="cursor-pointer [[computeIsWiderDevice(tabletScreen)]]">
+        <div class="ripple-container" hidden$="[[!calendarScreen]]">
+          <iron-icon id="calendar"
+                     on-tap="openTimeRangeSelector"
+                     src="/static/images/calendar-icon.svg"></iron-icon>
+          <paper-ripple class="dark-background"></paper-ripple>
+        </div>
+        <span hidden$="[[calendarScreen]]"
+              on-tap="openTimeRangeSelector"
+              class="date-interval-info">
+          <span>[[fromDateLabel]]</span>
+          <span hidden$="[[_computeDateIntervalInfo(fromDateLabel, toDateLabel)]]"> - </span>
+          <span>[[toDateLabel]]</span>
+        </span>
+      </div>
+      <paper-tooltip for="time-range-container"
+                     animation-delay="100"
+                     position="left">Set a time range</paper-tooltip>
+
+      <paper-menu-button id="analyticsMenu"
+                         class$="[[computeIsWiderDevice(tabletScreen)]]"
+                         hidden$="[[!tabletScreen]]">
+        <paper-icon-button on-tap="toggleRightDrawer"
+                           icon="icons:more-vert"
+                           class="dropdown-trigger"></paper-icon-button>
+      </paper-menu-button>
+      <paper-tooltip for="analyticsMenu"
+                     animation-delay="100"
+                     position="left">Show options</paper-tooltip>
+
+      <kazoup-breadcrumbs class="bottom"
+                          target="kazoup-analytics"></kazoup-breadcrumbs>
+
+      <paper-progress id="progressBar"
+                      class="middle fit"
+                      hidden$="[[!requestInProgress]]"
+                      indeterminate></paper-progress>
+    </paper-toolbar>
+
+    <div class="container box vertical layout center-justified">
+      <paper-drawer-panel id="rightDrawer"
+                          responsive-width="900px"
+                          drawer-width="200px"
+                          edge-swipe-sensitivity="15"
+                          right-drawer>
+        <!-- Analytics menu -->
+        <paper-header-panel drawer>
+          <paper-toolbar class="medium-tall" id="right-toolbar">
+            <div class="horizontal layout actions">
+              <paper-icon-button id="mail-share"
+                                 on-tap="shareByMail"
+                                 icon="social:share"></paper-icon-button>
+
+              <paper-tooltip for="mail-share"
+                             animation-delay="100"
+                             position="left">Share by mail</paper-tooltip>
+
+              <kazoup-download-report visualisation="[[visualisation]]"
+                                      dimension="[[dimension]]"
+                                      period="[[period]]"
+                                      chart-data="[[chartData]]"></kazoup-download-report>
+
+              <paper-icon-button id="policies-icon"
+                                 on-tap="openPolicyDialog"
+                                 icon="cloud-upload"></paper-icon-button>
+
+              <paper-tooltip for="policies-icon"
+                             animation-delay="100"
+                             position="left">Add archive policy</paper-tooltip>
+
+              <paper-icon-button id="go-to-search-icon"
+                                 on-tap="switchToSearch"
+                                 icon="search"></paper-icon-button>
+
+              <paper-tooltip for="go-to-search-icon"
+                             animation-delay="100"
+                             position="left">View data on search</paper-tooltip>
+
+            </div>
+          </paper-toolbar>
+
+          <kazoup-analytics-filters-menu id="kazoupAnalyticsFiltersMenu"
+                                         dimension="{{dimension}}"
+                                         second-dimension="{{secondDimension}}"
+                                         visualisation="{{visualisation}}"></kazoup-analytics-filters-menu>
+
+        </paper-header-panel>
+        <!-- Main anlaytics panel -->
+        <paper-header-panel main>
+          <div class="vertical layout analytics-main-panel">
+            <div class="filters">
+              <kazoup-analytics-filters target="kazoup-analytics"></kazoup-analytics-filters>
+            </div>
+
+            <div class="vertical layout flex main-chart">
+              <kazoup-d3-charts id="mainChart"
+                                target="kazoup-analytics"
+                                chart-data="{{chartData}}"
+                                visualisation="{{visualisation}}"
+                                dimension="{{dimension}}"
+                                histogramdata="{{histogramData}}"
+                                period="{{period}}"
+                                requestinprogress="{{requestInProgress}}"></kazoup-d3-charts>
+            </div>
+
+            <div class="histogram-chart" hidden$="{{phoneScreen}}">
+              <kazoup-d3-histogram id="histogramChart"
+                                   histogram-data="{{histogramData}}"
+                                   period="{{period}}"></kazoup-d3-histogram>
+            </div>
+          </div>
+        </paper-header-panel>
+      </paper-drawer-panel>
+    </div>
+
+    <kazoup-filters-converter id="filterConverter"
+                              filters="{{filters}}"></kazoup-filters-converter>
+
+    <kazoup-analytics-data chart-data="{{chartData}}"
+                           histogram-data="{{histogramData}}"
+                           dimension="{{dimension}}" 
+                           second-dimension="{{secondDimension}}"
+                           visualisation="{{visualisation}}" 
+                           timestamptype="{{timestampType}}" 
+                           period="{{period}}" 
+                           request-in-progress="{{requestInProgress}}"
+                           target="kazoup-analytics"></kazoup-analytics-data>
+
+    <kazoup-policies-dialog id="policiesDialog"
+                            target="kazoup-analytics"></kazoup-policies-dialog>
+
+    <kazoup-timestamp-data target="kazoup-analytics"
+                           date-range-data="{{dateRangeData}}"></kazoup-timestamp-data>
+
+    <kazoup-time-range-selector id="timeRangeSelector"
+                                target="kazoup-analytics"
+                                date-range-data="[[dateRangeData]]"
+                                period="{{period}}"></kazoup-time-range-selector>
+
+    <iron-media-query query="max-width: 600px" query-matches="{{calendarScreen}}"></iron-media-query>
+    <iron-media-query query="max-width: 900px" query-matches="{{tabletScreen}}"></iron-media-query>
+    <iron-media-query query="max-width: 360px" query-matches="{{phoneScreen}}"></iron-media-query>
+
+  </template>
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'kazoup-analytics',
+        behaviors: [
+          KazoupBehaviors.Devices,
+          KazoupBehaviors.Routing,
+          KazoupBehaviors.PanelActions,
+          KazoupBehaviors.Util,
+          KazoupBehaviors.EmailTo
+        ],
+        properties: {
+          dateFormat: {
+            type: Number,
+            value: 0
+          },
+          dateRangeData: {
+            type: Array,
+            notify: true,
+            observer: 'dateRangeDataChanged'
+          },
+          beginningOfTime: {
+            type: String,
+            notify: true
+          },
+          dimension: {
+            type: String,
+            notify: true
+          },
+          secondDimension: { 
+            type: String,
+            notify: true
+          },
+          filters: {
+            type: Object,
+            notify: true
+          },
+          period: {
+            type: String,
+            notify: true
+          },
+          requestInProgress: {
+            type: Boolean,
+            value: false
+          },
+          selectedDimension: {
+            type: Number,
+            value: 0
+          },
+          chartData: {
+            type: Object,
+            notify: true
+          },
+          visualisation: {
+            type: String,
+            notify: true
+          }
+        },
+        dateRangeDataChanged: function() {
+          var years = new Date().getFullYear() - new Date(this.dateRangeData[0]).getFullYear();
+
+          this.set('beginningOfTime', 'now-' + years + 'y/d');
+
+          if (!this.$.filterConverter.getValue('from') && !this.$.filterConverter.getValue('to')) {
+            // Firing on load, sets from date with the data retrieved by kazoup-timestamp-data
+            this.$.filterConverter.setValues([
+              {field: 'from', val: this.beginningOfTime},
+              {field: 'to', val: 'now-0y/d'}
+            ]);
+          }
+        },
+        buildQuery: function() {
+          var routerUrl = '';
+
+          this.setDateLabels(
+            this.$.filterConverter.getValue('from'),
+            this.$.filterConverter.getValue('to')
+          );
+
+          routerUrl = '/analytics?' +
+            'dimension=' + this.dimension +
+            '&secondDimension=' + this.secondDimension +
+            '&visualisation=' + this.visualisation +
+            '&filters=' + this.$.filterConverter.asQuerystring() +
+            '&period=' + this.period;
+
+          history.pushState({}, 'Analytics', routerUrl);
+        },
+        dirPathEncode: function() {
+          return encodeURIComponent(this.dirpath);
+        },
+        switchToSearch: function() {
+          // We set the default visualisation before jump to avoid the observer to be fire when jumping back
+          this.set('visualisation', 'bubble');
+
+          document.location = '/search?q=&browser=false&filters=' + this.$.filterConverter.asQuerystring();
+        },
+        openPolicyDialog: function() {
+          this.$.policiesDialog.open();
+        },
+        openTimeRangeSelector: function() {
+          this.$.timeRangeSelector.open();
+        },
+        toggleRightDrawer: function() {
+          this.$.rightDrawer.openDrawer();
+
+          // Fix to get the focus on the filtes and be able to scroll them
+          this.async(function() {
+            Polymer.dom(this.$.kazoupAnalyticsFiltersMenu)
+              .node.querySelector('#filtersPanel').click();
+          }, 100);
+        },
+        setTimeRange: function(e, detail) {
+          this.period = e.target.dataset.period;
+
+          this.$.filterConverter.setValues([
+            {field: 'from', val: e.target.dataset.value},
+            {field: 'to', val: 'now-0y/d'}
+          ]);
+        },
+        init: function(e) {
+          // This approach solves an issue getting data more times than required
+          // when observers are being fire more than once
+          // On observers we check old and new values must be defined
+          this.set('dimension', undefined);
+          this.set('secondDimension', undefined);
+          this.set('visualisation', undefined);
+          this.set('period', undefined);
+
+          if (e.dimension) {
+            this.set('dimension', e.dimension);
+          } else {
+            this.set('dimension', 'location'); // default
+          }
+
+          if (e.secondDimension) {
+            this.set('secondDimension', e.secondDimension);
+          } else {
+            this.set('secondDimension', 'none');
+          }
+
+          if (e.visualisation) {
+            this.set('visualisation', e.visualisation);
+          } else {
+            this.set('visualisation', 'bubble'); // default
+          }
+
+          if (e.period) {
+            this.set('period', e.period);
+          } else {
+            this.set('period', 'year'); // default
+          }
+
+          if (e.filters) {
+            this.set('filters', JSON.parse(e.filters));
+          } else {
+            this.set('filters', {}); // default
+          }
+
+          if (e.fromSearch) {
+            this.async(function() {
+              Polymer.dom(this.root).querySelector('kazoup-analytics-data')._fetchAllData();
+            }, 10);
+          }
+
+          this.$.rightDrawer.closeDrawer();
+        },
+        attached: function() {
+          Polymer.dom.flush();
+
+          localStorage.getItem('advance_anlytics_enabled') === 'true' ?
+            this.advance_anlytics_enabled = true :
+            this.advance_anlytics_enabled = false;
+
+          // kazoup-analytics initialized with URL params
+          window.addEventListener('WebComponentsReady', function() {
+            this.init(this.parseQueryString(window.location.search));
+          }.bind(this));
+
+          this.$.filterConverter.addEventListener('filters-changed', this.buildQuery.bind(this));
+        },
+        _computeDateIntervalInfo: function(fromLabel, toLabel) {
+          return !(fromLabel && toLabel);
+        }
+      });
+    }());
+  </script>
+</dom-module>

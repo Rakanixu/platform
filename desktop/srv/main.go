@@ -4,12 +4,17 @@ import (
 	"log"
 	"strings"
 
+	config_data "github.com/kazoup/platform/config/srv/data"
+	config "github.com/kazoup/platform/config/srv/handler"
+	config_proto "github.com/kazoup/platform/config/srv/proto/config"
 	crawler "github.com/kazoup/platform/crawler/srv/handler"
 	crawler_proto "github.com/kazoup/platform/crawler/srv/proto/crawler"
 	crawler_subscriber "github.com/kazoup/platform/crawler/srv/subscriber"
 	elastic "github.com/kazoup/platform/elastic/srv/elastic"
 	search "github.com/kazoup/platform/elastic/srv/handler"
 	indexer "github.com/kazoup/platform/elastic/srv/subscriber"
+	flag "github.com/kazoup/platform/flag/srv/handler"
+	flag_proto "github.com/kazoup/platform/flag/srv/proto/flag"
 
 	"github.com/micro/cli"
 	"github.com/micro/go-micro"
@@ -26,6 +31,10 @@ const ScanTopic string = "go.micro.topic.scan"
 const FileTopic string = "go.micro.topic.files"
 
 func main() {
+	// Services names
+	elasticServiceName := "go.micro.srv.desktop"
+
+	// Desktop service
 	service := micro.NewService(
 		micro.Name("go.micro.srv.desktop"),
 		micro.Version("latest"),
@@ -46,8 +55,39 @@ func main() {
 	)
 
 	cmd.Init()
-	// Monitoring service
 
+	// Config handler
+	es_flags, err := config_data.Asset("data/es_flags.json")
+	if err != nil {
+		// Asset was not found.
+		log.Fatal(err)
+	}
+	es_mapping, err := config_data.Asset("data/es_mapping_files.json")
+	if err != nil {
+		// Asset was not found.
+		log.Fatal(err)
+	}
+	es_settings, err := config_data.Asset("data/es_settings.json")
+	if err != nil {
+		// Asset was not found.
+		log.Fatal(err)
+	}
+
+	config_proto.RegisterConfigHandler(service.Server(), &config.Config{
+		Client:             service.Client(),
+		ElasticServiceName: elasticServiceName,
+		ESSettings:         &es_settings,
+		ESFlags:            &es_flags,
+		ESMapping:          &es_mapping,
+	})
+
+	// Flag handler
+	flag_proto.RegisterFlagHandler(service.Server(), &flag.Flag{
+		Client:             service.Client(),
+		ElasticServiceName: elasticServiceName,
+	})
+
+	// Monitoring services
 	// healthchecks
 	service.Server().Subscribe(
 		service.Server().NewSubscriber(
@@ -73,6 +113,7 @@ func main() {
 	)
 
 	go_micro_srv_monitor_monitor.RegisterMonitorHandler(service.Server(), new(handler.Monitor))
+
 	// Init srv
 	service.Init()
 	//Init elasticsearch

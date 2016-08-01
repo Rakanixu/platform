@@ -1,0 +1,84 @@
+<dom-module id="kazoup-register-appliance">
+  <link rel="import" type="css" href="kazoup-register-appliance.css">
+  <template>
+    <div class="container box vertical layout center-justified">
+      <h2 class="horizontal layout center-justified">Register appliance</h2>
+
+      <kazoup-form 
+        id="registerAppliance" 
+        url="[[endpointList.registerAppliance]]"
+        fields="{{setupFields}}" 
+        method="POST"
+        keyboard-target="[[registerApplianceElement]]"
+        label="Register appliance"></kazoup-form>
+
+      <p class="info">Alternatively, you can
+        <a href="/restore">restore from a snapshot.</a>
+      </p>
+    </div>
+    <iron-a11y-keys id="a11y" keys="enter"></iron-a11y-keys>
+  </template>
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'kazoup-register-appliance',
+        behaviors: [
+          KazoupBehaviors.Routing,
+          KazoupBehaviors.APIUrls
+        ],
+        properties: {
+          setupFields: {
+            type: Array,
+            value: function() {
+              return [
+                {
+                  'attr': 'name',
+                  'type': 'string',
+                  'required': true,
+                  'read_only': false,
+                  'label': 'Appliance name',
+                  'max_length': 256,
+                  'value': ''
+                },
+                {
+                  'attr': 'username',
+                  'type': 'email',
+                  'required': true,
+                  'read_only': false,
+                  'label': 'Kazoup user email address',
+                  'max_length': 256,
+                  'value': ''
+                },
+                {
+                  'attr': 'password',
+                  'type': 'password',
+                  'required': true,
+                  'read_only': false,
+                  'label': 'Kazoup user password',
+                  'max_length': 128,
+                  'value': ''
+                }
+              ];
+            }
+          },
+          registerApplianceElement: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return this.$.registerAppliance;
+            }
+          }
+        },
+        attached: function() {
+          this.registerAppliance = this.$.registerAppliance;
+
+          this.registerAppliance.addEventListener('request-success', function(e) {
+            this.authSuccessful(e.detail.response.token);
+          }.bind(this));
+        }
+      });
+    }());
+  </script>
+</dom-module>

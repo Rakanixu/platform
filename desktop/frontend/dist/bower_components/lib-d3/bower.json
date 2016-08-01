@@ -1,0 +1,26 @@
+{
+  "name": "lib-d3",
+  "version": "3.5.5",
+  "homepage": "https://github.com/Polymoar/lib-d3",
+  "authors": [
+    "Junikorn <blazejwolanczyk@gmail.com>"
+  ],
+  "description": "Html for d3.js one time html import with Polymer",
+  "main": "lib-d3.html",
+  "keywords": [
+    "d3",
+    "html",
+    "imports"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "d3": "~3.5.5"
+  }
+}

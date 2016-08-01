@@ -1,0 +1,15 @@
+<!doctype html><html><head><title>Polymer example: left-swipe-action</title><meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes"><script src="bower_components/webcomponentsjs/webcomponents.js"></script><link rel="import" href="bower_components/polymer/polymer.html"><style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            background-color: #E5E5E5;
+        }
+    </style></head><body><div><button>Import</button><left-swipe-action style="display: none;"><div style="height: 120px;"><div>Title</div><div>Description</div></div><left-swipe-action-button style="background-color: #E81D62;" onclick="alert('delete')">Delete</left-swipe-action-button><left-swipe-action-button style="background-color: #9F499B; color: #fff;" onclick="alert('favorite')">Favorite</left-swipe-action-button></left-swipe-action></div><script>
+        // web components dynamic load
+        var button = document.querySelector('button');
+        button.addEventListener('click', function() {
+            Polymer.import(['left-swipe-action.html'], function(){
+                document.querySelector('left-swipe-action').style.display = 'block';
+            });
+        });
+    </script></body></html>

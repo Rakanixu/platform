@@ -1,0 +1,397 @@
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+
+<dom-module id="kazoup-analytics-brush-slider">
+  <link rel="stylesheet" href="kazoup-analytics-brush-slider.css">
+
+  <template>
+
+    <div id="container" class="brush-slider-container" class="horizontal layout">
+      <paper-icon-button icon="chevron-left"
+                         class="arrow arrow-left"
+                         on-tap="previous"
+                         role="button"></paper-icon-button>
+
+      <!-- title tag is important due to html minification; <svg></svg> -> <svg/> -->
+      <!-- We force the minifier to not transform the tag by adding a children -->
+      <svg id="svgBrushSlider" height="50" class="flex"><title>svg</title></svg>
+
+      <paper-icon-button icon="chevron-right"
+                         class="arrow arrow-right"
+                         on-tap="next"
+                         role="button"></paper-icon-button>
+    </div>
+
+  </template>
+  <script>
+    'use strict';
+
+    (function() {
+      function checkExtentValues(val) {
+        if (val > 100) {
+          val = 100;
+        } else if (val < 0) {
+          val = 0;
+        }
+        return val;
+      }
+
+      // Sets or updates value when present
+      // Gets value when not passed in
+      function updateQueryString(key, value) {
+        var url = document.location.href,
+          re = new RegExp('([?&])' + key + '=.*?(&|#|$)(.*)', 'gi'),
+          hash;
+
+        if (re.test(url)) {
+          if (typeof value !== 'undefined' && value !== null) {
+            return url.replace(re, '$1' + key + '=' + value + '$2$3');
+          } else {
+
+            var valueRegex = new RegExp('[\\?&]' + key + '=([^&#]*)'),
+              results = valueRegex.exec(url);
+
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+          }
+        } else {
+          if (typeof value !== 'undefined' && value !== null) {
+            var separator = url.indexOf('?') !== -1 ? '&' : '?';
+            hash = url.split('#');
+            url = hash[0] + separator + key + '=' + value;
+            if (typeof hash[1] !== 'undefined' && hash[1] !== null) {
+              url += '#' + hash[1];
+            }
+          }
+        }
+
+        return url;
+      }
+
+      Polymer({
+        id: 'kazoup-analytics-brush-slider',
+        properties: {
+          chartData: {
+            type: Object,
+            notify: true,
+            observer: 'chartDataChanged'
+          },
+          customMaxRange: {
+            type: Number,
+            notify: false,
+            value: 100
+          },
+          dimension: {
+            type: String,
+            notify: true,
+            observer: 'dimensionChanged'
+          },
+          height: {
+            type: Number,
+            notify: false,
+            value: 25
+          },
+          margin: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                left: 35,
+                right: 35
+              };
+            }
+          },
+          maxRange: {
+            type: Number,
+            notify: false,
+            value: 500
+          },
+          visualisation: {
+            type: String,
+            notify: true,
+            observer: 'visualisationChanged'
+          },
+          visible: {
+            type: Boolean,
+            notify: false,
+            value: false
+          }
+        },
+        chartDataChanged: function(newValue, oldValue) {
+          if (oldValue !== undefined) {
+            // When data length is different to previous, reset extent values
+            // If data length is the same, extent values are correct.
+            if (oldValue.length !== newValue.length && oldValue.length > 0) {
+              this.resetExtentValues();
+            }
+
+            if (this.viewType === 'unidimensional' &&
+              this.chartData.length > 0 &&
+              this.chartData.length > this.maxRange) {
+
+              this.renderBrushSlider();
+
+              this.customMaxRange = (this.maxRange * 100) / this.chartData.length;
+
+              if (this.extentA === undefined) {
+                this.extentA = 0;
+              }
+              if (this.extentB === undefined) {
+                this.extentB = (this.maxRange * 100) / this.chartData.length;
+              }
+              this.setBrushLimits();
+              this.setElementVivibility(true);
+
+              // No data
+            } else {
+              this.setElementVivibility(false);
+            }
+
+            this.brushend();
+          }
+        },
+        visualisationChanged: function() {
+          // Views grouping
+          if (this.visualisation === 'chord' || this.visualisation === 'force_directed') {
+            this.viewType = 'bidimensional';
+          } else {
+            this.viewType = 'unidimensional';
+          }
+        },
+        dimensionChanged: function() {
+          // After dimensions changes, chartData will changes too
+          this.resetExtentValues();
+        },
+        renderBrushSlider: function() {
+          this.bounds = this.$.container.getBoundingClientRect();
+
+          d3.select('svg#svgBrushSlider')
+            .attr('width', this.bounds.width)
+            .attr('x', this.margin.left)
+            .selectAll('*')
+            .remove();
+
+          var xAxis = d3.scale.linear()
+            .domain([0, 100])
+            .range([0, this.bounds.width - this.margin.left - this.margin.right]);
+
+          var arc = d3.svg.arc()
+            .outerRadius(this.height / 2)
+            .startAngle(0)
+            .endAngle(function(d, i) {
+              return i ? -Math.PI : Math.PI;
+            });
+
+          var rangeTooltip = d3.tip()
+            .offset([-5, 0])
+            .html(function() {
+              var percent = (Math.round((this.extentB - this.extentA) * 100) / 100) + ' %';
+
+              return '<div class="d3-tip">' +
+                '<span>Visualising ' + percent + ' of ' + this.chartData.length + ' items</span><br>' +
+                '<span>From element ' + this.indexFromLabel + ' to element ' + this.indexToLabel + '</span>' +
+                '</div>';
+            });
+
+          this.svg.append('rect')
+            .classed('background-rect', true)
+            .attr('opacity', '0.6')
+            .attr('x', this.margin.left)
+            .attr('y', 5)
+            .attr('width', this.bounds.width - this.margin.left - this.margin.right)
+            .attr('height', this.height)
+            .attr('fill', '#1EB3DA');
+
+          this.brush = d3.svg.brush()
+            .x(xAxis)
+            .extent([this.extentA, this.extentB])
+            .on('brushstart', this.brushstart.bind(this))
+            .on('brush', this.brushmove.bind(this))
+            .on('brushend', this.brushend.bind(this));
+
+          this.lastExtentValues = this.brush.extent();
+
+          this.svg.append('g')
+            .attr('class', 'x axis')
+            .attr('transform', 'translate(' + this.margin.left + ', ' + (this.height + 5) + ')')
+            .call(d3.svg.axis().scale(xAxis).orient('bottom').ticks(5).tickFormat(function(d, i) {
+              return d + ' %';
+            }));
+
+          this.svg.selectAll('.tick text')
+            .attr('font-size', '0.7em')
+            .attr('opacity', '0.6')
+            .attr('color', 'rgb(68, 68, 68)')
+            .attr('cursor', 'default')
+            .attr('user-select', 'none');
+
+          var brushEdges = this.svg.append('g')
+            .attr('class', 'brush')
+            .attr('transform', 'translate(' + this.margin.left + ', -10)')
+            .call(this.brush);
+
+          brushEdges.selectAll('.resize')
+            .append('path')
+            .attr('fill', '#06AFDB')
+            .attr('transform', 'translate(' + 0 + ', ' + (this.height + 2) + ')')
+            .attr('d', arc);
+
+          brushEdges.selectAll('rect')
+            .attr('height', this.height)
+            .attr('transform', 'translate(' + 0 + ', 15)');
+
+          this.svg.selectAll('rect.extent')
+            .attr('fill', '#eee')
+            .attr('opacity', '0.4')
+            .call(rangeTooltip)
+            .on('mouseenter', rangeTooltip.show.bind(this))
+            .on('mouseleave', rangeTooltip.hide.bind(this));
+
+          this.svg.selectAll('path.domain')
+            .attr('stroke', '1px')
+            .attr('fill-opacity', '0');
+
+          this.svg.selectAll('g .arrow')
+            .attr('fill', '#06AFDB')
+            .attr('cursor', 'pointer');
+        },
+        setElementVivibility: function(val) {
+          if (this.visualisation === 'table') {
+            val = false;
+          }
+
+          if (!val) {
+            this.visible = false;
+            this.$.container.classList.add('hidden');
+          } else {
+            this.visible = true;
+            this.$.container.classList.remove('hidden');
+          }
+        },
+        setBrushLimits: function() {
+          // Update UI extent explicitly
+          if (d3.select('.brush').node() && this.brush) {
+            d3.select('.brush').call(this.brush.extent([this.extentA, this.extentB]));
+          }
+        },
+        setExtentValuesFromQueryParams: function() {
+          try {
+            var brushextent = JSON.parse(updateQueryString('brushextent'));
+
+            this.extentA = brushextent[0];
+            this.extentB = brushextent[1];
+          } catch (e) {}
+        },
+        resetExtentValues: function() {
+          // Reset extent values
+          this.extentA = undefined;
+          this.extentB = undefined;
+        },
+        getDataFromIndex: function(indexFrom, indexTo) {
+          this.indexFromLabel = indexFrom + 1;
+          this.indexToLabel = indexTo;
+
+          return this.chartData.slice(indexFrom, indexTo);
+        },
+        getAllData:function() {
+          return this.chartData;
+        },
+        checkCustomRange: function() {
+          var range = this.brush.extent(),
+            diff = range[1] - range[0];
+
+          // Avoids to set entent values which represent more data than the maximun range
+          if (diff > this.customMaxRange + 0.00000000000001) {
+            this.extentA = this.lastExtentValues[0];
+            this.extentB = this.lastExtentValues[1];
+
+            this.setBrushLimits();
+          }
+
+          this.lastExtentValues = this.brush.extent();
+
+        },
+        brushstart: function() {
+          this.checkCustomRange();
+        },
+        brushmove: function() {
+          this.checkCustomRange();
+        },
+        brushend: function() {
+          var selectedData;
+
+          if (this.viewType === 'unidimensional' && this.chartData.length > this.maxRange) {
+            var range = this.brush.extent();
+
+            selectedData = this.getDataFromIndex(
+              parseInt((range[0] * this.chartData.length) / 100),
+              parseInt((range[1] * this.chartData.length) / 100)
+            );
+
+            this.extentA = range[0];
+            this.extentB = range[1];
+          } else {
+            selectedData = this.chartData;
+          }
+
+          history.pushState(
+            {},
+            'Analytics',
+            updateQueryString('brushextent', JSON.stringify([this.extentA, this.extentB]))
+          );
+
+          this.fire('data-chart', {
+            data: selectedData
+          });
+        },
+        previous: function() {
+          var tmpExtentA = this.extentA,
+            tmpExtentB = this.extentB;
+
+          if (tmpExtentA > 0) {
+            this.extentB = tmpExtentA;
+            this.extentA -= tmpExtentB - tmpExtentA;
+
+            this.extentB = checkExtentValues(this.extentB);
+            this.extentA = checkExtentValues(this.extentA);
+
+            this.setBrushLimits();
+            this.brushend();
+          }
+        },
+        next: function() {
+          var tmpExtentA = this.extentA,
+            tmpExtentB = this.extentB;
+
+          if (tmpExtentB < 100) {
+            this.extentB += tmpExtentB - tmpExtentA;
+            this.extentA = tmpExtentB;
+
+            this.extentB = checkExtentValues(this.extentB);
+            this.extentA = checkExtentValues(this.extentA);
+
+            this.setBrushLimits();
+            this.brushend();
+          }
+        },
+        attached: function() {
+          var resizeCallback;
+
+          Polymer.dom.flush();
+
+          this.bounds = this.$.container.getBoundingClientRect();
+          this.svg = d3.select(this.$.svgBrushSlider);
+
+          this.setElementVivibility(false);
+          this.setExtentValuesFromQueryParams();
+          this.setBrushLimits();
+
+          window.addEventListener('resize', function () {
+            clearTimeout(resizeCallback);
+            resizeCallback = setTimeout(function() {
+              this.renderBrushSlider();
+            }.bind(this), 200);
+          }.bind(this));
+        }
+      });
+    }());
+  </script>
+</dom-module>

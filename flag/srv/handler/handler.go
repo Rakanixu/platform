@@ -13,7 +13,10 @@ import (
 )
 
 // Flag struct
-type Flag struct{}
+type Flag struct {
+	Client             client.Client
+	ElasticServiceName string
+}
 
 // Create srv handler
 func (f *Flag) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.CreateResponse) error {
@@ -23,8 +26,8 @@ func (f *Flag) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.
 
 	data, _ := json.Marshal(req)
 
-	srvReq := client.NewRequest(
-		"go.micro.srv.elastic",
+	srvReq := f.Client.NewRequest(
+		f.ElasticServiceName,
 		"Elastic.Create",
 		&elasticsearch.CreateRequest{
 			Index: "flags", // Hardcoded index for flags
@@ -34,7 +37,7 @@ func (f *Flag) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.
 		},
 	)
 	srvRsp := &elasticsearch.CreateResponse{}
-	if err := client.Call(ctx, srvReq, srvRsp); err != nil {
+	if err := f.Client.Call(ctx, srvReq, srvRsp); err != nil {
 		return errors.InternalServerError("go.micro.srv.flag.Flag.Create", err.Error())
 	}
 
@@ -47,8 +50,8 @@ func (f *Flag) Read(ctx context.Context, req *proto.ReadRequest, rsp *proto.Read
 		return errors.BadRequest("go.micro.srv.flag.Flag.Read", "Flag key required")
 	}
 
-	srvReq := client.NewRequest(
-		"go.micro.srv.elastic",
+	srvReq := f.Client.NewRequest(
+		f.ElasticServiceName,
 		"Elastic.Read",
 		&elasticsearch.ReadRequest{
 			Index: "flags", // Hardcoded index for flags
@@ -57,7 +60,7 @@ func (f *Flag) Read(ctx context.Context, req *proto.ReadRequest, rsp *proto.Read
 		},
 	)
 	srvRsp := &elasticsearch.ReadResponse{}
-	if err := client.Call(ctx, srvReq, srvRsp); err != nil {
+	if err := f.Client.Call(ctx, srvReq, srvRsp); err != nil {
 		return errors.InternalServerError("go.micro.srv.flag.Flag.Read", err.Error())
 	}
 
@@ -80,8 +83,8 @@ func (f *Flag) Flip(ctx context.Context, req *proto.FlipRequest, rsp *proto.Flip
 	}
 
 	// Read the record to flip
-	srvReadReq := client.NewRequest(
-		"go.micro.srv.elastic",
+	srvReadReq := f.Client.NewRequest(
+		f.ElasticServiceName,
 		"Elastic.Read",
 		&elasticsearch.ReadRequest{
 			Index: "flags", // Hardcoded index for flags
@@ -90,7 +93,7 @@ func (f *Flag) Flip(ctx context.Context, req *proto.FlipRequest, rsp *proto.Flip
 		},
 	)
 	srvReadRsp := &elasticsearch.ReadResponse{}
-	if err := client.Call(ctx, srvReadReq, srvReadRsp); err != nil {
+	if err := f.Client.Call(ctx, srvReadReq, srvReadRsp); err != nil {
 		return errors.InternalServerError("go.micro.srv.flag.Flag.Flip", err.Error())
 	}
 
@@ -103,8 +106,8 @@ func (f *Flag) Flip(ctx context.Context, req *proto.FlipRequest, rsp *proto.Flip
 	data, _ := json.Marshal(input)
 
 	// Update the record
-	srvUpdateReq := client.NewRequest(
-		"go.micro.srv.elastic",
+	srvUpdateReq := f.Client.NewRequest(
+		f.ElasticServiceName,
 		"Elastic.Update",
 		&elasticsearch.UpdateRequest{
 			Index: "flags", // Hardcoded index for flags
@@ -114,7 +117,7 @@ func (f *Flag) Flip(ctx context.Context, req *proto.FlipRequest, rsp *proto.Flip
 		},
 	)
 	srvUpdateRsp := &elasticsearch.UpdateResponse{}
-	if err := client.Call(ctx, srvUpdateReq, srvUpdateRsp); err != nil {
+	if err := f.Client.Call(ctx, srvUpdateReq, srvUpdateRsp); err != nil {
 		return errors.InternalServerError("go.micro.srv.flag.Flag.Flip", err.Error())
 	}
 
@@ -127,8 +130,8 @@ func (f *Flag) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *proto.
 		return errors.BadRequest("go.micro.srv.flag.Flag.Delete", "Flag key required")
 	}
 
-	srvReq := client.NewRequest(
-		"go.micro.srv.elastic",
+	srvReq := f.Client.NewRequest(
+		f.ElasticServiceName,
 		"Elastic.Delete",
 		&elasticsearch.DeleteRequest{
 			Index: "flags", // Hardcoded index for flags
@@ -137,7 +140,7 @@ func (f *Flag) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *proto.
 		},
 	)
 	srvRsp := &elasticsearch.DeleteResponse{}
-	if err := client.Call(ctx, srvReq, srvRsp); err != nil {
+	if err := f.Client.Call(ctx, srvReq, srvRsp); err != nil {
 		return errors.InternalServerError("go.micro.srv.flag.Flag.Delete", err.Error())
 	}
 
@@ -147,8 +150,8 @@ func (f *Flag) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *proto.
 // List srv handler
 func (f *Flag) List(ctx context.Context, req *proto.ListRequest, rsp *proto.ListResponse) error {
 	// Search in flags index
-	srvReq := client.NewRequest(
-		"go.micro.srv.elastic",
+	srvReq := f.Client.NewRequest(
+		f.ElasticServiceName,
 		"Elastic.Search",
 		&elasticsearch.SearchRequest{
 			Index:  "flags", // Hardcoded index for flags
@@ -159,7 +162,7 @@ func (f *Flag) List(ctx context.Context, req *proto.ListRequest, rsp *proto.List
 		},
 	)
 	srvRsp := &elasticsearch.SearchResponse{}
-	if err := client.Call(ctx, srvReq, srvRsp); err != nil {
+	if err := f.Client.Call(ctx, srvReq, srvRsp); err != nil {
 		return errors.InternalServerError("go.micro.srv.flag.Flag.List", err.Error())
 	}
 

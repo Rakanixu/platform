@@ -1,0 +1,40 @@
+<link rel="import" href="../polymer/polymer.html"><link rel="import" href="../neon-animation/neon-animation-runner-behavior.html"><link rel="import" href="../paper-dialog-behavior/paper-dialog-behavior.html"><link rel="import" href="../paper-dialog-behavior/paper-dialog-shared-styles.html"><dom-module id="paper-dialog"><template><style include="paper-dialog-shared-styles"></style><content></content></template></dom-module><script>
+
+(function() {
+
+  Polymer({
+
+    is: 'paper-dialog',
+
+    behaviors: [
+      Polymer.PaperDialogBehavior,
+      Polymer.NeonAnimationRunnerBehavior
+    ],
+
+    listeners: {
+      'neon-animation-finish': '_onNeonAnimationFinish'
+    },
+
+    _renderOpened: function() {
+      this.cancelAnimation();
+      this.playAnimation('entry');
+    },
+
+    _renderClosed: function() {
+      this.cancelAnimation();
+      this.playAnimation('exit');
+    },
+
+    _onNeonAnimationFinish: function() {
+      if (this.opened) {
+        this._finishRenderOpened();
+      } else {
+        this._finishRenderClosed();
+      }
+    }
+
+  });
+
+})();
+
+</script>

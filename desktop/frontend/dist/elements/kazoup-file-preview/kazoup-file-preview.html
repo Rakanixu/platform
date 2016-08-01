@@ -1,0 +1,290 @@
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../../bower_components/paper-audio-player/paper-audio-player.html">
+
+<dom-module id="kazoup-file-preview">
+  <link rel="import" type="css" href="kazoup-file-preview.css">
+  <template>
+
+    <paper-toolbar class$="[[toolbarClass]]">
+      <paper-icon-button class="top" icon="arrow-back" on-tap="goBack"></paper-icon-button>
+      <iron-icon on-tap="toggleDetailsPanel" 
+                 icon="info-outline" 
+                 class="more-info-icon cursor-pointer" 
+                 hidden$="[[_computeInfoHidden(searchResultsDetails)]]"></iron-icon>
+      <div class="middle indent">[[searchResultsDetails._source.metadata.filename]]</div>
+    </paper-toolbar>
+
+    <template is="dom-if" if="[[!mobileLayout]]">
+      <paper-fab on-tap="downloadFile" icon="file-download" slide-up="" title="Download file"></paper-fab>
+    </template>
+
+    <div class$="[[containerClass]] container box vertical layout center-justified">
+      <template is="dom-if" if="[[_computeImage(searchResultsDetails)]]">
+        <iron-image id="imgPreview" 
+                    class="detail" 
+                    src="[[fileURL]]"
+                    sizing="contain" 
+                    preload=""></iron-image>
+      </template>
+
+      <template is="dom-if" if="[[_computeVideo(searchResultsDetails)]]">
+        <video id="sampleMovie" src="[[fileURL]]" height="400" controls="" autoplay="">
+          <source src="[[fileURL]]" type="video/mp4">
+          <source src="[[fileURL]]" type="video/webm">
+          <source src="[[fileURL]]" type="video/ogg">
+        </video>
+      </template>
+
+      <template is="dom-if" if="[[_computePdf(searchResultsDetails)]]">
+        <object data="[[fileURL]]" type="application/pdf" height="[[viewPortHeight]]"></object>
+      </template>
+
+      <template is="dom-if" if="[[_computeAudio(searchResultsDetails)]]">
+        <paper-audio-player src="[[fileURL]]"
+                            title="[[searchResultsDetails._source.metadata.filename]]"
+                            auto-play="true"
+                            color="#1eb3da"></paper-audio-player>
+      </template>
+
+      <div id="fileDetails" class$="[[_computePortrait(searchResultsDetails)]]">
+        <div class="layout horizontal divider">
+          <span class="flex">Created</span>
+          <span>[[timestampToHumanDate(searchResultsDetails._source.metadata.created)]]</span>
+        </div>
+        <div class="layout horizontal divider">
+          <span class="flex">Modified</span>
+          <span>[[timestampToHumanDate(searchResultsDetails._source.metadata.modified)]]</span>
+        </div>
+        <div class="layout horizontal divider">
+          <span class="flex">Archived</span>
+          <span>[[_computeArchived(searchResultsDetails)]]</span>
+        </div>
+        <div class="layout horizontal divider">
+          <span class="location-label">Location</span>
+          <span class="location-info" on-tap="copyTextToClipboard">
+            <span id="full-path">[[searchResultsDetails._source.metadata.fullpath]]</span>
+            <paper-tooltip for="full-path"
+                           animation-delay="100"
+                           position="bottom">[[clipboardLabel]]</paper-tooltip>
+          </span>
+        </div>
+
+        <div class="layout vertical">
+          <template is="dom-if" if="[[_computeDuplicatesList(searchResultsDetails)]]">
+            <div class="layout horizontal">
+              <span class="flex location-label">Duplicates</span>
+              <span class="cursor-pointer accent-color-text" on-tap="setChecksum">Show all</span>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+  </template>
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'kazoup-file-preview',
+        behaviors: [
+          KazoupBehaviors.NetworkError,
+          KazoupBehaviors.Util,
+          KazoupBehaviors.Devices,
+          KazoupBehaviors.APIUrls
+        ],
+        properties: {
+          clipboardLabel: {
+            type: String,
+            notify: false,
+            value: 'Click to copy to clipboard'
+          },
+          fileURL: { 
+            type: String,
+            notify: true,
+            value: null 
+          },
+          searchResultsDetails: {
+            type: Object,
+            notify: true,
+            observer: 'searchResultsDetailsChanged'
+          },
+          selected: { 
+            type: Number,
+            notify: true
+          },
+          viewPortHeight: {
+            type: Number,
+            notify: true,
+            value: function() {
+              return window.innerHeight - 135;
+            }
+          }
+        },
+        searchResultsDetailsChanged: function() {
+          var url = '';
+
+          this.deviceLayout();
+
+          if (this.searchResultsDetails && 
+              this.searchResultsDetails._source && 
+              this.searchResultsDetails._source.metadata) {
+
+            this.notifyPath(
+              'searchResultsDetails._source.metadata.fullpath', 
+              this.searchResultsDetails._source.metadata.fullpath.replace(/\//g, '\\')
+            );
+
+            if (Kazoup.SharedData.config.APPLIANCE_IS_DEMO) {
+              url = 'https://s3-eu-west-1.amazonaws.com/www.kazoup.com/static/demo/';
+              switch (this.searchResultsDetails._source.metadata.doc_type) {
+              case 'Image Files':
+                url += 'img-demo.jpg';
+                break;
+              case 'Audio Files':
+                url += 'mp3-demo.mp3';
+                break;
+              case 'Video Files':
+                url += 'mov-demo.mov';
+                break;
+              default:
+                url += 'pdf-demo.pdf';
+                break;
+              }
+            } else {
+              url = this.downloadFileEndpoint(
+                this.searchResultsDetails.id_b64,
+                this.searchResultsDetails._source.metadata.filename_b64
+              );
+
+              qwest.map('HEAD', url).catch(this.handleNetworkError);
+            }
+            this.set('fileURL', url);
+          }
+        },
+        deviceLayout: function() {
+          if (this.isMobileDevice().any()) {
+            this.set('mobileLayout', true);
+            this.set('toolbarClass', 'mobile');
+            this.set('containerClass', 'mobile');
+          } else {
+            this.set('mobileLayout', false);
+            this.set('toolbarClass', 'medium-tall desktop');
+            this.set('containerClass', 'desktop');
+          }
+        },
+        goBack: function() {
+          try {
+            Polymer.dom(this.root).querySelector('paper-audio-player').querySelector('#audio').pause();
+          } catch(e) {}
+
+          this.set('selected', 0);
+        },
+        downloadFile: function(e) {
+          var downloadURL;
+          
+          if (e.detail.sourceEvent.ctrlKey) {
+            downloadURL = this.fileURL + '?archive=true';
+            Polymer.dom(document).querySelector('paper-toast').text = 'Download forced from Archive.';
+            Polymer.dom(document).querySelector('paper-toast').show();
+          } else {
+            downloadURL = this.fileURL;
+          }
+          window.open(downloadURL, '_blank');
+        },
+        toggleDetailsPanel: function() {
+          if (Polymer.dom(this.root).querySelector('#fileDetails').classList.contains('close')) {
+            Polymer.dom(this.root).querySelector('#fileDetails').classList.remove('close');
+          } else {
+            Polymer.dom(this.root).querySelector('#fileDetails').classList.add('close');
+          }
+        },
+        setChecksum: function() {
+          if (Polymer.dom(document).querySelector('kazoup-search')) {
+            Polymer.dom(document).querySelector('kazoup-search')
+              .setCheckumSearch(this.searchResultsDetails._source.content.checksum);
+          } else if (Polymer.dom(document).querySelector('kazoup-search-group-users')) {
+            Polymer.dom(document).querySelector('kazoup-search-group-users')
+              .setCheckumSearch(this.searchResultsDetails._source.content.checksum);
+          }
+          this.goBack();
+        },
+        copyTextToClipboard: function(e, detail) {
+          // http://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
+          var textArea = document.createElement('textarea');
+          var message = '';
+
+          textArea.value = this.searchResultsDetails._source.metadata.fullpath;
+          Polymer.dom(this.root).appendChild(textArea);
+          textArea.select();
+          try {
+            // https://developer.mozilla.org/en-US/docs/Web/API/Document/execCommand
+            if (document.execCommand('copy')) {
+              message = 'Succesfuly copied to clipboard';
+            } else {
+              message = 'Sorry, your browser does not support this functionality';
+            }
+          } catch (err) {
+            message = 'Sorry, your browser does not support this functionality';
+          }
+
+          Polymer.dom(document).querySelector('paper-toast').text = message;
+          Polymer.dom(document).querySelector('paper-toast').show();
+          Polymer.dom(this.root).removeChild(textArea);
+        },
+        _computeInfoHidden: function(searchResultsDetails) {
+          if (searchResultsDetails._source && searchResultsDetails._source.metadata) {
+            return searchResultsDetails._source.metadata.extension !== '.pdf';
+          }
+        },
+        _computeImage: function(searchResultsDetails) {
+          if (searchResultsDetails._source && searchResultsDetails._source.metadata) {
+            return searchResultsDetails._source.metadata.extension === '.jpg' ||
+              searchResultsDetails._source.metadata.extension === '.png' ||
+              searchResultsDetails._source.metadata.extension === '.gif' ||
+              searchResultsDetails._source.metadata.extension === '.bmp' ||
+              searchResultsDetails._source.metadata.extension === '.jpeg';
+          }
+        },
+        _computeVideo: function(searchResultsDetails) {
+          if (searchResultsDetails._source && searchResultsDetails._source.metadata) {
+            return searchResultsDetails._source.metadata.extension === '.mov';
+          }
+        },
+        _computePdf: function(searchResultsDetails) {
+          if (searchResultsDetails._source && searchResultsDetails._source.metadata) {
+            return searchResultsDetails._source.metadata.extension === '.pdf';
+          }
+        },
+        _computeAudio: function(searchResultsDetails) {
+          if (searchResultsDetails._source && searchResultsDetails._source.metadata) {
+            return searchResultsDetails._source.metadata.extension === '.mp3' ||
+              searchResultsDetails._source.metadata.extension === '.wav' ||
+              searchResultsDetails._source.metadata.extension === '.m4a' ||
+              searchResultsDetails._source.metadata.extension === '.aac';
+          }
+        },
+        _computePortrait: function(searchResultsDetails) {
+          if (searchResultsDetails._source && searchResultsDetails._source.metadata) {
+            return searchResultsDetails._source.metadata.extension === '.pdf' ? 'portrait close' : '';
+          }
+        },
+        _computeDuplicatesList: function(searchResultsDetails) {
+          if (searchResultsDetails.numberOfDuplicates) {
+            return searchResultsDetails.numberOfDuplicates > 1;
+          }
+        },
+        _computeArchived: function(searchResultsDetails) {
+          if (searchResultsDetails._source) {
+            return searchResultsDetails._source.archive_complete ? 'Yes' : 'No';
+          }
+        }
+      });
+    }());
+  </script>
+</dom-module>

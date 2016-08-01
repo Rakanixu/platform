@@ -1,0 +1,134 @@
+<link rel="import" href="../../bower_components/iron-dropdown/iron-dropdown.html">
+<link rel="import" href="../../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html">
+
+<dom-module id="kazoup-download-report">
+  <link rel="import"  type="css" href="kazoup-download-report.css">
+
+  <template>
+
+    <paper-icon-button id="download-icon"
+                       icon="file-download"
+                       on-tap="openDropdown"
+                       class="cursor-pointer"></paper-icon-button>
+
+    <paper-tooltip for="download-icon"
+                   animation-delay="100"
+                   position="left">Download report</paper-tooltip>
+
+    <iron-dropdown id="dropdown"
+                   open-animation-config="[[openDropdownAnimation]]"
+                   close-animation-config="[[closeDropdownAnimation]]"
+                   horizontal-align="right"
+                   vertical-align="top">
+      <div class="dropdown-content">
+        <paper-item on-tap="downloadPdf">PDF
+          <paper-ripple class="light-background"></paper-ripple>
+        </paper-item>
+        <paper-item on-tap="downloadCsv">CSV
+          <paper-ripple class="light-background"></paper-ripple>
+        </paper-item>
+      </div>
+    </iron-dropdown>
+
+    <form id="exportCSV" action="[[csvDownloadEndpoint]]" method="POST">
+      <input type="hidden" name="data">
+    </form>
+
+  </template>
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'kazoup-download-report',
+        behaviors: [
+          KazoupBehaviors.NetworkError,
+          KazoupBehaviors.CustomAnimations,
+          KazoupBehaviors.APIUrls
+        ],
+        properties: {
+          chartData: {
+            type: Object,
+            notify: false
+          },
+          dimension: {
+            type: String,
+            notify: false
+          },
+          period: {
+            type: String,
+            notify: false
+          },
+          visualisation: {
+            type: String,
+            notify: false
+          },
+          csvDownloadEndpoint: {
+            type: String,
+            notify: true,
+            value: ''
+          }
+        },
+        downloadCsv: function() {
+          this.$.dropdown.close();
+
+          this.csvDownloadEndpoint = this.downloadCSVReportEndpoint();
+          this.chartDataStringify = _.map(this.chartData, _.partialRight(_.pick, [
+            'term',
+            'total',
+            'percent',
+            'count',
+            'size_human',
+            'size_human_measure'
+          ]));
+
+          this.set('$.exportCSV.data.value', JSON.stringify(this.chartDataStringify));
+          this.$.exportCSV.submit();
+        },
+        downloadPdf: function() {
+          var location = this._filterConverter.getValue('dirpath')[0] ?
+            this._filterConverter.getValue('dirpath')[0] :
+            'All';
+          var data = {
+            charts: [{
+              visualisation: this.visualisation,
+              dimension: this.dimension,
+              timestamp_type: this._filterConverter.getValue('timestampType')
+            }],
+            filters: this._filterConverter.asElasticsearchFilters(),
+            location: location,
+            timestamp_type: this._filterConverter.getValue('timestampType'),
+            interval: this.period
+          };
+
+          this.$.dropdown.close();
+
+          qwest.post(
+            this.endpointList.pdfTokenDownload,
+            data,
+            {
+              dataType: 'json',
+              cache: true,
+              headers: {
+                Authorization: 'JWT ' + localStorage.getItem('authToken')
+              }
+            }
+          ).then(function(xhr, response) {
+            window.open(response.download_url);
+          }).catch(this.handleNetworkError);
+        },
+        openDropdown: function() {
+          this.$.dropdown.open();
+        },
+        attached: function() {
+          Polymer.dom.flush();
+
+          this._filterConverter = Polymer.dom(document)
+            .querySelector('kazoup-analytics')
+            .querySelector('#filterConverter');
+        }
+      });
+    }());
+  </script>
+</dom-module>

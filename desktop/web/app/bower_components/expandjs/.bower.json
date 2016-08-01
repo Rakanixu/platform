@@ -27,6 +27,6 @@
     "commit": "ce389100c1ec5202227341e110d8ad2860303ed3"
   },
   "_source": "git://github.com/ExpandJS/expandjs.git",
-  "_target": "0.10.0",
+  "_target": "~0.10.0",
   "_originalSource": "ExpandJS/expandjs"
 }

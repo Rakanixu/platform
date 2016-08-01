@@ -1,0 +1,54 @@
+<script>
+  'use strict';
+
+  (function(window) {
+    window.KazoupBehaviors = window.KazoupBehaviors || {};
+    KazoupBehaviors.Routing = KazoupBehaviors.Routing || {};
+
+    KazoupBehaviors.Routing = {
+      authSuccessful: function (token) {
+        var url = Kazoup.router.getWantedURL();
+
+        this.authToken = token;
+        localStorage.setItem('authToken', this.authToken);
+
+        if (url) {
+          Kazoup.router.resetWantedURL();
+          document.location(url);
+        } else {
+          document.location = '/dashboard';
+        }
+      },
+      menuRedirect: function (e, detail) {
+        document.location = '/' + e.currentTarget.dataset.section;
+      },
+      logout: function () {
+        localStorage.removeItem('authToken');
+
+        Intercom('shutdown');
+
+        document.location = '/';
+      },
+      parseQueryString: function(queryString) {
+        var params;
+        var paramsObj = {};
+        var keyValue;
+
+        if (queryString.length && queryString[0] === '?') {
+          queryString = queryString.substring(1, queryString.length)
+        }
+        params = queryString.split('&');
+
+        if (queryString.length) {
+          _.forEach(params, function(param) {
+            keyValue = param.split('=');
+
+            paramsObj[keyValue[0]] = decodeURIComponent(keyValue[1]);
+          });
+        }
+
+        return paramsObj;
+      }
+    };
+  }(window));
+</script>

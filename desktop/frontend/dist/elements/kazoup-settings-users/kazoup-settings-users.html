@@ -1,0 +1,233 @@
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html">
+<link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../kazoup-ajax/kazoup-ajax.html">
+<link rel="import" href="../kazoup-form/kazoup-form.html">
+
+<dom-module id="kazoup-settings-users">
+
+  <link rel="import" type="css" href="kazoup-settings-users.css">
+  <template>
+
+    <iron-list id="list" items="[[users]]" as="item" selection-enabled>
+      <template>
+        <div class="horizontal layout cursor-pointer row">
+          <div class="layout horizontal flex box" on-tap="editUserDialog">
+            <iron-image src="[[gravatarEndPoint(item.username)]]"></iron-image>
+
+            <div class="layout horizontal flex info">
+              <div class="layout vertical">
+                <h4 >{{item.username}}</h4>
+                <p class="last-logon">Created: [[formatDate(item.last_login)]]</pclass>
+              </div>
+            </div>
+
+            <span class="group-name">[[item.group_name]]</span>
+          </div>
+
+          <paper-icon-button icon="icons:delete"
+                             on-tap="openDeleteUserDialog"></paper-icon-button>
+          <paper-ripple class="light-background"></paper-ripple>
+        </div>
+      </template>
+    </iron-list>
+
+    <paper-fab on-tap="addUserDialog" icon="add" title="Create user"></paper-fab>
+
+    <paper-dialog id="addUserDialog"
+                  entry-animation="scale-up-animation"
+                  exit-animation="scale-down-animation"
+                  with-backdrop>
+      <h2>Add new user</h2>
+      <kazoup-form id="addUserForm"
+                   url="[[endpointList.users]]"
+                   fields="{{userFields}}"
+                   method="POST"
+                   is-authorize="true"
+                   label="Create user"></kazoup-form>
+    </paper-dialog>
+
+    <paper-dialog id="editUserDialog"
+                  entry-animation="scale-up-animation"
+                  exit-animation="scale-down-animation"
+                  with-backdrop>
+      <h2>Edit user details</h2>
+      <kazoup-form id="editUserForm"
+                   url="[[deleteEditUserEndpoint(userId)]]"
+                   fields="{{userFields}}"
+                   method="PUT"
+                   is-authorize="true"
+                   label="Edit user"></kazoup-form>
+    </paper-dialog>
+
+    <paper-dialog id="deleteUserDialog"
+                  entry-animation="scale-up-animation"
+                  exit-animation="scale-down-animation"
+                  with-backdrop>
+      <h2>Delete user</h2>
+      <section>
+        <p>Are you sure you want to delete this user?</p>
+      </section>
+      <paper-button dialog-dismiss>Cancel</paper-button>
+      <paper-button on-tap="deleteUser">OK</paper-button>
+    </paper-dialog>
+
+    <kazoup-ajax id="users"
+                 method="GET"
+                 url="[[endpointList.users]]"
+                 handle-as="json"
+                 is-authorize="true"></kazoup-ajax>
+
+    <kazoup-ajax id="deleteUser"
+                 method="DELETE"
+                 url="[[deleteEditUserEndpoint(userId)]]"
+                 handle-as="json"
+                 is-authorize="true"></kazoup-ajax>
+  </template>
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'kazoup-settings-users',
+        behaviors: [
+          KazoupBehaviors.Util,
+          KazoupBehaviors.APIUrls
+        ],
+        properties: {
+          userId: {
+            type: Number,
+            notify: true,
+            value: null
+          },
+          users: {
+            type: Array,
+            notify:true,
+            value: function() {
+              return [];
+            }
+          },
+          userFields: {
+            type: Array,
+            value: function() {
+              return [
+                {
+                  'attr': 'username',
+                  'type': 'string',
+                  'required': true,
+                  'read_only': false,
+                  'label': 'Email or username',
+                  'max_length': 256,
+                  'value': ''
+                },
+                {
+                  'attr': 'password',
+                  'type': 'password',
+                  'required': true,
+                  'read_only': false,
+                  'label': 'Password',
+                  'max_length': 128,
+                  'value': ''
+                },
+                {
+                  'attr': 'group_name',
+                  'type': 'choice',
+                  'required': true,
+                  'read_only': false,
+                  'label': 'Group',
+                  'max_length': 128,
+                  'value': '',
+                  'choices': [
+                    {
+                      display_name: 'User',
+                      value: 'user'
+                    },
+                    {
+                      display_name: 'Admin',
+                      value: 'admin'
+                    }
+                  ]
+                }
+              ];
+            }
+          }
+        },
+        addUserDialog: function() {
+          this.resetUserFields();
+          this.$.addUserDialog.open();
+        },
+        editUserDialog: function(e, detail) {
+          this.set('userId', e.model.__data__.item.id);
+          this.resetUserFields();
+          this.notifyPath('userFields.0.value', e.model.__data__.item.username);
+
+          this.$.editUserDialog.open();
+        },
+        openDeleteUserDialog: function(e, detail) {
+          this.set('userId', e.model.__data__.item.id);
+          
+          this.$.deleteUserDialog.open();
+        },
+        deleteUser: function() {
+          this.$.deleteUser.generateRequest().then(this._handleUserDeleted.bind(this));
+        },
+        gravatarEndPoint: function(email) {
+          if (email) {
+            var hash = md5(email.toLowerCase().trim());
+            return 'http://www.gravatar.com/avatar/' + hash + '?s=40&d=mm';
+          }
+        },
+        resetUserFields: function() {
+          _.forEach(this.userFields, function(field, key) {
+            this.notifyPath('userFields.' + key + '.value', '');
+          }, this);
+        },
+        _handleUsers: function(e) {
+          this.set('users', e.response.results);
+          this.$.list.fire('iron-resize');
+        },
+        _handleUserCreated: function(e) {
+          if (e.detail.response.id >= 0) {
+            this.getUsers();
+            this.$.addUserDialog.close();
+            this.resetUserFields();
+            Polymer.dom(document).querySelector('paper-toast').text = 'User created successfully';
+            Polymer.dom(document).querySelector('paper-toast').show();
+          }
+        },
+        _handleUserEdited: function(e) {
+          if (e.detail.response.id >= 0) {
+            this.getUsers();
+            this.$.editUserDialog.close();
+            this.resetUserFields();
+            Polymer.dom(document).querySelector('paper-toast').text = 'User edited successfully';
+            Polymer.dom(document).querySelector('paper-toast').show();
+          }
+        },
+        _handleUserDeleted: function(e) {
+          // No Content success
+          if (e.status === 204) {
+            this.getUsers();
+            this.$.deleteUserDialog.close();
+          }
+        },
+        getUsers: function() {
+          this.$.users.generateRequest().then(this._handleUsers.bind(this));
+        },
+        attached: function() {
+          Polymer.dom.flush();
+
+          this.$.addUserForm.addEventListener('request-success', this._handleUserCreated.bind(this));
+          this.$.editUserForm.addEventListener('request-success', this._handleUserEdited.bind(this));
+
+          window.addEventListener('kazoup-settings-users-initialized', this.getUsers.bind(this));
+        }
+      });
+    }());
+  </script>
+</dom-module>

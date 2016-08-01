@@ -1,0 +1,167 @@
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../bower_components/neon-animation/neon-animated-pages.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html">
+<link rel="import" href="../../bower_components/google-youtube/google-youtube.html">
+
+<dom-module id="kazoup-docs">
+  <link rel="import" type="css" href="kazoup-docs.css">
+
+  <template>
+    <paper-toolbar class$="[[toolbarClass]]">
+      <paper-icon-button icon="menu" on-tap="openDrawerPanelFomDocs" paper-drawer-toggle></paper-icon-button>
+      <div class="title">Docs</div>
+    </paper-toolbar>
+
+    <div class$="container box center-justified [[mobileDevice]]">
+      <neon-animated-pages id="neonPages"
+                           entry-animation="scale-up-animation"
+                           exit-animation="scale-down-animation"
+                           selected="[[selected]]">
+        <!-- Video list preview -->
+        <neon-animatable>
+          <template is="dom-repeat" items="[[videoList]]" as="video">
+            <div class="youtube-video flex"
+                 on-tap="openVideo">
+              <iron-image src="[[video.preview]]"></iron-image>
+              <p>[[video.title]]</p>
+              <paper-ripple class="light-background"></paper-ripple>
+            </div>
+          </template>
+        </neon-animatable>
+
+        <!-- Current playing video-->
+        <neon-animatable>
+          <div class="horizontal layout full-video">
+            <paper-icon-button icon="icons:close"
+                               on-tap="closeVideo"></paper-icon-button>
+
+            <google-youtube id="youtubeVideo"
+                            video-id="[[currentVideoId]]"
+                            chromeless="false"
+                            seek-to="0"
+                            width="100%"
+                            height="[[containerHeight]]"
+                            class="flex"></google-youtube>
+          </div>
+        </neon-animatable>
+      </neon-animated-pages>
+    </div>
+
+    <kazoup-ajax id="youtube"
+                 url="[[searchVideosInChannelUrl]]"
+                 handle-as="json"></kazoup-ajax>
+  </template>
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'kazoup-docs',
+        behaviors: [
+          KazoupBehaviors.PanelActions,
+          KazoupBehaviors.Devices
+        ],
+        properties: {
+          selected: {
+            type: Number,
+            notify: false,
+            value: 0
+          },
+          containerHeight: {
+            type: Number,
+            notify: false
+          },
+          toolbarClass: {
+            type: String,
+            notify: false
+          },
+          mobileDevice: {
+            type: String,
+            notify: false
+          },
+          key: {
+            type: String,
+            notify: false,
+            value: 'AIzaSyBDf-agMrXZ19ZWFMVQRNMigvToAfeJex8'
+          },
+          channelId: {
+            type: String,
+            notify: false,
+            value: 'UCxOg7aLYSMZFXbEvExSpZgQ'
+          },
+          searchVideosInChannelUrl: {
+            type: String,
+            notify: false,
+            value: 'https://www.googleapis.com/youtube/v3/search?part=snippet,id&order=date&maxResults=20'
+          },
+          currentVideoId: {
+            type: String,
+            notify: false
+          },
+          videoList: {
+            type: Array,
+            notify: true,
+            value: function() {
+              return [];
+            }
+          }
+        },
+        openVideo: function(e, detail) {
+          this.set('currentVideoId', e.model.__data__.video.videoId);
+          this.set('selected', 1);
+        },
+        closeVideo: function(e, detail) {
+          this.$.youtubeVideo.pause();
+          this.set('selected', 0);
+        },
+        _handleYoutubeVideoKeys: function(e) {
+          _.forEach(e.response.items, function(item) {
+            if (item.id && item.id.videoId) {
+              this.push('videoList', {
+                videoId: item.id.videoId,
+                title: item.snippet.title,
+                preview: item.snippet.thumbnails.medium.url
+              });
+            }
+          }, this);
+
+          this.$.videoList.fire('resize');
+        },
+        init: function() {
+          this.set('videoList', []);
+          this.searchVideosInChannelUrl += '&key=' + this.key + '&channelId=' + this.channelId;
+          this.$.youtube.generateRequest().then(this._handleYoutubeVideoKeys.bind(this));
+        },
+        setVideoHeight: function() {
+          this.set('containerHeight', (window.innerHeight - 128) + 'px');
+        },
+        attached: function() {
+          var resizeCallback;
+
+          Polymer.dom.flush();
+
+          if (this.isMobileDevice().any()) {
+            this.set('mobileDevice', 'mobile');
+          } else {
+            this.set('toolbarClass', 'medium-tall');
+          }
+
+          window.addEventListener('resize', function() {
+            clearTimeout(resizeCallback);
+            resizeCallback = setTimeout(function() {
+              this.setVideoHeight();
+            }.bind(this), 200);
+          }.bind(this));
+
+          // Set the initial height
+          this.setVideoHeight();
+
+          // kazoup-docs initialized with URL params
+          window.addEventListener('kazoup-docs-initialized', this.init.bind(this));
+        }
+      });
+    }());
+  </script>
+</dom-module>

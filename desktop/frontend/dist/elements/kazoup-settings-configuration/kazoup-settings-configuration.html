@@ -1,0 +1,804 @@
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../../bower_components/paper-dialog-scrollable/paper-dialog-scrollable.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../kazoup-form/kazoup-form.html">
+<link rel="import" href="../kazoup-ajax/kazoup-ajax.html">
+
+<dom-module id="kazoup-settings-configuration">
+  <link rel="import" type="css" href="kazoup-settings-configuration.css">
+
+  <template>
+
+    <div class="container box vertical layout center-justified">
+      <div class="layout horizontal box">
+        <div class="flex layout vertical settings cursor-pointer"
+             on-tap="openDialog"
+             data-target="editHostname">
+          <div><h4>{{applianceHostname.label}}</h4></div>
+          <div><p>{{applianceHostname.value}}</p></div>
+        </div>
+      </div>
+
+      <div class="layout horizontal box">
+        <div class="flex layout vertical settings cursor-pointer"
+             on-tap="openDialog"
+             data-target="editNetworkCredentials">
+          <div><h4>{{networkCredentials.label}}</h4></div>
+          <div><p>{{networkCredentials.value}}</p></div>
+        </div>
+        <div id="networkCredentialsDeletion" class="delete-action-container">
+          <paper-icon-button icon="icons:delete"
+                             on-tap="openDialog"
+                             data-target="deleteConfirmation"
+                             data-label="configured network credentials"
+                             data-url$="[[endpointList.networkCredentials]]"></paper-icon-button>
+          <paper-ripple class="light-background"></paper-ripple>
+        </div>
+      </div>
+
+      <div class="layout horizontal box">
+        <div class="flex layout vertical settings cursor-pointer"
+             on-tap="openDialog"
+             data-target="editArchiveEndpoint">
+          <div><h4>{{archiveEndpoint.label}}</h4></div>
+          <div><p>{{archiveEndpoint.value}}</p></div>
+        </div>
+        <div id="archiveEndpointDeletion" class="delete-action-container">
+          <paper-icon-button icon="icons:delete"
+                             on-tap="openDialog"
+                             data-target="deleteConfirmation"
+                             data-label="configured cloud storage endpoint"
+                             data-url$="[[endpointList.archiveEndpoint]]"></paper-icon-button>
+          <paper-ripple class="light-background"></paper-ripple>
+        </div>
+      </div>
+
+      <div class="layout horizontal box">
+        <div class="flex layout vertical settings cursor-pointer"
+             on-tap="openDialog"
+             data-target="editActiveDirectory">
+          <div><h4>{{activeDirectory.label}}</h4></div>
+          <div><p>{{activeDirectory.value}}</p></div>
+        </div>
+        <div id="activeDirectoryDeletion" class="delete-action-container">
+          <paper-icon-button icon="icons:delete"
+                             on-tap="openDialog"
+                             data-target="deleteConfirmation"
+                             data-label="configured active directory"
+                             data-url$="[[endpointList.activeDirectory]]"></paper-icon-button>
+          <paper-ripple class="light-background"></paper-ripple>
+        </div>
+      </div>
+
+      <div class="div-line"></div>
+
+      <iron-list id="flagList"
+                 items="[[flagResults]]"
+                 as="item">
+        <template>
+          <div class="layout horizontal box">
+            <div class="toggle-action flex">
+              <h4>[[item.key]]</h4>
+              <p>[[item.description]]</p>
+            </div>
+            <paper-toggle-button on-change="flagUpdated"
+                                 checked$="[[item.value]]"></paper-toggle-button>
+          </div>
+        </template>
+      </iron-list>
+
+      <div class="div-line"></div>
+
+      <div class="layout horizontal box">
+        <div class="flex layout vertical settings cursor-pointer"
+             on-tap="openDialog"
+             data-target="editEmail">
+          <div><h4>{{email.label}}</h4></div>
+          <div><p>{{email.value}}</p></div>
+        </div>
+        <div id="emailDeletion" class="delete-action-container">
+          <paper-icon-button icon="icons:delete"
+                             on-tap="openDialog"
+                             data-target="deleteConfirmation"
+                             data-label="configured email settings (SMTP)"
+                             data-url$="[[endpointList.email]]"></paper-icon-button>
+          <paper-ripple class="light-background"></paper-ripple>
+        </div>
+      </div>
+
+      <div class="layout horizontal box">
+        <div class="flex layout vertical settings cursor-pointer"
+             on-tap="openDialog"
+             data-target="editAuditTrailRetention">
+          <div><h4>{{auditTrailRetention.label}}</h4></div>
+          <div><p>{{auditTrailRetention.value}}</p></div>
+        </div>
+      </div>
+
+      <div class="layout horizontal box">
+        <div class="layout vertical settings cursor-pointer"
+             on-tap="webappRedirect">
+          <div><h4>Plan</h4></div>
+          <div><p>Public Beta</p></div>
+        </div>
+      </div>
+    </div>
+
+    <paper-dialog id="editHostname"
+                  entry-animation="scale-up-animation"
+                  exit-animation="scale-down-animation"
+                  class$="[[mobileDevice]]"
+                  with-backdrop>
+      <h2>Appliance hostname</h2>
+      <paper-dialog-scrollable>
+        <kazoup-form id="editHostnameForm"
+                     url="[[endpointList.hostname]]"
+                     is-authorize="true"
+                     keyboard-target="[[hostnameFormElement]]"
+                     label="Save"></kazoup-form>
+      </paper-dialog-scrollable>
+    </paper-dialog>
+
+    <kazoup-ajax id="flags"
+                 url="[[endpointList.listFlags]]"
+                 method="POST"
+                 is-authorize="true"
+                 handle-as="json"></kazoup-ajax>
+
+    <kazoup-ajax id="flipFlag"
+                 url="[[endpointList.flipFlag]]"
+                 method="POST"
+                 is-authorize="true"
+                 handle-as="json"></kazoup-ajax>
+
+    <kazoup-ajax id="settings"
+                 url="[[endpointList.hostname]]"
+                 method="GET"
+                 is-authorize="true"
+                 handle-as="json"></kazoup-ajax>
+
+    <paper-dialog id="editNetworkCredentials"
+                  entry-animation="scale-up-animation"
+                  exit-animation="scale-down-animation"
+                  class$="[[mobileDevice]]"
+                  with-backdrop>
+      <h2>Network credentials</h2>
+      <paper-dialog-scrollable>
+        <kazoup-form id="editNetworkCredentialsForm"
+                     url="[[endpointList.networkCredentials]]"
+                     build-from-options="true"
+                     is-authorize="true"
+                     keyboard-target="[[networkCredentialsFormElement]]"
+                     label="Save"></kazoup-form>
+      </paper-dialog-scrollable>
+    </paper-dialog>
+
+    <kazoup-ajax id="networkCredentials"
+                 url="[[endpointList.networkCredentials]]"
+                 method="GET"
+                 is-authorize="true"
+                 handle-as="json"></kazoup-ajax>
+
+    <paper-dialog id="editArchiveEndpoint"
+                  entry-animation="scale-up-animation"
+                  exit-animation="scale-down-animation"
+                  class$="[[mobileDevice]]"
+                  with-backdrop>
+      <h2>Cloud storage</h2>
+      <paper-dialog-scrollable>
+        <kazoup-form id="editArchiveEndpointForm"
+                     url="[[endpointList.archiveEndpoint]]"
+                     is-authorize="true"
+                     keyboard-target="[[archiveEndpointFormElement]]"
+                     ignore-fields="[[archiveEndpointIgnoreFields]]"
+                     show-read-only-fields="true"
+                     label="Save"></kazoup-form>
+      </paper-dialog-scrollable>
+    </paper-dialog>
+
+    <kazoup-ajax id="archiveEndpoint"
+                 url="[[endpointList.archiveEndpoint]]"
+                 method="GET"
+                 is-authorize="true"
+                 handle-as="json"></kazoup-ajax>
+
+
+    <paper-dialog id="editActiveDirectory"
+                  entry-animation="scale-up-animation"
+                  exit-animation="scale-down-animation"
+                  class$="[[mobileDevice]]"
+                  with-backdrop>
+      <h2>Active directory</h2>
+      <paper-dialog-scrollable>
+        <kazoup-form id="editActiveDirectoryForm"
+                     url="[[endpointList.activeDirectory]]"
+                     is-authorize="true"
+                     keyboard-target="[[activeDirectoryFormElement]]"
+                     label="Save"></kazoup-form>
+      </paper-dialog-scrollable>
+    </paper-dialog>
+
+    <kazoup-ajax id="activeDirectory"
+                 url="[[endpointList.activeDirectory]]"
+                 method="GET"
+                 is-authorize="true"
+                 handle-as="json"></kazoup-ajax>
+
+    <kazoup-ajax id="metadataScan"
+                 url="[[endpointList.metadataScan]]"
+                 is-authorize="true"
+                 handle-as="json"></kazoup-ajax>
+
+    <kazoup-ajax id="checksumScan"
+                 url="[[endpointList.checksumScan]]"
+                 is-authorize="true"
+                 handle-as="json"></kazoup-ajax>
+
+    <kazoup-ajax id="contentExtractionScan"
+                 url="[[endpointList.contentExtractionScan]]"
+                 is-authorize="true"
+                 handle-as="json"></kazoup-ajax>
+
+    <kazoup-ajax id="archiveEnable"
+                 url="[[endpointList.archiveEnable]]"
+                 is-authorize="true"
+                 handle-as="json"></kazoup-ajax>
+
+    <kazoup-ajax id="emailReport"
+                 url="[[endpointList.emailReport]]"
+                 is-authorize="true"
+                 handle-as="json"></kazoup-ajax>
+
+    <paper-dialog id="editEmail"
+                  entry-animation="scale-up-animation"
+                  exit-animation="scale-down-animation"
+                  class$="[[mobileDevice]]"
+                  with-backdrop>
+      <h2>Email settings</h2>
+      <paper-dialog-scrollable>
+        <kazoup-form id="editEmailForm"
+                     url="[[endpointList.email]]"
+                     is-authorize="true"
+                     keyboard-target="[[emailFormElement]]"
+                     label="Save"></kazoup-form>
+      </paper-dialog-scrollable>
+    </paper-dialog>
+
+    <kazoup-ajax id="email"
+                 url="[[endpointList.email]]"
+                 method="GET"
+                 is-authorize="true"
+                 handle-as="json"></kazoup-ajax>
+
+    <paper-dialog id="editAuditTrailRetention"
+                  entry-animation="scale-up-animation"
+                  exit-animation="scale-down-animation"
+                  class$="[[mobileDevice]]"
+                  with-backdrop>
+      <h2>Logs retention settings</h2>
+      <paper-dialog-scrollable>
+        <kazoup-form id="editAuditTrailRetentionForm"
+                     url="[[endpointList.auditTrail]]"
+                     is-authorize="true"
+                     keyboard-target="[[auditTrailRetentionFormElement]]"
+                     label="Save"></kazoup-form>
+      </paper-dialog-scrollable>
+    </paper-dialog>
+
+    <kazoup-ajax id="auditTrailRetention"
+                 url="[[endpointList.auditTrail]]"
+                 method="GET"
+                 is-authorize="true"
+                 handle-as="json"></kazoup-ajax>
+
+    <kazoup-ajax id="delete"
+                 url="[[deletion.url]]"
+                 method="DELETE"
+                 is-authorize="true"
+                 handle-as="json"></kazoup-ajax>
+
+    <paper-dialog id="deleteConfirmation"
+                  entry-animation="scale-up-animation"
+                  exit-animation="scale-down-animation"
+                  class$="[[mobileDevice]]"
+                  with-backdrop>
+      <h2>Deletion confirmation</h2>
+      <section>
+        <p>Are you sure you want to delete [[deletion.label]]?</p>
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button on-tap="deleteSetting">Delete</paper-button>
+      </section>
+    </paper-dialog>
+  </template>
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'kazoup-settings-configuration',
+        behaviors: [
+          KazoupBehaviors.CustomAnimations,
+          KazoupBehaviors.Devices,
+          KazoupBehaviors.APIUrls
+        ],
+        properties: {
+          deletion: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                url: '',
+                label: ''
+              };
+            }
+          },
+          applianceHostname: {
+            type: Object,
+            notify: true,
+            value: function() {
+              return {
+                label: 'Appliance hostname',
+                value: 'your.domain.com'
+              };
+            }
+          },
+          networkCredentials: {
+            type: Object,
+            notify: true,
+            value: function() {
+              return {
+                label: 'Network credentials',
+                value: 'None'
+              };
+            }
+          },
+          archiveEndpoint: {
+            type: Object,
+            notify: true,
+            value: function() {
+              return {
+                label: 'Cloud storage',
+                value: 'None'
+              };
+            }
+          },
+          activeDirectory: {
+            type: Object,
+            notify: true,
+            value: function() {
+              return {
+                label: 'Active directory',
+                value: 'None'
+              };
+            }
+          },
+          metadataScan: {
+            type: Object,
+            notify: true,
+            value: function() {
+              return {
+                scanning_enabled: false
+              };
+            }
+          },
+          checksumScan: {
+            type: Object,
+            notify: true,
+            value: function() {
+              return {
+                checksumming_enabled: false
+              };
+            }
+          },
+          contentExtraction: {
+            type: Object,
+            notify: true,
+            value: function() {
+              return {
+                extract_content_enabled: false
+              };
+            }
+          },
+          archiving: {
+            type: Object,
+            notify: true,
+            value: function() {
+              return {
+                archiving_enabled: false
+              };
+            }
+          },
+          emailReport: {
+            type: Object,
+            notify: true,
+            value: function() {
+              return {
+                reporting_enabled: false
+              };
+            }
+          },
+          auditTrailRetention: {
+            type: Object,
+            notify: true,
+            value: function() {
+              return {
+                label: 'Logs time retention',
+                value: ''
+              };
+            }
+          },
+          email: {
+            type: Object,
+            notify: true,
+            value: function() {
+              return {
+                label: 'Email settings',
+                value: 'Default'
+              };
+            }
+          },
+          archiveEndpointIgnoreFields: {
+            type: Array,
+            value: function() {
+              return ['pending_delete'];
+            }
+          },
+          archiveEndpointSecurityField: {
+            type: Object,
+            value: function() {
+              return {
+                phrase: 'I UNDERSTAND THE RISKS',
+                error: 'Invalid security field',
+                value: '',
+                isInvalid: false
+              };
+            }
+          },
+          flagResults: {
+            type: Array,
+            notify: true,
+            value: function() {
+              return [];
+            }
+          },
+          hostnameFormElement: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return this.$.editHostnameForm;
+            }
+          },
+          networkCredentialsFormElement: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return this.$.editNetworkCredentialsForm;
+            }
+          },
+          archiveEndpointFormElement: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return this.$.editArchiveEndpointForm;
+            }
+          },
+          activeDirectoryFormElement: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return this.$.editActiveDirectoryForm;
+            }
+          },
+          emailFormElement: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return this.$.editEmailForm;
+            }
+          },
+          auditTrailRetentionFormElement: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return this.$.editAuditTrailRetentionForm;
+            }
+          },
+          mobileDevice: {
+            type: String,
+            notify: false
+          }
+        },
+        openDialog: function(e, detail) {
+          var target = e.currentTarget.dataset.target;
+
+          if (this.$[target + 'Form'] && this.$[target + 'Form'].init) {
+            // Targeting dialogs within a form
+
+            // Reset fields, forcing kazoup-form to execute GET and OPTIONS
+            this.$[target + 'Form'].set('fields', []);
+            this.$[target + 'Form'].init();
+          } else {
+            // Targeting deletion dialog
+            this.set('deletion.url', e.currentTarget.dataset.url);
+            this.set('deletion.label',  e.currentTarget.dataset.label);
+          }
+
+          this.async(function() {
+            this.$[target].fit();
+            this.$[target].open();
+          }, 100);
+        },
+        deleteSetting: function(e, detail) {
+          this.$.delete.generateRequest().then(this._deleteSettingCallback.bind(this));
+        },
+        webappRedirect: function() {
+          document.location.href = 'https://webapp.kazoup.com';
+        },
+        _deleteSettingCallback: function(e) {
+          this.$.deleteConfirmation.close();
+
+          if (e && e.status === 204) {
+            Polymer.dom(document).querySelector('#paperToast').text = this.deletion.label + ' deleted successfully';
+            Polymer.dom(document).querySelector('#paperToast').show();
+
+            this.$.networkCredentials.generateRequest().then(this._handleNetworkCredentialsValue.bind(this));
+            this.$.archiveEndpoint.generateRequest().then(this._handleArchiveEndpointValue.bind(this));
+            this.$.activeDirectory.generateRequest().then(this._handleActiveDirectoryValue.bind(this));
+            this.$.email.generateRequest().then(this._handleEmailValue.bind(this));
+          }
+        },
+        _successCallback: function(e) {
+          var text = '';
+          var key;
+
+          for (key in e.response) {
+            text = key.replace('_enabled', '');
+            text = text.replace('_', ' ');
+
+            Polymer.dom(document).querySelector('#paperToast').text =
+              text + (e.response[key] ? ' enabled' : ' disabled');
+            Polymer.dom(document).querySelector('#paperToast').show();
+            break;
+          }
+        },
+        _handleFlags: function(e) {
+          if (e && e.response && e.response.result) {
+            // Ensure consistent order
+            e.response.result.sort(function(a, b) {
+              if (a.key < b.key) {
+                return -1;
+              }
+              if (a.key > b.key) {
+                return 1;
+              }
+              return 0;
+            });
+
+            this.set('flagResults', e.response.result);
+            this.$.flagList.fire('iron-resize');
+          }
+        },
+        _handleHostnameValue: function(e) {
+          if (e && e.response && e.response.APPLIANCE_HOSTNAME) {
+            this.notifyPath('applianceHostname.value', e.response.APPLIANCE_HOSTNAME);
+          }
+        },
+        _handleHostnameForm: function(e) {
+          if (e && e.detail && e.detail.response) {
+            this.notifyPath('applianceHostname.value', e.detail.response.APPLIANCE_HOSTNAME);
+            this.$.editHostname.close();
+
+            Polymer.dom(document).querySelector('#paperToast').text = 'Appliance hostname updated successfully';
+            Polymer.dom(document).querySelector('#paperToast').show();
+          }
+        },
+        _handleNetworkCredentialsValue: function(e) {
+          if (e && e.response && e.response.username) {
+            this.notifyPath('networkCredentials.value', 'Configured');
+            this.$.networkCredentialsDeletion.classList.add('visible');
+          } else {
+            this.notifyPath('networkCredentials.value', 'None');
+            this.$.networkCredentialsDeletion.classList.remove('visible');
+          }
+        },
+        _handleNetworkCredentialsForm: function(e) {
+          if (e && e.detail && e.detail.response) {
+            e.response = {};
+            e.response.username = true;
+            this._handleNetworkCredentialsValue(e);
+
+            this.$.editNetworkCredentials.close();
+
+            Polymer.dom(document).querySelector('#paperToast').text = 'Network credentials updated successfully';
+            Polymer.dom(document).querySelector('#paperToast').show();
+          }
+        },
+        _handleArchiveEndpointValue: function(e) {
+          if (e && e.response && e.response.pending_delete) {
+            this.notifyPath('archiveEndpoint.value', 'None');
+            this.$.archiveEndpointDeletion.classList.remove('visible');
+          } else if (e && e.response && e.response.id) {
+            this.notifyPath('archiveEndpoint.value', 'Configured');
+            this.$.archiveEndpointDeletion.classList.add('visible');
+          } else {
+            this.notifyPath('archiveEndpoint.value', 'None');
+            this.$.archiveEndpointDeletion.classList.remove('visible');
+          }
+        },
+        _handleArchiveEndpointForm: function(e) {
+          if (e && e.detail && e.detail.response) {
+            e.response = {};
+            e.response.id = true;
+            this._handleArchiveEndpointValue(e);
+
+            this.$.editArchiveEndpoint.close();
+
+            Polymer.dom(document).querySelector('#paperToast').text = 'Cloud storage updated successfully';
+            Polymer.dom(document).querySelector('#paperToast').show();
+          }
+        },
+        _handleActiveDirectoryValue: function(e) {
+          if (e && e.response && e.response.primary_server) {
+            this.notifyPath('activeDirectory.value', 'Configured');
+            this.$.activeDirectoryDeletion.classList.add('visible');
+          } else {
+            this.notifyPath('activeDirectory.value', 'None');
+            this.$.activeDirectoryDeletion.classList.remove('visible');
+          }
+        },
+        _handleActiveDirectoryForm: function(e) {
+          if (e && e.detail && e.detail.response) {
+            e.response = {};
+            e.response.primary_server = true;
+            this._handleActiveDirectoryValue(e);
+            this.$.editActiveDirectory.close();
+
+            Polymer.dom(document).querySelector('#paperToast').text = 'Active directory updated successfully';
+            Polymer.dom(document).querySelector('#paperToast').show();
+          }
+        },
+        _handleEmailValue: function(e) {
+          if (e && e.response && e.response.username) {
+            this.notifyPath('email.value', 'Configured');
+            this.$.emailDeletion.classList.add('visible');
+          } else {
+            this.notifyPath('email.value', 'Default');
+            this.$.emailDeletion.classList.remove('visible');
+          }
+        },
+        _handleEmailForm: function(e) {
+          if (e && e.detail && e.detail.response) {
+            e.response = {};
+            e.response.username = true;
+            this._handleEmailValue(e);
+            this.$.editEmail.close();
+
+            Polymer.dom(document).querySelector('#paperToast').text =
+              'Email settings updated successfully';
+            Polymer.dom(document).querySelector('#paperToast').show();
+          }
+        },
+        _handleAuditTrailRetentionForm: function(e) {
+          if (e && e.detail && e.detail.response) {
+            this.notifyPath(
+              'auditTrailRetention.value',
+              e.detail.response.audit_trail_retention_days + ' days persistance'
+            );
+            this.$.editAuditTrailRetention.close();
+
+            Polymer.dom(document).querySelector('#paperToast').text =
+              'Audit trail retention settings updated successfully';
+            Polymer.dom(document).querySelector('#paperToast').show();
+          }
+        },
+        _handleMetadataScanValue: function(e) {
+          if (e && e.response) {
+            this.notifyPath('metadataScan.scanning_enabled', e.response.scanning_enabled);
+          }
+        },
+        _handleChecksumScanValue: function(e) {
+          if (e && e.response) {
+            this.notifyPath('checksumScan.checksumming_enabled', e.response.checksumming_enabled);
+          }
+        },
+        _handleContentExtractionValue: function(e) {
+          if (e && e.response) {
+            this.notifyPath('contentExtraction.extract_content_enabled', e.response.extract_content_enabled);
+          }
+        },
+        _handleArchiveEnableValue: function(e) {
+          if (e && e.response) {
+            this.notifyPath('archiving.archiving_enabled', e.response.archiving_enabled);
+          }
+        },
+        _handleEmailReportValue: function(e) {
+          if (e && e.response) {
+            this.notifyPath('emailReport.reporting_enabled', e.response.reporting_enabled);
+          }
+        },
+        _handleAuditTrailRetentionValue: function(e) {
+          if (e && e.response) {
+            this.notifyPath(
+              'auditTrailRetention.value',
+              e.response.audit_trail_retention_days + ' days persistance'
+            );
+          }
+        },
+        _handleFlip: function(e) {
+          if (e && e.status === 200) {
+            Polymer.dom(document).querySelector('#paperToast').text = 'Flag updated successfully';
+            Polymer.dom(document).querySelector('#paperToast').show();
+          } else {
+            // Refresh flags
+            this.$.flags.generateRequest().then(this._handleFlags.bind(this));
+          }
+        },
+        flagUpdated: function(e, detail) {
+          if (e && e.model && e.model.__data__ && e.model.__data__.item && e.model.__data__.item.key) {
+            this.$.flipFlag.setParamsAsObj({
+              key: e.model.__data__.item.key
+            });
+            this.$.flipFlag.generateRequest().then(this._handleFlip.bind(this));
+          }
+        },
+        init: function() {
+          // Retrieve flags
+          this.$.flags.generateRequest().then(this._handleFlags.bind(this));
+
+          // Retrieve custom values
+          this.$.settings.generateRequest().then(this._handleHostnameValue.bind(this));
+          this.$.networkCredentials.generateRequest().then(this._handleNetworkCredentialsValue.bind(this));
+          this.$.archiveEndpoint.generateRequest().then(this._handleArchiveEndpointValue.bind(this));
+          this.$.activeDirectory.generateRequest().then(this._handleActiveDirectoryValue.bind(this));
+          this.$.metadataScan.method = 'GET';
+          this.$.metadataScan.generateRequest().then(this._handleMetadataScanValue.bind(this));
+          this.$.checksumScan.method = 'GET';
+          this.$.checksumScan.generateRequest().then(this._handleChecksumScanValue.bind(this));
+          this.$.contentExtractionScan.method = 'GET';
+          this.$.contentExtractionScan.generateRequest().then(this._handleContentExtractionValue.bind(this));
+          this.$.archiveEnable.method = 'GET';
+          this.$.archiveEnable.generateRequest().then(this._handleArchiveEnableValue.bind(this));
+          this.$.emailReport.method = 'GET';
+          this.$.emailReport.generateRequest().then(this._handleEmailReportValue.bind(this));
+          this.$.email.generateRequest().then(this._handleEmailValue.bind(this));
+          this.$.auditTrailRetention.generateRequest().then(this._handleAuditTrailRetentionValue.bind(this));
+        },
+        attached: function() {
+          Polymer.dom.flush();
+
+          this.set('mobileDevice', this.isMobileDevice().any() ? 'mobile' : '');
+          
+          window.addEventListener('kazoup-settings-configuration-initialized', this.init.bind(this));
+
+          // Form callbacks
+          this.$.editHostnameForm.addEventListener(
+            'request-success',
+            this._handleHostnameForm.bind(this)
+          );
+          this.$.editNetworkCredentialsForm.addEventListener(
+            'request-success',
+            this._handleNetworkCredentialsForm.bind(this)
+          );
+          this.$.editArchiveEndpointForm.addEventListener(
+            'request-success',
+            this._handleArchiveEndpointForm.bind(this)
+          );
+          this.$.editActiveDirectoryForm.addEventListener(
+            'request-success',
+            this._handleActiveDirectoryForm.bind(this)
+          );
+          this.$.editEmailForm.addEventListener(
+            'request-success',
+            this._handleEmailForm.bind(this)
+          );
+          this.$.editAuditTrailRetentionForm.addEventListener(
+            'request-success',
+            this._handleAuditTrailRetentionForm.bind(this)
+          );
+        }
+      });
+    }());
+  </script>
+</dom-module>

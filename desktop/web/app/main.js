@@ -9,7 +9,7 @@ const {
 const {
     ipcMain
 } = require("electron");
-//const {os} = require("os")
+
 const spawn = require("child_process").spawn
 const {
     autoUpdater
@@ -166,6 +166,10 @@ ipcMain.on("disks-message", (event, arg) => {
         if (error) throw error;
         event.sender.send("disks-message", disks);
     });
+});
+
+ipcMain.on("home-dir-message", (event, arg) => {
+    event.sender.send("home-dir-message", os.homedir());
 });
 
 function startService(path, args) {

@@ -4,6 +4,7 @@ const {
     ipcRenderer
 } = electron;
 
+document.addEventListener('DOMContentLoaded', boot);
 
 function boot() {
 
@@ -20,15 +21,16 @@ function boot() {
         console.log(position);
     };
     navigator.geolocation.getCurrentPosition(geoSuccess);
-    ipcRenderer.send("starting", "elasticsearch");
-    ipcRenderer.send("disks-message");
+
+    //ipcRenderer.send("starting", "elasticsearch");
+    //ipcRenderer.send("disks-message");
 }
 
-document.addEventListener('DOMContentLoaded', boot);
+
 
 ipcRenderer.on('update-message', function(event, method) {
     alert(method);
 });
-ipcRenderer.on('disks-message', function(event, disks) {
+/*ipcRenderer.on('disks-message', function(event, disks) {
     console.log("Got disks", disks);
-});
+});*/

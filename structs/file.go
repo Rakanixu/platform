@@ -30,17 +30,17 @@ type File struct {
 	Permissions     permissions.Permissions `json:"permissions"`
 }
 
-//Desktop file
+// DesktopFile ...
 type DesktopFile struct {
-	Name     string
-	URL      string
-	Modified time.Time
-	Size     int64
-	IsDir    bool
-	Mode     os.FileMode
+	Name     string      `json:"name"`
+	URL      string      `json:"url"`
+	Modified time.Time   `json:"modified"`
+	Size     int64       `json:"size"`
+	IsDir    bool        `json:"is_dir"`
+	Mode     os.FileMode `json:"mode"`
 }
 
-//Desktop file optimized
+// Desktop file optimized
 type DesktopFileOptimised struct {
 	N string
 	U string

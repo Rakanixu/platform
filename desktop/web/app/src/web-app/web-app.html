@@ -1,5 +1,7 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 
 <link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
 <link rel="import" href="../../bower_components/paper-header-panel/paper-header-panel.html">
@@ -7,17 +9,23 @@
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
 <link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
 
 <link rel="import" href="../../bower_components/mat-list/mat-list.html">
 <link rel="import" href="../../bower_components/mat-icon/mat-icon.html">
 <link rel="import" href="../../bower_components/mat-icons/mat-icons.html">
 <link rel="import" href="../../bower_components/mat-avatar/mat-avatar.html">
+<link rel="import" href="../../bower_components/mat-button/mat-button.html">
 <link rel="import" href="../../bower_components/mat-icon-button/mat-icon-button.html">
 <link rel="import" href="../../bower_components/mat-item/mat-item.html">
 <link rel="import" href="../../bower_components/mat-breadcrumb/mat-breadcrumb.html">
 <link rel="import" href="../../bower_components/web-socket/web-socket.html">
 <link rel="import" href="../../bower_components/mat-toast/mat-toast.html">
 <link rel="import" href="../../bower_components/mat-typography/mat-typography.html">
+<link rel="import" href="../../bower_components/mat-snackbar/mat-snackbar.html">
+
+<!--<link rel="import" href="../../bower_components/json-rpc/json-rpc.html">-->
 
 
 <dom-module id="web-app">
@@ -86,22 +94,36 @@
                             <mat-breadcrumb-step label="Photos"></mat-breadcrumb-step>
                             <mat-breadcrumb-step label="Beach"></mat-breadcrumb-step>
                         </mat-breadcrumb>
-
                     </paper-toolbar>
 
-                    <!-- List -->
-                    <mat-list>
+
+                    <iron-list id="searchList" items="[[searchResults]]">
+                        <template>
+                            <mat-list>
+                                <mat-item label="[[item._source.name]]"
+                                          description="[[item._source.url]]">
+                                    <mat-avatar class="primary" icon="[[isDir(item._source.is_dir)]]"></mat-avatar>
+                                    <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
+                                </mat-item>
+                            </mat-list>
+                        </template>
+                    </iron-list>
+
+
+
+<!--                    <mat-list>
                         <mat-item label="Normal">
                             <mat-avatar class="primary" icon="mat:folder"></mat-avatar>
                         </mat-item>
                         <mat-item label="Toggleable" description="Description" toggleable>
                             <mat-avatar class="primary" icon="mat:folder" active-background="light-blue"></mat-avatar>
                         </mat-item>
+
                         <mat-item label="Image" description="Description">
                             <mat-avatar class="primary" icon-src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSrMWEFsQUah7yjvKE8SX9jptOcgpMC-CdP5MxPyJzHsRXFT03Rrw"></mat-avatar>
                             <span>Content</span>
                         </mat-item>
-                    </mat-list>
+                    </mat-list>-->
                 </paper-header-panel>
 
                 <paper-header-panel class="content-panel" main>
@@ -118,58 +140,216 @@
 
             </paper-drawer-panel>
         </paper-drawer-panel>
-        <mat-toast id="toast" label="Lorem ipsum dolor sit amet..."></mat-toast>
-        <web-socket url="ws://localhost:8082/desktop/status" auto json on-open="_onOpen" on-close="_onClose" on-message="_onMessage" on-error="_onError">
-        </web-socket>
+
+        <mat-snackbar id="snackbar"
+                      button="Scan"
+                      timeout="100000"
+                      action-color="yellow"
+                      label=""
+                      on-xp-activate="startScan"></mat-snackbar>
+
+        <web-socket url="ws://localhost:8082/desktop/status"
+                    auto
+                    json
+                    on-open="_onOpen"
+                    on-close="_onClose"
+                    on-message="_onMessage"
+                    on-error="_onError"></web-socket>
+
+        <iron-ajax id="rpcStartScan"
+                   method="POST"
+                   content-type="application/json"
+                   url="http://localhost:8082/rpc"
+                   handle-as="json"
+                   on-error="_handleError"
+                   on-response="_handleStartScan"
+                   params="{{rpcStartScanParams}}"></iron-ajax>
+
+        <iron-ajax id="rpcElastic"
+                   method="POST"
+                   content-type="application/json"
+                   url="http://localhost:8082/rpc"
+                   handle-as="json"
+                   on-error="_handleError"
+                   on-response="_handleElastic"
+                   params="{{rpcElasticParams}}"></iron-ajax>
+
     </template>
 
     <script>
-        Polymer({
+        'use strict';
 
-            is: 'web-app',
-            ready: function() {
-		var that = this
-                //POC to dectect we are on Desktop App
-                if (typeof window !== 'undefined' && window.process && window.process.type === "renderer") {
-                    console.log("We are in Electron ! Let's Go ! ")
-                    ipcRenderer.on('disks-message', function(event, disks) {
-			that.disks = disks
-                        that.$.toast.label = "Got disk " + disks[0]['description']
-			that.$.toast.show()
-                    });
-                }
-            },
-            _computeListWidth: function(isMobile) {
-                // when in mobile screen size, make the list be 100% width to cover the whole screen
-                return isMobile ? '100%' : '66%';
-            },
-            _listTap: function() {
-                this.$.mainDrawerPanel.closeDrawer();
-            },
-            _onOpen: function() {
-                console.log("Opening WS")
-            },
+        (function() {
+            var monthNames = [
+                'Jan',
+                'Feb',
+                'Mar',
+                'Apr',
+                'May',
+                'Jun',
+                'July',
+                'Aug',
+                'Sep',
+                'Oct',
+                'Nov',
+                'Dec'
+            ];
 
-            _onClose: function() {
-                console.log("Closing WS")
-
-            },
-
-            _onMessage: function(e) {
-                console.log("Message from WS ", e.detail)
-            },
-
-            _onError: function(e) {
-                console.log(e)
-            },
-
-            properties: {
-                disks: {
-                    type: Array,
-                    value: [],
+            Polymer({
+                is: 'web-app',
+                properties: {
+                    disks: {
+                        type: Array,
+                        value: [],
+                    },
+                    rpcStartScanParams: {
+                        type: Object,
+                        notify: true
+                    },
+                    rpcElasticParams: {
+                        type: Object,
+                        notify: true
+                    },
+                    rpcResponse: {
+                        type: Object,
+                        notify: true,
+                        value: undefined
+                    },
+                    homeDirPath: {
+                        type: String,
+                        notify: false
+                    },
+                    searchResults: {
+                        type: Array,
+                        notify: true
+                    }
                 },
-            },
+                ready: function() {
+                    var that = this;
+                    //POC to dectect we are on Desktop App
+                    if (typeof window !== 'undefined' && window.process && window.process.type === "renderer") {
+                        console.log("We are in Electron ! Let's Go ! ");
+                        ipcRenderer.on('disks-message', function(event, disks) {
+                            that.disks = disks;
+                            that.$.toast.label = "Got disk " + disks[0]['description'];
+                            that.$.toast.show();
+                        });
+                    }
 
-        });
+                    /*                this.$.rpc.body = this.rpcParams;
+                     this.$.rpc.generateRequest();*/
+
+                    /*ipcRenderer.send("disks-message");
+                     ipcRenderer.on('disks-message', function(event, disks) {
+                     console.log("Got disks", disks);
+                     });*/
+
+                    this.set('rpcElasticParams', {
+                        service: "go.micro.srv.desktop",
+                        method: "Elastic.Search",
+                        request: {
+                            "index": "files",
+                            "type": "file",
+                            "query": "*",
+                            "limit": 20,
+                            "offset": 0
+                        }
+                    });
+                    this.$.rpcElastic.body = this.rpcElasticParams;
+                    this.$.rpcElastic.generateRequest();
+
+                    ipcRenderer.send("home-dir-message");
+                    ipcRenderer.on("home-dir-message", this._handleHomeDir.bind(this));
+                },
+                _handleStartScan: function(e) {
+                    if (e.detail.response) {
+                        this.set('rpcElasticParams', {
+                            service: "go.micro.srv.desktop",
+                            method: "Elastic.Search",
+                            request: {
+                                "index": "files",
+                                "type": "file",
+                                "query": "*",
+                                "limit": 20,
+                                "offset": 0
+                            }
+                        });
+                        this.$.rpcElastic.body = this.rpcElasticParams;
+                        this.$.rpcElastic.generateRequest();
+                    }
+                },
+                _handleElastic: function(e) {
+                    if (e.detail.response && e.detail.response.result) {
+                        this.set('searchResults', JSON.parse(e.detail.response.result).hits.hits);
+                        this.$.searchList.fire('iron-resize');
+                    }
+                },
+                _handleHomeDir: function(e, detail) {
+                    this.set('homeDirPath', detail);
+                    this.$.snackbar.label = this.homeDirPath;
+                    this.$.snackbar.show();
+                },
+                _computeListWidth: function(isMobile) {
+                    // when in mobile screen size, make the list be 100% width to cover the whole screen
+                    return isMobile ? '100%' : '66%';
+                },
+                _listTap: function() {
+                    this.$.mainDrawerPanel.closeDrawer();
+                },
+                _onOpen: function() {
+                    console.log("Opening WS")
+                },
+
+                _onClose: function() {
+                    console.log("Closing WS")
+
+                },
+                _onMessage: function(e) {
+                    //console.log("Message from WS ", e.detail)
+                },
+                _onError: function(e) {
+                    console.log(e)
+                },
+                startScan: function(e, detail) {
+                    this.set('rpcParams', {
+                        service: "go.micro.srv.desktop",
+                        method: "Crawl.Start",
+                        request: {
+                            url: 'local://' + this.homeDirPath
+                        }
+                    });
+                    this.$.rpcStartScan.body = this.rpcParams;
+                    this.$.rpcStartScan.generateRequest();
+                },
+                bytesToSize: function(bytes) {
+                    if (typeof bytes === 'number') {
+                        return bytes;
+                        //return filesize(bytes);
+                    }
+                },
+                timestampToHumanTime: function(timestamp) {
+                    var date = new Date(timestamp);
+
+                    return (date.getUTCHours() > 9 ? date.getUTCHours() : '0' + date.getUTCHours()) +
+                      ':' +
+                      (date.getUTCMinutes() > 9 ? date.getUTCMinutes() : '0' + date.getUTCMinutes()) +
+                      ':' +
+                      (date.getUTCSeconds() > 9 ? date.getUTCSeconds() : '0' + date.getUTCSeconds()) +
+                      ' ' +
+                      monthNames[date.getMonth()] + ' ' + date.getUTCDate() + ', ' + date.getUTCFullYear();
+                },
+                isDir: function(isDir) {
+                    var icon;
+
+                    if (isDir) {
+                        icon = "mat:folder";
+                    } else {
+                        icon = "mat:file";
+                    }
+
+                    return icon;
+                }
+            });
+        }());
     </script>
 </dom-module>
