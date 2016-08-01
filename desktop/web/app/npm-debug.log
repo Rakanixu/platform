@@ -1,7 +1,7 @@
 0 info it worked if it ends with ok
 1 verbose cli [ '/usr/local/bin/node', '/usr/local/bin/npm', 'run', 'dev' ]
 2 info using npm@3.3.12
-3 info using node@v5.2.0
+3 info using node@v5.3.0
 4 verbose stack Error: missing script: dev
 4 verbose stack     at run (/usr/local/lib/node_modules/npm/lib/run-script.js:147:19)
 4 verbose stack     at /usr/local/lib/node_modules/npm/lib/run-script.js:57:5
@@ -11,12 +11,12 @@
 4 verbose stack     at then (/usr/local/lib/node_modules/npm/node_modules/read-package-json/read-json.js:113:5)
 4 verbose stack     at /usr/local/lib/node_modules/npm/node_modules/read-package-json/read-json.js:232:12
 4 verbose stack     at /usr/local/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:76:16
-4 verbose stack     at tryToString (fs.js:415:3)
-4 verbose stack     at FSReqWrap.readFileAfterClose [as oncomplete] (fs.js:402:12)
-5 verbose cwd /home/pabloaguirre/WebstormProjects/src/github.com/kazoup/platform/desktop/web/app
-6 error Linux 3.16.0-77-generic
+4 verbose stack     at tryToString (fs.js:414:3)
+4 verbose stack     at FSReqWrap.readFileAfterClose [as oncomplete] (fs.js:401:12)
+5 verbose cwd /Users/radekdymacz/src/github.com/kazoup/platform/desktop/web/app
+6 error Darwin 15.5.0
 7 error argv "/usr/local/bin/node" "/usr/local/bin/npm" "run" "dev"
-8 error node v5.2.0
+8 error node v5.3.0
 9 error npm  v3.3.12
 10 error missing script: dev
 11 error If you need help, you may report this error at:
