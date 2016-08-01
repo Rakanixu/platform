@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("../assert/assertArgument"),r=require("../tester/isNumber"),t=require("../tester/isVoid");module.exports=function(u,s,i){return e(r(s),2,"number"),e(t(i)||r(i),3,"number"),r(u)&&u>=(t(i)?0:s)&&u<=(t(i)?s:i)}}();

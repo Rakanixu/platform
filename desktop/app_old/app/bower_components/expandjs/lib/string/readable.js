@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("lodash"),r=require("../assert/assertArgument"),t=require("../tester/isString"),i=require("../tester/isVoid");module.exports=function(s){return r(i(s)||t(s),1,"string"),s?e.capitalize(e.snakeCase(e.trim(s)).replace(/_/g," ")):""}}();

@@ -1,1 +1,0 @@
-!function(){"use strict";var r=require("../operator/xor");module.exports=function(e,o){return!r(e,o)}}();

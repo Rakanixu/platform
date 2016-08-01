@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("lodash"),r=require("../assert/assertArgument"),t=require("../tester/isVoid"),i=require("../tester/isFinite");module.exports=function(s,u,n){return r(t(s)||i(s),1,"number"),r(t(u)||i(u),2,"number"),e.random(s,u,!!n)}}();

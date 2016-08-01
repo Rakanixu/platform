@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("../tester/isEvent");module.exports=function(t){return e(t)&&t.defaultPrevented}}();

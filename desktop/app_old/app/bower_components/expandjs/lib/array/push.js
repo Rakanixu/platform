@@ -1,1 +1,0 @@
-!function(){"use strict";var r=require("../assert/assertArgument"),e=require("../tester/isArray"),t=require("../tester/isFinite"),s=require("../tester/isString");module.exports=function(i,u){return r(s(i)||e(i),1,"Array or string"),e(i)?i[i.push(u)-1]:s(u)||t(u)?i+u:i}}();

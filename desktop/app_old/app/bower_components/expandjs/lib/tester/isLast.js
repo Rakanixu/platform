@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("../assert/assertArgument"),r=require("../tester/isArrayable");module.exports=function(t,s){return e(r(s),2,"Arrayable"),!!s.length&&t===s[s.length-1]}}();
