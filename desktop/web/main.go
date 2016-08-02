@@ -50,6 +50,9 @@ func main() {
 			},
 		},
 	})
+	service.Handle("/stream/", http.StripPrefix("/stream/", handler.NewPlaylistHandler(contentDir)))
+	service.Handle("/frame/", http.StripPrefix("/frame/", handler.NewFrameHandler(contentDir)))
+	service.Handle("/segments/", http.StripPrefix("/segments/", handler.NewStreamHandler(contentDir)))
 	service.Init()
 	service.Run()
 }
