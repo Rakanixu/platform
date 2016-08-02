@@ -251,5 +251,4 @@ function startServices(){
     running.push(web)
     running.push(desktop)
     running.push(desktop_web)
-
 }

@@ -13,10 +13,12 @@
     "ws-element": "mesopotamia/ws-element#develop",
     "web-socket": "*",
     "xp-elements": "ExpandJS/xp-elements#~0.10.0",
-    "expandjs": "ExpandJS/expandjs#^0.10.0",
+    "expandjs": "~0.10.0",
     "json-rpc": "njbartlett/polymer-json-rpc",
     "paper-toast": "~1.3.0",
-    "iron-list": "~1.3.5"
+    "iron-list": "~1.3.5",
+    "iron-scroll-threshold": "PolymerElements/iron-scroll-threshold#~1.0.1",
+    "paper-progress": "~1.0.9"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",

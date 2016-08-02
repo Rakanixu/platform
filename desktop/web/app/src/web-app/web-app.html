@@ -2,6 +2,7 @@
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/iron-list/iron-list.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
 <link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
 <link rel="import" href="../../bower_components/paper-header-panel/paper-header-panel.html">
@@ -11,8 +12,10 @@
 <link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
 
 <link rel="import" href="../../bower_components/mat-list/mat-list.html">
+<link rel="import" href="../../bower_components/mat-text-field/mat-text-field.html">
 <link rel="import" href="../../bower_components/mat-icon/mat-icon.html">
 <link rel="import" href="../../bower_components/mat-icons/mat-icons.html">
 <link rel="import" href="../../bower_components/mat-avatar/mat-avatar.html">
@@ -25,22 +28,34 @@
 <link rel="import" href="../../bower_components/mat-typography/mat-typography.html">
 <link rel="import" href="../../bower_components/mat-snackbar/mat-snackbar.html">
 
-<!--<link rel="import" href="../../bower_components/json-rpc/json-rpc.html">-->
-
-
 <dom-module id="web-app">
     <template>
         <style>
             :host {
                 display: block;
             }
-
+mat-list {
+    max-width: 240px;
+    height: 240px;
+}
             paper-toolbar {
                 --paper-toolbar-background: var(--primary-color);
             }
 
+            paper-progress {
+                height: 5px;
+                --paper-progress-active-color: #fff;
+                --paper-progress-secondary-color: var(--primary-color-dark);
+                --paper-progress-container-color: var(--primary-color);
+            }
+
             .nav {
                 border-right: 1px solid #ccc;
+            }
+
+            .listContainer {
+                height: 100%;
+                overflow: auto;
             }
 
             .list-panel {
@@ -50,8 +65,7 @@
             .list-panel {
                 --paper-header-panel-standard-container: {
                     border-right: 1px solid #ccc;
-                }
-                ;
+                };
             }
 
             paper-toolbar {
@@ -77,57 +91,62 @@
                 height: 3000px;
             }
         </style>
+
         <paper-drawer-panel id="navDrawerPanel" responsive-width="1280px">
+            <!-- Nav Content -->
             <div class="nav" drawer>
-                <!-- Nav Content -->
+
             </div>
 
-            <paper-drawer-panel id="mainDrawerPanel" class="main-drawer-panel" main responsive-width="600px" drawer-width="[[_computeListWidth(_isMobile)]]" drawer-toggle-attribute="list-toggle" narrow="{{_isMobile}}">
-
-                <paper-header-panel class="list-panel" drawer>
+            <paper-drawer-panel id="mainDrawerPanel"
+                                class="main-drawer-panel"
+                                responsive-width="600px"
+                                drawer-width="[[_computeListWidth(_isMobile)]]"
+                                drawer-toggle-attribute="list-toggle"
+                                narrow="{{_isMobile}}"
+                                main>
+                <paper-header-panel id="mainPaperHeaderPanel" class="list-panel" drawer>
 
                     <!-- List Toolbar -->
                     <paper-toolbar class="medium-tall">
                         <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
+
+                        <div class="flex" hidden$="[[searching]]">Kazoup Search</div>
+                        <mat-icon-button icon="mat:search" color="white" on-tap="toggleSearch" hidden$="[[searching]]"></mat-icon-button>
+
+                        <mat-icon-button id="back" icon="mat:arrow-back" color="white" hidden$="[[!searching]]" on-tap="toggleSearch"></mat-icon-button>
+                        <mat-text-field id="search" label="Search files"  on-keyup="searchAsYouType" hidden$="[[!searching]]"></mat-text-field>
+                        <mat-icon-button id="reset" icon="mat:clear" on-xp-activate="resetSearch" color="white" hidden$="[[!searching]]"></mat-icon-button>
+
                         <mat-breadcrumb class="extended bottom title" shift>
                             <mat-breadcrumb-step label="My files"></mat-breadcrumb-step>
                             <mat-breadcrumb-step label="Photos"></mat-breadcrumb-step>
                             <mat-breadcrumb-step label="Beach"></mat-breadcrumb-step>
                         </mat-breadcrumb>
+                        <paper-progress id="progressBar"
+                                        class="middle fit"
+                                        hidden$="[[!loading]]"
+                                        indeterminate></paper-progress>
                     </paper-toolbar>
 
+                    <!-- Search results -->
+                    <div id="listContainer" class="listContainer" on-scroll="_handleScroll">
+                        <iron-list id="searchList" items="[[searchResults]]" scroll-target="listContainer" grid="true">
+                            <template>
+                                <mat-list>
+                                    <mat-item label="[[item._source.name]]"
+                                              description="[[item._source.url]]">
+                                        <mat-avatar class="primary" icon="[[isDir(item._source.is_dir)]]"></mat-avatar>
+                                        <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
+                                    </mat-item>
+                                </mat-list>
+                            </template>
+                        </iron-list>
+                    </div>
 
-                    <iron-list id="searchList" items="[[searchResults]]">
-                        <template>
-                            <mat-list>
-                                <mat-item label="[[item._source.name]]"
-                                          description="[[item._source.url]]">
-                                    <mat-avatar class="primary" icon="[[isDir(item._source.is_dir)]]"></mat-avatar>
-                                    <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
-                                </mat-item>
-                            </mat-list>
-                        </template>
-                    </iron-list>
-
-
-
-<!--                    <mat-list>
-                        <mat-item label="Normal">
-                            <mat-avatar class="primary" icon="mat:folder"></mat-avatar>
-                        </mat-item>
-                        <mat-item label="Toggleable" description="Description" toggleable>
-                            <mat-avatar class="primary" icon="mat:folder" active-background="light-blue"></mat-avatar>
-                        </mat-item>
-
-                        <mat-item label="Image" description="Description">
-                            <mat-avatar class="primary" icon-src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSrMWEFsQUah7yjvKE8SX9jptOcgpMC-CdP5MxPyJzHsRXFT03Rrw"></mat-avatar>
-                            <span>Content</span>
-                        </mat-item>
-                    </mat-list>-->
                 </paper-header-panel>
 
                 <paper-header-panel class="content-panel" main>
-
                     <!-- Main Toolbar -->
                     <paper-toolbar>
                         <paper-icon-button icon="arrow-back" list-toggle></paper-icon-button>
@@ -135,7 +154,6 @@
 
                     <!-- Main Content -->
                     <div class="content"></div>
-
                 </paper-header-panel>
 
             </paper-drawer-panel>
@@ -221,7 +239,25 @@
                     },
                     searchResults: {
                         type: Array,
-                        notify: true
+                        notify: true,
+                        value: function() {
+                            return [];
+                        }
+                    },
+                    searching: {
+                        type: Boolean,
+                        notify: true,
+                        value: false
+                    },
+                    loading: {
+                        type: Boolean,
+                        notify: true,
+                        value: false
+                    },
+                    q: {
+                        type: String,
+                        notify: true,
+                        value: ""
                     }
                 },
                 ready: function() {
@@ -244,45 +280,51 @@
                      console.log("Got disks", disks);
                      });*/
 
-                    this.set('rpcElasticParams', {
-                        service: "go.micro.srv.desktop",
-                        method: "Elastic.Search",
-                        request: {
+                    this.search({
+                        "index": "files",
+                        "type": "file",
+                        "query": this.q,
+                        "limit": 20,
+                        "offset": 0
+                    });
+
+                    ipcRenderer.send("home-dir-message");
+                    ipcRenderer.on("home-dir-message", this._handleHomeDir.bind(this));
+                },
+                _handleScroll: function(e) {
+                    if (!this.$.rpcElastic.loading) {
+                        if (this.$.listContainer.clientHeight + this.$.listContainer.scrollTop >
+                          (this.$.searchList._virtualCount * this.$.searchList._physicalAverage) - 300) {
+
+                            this.rpcElasticParams.request.offset += 20;
+                            this.search(this.rpcElasticParams.request);
+                        }
+                    }
+                },
+                _handleStartScan: function(e) {
+                    if (e.detail.response) {
+                        this.search({
                             "index": "files",
                             "type": "file",
                             "query": "*",
                             "limit": 20,
                             "offset": 0
-                        }
-                    });
-                    this.$.rpcElastic.body = this.rpcElasticParams;
-                    this.$.rpcElastic.generateRequest();
-
-                    ipcRenderer.send("home-dir-message");
-                    ipcRenderer.on("home-dir-message", this._handleHomeDir.bind(this));
-                },
-                _handleStartScan: function(e) {
-                    if (e.detail.response) {
-                        this.set('rpcElasticParams', {
-                            service: "go.micro.srv.desktop",
-                            method: "Elastic.Search",
-                            request: {
-                                "index": "files",
-                                "type": "file",
-                                "query": "*",
-                                "limit": 20,
-                                "offset": 0
-                            }
                         });
-                        this.$.rpcElastic.body = this.rpcElasticParams;
-                        this.$.rpcElastic.generateRequest();
                     }
                 },
                 _handleElastic: function(e) {
+                    var result;
+
                     if (e.detail.response && e.detail.response.result) {
-                        this.set('searchResults', JSON.parse(e.detail.response.result).hits.hits);
+                        result = JSON.parse(e.detail.response.result);
+                        console.log(result.hits.total)
+
+                        _.forEach(result.hits.hits, function(result) {
+                            this.push('searchResults', result);
+                        }, this);
                         this.$.searchList.fire('iron-resize');
                     }
+                    this.set('loading', false);
                 },
                 _handleHomeDir: function(e, detail) {
                     this.set('homeDirPath', detail);
@@ -299,16 +341,62 @@
                 _onOpen: function() {
                     console.log("Opening WS")
                 },
-
                 _onClose: function() {
                     console.log("Closing WS")
-
                 },
                 _onMessage: function(e) {
                     //console.log("Message from WS ", e.detail)
                 },
                 _onError: function(e) {
                     console.log(e)
+                },
+                search: function(request) {
+                    this.set('loading', true);
+                    this.set('rpcElasticParams', {
+                        service: "go.micro.srv.desktop",
+                        method: "Elastic.Search",
+                        request: request
+                    });
+                    this.$.rpcElastic.body = this.rpcElasticParams;
+                    this.$.rpcElastic.generateRequest();
+                },
+                searchAsYouType: function(e, detail) {
+                    this.set('q', this.$.search.input.value);
+
+                    if (this.q.length > 2 || this.q.length === 0) {
+                        clearTimeout(this.searchAsYouTypeTimeout);
+                        this.searchAsYouTypeTimeout = setTimeout(function() {
+                            this.set('searchResults', []);
+                            this.$.searchList.fire('iron-resize');
+                            this.rpcElasticParams.request = {
+                                "index": "files",
+                                "type": "file",
+                                "query": this.q,
+                                "limit": 20,
+                                "offset": 0
+                            };
+                            this.search(this.rpcElasticParams.request);
+                        }.bind(this), 450);
+                    }
+                },
+                resetSearch: function(e, detail) {
+                    this.set('q', "");
+                    this.rpcElasticParams.request = {
+                        "index": "files",
+                        "type": "file",
+                        "query": this.q,
+                        "limit": 20,
+                        "offset": 0
+                    };
+                    this.set('searchResults', []);
+                    this.$.searchList.fire('iron-resize');
+                    this.search(this.rpcElasticParams.request);
+                    this.toggleSearch();
+                },
+                toggleSearch: function(e, detail) {
+                    this.$.search.input.value = this.q;
+                    this.$.search._inputHandler();
+                    this.set('searching', !this.searching);
                 },
                 startScan: function(e, detail) {
                     this.set('rpcParams', {
