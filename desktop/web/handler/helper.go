@@ -24,6 +24,7 @@ func ServeCommand(cmd *exec.Cmd, w io.Writer) error {
 		return err
 	}
 	_, err = io.Copy(w, stdout)
+
 	if err != nil {
 		log.Printf("Error copying data to client: %v", err)
 		// Ask the process to exit
