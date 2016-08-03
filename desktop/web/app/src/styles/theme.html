@@ -8,17 +8,18 @@
  * Compatible with Polymer 1.0
  */
 
-@import url("https://fonts.googleapis.com/css?family=Arimo:400,700");
+@import url("https://fonts.googleapis.com/css?family=Roboto+Mono:400,700");
+@import url("https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic");
 html { -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; font-size: 16px; }
 
-html, body { margin: 0px; padding: 0px; min-height: 100%; color: #424540; background-color: #ffffff; font-family: 'Arimo', sans-serif; font-weight: 400; }
+html, body { margin: 0px; padding: 0px; min-height: 100%; color: #424540; background-color: #ffffff; font-family: 'Roboto', sans-serif; font-weight: 400; }
 
 section { padding: 40px 0px; }
 section[hero] { background-color: #f5fcff; }
 
 h1, h2, h3, h4, h5, h6 { font-weight: 400; margin: 0px; padding: 0px; line-height: 1em; }
 
-h1, h3, h5 { font-family: 'Arimo', sans-serif; }
+h1, h3, h5 { font-family: 'Roboto', sans-serif; }
 
 h1 { font-size: 50px; margin: 30px 0px; }
 
@@ -46,7 +47,7 @@ a:hover { color: #5ca1d2; text-decoration: underline; }
   --paper-input-container-focus-color: #3ea1e6;
   --paper-input-container-invalid-color: #db5656;
   --paper-input-container-input-color: #a8aca5;
-  --paper-menu-background-color: #f5fcff;
+  --paper-menu-background-color: #fff;
   --paper-menu-color: #424540;
   --paper-menu-disabled-color: #c9c9c9;
   --paper-progress-active-color: #3ea1e6;
@@ -73,27 +74,30 @@ a:hover { color: #5ca1d2; text-decoration: underline; }
   --paper-toggle-button-unchecked-ink-color: white;
   --paper-toolbar-background: #21a9f5;
   --paper-toolbar-color: #ffffff;
+  --iron-image-width: 100%;
+  --iron-image-height: auto;
   --paper-drawer-panel-main-container: {
     background-color: #fafafa;
-  }
+  };
   --paper-drawer-panel-right-drawer-container: {
     background-color: #ececec;
-  }
-
-/*  --mat-focused-color: red;
-  --mat-font-subhead: green;*/
+  };
 
   --dark-primary: #1d9ade;
   --default-primary: #21a9f5;
   --light-primary:      #BBDEFB;
   --text-primary:       #FFFFFF;
   --accent:             #FF5722;
-  --primary-background: #fafafa;
+  --primary-background-color: #fafafa;
   --dark-background: #ececec;
   --primary-text: #212121;
   --secondary-text:     #757575;
   --disabled-text:      #BDBDBD;
   --divider:            #BDBDBD;
+}
+
+html /deep/ ::-webkit-scrollbar {
+  display: none;
 }
 
 paper-toolbar a, paper-toolbar a:hover, paper-toolbar a:active, paper-toolbar a:visited, paper-toolbar a:focus { color: #ffffff; }
@@ -129,7 +133,7 @@ paper-icon-button.error:hover, paper-icon-button.btn-error:hover, paper-icon-but
 
 paper-checkbox #checkmark.paper-checkbox, paper-checkbox /deep/, paper-checkbox::shadow #checkmark.paper-checkbox { border-color: #fff !important; }
 
-paper-dialog { color: #424540; background-color: #ffffff; font-family: 'Arimo', sans-serif; font-weight: 400; }
+paper-dialog { color: #424540; background-color: #ffffff; font-family: 'Roboto', sans-serif; font-weight: 400; }
 paper-dialog h1, paper-dialog h2, paper-dialog h3, paper-dialog h4, paper-dialog h5, paper-dialog h6 { overflow: visible; padding: 0 1em; text-align: center; }
 
 paper-fab { --text-primary-color: #ffffff; }
@@ -143,9 +147,8 @@ paper-fab.warning, paper-fab.btn-warning, paper-fab[warning] { background-color:
 paper-fab.error, paper-fab.btn-error, paper-fab[error] { background-color: #db5656; color: #fff; --paper-fab-keyboard-focus-background: #921f1f; }
 paper-fab[disabled] { color: #7E8D9D !important; background: #c9c9c9 !important; }
 
-section.hero paper-menu, section[hero] paper-menu { --paper-menu-background-color: #f5fcff; }
+section.hero paper-menu, section[hero] paper-menu { --paper-menu-background-color: #fff; }
 
 paper-tabs { background-color: #7ec0ee; color: #ffffff; }
-mat-text-field { color: white;}
 
 </style>

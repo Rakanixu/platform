@@ -1,12 +1,18 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/av-icons.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
 <link rel="import" href="../../bower_components/iron-list/iron-list.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
 <link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
 <link rel="import" href="../../bower_components/paper-header-panel/paper-header-panel.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
 <link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
@@ -22,6 +28,7 @@
 <link rel="import" href="../../bower_components/mat-button/mat-button.html">
 <link rel="import" href="../../bower_components/mat-icon-button/mat-icon-button.html">
 <link rel="import" href="../../bower_components/mat-item/mat-item.html">
+<link rel="import" href="../../bower_components/mat-divider/mat-divider.html">
 <link rel="import" href="../../bower_components/mat-breadcrumb/mat-breadcrumb.html">
 <link rel="import" href="../../bower_components/web-socket/web-socket.html">
 <link rel="import" href="../../bower_components/mat-toast/mat-toast.html">
@@ -29,11 +36,12 @@
 <link rel="import" href="../../bower_components/mat-snackbar/mat-snackbar.html">
 <link rel="import" href="../../bower_components/mat-ink/mat-ink.html">
 
+<link rel="import" href="../../src/behaviors/util-behavior.html">
+
 <dom-module id="web-app">
     <template>
         <style include="iron-flex iron-flex-alignment"></style>
         <style>
-
             :host {
                 display: block;
             }
@@ -45,80 +53,71 @@
             paper-toolbar mat-text-field {
                 margin-top: 16px;
             }
-/*
-            paper-progress {
-                height: 5px;
-                --paper-progress-active-color: #fff;
-                --paper-progress-secondary-color: var(--primary-color-dark);
-                --paper-progress-container-color: var(--primary-color);
-            }
-
-            .nav {
-                border-right: 1px solid #ccc;
-            }
-
-            .listContainer {
-                height: 100%;
-                overflow: auto;
-            }
-
-            .list-panel {
-                background-color: #fafafa;
-            }
-
-            .list-panel {
-                --paper-header-panel-standard-container: {
-                    border-right: 1px solid #ccc;
-                };
-            }
-
-            paper-toolbar {
-                background-color: #42A5F5;
-                background-color: var(--primary-color-dark);
-            }
-
-            .list {
-                padding: 0;
-            }
-
-            .list paper-item {
-                height: 80px;
-                border-bottom: 1px solid #dedede;
-                background-color: #fafafa;
-            }
-
-            .content {
-                height: 3000px;
-            }*/
         </style>
 
         <paper-drawer-panel id="navDrawerPanel" responsive-width="1280px">
             <!-- Nav Content -->
             <div class="nav" drawer>
-fgdgfdfg
+                <paper-toolbar class="medium-tall left-menu">
+                    <mat-avatar class="primary" icon=""></mat-avatar>
+                </paper-toolbar>
+
+                <div class="content">
+                    <paper-menu>
+                        <paper-icon-item>
+                            <iron-icon icon="icons:home" item-icon></iron-icon>All
+                        </paper-icon-item>
+                        <paper-icon-item>
+                            <iron-icon icon="editor:insert-drive-file" item-icon></iron-icon>Documents
+                        </paper-icon-item>
+                        <paper-icon-item>
+                            <iron-icon icon="av:movie" item-icon></iron-icon>Movies
+                        </paper-icon-item>
+                        <paper-icon-item>
+                            <iron-icon icon="image:camera-alt" item-icon></iron-icon>Pictures
+                        </paper-icon-item>
+                        <paper-icon-item>
+                            <iron-icon icon="image:audiotrack" item-icon></iron-icon>Audio
+                        </paper-icon-item>
+                    </paper-menu>
+
+                    <mat-divider></mat-divider>
+
+                    <paper-menu>
+                        <paper-icon-item>
+                            <iron-icon icon="icons:settings" item-icon></iron-icon>Settings
+                        </paper-icon-item>
+                        <paper-icon-item>
+                            <iron-icon icon="icons:feedback" item-icon></iron-icon>Feedback
+                        </paper-icon-item>
+                    </paper-menu>
+
+                </div>
             </div>
 
             <paper-drawer-panel id="mainDrawerPanel"
-                                class="main-drawer-panel"
-                                responsive-width="1280px"
+                                responsive-width="960px"
                                 drawer-width="[[_computeListWidth(_isMobile)]]"
                                 narrow="{{_isMobile}}"
                                 force-narrow="[[!itemSelected]]"
+                                disable-swipe="true"
                                 right-drawer
                                 main>
                 <paper-header-panel id="mainPaperHeaderPanel" class="list-panel main" main>
 
                     <!-- List Toolbar -->
-                    <paper-toolbar class="medium-tall" >
-                        <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
+                    <paper-toolbar class="medium-tall">
+                        <paper-icon-button icon="menu" on-tap="openMenu" hidden$="[[mediaQueryLarge]]"></paper-icon-button>
 
-                        <div class="title flex" hidden$="[[searching]]">Kazoup Search</div>
-                        <mat-icon-button icon="mat:search" color="white" on-tap="toggleSearch" hidden$="[[searching]]"></mat-icon-button>
+                        <div class="flex horizontal layout" on-tap="toggleSearch" hidden$="[[searching]]">
+                            <div class="title flex">Kazoup Search</div>
+                            <mat-icon-button icon="mat:search" color="white"></mat-icon-button>
+                        </div>
 
                         <mat-text-field  id="search" class="flex" label="Search files" on-keyup="searchAsYouType" hidden$="[[!searching]]"></mat-text-field>
                         <mat-icon-button id="reset" icon="mat:clear" on-xp-activate="resetSearch" color="white" hidden$="[[!searching]]"></mat-icon-button>
 
-                        <mat-breadcrumb foreground="light" class="extended bottom title" shift>
+                        <mat-breadcrumb class="extended bottom title light" shift>
                             <mat-breadcrumb-step label="My files"></mat-breadcrumb-step>
                             <mat-breadcrumb-step label="Photos"></mat-breadcrumb-step>
                             <mat-breadcrumb-step label="Beach"></mat-breadcrumb-step>
@@ -134,13 +133,12 @@ fgdgfdfg
                     <div id="listContainer" class="listContainer" on-scroll="_handleScroll">
                         <iron-list id="searchList" items="[[searchResults]]" scroll-target="listContainer">
                             <template>
-                                <mat-list on-tap="openDetails">
-                                    <mat-item label="[[item._source.name]]"
-                                              description="[[item._source.url]]">
-                                        <mat-avatar class="primary" icon="[[isDir(item._source.is_dir)]]"></mat-avatar>
-                                        <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
-                                    </mat-item>
-                                </mat-list>
+                                <mat-item on-tap="openDetails"
+                                          label="[[item._source.name]]"
+                                          description="[[item._source.url]]">
+                                    <mat-avatar class="primary" icon="[[isDir(item._source.is_dir)]]"></mat-avatar>
+                                    <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
+                                </mat-item>
                             </template>
                         </iron-list>
                     </div>
@@ -148,13 +146,23 @@ fgdgfdfg
                 </paper-header-panel>
 
                 <paper-header-panel class="content-panel drawer" drawer>
-                    <!-- Main Toolbar -->
+                    <!-- Right Toolbar -->
                     <paper-toolbar  class="medium-tall">
-                        <paper-icon-button icon="arrow-back" on-tap="closeDetails"></paper-icon-button>
+                        <paper-icon-button icon="icons:close" on-tap="closeDetails" tabindex="-1"></paper-icon-button>
+
+                        <div class="bottom">
+                            <span>[[item._source.name]]</span>
+                        </div>
                     </paper-toolbar>
 
-                    <!-- Main Content -->
-                    <div class="content">asdfasdf</div>
+                    <!-- Right Content -->
+                    <div class="content">
+                        <iron-image src="http://www.freedigitalphotos.net/images/img/homepage/87357.jpg"></iron-image>
+
+                        <mat-item label="[[item._source.name]]"
+                                  description="[[item._source.url]]"
+                                  tabindex="-1"></mat-item>
+                    </div>
                 </paper-header-panel>
 
             </paper-drawer-panel>
@@ -193,29 +201,26 @@ fgdgfdfg
                    on-response="_handleElastic"
                    params="{{rpcElasticParams}}"></iron-ajax>
 
+        <iron-media-query query="(min-width: 601px)"
+                          query-matches="{{mediaQuerySmall}}"></iron-media-query>
+
+        <iron-media-query query="(min-width: 961px)"
+                          query-matches="{{mediaQueryMedium}}"></iron-media-query>
+
+        <iron-media-query query="(min-width: 1281px)"
+                          query-matches="{{mediaQueryLarge}}"></iron-media-query>
+
     </template>
 
     <script>
         'use strict';
 
         (function() {
-            var monthNames = [
-                'Jan',
-                'Feb',
-                'Mar',
-                'Apr',
-                'May',
-                'Jun',
-                'July',
-                'Aug',
-                'Sep',
-                'Oct',
-                'Nov',
-                'Dec'
-            ];
-
             Polymer({
                 is: 'web-app',
+                behaviors: [
+                    Polymer.UtilBehaviorImp
+                ],
                 properties: {
                     disks: {
                         type: Array,
@@ -237,6 +242,13 @@ fgdgfdfg
                     homeDirPath: {
                         type: String,
                         notify: false
+                    },
+                    item: {
+                        type: Object,
+                        notify: true,
+                        value: function() {
+                            return {};
+                        }
                     },
                     itemSelected: {
                         type: Boolean,
@@ -339,7 +351,7 @@ fgdgfdfg
                 },
                 _computeListWidth: function(isMobile) {
                     // when in mobile screen size, make the list be 100% width to cover the whole screen
-                    return isMobile ? '100%' : '66%';
+                    return isMobile ? '100%' : '35%';
                 },
                 _listTap: function() {
                     this.$.mainDrawerPanel.closeDrawer();
@@ -372,6 +384,7 @@ fgdgfdfg
                     if (this.q.length > 2 || this.q.length === 0) {
                         clearTimeout(this.searchAsYouTypeTimeout);
                         this.searchAsYouTypeTimeout = setTimeout(function() {
+                            this.set('itemSelected', false);
                             this.set('searchResults', []);
                             this.$.searchList.fire('iron-resize');
                             this.rpcElasticParams.request = {
@@ -394,6 +407,7 @@ fgdgfdfg
                         "limit": 20,
                         "offset": 0
                     };
+                    this.set('itemSelected', false);
                     this.set('searchResults', []);
                     this.$.searchList.fire('iron-resize');
                     this.search(this.rpcElasticParams.request);
@@ -402,6 +416,10 @@ fgdgfdfg
                 toggleSearch: function(e, detail) {
                     this.$.search.input.value = this.q;
                     this.$.search._inputHandler();
+
+                    this.async(function() {
+                        this.$.search.focus();
+                    });
                     this.set('searching', !this.searching);
                 },
                 startScan: function(e, detail) {
@@ -416,40 +434,13 @@ fgdgfdfg
                     this.$.rpcStartScan.generateRequest();
                 },
                 openDetails: function(e, detail) {
+                    this.set('item', e.model.__data__.item);
                     this.set('itemSelected', true);
                     this.$.mainDrawerPanel.openDrawer();
                 },
                 closeDetails: function(e, detail) {
                     this.set('itemSelected', false);
                     this.$.mainDrawerPanel.closeDrawer();
-                },
-                bytesToSize: function(bytes) {
-                    if (typeof bytes === 'number') {
-                        return bytes;
-                        //return filesize(bytes);
-                    }
-                },
-                timestampToHumanTime: function(timestamp) {
-                    var date = new Date(timestamp);
-
-                    return (date.getUTCHours() > 9 ? date.getUTCHours() : '0' + date.getUTCHours()) +
-                      ':' +
-                      (date.getUTCMinutes() > 9 ? date.getUTCMinutes() : '0' + date.getUTCMinutes()) +
-                      ':' +
-                      (date.getUTCSeconds() > 9 ? date.getUTCSeconds() : '0' + date.getUTCSeconds()) +
-                      ' ' +
-                      monthNames[date.getMonth()] + ' ' + date.getUTCDate() + ', ' + date.getUTCFullYear();
-                },
-                isDir: function(isDir) {
-                    var icon;
-
-                    if (isDir) {
-                        icon = "mat:folder";
-                    } else {
-                        icon = "mat:file";
-                    }
-
-                    return icon;
                 }
             });
         }());

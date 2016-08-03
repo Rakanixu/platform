@@ -1,0 +1,9 @@
+.title {
+    margin-top: auto;
+    margin-bottom: auto;
+    cursor: pointer;
+}
+
+.left-menu {
+    background-image: url("https://lh3.googleusercontent.com/proxy/xm_1j45fU-DIHPPxZ7JUrkNcrP3Vt4g89c6EmJs9J-xRurCVcaDRka0Ds39IKpRYM3kKo36aSEjUtI9VMzODjpjA-LNQJ9nAPKRsk5_4AiYQkksM_1BYK90ijg=w506-h284"), radial-gradient(#ffb837 , #f13c0d );
+}

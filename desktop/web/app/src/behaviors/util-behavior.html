@@ -1,0 +1,47 @@
+
+<script>
+  'use strict';
+  (function() {
+    var monthNames = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'July',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
+
+    Polymer.UtilBehaviorImp = {
+      openMenu: function() {
+        this.$.navDrawerPanel.openDrawer()
+      },
+      bytesToSize: function(bytes) {
+        if (typeof bytes === 'number') {
+          return window.filesize(bytes);
+        }
+      },
+      timestampToHumanTime: function(timestamp) {
+        var date = new Date(timestamp);
+
+        return monthNames[date.getMonth()] + ' ' + date.getUTCDate() + ', ' + date.getUTCFullYear();
+      },
+      isDir: function(isDir) {
+        var icon;
+
+        if (isDir) {
+          icon = "mat:folder";
+        } else {
+          icon = "mat:file";
+        }
+
+        return icon;
+      }
+    };
+  }());
+</script>
