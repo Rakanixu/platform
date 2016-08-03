@@ -27,21 +27,25 @@
 <link rel="import" href="../../bower_components/mat-toast/mat-toast.html">
 <link rel="import" href="../../bower_components/mat-typography/mat-typography.html">
 <link rel="import" href="../../bower_components/mat-snackbar/mat-snackbar.html">
+<link rel="import" href="../../bower_components/mat-ink/mat-ink.html">
 
 <dom-module id="web-app">
     <template>
+        <style include="iron-flex iron-flex-alignment"></style>
         <style>
+
             :host {
                 display: block;
             }
-mat-list {
-    max-width: 240px;
-    height: 240px;
-}
-            paper-toolbar {
-                --paper-toolbar-background: var(--primary-color);
+
+            paper-header-panel[drawer] paper-toolbar {
+                --paper-toolbar-background: var(--dark-primary);
             }
 
+            paper-toolbar mat-text-field {
+                margin-top: 16px;
+            }
+/*
             paper-progress {
                 height: 5px;
                 --paper-progress-active-color: #fff;
@@ -83,46 +87,43 @@ mat-list {
                 background-color: #fafafa;
             }
 
-            .main-drawer-panel:not([narrow]) [list-toggle] {
-                display: none;
-            }
-
             .content {
                 height: 3000px;
-            }
+            }*/
         </style>
 
         <paper-drawer-panel id="navDrawerPanel" responsive-width="1280px">
             <!-- Nav Content -->
             <div class="nav" drawer>
-
+fgdgfdfg
             </div>
 
             <paper-drawer-panel id="mainDrawerPanel"
                                 class="main-drawer-panel"
-                                responsive-width="600px"
+                                responsive-width="1280px"
                                 drawer-width="[[_computeListWidth(_isMobile)]]"
-                                drawer-toggle-attribute="list-toggle"
                                 narrow="{{_isMobile}}"
+                                force-narrow="[[!itemSelected]]"
+                                right-drawer
                                 main>
-                <paper-header-panel id="mainPaperHeaderPanel" class="list-panel" drawer>
+                <paper-header-panel id="mainPaperHeaderPanel" class="list-panel main" main>
 
                     <!-- List Toolbar -->
-                    <paper-toolbar class="medium-tall">
+                    <paper-toolbar class="medium-tall" >
                         <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
 
-                        <div class="flex" hidden$="[[searching]]">Kazoup Search</div>
+                        <div class="title flex" hidden$="[[searching]]">Kazoup Search</div>
                         <mat-icon-button icon="mat:search" color="white" on-tap="toggleSearch" hidden$="[[searching]]"></mat-icon-button>
 
-                        <mat-icon-button id="back" icon="mat:arrow-back" color="white" hidden$="[[!searching]]" on-tap="toggleSearch"></mat-icon-button>
-                        <mat-text-field id="search" label="Search files"  on-keyup="searchAsYouType" hidden$="[[!searching]]"></mat-text-field>
+                        <mat-text-field  id="search" class="flex" label="Search files" on-keyup="searchAsYouType" hidden$="[[!searching]]"></mat-text-field>
                         <mat-icon-button id="reset" icon="mat:clear" on-xp-activate="resetSearch" color="white" hidden$="[[!searching]]"></mat-icon-button>
 
-                        <mat-breadcrumb class="extended bottom title" shift>
+                        <mat-breadcrumb foreground="light" class="extended bottom title" shift>
                             <mat-breadcrumb-step label="My files"></mat-breadcrumb-step>
                             <mat-breadcrumb-step label="Photos"></mat-breadcrumb-step>
                             <mat-breadcrumb-step label="Beach"></mat-breadcrumb-step>
                         </mat-breadcrumb>
+
                         <paper-progress id="progressBar"
                                         class="middle fit"
                                         hidden$="[[!loading]]"
@@ -131,9 +132,9 @@ mat-list {
 
                     <!-- Search results -->
                     <div id="listContainer" class="listContainer" on-scroll="_handleScroll">
-                        <iron-list id="searchList" items="[[searchResults]]" scroll-target="listContainer" grid="true">
+                        <iron-list id="searchList" items="[[searchResults]]" scroll-target="listContainer">
                             <template>
-                                <mat-list>
+                                <mat-list on-tap="openDetails">
                                     <mat-item label="[[item._source.name]]"
                                               description="[[item._source.url]]">
                                         <mat-avatar class="primary" icon="[[isDir(item._source.is_dir)]]"></mat-avatar>
@@ -146,14 +147,14 @@ mat-list {
 
                 </paper-header-panel>
 
-                <paper-header-panel class="content-panel" main>
+                <paper-header-panel class="content-panel drawer" drawer>
                     <!-- Main Toolbar -->
-                    <paper-toolbar>
-                        <paper-icon-button icon="arrow-back" list-toggle></paper-icon-button>
+                    <paper-toolbar  class="medium-tall">
+                        <paper-icon-button icon="arrow-back" on-tap="closeDetails"></paper-icon-button>
                     </paper-toolbar>
 
                     <!-- Main Content -->
-                    <div class="content"></div>
+                    <div class="content">asdfasdf</div>
                 </paper-header-panel>
 
             </paper-drawer-panel>
@@ -236,6 +237,11 @@ mat-list {
                     homeDirPath: {
                         type: String,
                         notify: false
+                    },
+                    itemSelected: {
+                        type: Boolean,
+                        notify: true,
+                        value: false
                     },
                     searchResults: {
                         type: Array,
@@ -408,6 +414,14 @@ mat-list {
                     });
                     this.$.rpcStartScan.body = this.rpcParams;
                     this.$.rpcStartScan.generateRequest();
+                },
+                openDetails: function(e, detail) {
+                    this.set('itemSelected', true);
+                    this.$.mainDrawerPanel.openDrawer();
+                },
+                closeDetails: function(e, detail) {
+                    this.set('itemSelected', false);
+                    this.$.mainDrawerPanel.closeDrawer();
                 },
                 bytesToSize: function(bytes) {
                     if (typeof bytes === 'number') {
