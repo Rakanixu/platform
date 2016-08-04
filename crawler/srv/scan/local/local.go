@@ -3,18 +3,15 @@ package local
 import (
 	"encoding/json"
 	"errors"
+	scan "github.com/kazoup/platform/crawler/srv/scan"
+	"github.com/kazoup/platform/structs"
+	"github.com/micro/go-micro/client"
+	example "github.com/micro/micro/examples/template/srv/proto/example"
+	"golang.org/x/net/context"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
-
-	"golang.org/x/net/context"
-
-	"github.com/micro/go-micro/client"
-
-	scan "github.com/kazoup/platform/crawler/srv/scan"
-	"github.com/kazoup/platform/structs"
-	example "github.com/micro/micro/examples/template/srv/proto/example"
 )
 
 // Local ...
@@ -81,6 +78,7 @@ func (fs *Local) walkHandler() filepath.WalkFunc {
 			if err != nil {
 				return errors.New("Error marshaling data")
 			}
+
 			//time.Sleep(1 * time.Millisecond)
 			msg := &example.Message{
 				Say: string(b),

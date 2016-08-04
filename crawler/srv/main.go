@@ -1,9 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
-	"log"
-
 	"github.com/kazoup/platform/crawler/srv/handler"
 	proto "github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/kazoup/platform/crawler/srv/subscriber"
@@ -11,18 +8,13 @@ import (
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/server"
 	_ "github.com/micro/go-plugins/broker/nats"
+	"log"
 )
 
 const topic string = "go.micro.topic.scan"
 
 func main() {
-	// Load categories JSON map. categories_map.json
-	mapping, err := ioutil.ReadFile("categories_map.json")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if err := categories.SetMap(mapping); err != nil {
+	if err := categories.SetMap(); err != nil {
 		log.Fatal(err)
 	}
 

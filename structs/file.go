@@ -38,6 +38,7 @@ type DesktopFile struct {
 	Size     int64       `json:"size"`
 	IsDir    bool        `json:"is_dir"`
 	Mode     os.FileMode `json:"mode"`
+	Category string      `json:"category"`
 }
 
 // Desktop file optimized
@@ -65,6 +66,7 @@ func NewDesktopFile(lf *LocalFile) *DesktopFile {
 		Size:     lf.Info.Size(),
 		IsDir:    lf.Info.IsDir(),
 		Mode:     lf.Info.Mode(),
+		Category: categories.GetDocType(filepath.Ext(lf.Info.Name())),
 	}
 }
 

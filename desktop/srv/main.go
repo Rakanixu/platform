@@ -16,6 +16,7 @@ import (
 	flag "github.com/kazoup/platform/flag/srv/handler"
 	flag_proto "github.com/kazoup/platform/flag/srv/proto/flag"
 
+	"github.com/kazoup/platform/structs/categories"
 	"github.com/micro/cli"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/broker/mock"
@@ -122,6 +123,10 @@ func main() {
 	service.Server().Handle(
 		service.Server().NewHandler(new(search.Elastic)),
 	)
+
+	if err := categories.SetMap(); err != nil {
+		log.Fatal(err)
+	}
 
 	// Attach crawler handler
 	crawler_proto.RegisterCrawlHandler(service.Server(), new(crawler.Crawl))
