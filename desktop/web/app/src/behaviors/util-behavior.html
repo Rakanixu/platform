@@ -44,6 +44,9 @@
       },
       isImage: function(category) {
         return (category === 'Image Files');
+      },
+      replaceAll: function(str, search, replacement) {
+        return  str.replace(new RegExp(search, 'g'), replacement);
       }
     };
   }());

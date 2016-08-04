@@ -13,11 +13,6 @@
     bottom: 0;
 }
 
-html /deep/ .light mat-ink {
-    color: white !important;
-}
-
-.grid mat-item.light::content mat-ink {
-    background-color: yellow;
-    color: purple;
+.grid mat-item.light mat-ink {
+    color: white;
 }

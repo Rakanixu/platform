@@ -37,6 +37,8 @@
 <link rel="import" href="../../bower_components/mat-ink/mat-ink.html">
 
 <link rel="import" href="../../src/behaviors/util-behavior.html">
+<link rel="import" href="../../src/filter-converter/filter-converter.html">
+
 
 <dom-module id="web-app">
     <template>
@@ -54,17 +56,6 @@
                 margin-top: 16px;
             }
 
-           /* iron-list[grid] mat-item*/ .grid-item {
-                max-width: 240px;
-                height: 240px;
-            }
-
-
-
-
-
-
-
             .photoContent {
                 @apply(--layout);
                 position: relative;
@@ -72,6 +63,7 @@
                 height: 150px;
                 margin: 8px;
                 background: white;
+                cursor: pointer;
             }
             .photoContent:hover .detail{
                 opacity: 0.6;
@@ -91,40 +83,6 @@
                 opacity: 0;
                 transition: opacity 0.1s;
             }
-/*            @media (max-width: 800px) {
-                .photoContainer {
-                    width: calc(50% - 16px);
-                }
-                .photoContent {
-                    width: auto;
-                }
-            }
-            @media (max-width: 400px) {
-                iron-list {
-                    margin-top: 72px;
-                }
-                .photoContainer {
-                    width: 100%;
-                }
-                .photoContent > .detail {
-                    opacity: 1;
-                }
-            }
-            ::-webkit-input-placeholder {
-                color: rgba(255, 255, 255, 0.5);
-            }
-            ::-moz-placeholder {
-                color: rgba(255, 255, 255, 0.5);
-            }
-            :-ms-input-placeholder {
-                color: rgba(255, 255, 255, 0.5);
-            }
-            ::-ms-input-placeholder {
-                color: rgba(255, 255, 255, 0.5);
-            }*/
-
-
-
         </style>
 
         <paper-drawer-panel id="navDrawerPanel" responsive-width="1280px">
@@ -135,20 +93,20 @@
                 </paper-toolbar>
 
                 <div class="content">
-                    <paper-menu>
-                        <paper-icon-item>
+                    <paper-menu selected="0">
+                        <paper-icon-item on-tap="setCategory" data-value="">
                             <iron-icon icon="icons:home" item-icon></iron-icon>All
                         </paper-icon-item>
-                        <paper-icon-item>
+                        <paper-icon-item on-tap="setCategory" data-value="Document Files">
                             <iron-icon icon="editor:insert-drive-file" item-icon></iron-icon>Documents
                         </paper-icon-item>
-                        <paper-icon-item>
+                        <paper-icon-item on-tap="setCategory" data-value="Video Files">
                             <iron-icon icon="av:movie" item-icon></iron-icon>Movies
                         </paper-icon-item>
-                        <paper-icon-item>
+                        <paper-icon-item on-tap="setCategory" data-value="Image Files">
                             <iron-icon icon="image:camera-alt" item-icon></iron-icon>Pictures
                         </paper-icon-item>
-                        <paper-icon-item>
+                        <paper-icon-item on-tap="setCategory" data-value="Audio Files">
                             <iron-icon icon="image:audiotrack" item-icon></iron-icon>Audio
                         </paper-icon-item>
                     </paper-menu>
@@ -205,7 +163,7 @@
 
                     <!-- Search results -->
                     <div id="listContainer" class="listContainer" on-scroll="_handleScroll">
-                        <iron-list id="searchList" items="[[searchResults]]" scroll-target="listContainer">
+                        <iron-list id="searchList" items="[[searchResults]]">
                             <template>
                                 <div>
                                     <template is="dom-if" if="{{!view.isGrid}}" restamp="true">
@@ -218,23 +176,14 @@
                                     </template>
 
                                     <template is="dom-if" if="{{view.isGrid}}" restamp="true">
-<!--                                        <mat-item on-tap="openDetails"
-                                                  label="[[item._source.name]]"
-                                                  description="[[item._source.url]]"
-                                                  class="grid-item">
-                                            <mat-avatar class="primary" icon="[[isDir(item._source.is_dir)]]"></mat-avatar>
-                                            <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
-                                        </mat-item>-->
-                                        <div class="photoContainer grid">
+                                        <div class="photoContainer grid" on-tap="openDetails">
                                             <div class="photoContent" tabindex$="[[tabIndex]]">
                                                 <template is="dom-if" if="[[isImage(item._source.category)]]">
-                                                    <iron-image sizing="cover" src="http://localhost:8082/desktop/image?source=[[item._source.url]]&width=500&height=300&mode=fit&quality=100"></iron-image>
+                                                    <iron-image sizing="contain" src="http://localhost:8082/desktop/image?source=[[item._source.url]]&width=500&height=300&mode=fit&quality=100"></iron-image>
                                                 </template>
 
-                                                </iron-image><!--Pictures/gartner_cool_vendor_2016.png&-->
                                                 <div class="detail">
-                                                    <mat-item on-tap="openDetails"
-                                                              class="light"
+                                                    <mat-item class="light"
                                                               foreground="light"
                                                               label="[[item._source.name]]"></mat-item>
                                                 </div>
@@ -270,6 +219,8 @@
 
             </paper-drawer-panel>
         </paper-drawer-panel>
+
+        <filter-converter id="filterConverter"></filter-converter>
 
         <mat-snackbar id="snackbar"
                       button="Scan"
@@ -363,7 +314,7 @@
                         notify: true,
                         value: function() {
                             return {
-                                icon: 'icons:view-list',
+                                icon: 'icons:view-module',
                                 isGrid: false
                             };
                         }
@@ -392,6 +343,9 @@
                     }
                 },
                 ready: function() {
+                    this.$.filterConverter.addEventListener('filter-changed', this._handleFilterChanged.bind(this));
+
+
                     var that = this;
                     //POC to dectect we are on Desktop App
                     if (typeof window !== 'undefined' && window.process && window.process.type === "renderer") {
@@ -411,18 +365,19 @@
                      console.log("Got disks", disks);
                      });*/
 
-                    this.search({
-                        "index": "files",
-                        "type": "file",
-                        "query": this.q,
-                        "limit": 20,
-                        "offset": 0
+                    this.$.filterConverter.setValues({
+                        q: "*",
+                        from: 0,
+                        size: 20
                     });
 
                     ipcRenderer.send("home-dir-message");
                     ipcRenderer.on("home-dir-message", this._handleHomeDir.bind(this));
                 },
-                _handleScroll: function(e) {
+                _handleFilterChanged: function(e) {
+                    this.search();
+                },
+                _handleScroll: function(e) {debugger;
                     if (!this.$.rpcElastic.loading) {
                         if (this.$.listContainer.clientHeight + this.$.listContainer.scrollTop >
                           (this.$.searchList._virtualCount * this.$.searchList._physicalAverage) - 300) {
@@ -437,9 +392,7 @@
                         this.search({
                             "index": "files",
                             "type": "file",
-                            "query": "*",
-                            "limit": 20,
-                            "offset": 0
+                            "query": "*"
                         });
                     }
                 },
@@ -481,13 +434,30 @@
                 _onError: function(e) {
                     console.log(e)
                 },
+                clearIronList: function() {
+                    this.set('searchResults', []);
+                    this.$.searchList.fire('iron-resize');
+                },
+                setCategory: function(e, detail) {
+                    this.clearIronList();
+                    this.$.filterConverter.setValues({
+                        from: 0,
+                        size: 20,
+                        category: e.target.dataset.value
+                    });
+                },
                 search: function(request) {
                     this.set('loading', true);
                     this.set('rpcElasticParams', {
                         service: "go.micro.srv.desktop",
-                        method: "Elastic.Search",
-                        request: request
+                        method: "Elastic.Query",
+                        request: {
+                            index: "files",
+                            type: "file",
+                            query: this.$.filterConverter.getFilterAsElasticQueryString()
+                        }
                     });
+
                     this.$.rpcElastic.body = this.rpcElasticParams;
                     this.$.rpcElastic.generateRequest();
                 },
@@ -503,31 +473,20 @@
                             this.rpcElasticParams.request = {
                                 "index": "files",
                                 "type": "file",
-                                "query": this.q,
-                                "limit": 20,
-                                "offset": 0
+                                "query": this.q
                             };
                             this.search(this.rpcElasticParams.request);
                         }.bind(this), 450);
                     }
                 },
                 resetSearch: function(e, detail) {
-                    this.set('q', "");
-                    this.rpcElasticParams.request = {
-                        "index": "files",
-                        "type": "file",
-                        "query": this.q,
-                        "limit": 20,
-                        "offset": 0
-                    };
                     this.set('itemSelected', false);
                     this.set('searchResults', []);
                     this.$.searchList.fire('iron-resize');
-                    this.search(this.rpcElasticParams.request);
                     this.toggleSearch();
                 },
                 toggleSearch: function(e, detail) {
-                    this.$.search.input.value = this.q;
+                    this.$.search.input.value = this.$.filterConverter.getFilterAsObj().q;
                     this.$.search._inputHandler();
 
                     this.async(function() {
@@ -557,10 +516,10 @@
                 },
                 toggleView: function(e, detail) {
                     if (this.view.isGrid) {
-                        this.set('view.icon', 'icons:view-list');
+                        this.set('view.icon', 'icons:view-module');
                         this.$.searchList.removeAttribute('grid');
                     } else {
-                        this.set('view.icon', 'icons:view-module');
+                        this.set('view.icon', 'icons:view-list');
                         this.$.searchList.setAttribute('grid', '');
                     }
                     this.set('view.isGrid', !this.view.isGrid);
