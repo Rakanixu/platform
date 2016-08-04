@@ -56,6 +56,11 @@
                 margin-top: 16px;
             }
 
+            .listContainer {
+                height: 100%;
+                overflow: auto;
+            }
+
             .photoContent {
                 @apply(--layout);
                 position: relative;
@@ -65,12 +70,15 @@
                 background: white;
                 cursor: pointer;
             }
+
             .photoContent:hover .detail{
                 opacity: 0.6;
             }
+
             .photoContent > iron-image {
                 @apply(--layout-flex);
             }
+
             .photoContent > .detail {
                 position: absolute;
                 bottom: 0;
@@ -377,13 +385,11 @@
                 _handleFilterChanged: function(e) {
                     this.search();
                 },
-                _handleScroll: function(e) {debugger;
+                _handleScroll: function(e) {
                     if (!this.$.rpcElastic.loading) {
                         if (this.$.listContainer.clientHeight + this.$.listContainer.scrollTop >
-                          (this.$.searchList._virtualCount * this.$.searchList._physicalAverage) - 300) {
-
-                            this.rpcElasticParams.request.offset += 20;
-                            this.search(this.rpcElasticParams.request);
+                          ((this.$.searchList._virtualCount / this.$.searchList._itemsPerRow) * this.$.searchList._physicalAverage) - 300) {
+                            this.$.filterConverter.setValue('from', this.$.filterConverter.getFilterAsObj().from + 20);
                         }
                     }
                 },
@@ -440,6 +446,8 @@
                 },
                 setCategory: function(e, detail) {
                     this.clearIronList();
+                 //   this.setGridView();
+
                     this.$.filterConverter.setValues({
                         from: 0,
                         size: 20,
@@ -514,13 +522,19 @@
                     this.set('itemSelected', false);
                     this.$.mainDrawerPanel.closeDrawer();
                 },
+                setGridView: function() {
+                    this.set('view.icon', 'icons:view-list');
+                    this.$.searchList.setAttribute('grid', '');
+                },
+                setListView: function() {
+                    this.set('view.icon', 'icons:view-module');
+                    this.$.searchList.removeAttribute('grid');
+                },
                 toggleView: function(e, detail) {
                     if (this.view.isGrid) {
-                        this.set('view.icon', 'icons:view-module');
-                        this.$.searchList.removeAttribute('grid');
+                        this.setListView();
                     } else {
-                        this.set('view.icon', 'icons:view-list');
-                        this.$.searchList.setAttribute('grid', '');
+                        this.setGridView();
                     }
                     this.set('view.isGrid', !this.view.isGrid);
                     this.$.searchList.fire('iron-resize');
