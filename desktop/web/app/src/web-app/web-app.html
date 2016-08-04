@@ -53,13 +53,85 @@
             paper-toolbar mat-text-field {
                 margin-top: 16px;
             }
+
+           /* iron-list[grid] mat-item*/ .grid-item {
+                max-width: 240px;
+                height: 240px;
+            }
+
+
+
+
+
+
+
+            .photoContent {
+                @apply(--layout);
+                position: relative;
+                width: 250px;
+                height: 150px;
+                margin: 8px;
+                background: white;
+            }
+            .photoContent:hover .detail{
+                opacity: 0.6;
+            }
+            .photoContent > iron-image {
+                @apply(--layout-flex);
+            }
+            .photoContent > .detail {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background:black;
+                color: white;
+                font-size: 14px;
+                font-weight: 100;
+                opacity: 0;
+                transition: opacity 0.1s;
+            }
+/*            @media (max-width: 800px) {
+                .photoContainer {
+                    width: calc(50% - 16px);
+                }
+                .photoContent {
+                    width: auto;
+                }
+            }
+            @media (max-width: 400px) {
+                iron-list {
+                    margin-top: 72px;
+                }
+                .photoContainer {
+                    width: 100%;
+                }
+                .photoContent > .detail {
+                    opacity: 1;
+                }
+            }
+            ::-webkit-input-placeholder {
+                color: rgba(255, 255, 255, 0.5);
+            }
+            ::-moz-placeholder {
+                color: rgba(255, 255, 255, 0.5);
+            }
+            :-ms-input-placeholder {
+                color: rgba(255, 255, 255, 0.5);
+            }
+            ::-ms-input-placeholder {
+                color: rgba(255, 255, 255, 0.5);
+            }*/
+
+
+
         </style>
 
         <paper-drawer-panel id="navDrawerPanel" responsive-width="1280px">
             <!-- Nav Content -->
             <div class="nav" drawer>
                 <paper-toolbar class="medium-tall left-menu">
-                    <label is="mat-label" for="username" class="bottom">Email</label>
+                    <label is="mat-label" class="bottom">Email</label>
                 </paper-toolbar>
 
                 <div class="content">
@@ -117,6 +189,8 @@
                         <mat-text-field  id="search" class="flex" label="Search files" on-keyup="searchAsYouType" hidden$="[[!searching]]"></mat-text-field>
                         <mat-icon-button id="reset" icon="mat:clear" on-xp-activate="resetSearch" color="white" hidden$="[[!searching]]"></mat-icon-button>
 
+                        <paper-icon-button id="searchViewIcon" icon="[[view.icon]]" on-tap="toggleView"></paper-icon-button>
+
                         <mat-breadcrumb class="extended bottom title light" shift>
                             <mat-breadcrumb-step label="My files"></mat-breadcrumb-step>
                             <mat-breadcrumb-step label="Photos"></mat-breadcrumb-step>
@@ -133,12 +207,41 @@
                     <div id="listContainer" class="listContainer" on-scroll="_handleScroll">
                         <iron-list id="searchList" items="[[searchResults]]" scroll-target="listContainer">
                             <template>
-                                <mat-item on-tap="openDetails"
-                                          label="[[item._source.name]]"
-                                          description="[[item._source.url]]">
-                                    <mat-avatar class="primary" icon="[[isDir(item._source.is_dir)]]"></mat-avatar>
-                                    <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
-                                </mat-item>
+                                <div>
+                                    <template is="dom-if" if="{{!view.isGrid}}" restamp="true">
+                                        <mat-item on-tap="openDetails"
+                                                  label="[[item._source.name]]"
+                                                  description="[[item._source.url]]">
+                                            <mat-avatar class="primary" icon="[[isDir(item._source.is_dir)]]"></mat-avatar>
+                                            <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
+                                        </mat-item>
+                                    </template>
+
+                                    <template is="dom-if" if="{{view.isGrid}}" restamp="true">
+<!--                                        <mat-item on-tap="openDetails"
+                                                  label="[[item._source.name]]"
+                                                  description="[[item._source.url]]"
+                                                  class="grid-item">
+                                            <mat-avatar class="primary" icon="[[isDir(item._source.is_dir)]]"></mat-avatar>
+                                            <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
+                                        </mat-item>-->
+                                        <div class="photoContainer grid">
+                                            <div class="photoContent" tabindex$="[[tabIndex]]">
+                                                <template is="dom-if" if="[[isImage(item._source.category)]]">
+                                                    <iron-image sizing="cover" src="http://localhost:8082/desktop/image?source=[[item._source.url]]&width=500&height=300&mode=fit&quality=100"></iron-image>
+                                                </template>
+
+                                                </iron-image><!--Pictures/gartner_cool_vendor_2016.png&-->
+                                                <div class="detail">
+                                                    <mat-item on-tap="openDetails"
+                                                              class="light"
+                                                              foreground="light"
+                                                              label="[[item._source.name]]"></mat-item>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
                             </template>
                         </iron-list>
                     </div>
@@ -254,6 +357,16 @@
                         type: Boolean,
                         notify: true,
                         value: false
+                    },
+                    view: {
+                        type: Object,
+                        notify: true,
+                        value: function() {
+                            return {
+                                icon: 'icons:view-list',
+                                isGrid: false
+                            };
+                        }
                     },
                     searchResults: {
                         type: Array,
@@ -441,6 +554,18 @@
                 closeDetails: function(e, detail) {
                     this.set('itemSelected', false);
                     this.$.mainDrawerPanel.closeDrawer();
+                },
+                toggleView: function(e, detail) {
+                    if (this.view.isGrid) {
+                        this.set('view.icon', 'icons:view-list');
+                        this.$.searchList.removeAttribute('grid');
+                    } else {
+                        this.set('view.icon', 'icons:view-module');
+                        this.$.searchList.setAttribute('grid', '');
+                    }
+                    this.set('view.isGrid', !this.view.isGrid);
+                    this.$.searchList.fire('iron-resize');
+                    this.$.searchList.scrollToIndex(0);
                 }
             });
         }());
