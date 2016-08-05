@@ -5,16 +5,18 @@ import (
 	"strings"
 
 	config_data "github.com/kazoup/platform/config/srv/data"
-	config "github.com/kazoup/platform/config/srv/handler"
+	config_handler "github.com/kazoup/platform/config/srv/handler"
 	config_proto "github.com/kazoup/platform/config/srv/proto/config"
-	crawler "github.com/kazoup/platform/crawler/srv/handler"
+	crawler_handler "github.com/kazoup/platform/crawler/srv/handler"
 	crawler_proto "github.com/kazoup/platform/crawler/srv/proto/crawler"
 	crawler_subscriber "github.com/kazoup/platform/crawler/srv/subscriber"
 	elastic "github.com/kazoup/platform/elastic/srv/elastic"
-	search "github.com/kazoup/platform/elastic/srv/handler"
+	elastic_handler "github.com/kazoup/platform/elastic/srv/handler"
 	indexer "github.com/kazoup/platform/elastic/srv/subscriber"
-	flag "github.com/kazoup/platform/flag/srv/handler"
+	flag_handler "github.com/kazoup/platform/flag/srv/handler"
 	flag_proto "github.com/kazoup/platform/flag/srv/proto/flag"
+	search_handler "github.com/kazoup/platform/search/srv/handler"
+	search_proto "github.com/kazoup/platform/search/srv/proto/search"
 
 	"github.com/kazoup/platform/structs/categories"
 	"github.com/micro/cli"
@@ -74,7 +76,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	config_proto.RegisterConfigHandler(service.Server(), &config.Config{
+	config_proto.RegisterConfigHandler(service.Server(), &config_handler.Config{
 		Client:             service.Client(),
 		ElasticServiceName: elasticServiceName,
 		ESSettings:         &es_settings,
@@ -83,7 +85,7 @@ func main() {
 	})
 
 	// Flag handler
-	flag_proto.RegisterFlagHandler(service.Server(), &flag.Flag{
+	flag_proto.RegisterFlagHandler(service.Server(), &flag_handler.Flag{
 		Client:             service.Client(),
 		ElasticServiceName: elasticServiceName,
 	})
@@ -121,15 +123,21 @@ func main() {
 	elastic.Init()
 	// Register search handler
 	service.Server().Handle(
-		service.Server().NewHandler(new(search.Elastic)),
+		service.Server().NewHandler(new(elastic_handler.Elastic)),
 	)
 
 	if err := categories.SetMap(); err != nil {
 		log.Fatal(err)
 	}
 
+	// Attach search handler
+	search_proto.RegisterSearchHandler(service.Server(), &search_handler.Search{
+		Client:             service.Client(),
+		ElasticServiceName: elasticServiceName,
+	})
+
 	// Attach crawler handler
-	crawler_proto.RegisterCrawlHandler(service.Server(), new(crawler.Crawl))
+	crawler_proto.RegisterCrawlHandler(service.Server(), new(crawler_handler.Crawl))
 
 	// Attach indexer subsciber
 	if err := service.Server().Subscribe(
