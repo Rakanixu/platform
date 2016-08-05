@@ -10,8 +10,6 @@ import (
 )
 
 func FileSubscriber(ctx context.Context, msg *example.Message) error {
-	//log.Printf("Got message: %s", msg.Say)
-
 	ctx = context.TODO()
 	srvReq := client.NewRequest(
 		"go.micro.srv.elastic",
