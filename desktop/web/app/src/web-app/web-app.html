@@ -27,6 +27,7 @@
 <link rel="import" href="../../bower_components/mat-avatar/mat-avatar.html">
 <link rel="import" href="../../bower_components/mat-button/mat-button.html">
 <link rel="import" href="../../bower_components/mat-icon-button/mat-icon-button.html">
+<link rel="import" href="../../bower_components/mat-ripple/mat-ripple.html">
 <link rel="import" href="../../bower_components/mat-item/mat-item.html">
 <link rel="import" href="../../bower_components/mat-divider/mat-divider.html">
 <link rel="import" href="../../bower_components/mat-breadcrumb/mat-breadcrumb.html">
@@ -48,6 +49,12 @@
                 display: block;
             }
 
+            paper-header-panel {
+                --paper-header-panel-shadow: {
+                    height: 0;
+                }
+            }
+
             paper-header-panel[drawer] paper-toolbar {
                 --paper-toolbar-background: var(--dark-primary);
             }
@@ -64,15 +71,15 @@
             .photoContent {
                 @apply(--layout);
                 position: relative;
-                width: 250px;
-                height: 150px;
-                margin: 8px;
+                width: 178px;
+                height: 178px;
+                margin: 4px;
                 background: white;
                 cursor: pointer;
             }
 
-            .photoContent:hover .detail{
-                opacity: 0.6;
+            .photoContainer:hover .detail {
+                background:rgba(0,0,0,0.6);
             }
 
             .photoContent > iron-image {
@@ -84,12 +91,10 @@
                 bottom: 0;
                 left: 0;
                 right: 0;
-                background:black;
+                background:rgba(0,0,0,0.4);
                 color: white;
                 font-size: 14px;
                 font-weight: 100;
-                opacity: 0;
-                transition: opacity 0.1s;
             }
         </style>
 
@@ -187,14 +192,19 @@
                                         <div class="photoContainer grid" on-tap="openDetails">
                                             <div class="photoContent" tabindex$="[[tabIndex]]">
                                                 <template is="dom-if" if="[[isImage(item._source.category)]]">
-                                                    <iron-image sizing="contain" src="http://localhost:8082/desktop/image?source=[[item._source.url]]&width=500&height=300&mode=fit&quality=100"></iron-image>
+                                                    <iron-image sizing="contain"
+                                                                src="http://localhost:8082/desktop/image?source=[[item._source.url]]&width=356&height=356&mode=fit&quality=100"></iron-image>
+                                                </template>
+
+                                                <template is="dom-if" if="[[!isImage(item._source.category)]]">
+                                                    <mat-avatar icon="[[isDir(item._source.is_dir)]]"></mat-avatar>
                                                 </template>
 
                                                 <div class="detail">
                                                     <mat-item class="light"
-                                                              foreground="light"
                                                               label="[[item._source.name]]"></mat-item>
                                                 </div>
+                                                <mat-ripple></mat-ripple>
                                             </div>
                                         </div>
                                     </template>
@@ -374,7 +384,7 @@
                      });*/
 
                     this.$.filterConverter.setValues({
-                        q: "*",
+                        q: "",
                         from: 0,
                         size: 20
                     });
@@ -395,11 +405,7 @@
                 },
                 _handleStartScan: function(e) {
                     if (e.detail.response) {
-                        this.search({
-                            "index": "files",
-                            "type": "file",
-                            "query": "*"
-                        });
+                        this.search();
                     }
                 },
                 _handleElastic: function(e) {
@@ -446,7 +452,10 @@
                 },
                 setCategory: function(e, detail) {
                     this.clearIronList();
-                 //   this.setGridView();
+                    if (e.target.dataset.value === 'Image Files') {
+                        this.setGridView();
+                        this.refreshView();
+                    }
 
                     this.$.filterConverter.setValues({
                         from: 0,
@@ -470,27 +479,26 @@
                     this.$.rpcElastic.generateRequest();
                 },
                 searchAsYouType: function(e, detail) {
-                    this.set('q', this.$.search.input.value);
+                    var term = this.$.search.input.value;
 
-                    if (this.q.length > 2 || this.q.length === 0) {
+                    if (term.length > 2 || term.length === 0) {
                         clearTimeout(this.searchAsYouTypeTimeout);
                         this.searchAsYouTypeTimeout = setTimeout(function() {
                             this.set('itemSelected', false);
-                            this.set('searchResults', []);
-                            this.$.searchList.fire('iron-resize');
-                            this.rpcElasticParams.request = {
-                                "index": "files",
-                                "type": "file",
-                                "query": this.q
-                            };
-                            this.search(this.rpcElasticParams.request);
+                            this.clearIronList();
+
+                            this.$.filterConverter.setValues({
+                                from: 0,
+                                size: 20,
+                                q: term
+                            });
                         }.bind(this), 450);
                     }
                 },
                 resetSearch: function(e, detail) {
                     this.set('itemSelected', false);
-                    this.set('searchResults', []);
-                    this.$.searchList.fire('iron-resize');
+                    this.clearIronList();
+                    this.$.filterConverter.setValue('q', '');
                     this.toggleSearch();
                 },
                 toggleSearch: function(e, detail) {
@@ -499,7 +507,7 @@
 
                     this.async(function() {
                         this.$.search.focus();
-                    });
+                    }, 1);
                     this.set('searching', !this.searching);
                 },
                 startScan: function(e, detail) {
@@ -522,13 +530,20 @@
                     this.set('itemSelected', false);
                     this.$.mainDrawerPanel.closeDrawer();
                 },
+                refreshView: function() {
+                    this.$.searchList.fire('iron-resize');
+                    this.$.searchList.notifyResize();
+                    this.$.searchList.scrollToIndex(0);
+                },
                 setGridView: function() {
                     this.set('view.icon', 'icons:view-list');
                     this.$.searchList.setAttribute('grid', '');
+                    this.set('view.isGrid', true);
                 },
                 setListView: function() {
                     this.set('view.icon', 'icons:view-module');
                     this.$.searchList.removeAttribute('grid');
+                    this.set('view.isGrid', false);
                 },
                 toggleView: function(e, detail) {
                     if (this.view.isGrid) {
@@ -536,9 +551,7 @@
                     } else {
                         this.setGridView();
                     }
-                    this.set('view.isGrid', !this.view.isGrid);
-                    this.$.searchList.fire('iron-resize');
-                    this.$.searchList.scrollToIndex(0);
+                    this.refreshView();
                 }
             });
         }());

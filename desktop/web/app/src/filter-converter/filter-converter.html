@@ -41,7 +41,8 @@
             query: {
               bool: {
                 should: [
-                  this._getFilterCategory()
+                  this._getCategory(),
+                  this._getQueryTerm()
                 ]
               }
             }
@@ -56,13 +57,26 @@
         fireFilterChanged: function (newVal, oldVal) {
           this.fire('filter-changed', {});
         },
-        _getFilterCategory: function() {
+        _getCategory: function() {
           var match = {};
 
           if (this.filters.category) {
             match = {
               match: {
                 category: this.filters.category
+              }
+            };
+          }
+
+          return match;
+        },
+        _getQueryTerm: function() {
+          var match = {};
+
+          if (this.filters.q) {
+            match = {
+              match: {
+                name: this.filters.q
               }
             };
           }
