@@ -467,12 +467,8 @@
                     this.set('loading', true);
                     this.set('rpcElasticParams', {
                         service: "go.micro.srv.desktop",
-                        method: "Elastic.Query",
-                        request: {
-                            index: "files",
-                            type: "file",
-                            query: this.$.filterConverter.getFilterAsElasticQueryString()
-                        }
+                        method: "Search.Search",
+                        request: this.$.filterConverter.getFilterAsObj()
                     });
 
                     this.$.rpcElastic.body = this.rpcElasticParams;

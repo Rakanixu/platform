@@ -33,55 +33,8 @@
         getFilterAsObj: function() {
           return this.filters;
         },
-        getFilterAsElasticQuery: function() {
-          // For quering Elastic API
-          var query = {
-            from: this.filters.from || 0,
-            size: this.filters.size || 20,
-            query: {
-              bool: {
-                should: [
-                  this._getCategory(),
-                  this._getQueryTerm()
-                ]
-              }
-            }
-          };
-
-          return query;
-        },
-        getFilterAsElasticQueryString: function() {
-          // For quering Elastic service directly (No API)
-          return JSON.stringify(this.getFilterAsElasticQuery());
-        },
         fireFilterChanged: function (newVal, oldVal) {
           this.fire('filter-changed', {});
-        },
-        _getCategory: function() {
-          var match = {};
-
-          if (this.filters.category) {
-            match = {
-              match: {
-                category: this.filters.category
-              }
-            };
-          }
-
-          return match;
-        },
-        _getQueryTerm: function() {
-          var match = {};
-
-          if (this.filters.q) {
-            match = {
-              match: {
-                name: this.filters.q
-              }
-            };
-          }
-
-          return match;
         }
       });
     }());
