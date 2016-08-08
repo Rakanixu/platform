@@ -1,0 +1,110 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/av-icons.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
+<link rel="import" href="../../bower_components/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
+
+<link rel="import" href="../../bower_components/mat-list/mat-list.html">
+<link rel="import" href="../../bower_components/mat-text-field/mat-text-field.html">
+<link rel="import" href="../../bower_components/mat-icon/mat-icon.html">
+<link rel="import" href="../../bower_components/mat-icons/mat-icons.html">
+<link rel="import" href="../../bower_components/mat-avatar/mat-avatar.html">
+<link rel="import" href="../../bower_components/mat-button/mat-button.html">
+<link rel="import" href="../../bower_components/mat-icon-button/mat-icon-button.html">
+<link rel="import" href="../../bower_components/mat-ripple/mat-ripple.html">
+<link rel="import" href="../../bower_components/mat-item/mat-item.html">
+<link rel="import" href="../../bower_components/mat-divider/mat-divider.html">
+<link rel="import" href="../../bower_components/mat-breadcrumb/mat-breadcrumb.html">
+<link rel="import" href="../../bower_components/web-socket/web-socket.html">
+<link rel="import" href="../../bower_components/mat-toast/mat-toast.html">
+<link rel="import" href="../../bower_components/mat-typography/mat-typography.html">
+<link rel="import" href="../../bower_components/mat-snackbar/mat-snackbar.html">
+<link rel="import" href="../../bower_components/mat-ink/mat-ink.html">
+
+<link rel="import" href="../../src/behaviors/util-behavior.html">
+
+<dom-module id="load-screen">
+  <style is="custom-style" include="iron-flex iron-positioning iron-flex-alignment"></style>
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      iron-image {
+
+      }
+
+      .container {
+        @apply(--layout-fullbleed);
+      }
+
+      .inner-container {
+        margin: auto;
+        width: 120px;
+      }
+
+      .inner-container paper-progress,
+      .inner-container iron-image {
+        width: 120px;
+      }
+
+      .inner-container p.info {
+        position: absolute;
+        left: 0;
+        right: 0;
+        padding: 0 10%;
+        text-align: center;
+      }
+    </style>
+
+    <section>
+      <div class="container vertical layout">
+        <div class="flex vertical layout">
+          <div class="inner-container">
+            <iron-image src="http://localhost:8082/desktop/src/static/kazoup-logo.png"></iron-image>
+            <paper-progress indeterminate> </paper-progress>
+            <p class="info">Something loading</p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+  </template>
+
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'load-screen',
+        behaviors: [
+          Polymer.UtilBehaviorImp
+        ],
+        properties: {
+
+        },
+        ready: function() {
+
+        }
+      });
+    }());
+  </script>
+</dom-module>

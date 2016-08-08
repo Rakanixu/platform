@@ -20,7 +20,8 @@
     "iron-scroll-threshold": "PolymerElements/iron-scroll-threshold#~1.0.1",
     "paper-progress": "~1.0.9",
     "filesize": "~3.3.0",
-    "iron-image": "~1.2.3"
+    "iron-image": "~1.2.3",
+    "iron-pages": "~1.0.8"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",

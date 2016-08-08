@@ -12,11 +12,17 @@
     <script src="bower_components/filesize/lib/filesize.min.js"></script>
     <link rel="stylesheet" href="src/styles/theme.css">
     <link rel="import" href="src/styles/theme.html">
+
+    <link rel="import" href="bower_components/iron-pages/iron-pages.html">
+    <link rel="import" href="src/load-screen/load-screen.html">
     <link rel="import" href="src/web-app/web-app.html">
 </head>
 
 <body>
-    <web-app></web-app>
+    <iron-pages selected="0">
+        <load-screen></load-screen>
+        <web-app></web-app>
+    </iron-pages>
 </body>
 
 </html>
