@@ -8,6 +8,7 @@ import (
 
 	"golang.org/x/net/websocket"
 
+	auth_handler "github.com/kazoup/platform/auth/web/handler"
 	"github.com/kazoup/platform/desktop/web/handler"
 	"github.com/micro/go-web"
 	"github.com/pierrre/imageserver"
@@ -28,8 +29,12 @@ func main() {
 	service := web.NewService(web.Name("go.micro.web.desktop"))
 	service.Handle("/", http.FileServer(http.Dir("app")))
 	service.Handle("/status", websocket.Handler(handler.Status))
-	service.HandleFunc("/google/login", handler.HandleGoogleLogin)
-	service.HandleFunc("/GoogleCallback", handler.HandleGoogleCallback)
+	service.HandleFunc("/google/login", auth_handler.HandleGoogleLogin)
+	service.HandleFunc("/GoogleCallback", auth_handler.HandleGoogleCallback)
+	service.HandleFunc("/microsoft/login", auth_handler.HandleMicrosoftLogin)
+	service.HandleFunc("/microsoft/callback", auth_handler.HandleMicrosoftCallback)
+	service.HandleFunc("/slack/login", auth_handler.HandleSlackLogin)
+	service.HandleFunc("/slack/callback", auth_handler.HandleSlackCallback)
 	//http://localhost:8082/desktop/image?source=/Users/radekdymacz/Pictures/city-wallpaper.jpg&width=300&height=300&mode=fit&quality=50
 	service.Handle("/image", &imageserver_http.Handler{
 		Parser: imageserver_http.ListParser([]imageserver_http.Parser{
