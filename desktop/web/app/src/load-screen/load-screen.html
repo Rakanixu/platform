@@ -1,22 +1,7 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
-<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
-<link rel="import" href="../../bower_components/iron-icons/image-icons.html">
-<link rel="import" href="../../bower_components/iron-icons/av-icons.html">
-<link rel="import" href="../../bower_components/iron-image/iron-image.html">
-<link rel="import" href="../../bower_components/iron-list/iron-list.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
-<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
-<link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
-<link rel="import" href="../../bower_components/paper-header-panel/paper-header-panel.html">
-<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
-<link rel="import" href="../../bower_components/paper-item/paper-item.html">
-<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
-<link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
-<link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
 
@@ -37,7 +22,7 @@
 <link rel="import" href="../../bower_components/mat-snackbar/mat-snackbar.html">
 <link rel="import" href="../../bower_components/mat-ink/mat-ink.html">
 
-<link rel="import" href="../../src/behaviors/util-behavior.html">
+<link rel="import" href="../../src/behaviors/async-behavior.html">
 
 <dom-module id="load-screen">
   <style is="custom-style" include="iron-flex iron-positioning iron-flex-alignment"></style>
@@ -80,12 +65,39 @@
           <div class="inner-container">
             <iron-image src="http://localhost:8082/desktop/src/static/kazoup-logo.png"></iron-image>
             <paper-progress indeterminate> </paper-progress>
-            <p class="info">Something loading</p>
+            <p class="info">[[info]]</p>
           </div>
         </div>
       </div>
 
     </section>
+
+    <iron-ajax id="rpcElasticStatus"
+               method="POST"
+               content-type="application/json"
+               url="http://localhost:8082/rpc"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleElasticStatus"
+               params="{{rpcElasticStatusParams}}"></iron-ajax>
+
+    <iron-ajax id="rpcElasticSettings"
+               method="POST"
+               content-type="application/json"
+               url="http://localhost:8082/rpc"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleElasticSettings"
+               params="{{rpcElasticSettingsParams}}"></iron-ajax>
+
+    <iron-ajax id="rpcElasticMapping"
+               method="POST"
+               content-type="application/json"
+               url="http://localhost:8082/rpc"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleElasticMapping"
+               params="{{rpcElasticMappingParams}}"></iron-ajax>
 
   </template>
 
@@ -96,13 +108,98 @@
       Polymer({
         is: 'load-screen',
         behaviors: [
-          Polymer.UtilBehaviorImp
+          Polymer.AsyncBehaviorImp
         ],
         properties: {
-
+          wait: {
+            type: Number,
+            notify: false,
+            value: 1000
+          },
+          info: {
+            type: String,
+            notify: false,
+            value: "Starting search engine .."
+          },
+          rpcElasticStatusParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: "go.micro.srv.desktop",
+                method: "Elastic.Status",
+              };
+            }
+          },
+          rpcElasticSettingsParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: "go.micro.srv.desktop",
+                method: "Config.SetElasticSettings",
+              };
+            }
+          },
+          rpcElasticMappingParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: "go.micro.srv.desktop",
+                method: "Config.SetElasticMapping",
+              };
+            }
+          }
         },
         ready: function() {
+          this.$.rpcElasticStatus.body = this.rpcElasticStatusParams;
+          this.$.rpcElasticSettings.body = this.rpcElasticSettingsParams;
+          this.$.rpcElasticMapping.body = this.rpcElasticMappingParams;
 
+          this.$.rpcElasticStatus.generateRequest();
+        },
+        _handleElasticStatus: function(e) {
+          var status;
+
+          if (e.detail.response && e.detail.response.status) {
+            status = JSON.parse(e.detail.response.status);
+
+            // Check if ES is running
+            if (status.master_node.length) {
+              // ES not configured, set settings and mapping
+              if (_.isEmpty(status.metadata.indices)) {
+                this.$.rpcElasticSettings.generateRequest();
+              } else {
+                this._loadPage(1, 'web-app-activated');
+              }
+            } else {
+              this.async(function() {
+                this.$.rpcElasticStatus.generateRequest();
+              }, this.wait);
+            }
+          }
+        },
+        _handleElasticSettings: function(e) {
+          if (e.detail.response) {
+            this.async(function() {
+              this.$.rpcElasticMapping.generateRequest();
+            }, this.wait);
+          }
+        },
+        _handleElasticMapping: function(e) {
+          if (e.detail.response) {
+            this.async(function() {
+              this._loadPage(1, 'web-app-activated');
+            }, this.wait);
+          }
+        },
+        _handleError: function(e) {
+
+        },
+        _loadPage: function(selected, eventName, obj) {
+          document.querySelector('#ironPages').selected = selected;
+          this.fireEvent(eventName);
         }
       });
     }());
