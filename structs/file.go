@@ -61,7 +61,7 @@ type LocalFile struct {
 func NewDesktopFile(lf *LocalFile) *DesktopFile {
 	return &DesktopFile{
 		Name:     lf.Info.Name(),
-		URL:      lf.Path,
+		URL:      "/" + lf.Path,
 		Modified: lf.Info.ModTime(),
 		Size:     lf.Info.Size(),
 		IsDir:    lf.Info.IsDir(),
@@ -73,7 +73,7 @@ func NewDesktopFile(lf *LocalFile) *DesktopFile {
 func NewDesktopFileOptimised(lf *LocalFile) *DesktopFileOptimised {
 	return &DesktopFileOptimised{
 		N: lf.Info.Name(),
-		U: lf.Path,
+		U: "/" + lf.Path,
 		M: lf.Info.ModTime(),
 		S: lf.Info.Size(),
 		D: lf.Info.IsDir(),

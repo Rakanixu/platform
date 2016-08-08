@@ -384,7 +384,7 @@
                      });*/
 
                     this.$.filterConverter.setValues({
-                        q: "",
+                        term: "",
                         from: 0,
                         size: 20
                     });
@@ -486,7 +486,7 @@
                             this.$.filterConverter.setValues({
                                 from: 0,
                                 size: 20,
-                                q: term
+                                term: term
                             });
                         }.bind(this), 450);
                     }
@@ -494,11 +494,11 @@
                 resetSearch: function(e, detail) {
                     this.set('itemSelected', false);
                     this.clearIronList();
-                    this.$.filterConverter.setValue('q', '');
+                    this.$.filterConverter.setValue('term', '');
                     this.toggleSearch();
                 },
                 toggleSearch: function(e, detail) {
-                    this.$.search.input.value = this.$.filterConverter.getFilterAsObj().q;
+                    this.$.search.input.value = this.$.filterConverter.getFilterAsObj().term;
                     this.$.search._inputHandler();
 
                     this.async(function() {

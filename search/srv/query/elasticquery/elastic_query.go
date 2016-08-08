@@ -3,6 +3,7 @@ package elasticquery
 import (
 	"bytes"
 	"github.com/kazoup/platform/search/srv/query"
+	"log"
 	"strconv"
 )
 
@@ -20,11 +21,13 @@ func (e *ElasticQuery) Query() (string, error) {
 	buffer.WriteString(`{`)
 	buffer.WriteString(e.filterFrom() + ",")
 	buffer.WriteString(e.filterSize() + ",")
-	buffer.WriteString(`"query": {"bool":{"should":[`)
-	buffer.WriteString(e.filterCategory())
-	buffer.WriteString(`], "filter":`)
+	buffer.WriteString(`"query": {"bool":{"must":[`)
 	buffer.WriteString(e.filterTerm())
-	buffer.WriteString(`}}}`)
+	buffer.WriteString(`], "filter":[`)
+	buffer.WriteString(e.filterCategory())
+	buffer.WriteString(`]}}}`)
+
+	log.Println(buffer.String())
 
 	return buffer.String(), nil
 }
@@ -35,9 +38,9 @@ func (e *ElasticQuery) filterTerm() string {
 	if len(e.Term) <= 0 {
 		buffer.WriteString(`{}`)
 	} else {
-		buffer.WriteString(`{"multi_match": {"query": "`)
+		buffer.WriteString(`{"match": {"name": "`)
 		buffer.WriteString(e.Term)
-		buffer.WriteString(`", "fields":["name"]}}`)
+		buffer.WriteString(`"}}`)
 	}
 
 	return buffer.String()
@@ -49,7 +52,7 @@ func (e *ElasticQuery) filterCategory() string {
 	if len(e.Category) <= 0 {
 		buffer.WriteString(`{}`)
 	} else {
-		buffer.WriteString(`{"match": {"category": "`)
+		buffer.WriteString(`{"term": {"category": "`)
 		buffer.WriteString(e.Category)
 		buffer.WriteString(`"}}`)
 	}
