@@ -9,6 +9,7 @@ import (
 	"github.com/micro/go-micro/cmd"
 )
 
+//go-bindata -o data/bindata.go -pkg data data
 func main() {
 	cmd.Init()
 	es_flags, err := data.Asset("data/es_flags.json")

@@ -14,6 +14,10 @@
             "ngram_3_20"
           ],
           "tokenizer": "filename"
+        },
+        "path_analyzer": {
+          "type": "custom",
+          "tokenizer": "path_tokenizer"
         }
       },
       "filter": {
@@ -31,6 +35,9 @@
         "filename": {
           "pattern": "[^\\p{L}\\d]+",
           "type": "pattern"
+        },
+        "path_tokenizer": {
+          "type": "path_hierarchy"
         }
       }
     }

@@ -23,14 +23,14 @@ micro query go.micro.srv.config Config.Status '{}'
 
 
 ### SetElasticSettings
-Set ElasticSearch settings for files index. See es_mapping_files.json
+Set ElasticSearch settings for files index. See es_settings.json
 ```
 micro query go.micro.srv.config Config.SetElasticSettings '{}'
 {}
 ```
 
 ### SetElasticMapping
-Set ElasticSearch mapping for files index and file document type. See es_mapping_files.json
+Set ElasticSearch mapping for files index and file document type. See es_mapping_files_new.json
 ```
 micro query go.micro.srv.config Config.SetElasticMapping '{}'
 {}

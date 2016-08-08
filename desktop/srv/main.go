@@ -65,7 +65,7 @@ func main() {
 		// Asset was not found.
 		log.Fatal(err)
 	}
-	es_mapping, err := config_data.Asset("data/es_mapping_files.json")
+	es_mapping, err := config_data.Asset("data/es_mapping_files_new.json")
 	if err != nil {
 		// Asset was not found.
 		log.Fatal(err)
