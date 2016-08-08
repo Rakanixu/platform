@@ -134,3 +134,19 @@ func PutMappingFromJSON(r *proto.PutMappingFromJSONRequest) error {
 
 	return nil
 }
+
+func ClusterState(r *proto.StatusRequest) (string, error) {
+	clusterState, err := conn.ClusterState(lib.ClusterStateFilter{
+		FilterNodes:        true,
+		FilterRoutingTable: true,
+		FilterMetadata:     true,
+		FilterBlocks:       true,
+	})
+
+	b, err := json.Marshal(clusterState)
+	if err != nil {
+		return "", err
+	}
+
+	return string(b), err
+}

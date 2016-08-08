@@ -159,3 +159,15 @@ func (es *Elastic) PutMappingFromJSON(ctx context.Context, req *proto.PutMapping
 
 	return nil
 }
+
+// Status srv handler, check for Elastic Search status
+func (es *Elastic) Status(ctx context.Context, req *proto.StatusRequest, rsp *proto.StatusResponse) error {
+	status, err := elastic.ClusterState(req)
+	if err != nil {
+		return errors.InternalServerError("go.micro.srv.elastic.Elastic.Status", err.Error())
+	}
+
+	rsp.Status = status
+
+	return nil
+}

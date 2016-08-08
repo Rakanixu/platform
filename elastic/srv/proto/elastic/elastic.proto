@@ -12,6 +12,7 @@ service Elastic {
   rpc Query(QueryRequest) returns (QueryResponse) {}
   rpc CreateIndexWithSettings(CreateIndexWithSettingsRequest) returns (CreateIndexWithSettingsResponse) {}
   rpc PutMappingFromJSON(PutMappingFromJSONRequest) returns (PutMappingFromJSONRequest) {}
+  rpc Status(StatusRequest) returns (StatusResponse) {}
 }
 
 message DocRef {
@@ -110,4 +111,12 @@ message PutMappingFromJSONRequest {
 
 message PutMappingFromJSONResponse {
 
+}
+
+message StatusRequest {
+
+}
+
+message StatusResponse {
+  string status = 1;
 }
