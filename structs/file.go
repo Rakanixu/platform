@@ -39,6 +39,7 @@ type DesktopFile struct {
 	IsDir    bool        `json:"is_dir"`
 	Mode     os.FileMode `json:"mode"`
 	Category string      `json:"category"`
+	Depth    int64       `json:"depth"`
 }
 
 // Desktop file optimized
@@ -67,6 +68,7 @@ func NewDesktopFile(lf *LocalFile) *DesktopFile {
 		IsDir:    lf.Info.IsDir(),
 		Mode:     lf.Info.Mode(),
 		Category: categories.GetDocType(filepath.Ext(lf.Info.Name())),
+		Depth:    urlDepth(filepath.Dir(lf.Path)),
 	}
 }
 
@@ -223,4 +225,8 @@ func PseudoUUID() (uuid string) {
 	uuid = fmt.Sprintf("%X-%X-%X-%X-%X", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
 
 	return
+}
+
+func urlDepth(str string) int64 {
+	return int64(len(strings.Split(str, "/"))) - 1
 }

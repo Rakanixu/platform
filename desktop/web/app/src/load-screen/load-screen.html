@@ -2,25 +2,7 @@
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
-<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
-
-<link rel="import" href="../../bower_components/mat-list/mat-list.html">
-<link rel="import" href="../../bower_components/mat-text-field/mat-text-field.html">
-<link rel="import" href="../../bower_components/mat-icon/mat-icon.html">
-<link rel="import" href="../../bower_components/mat-icons/mat-icons.html">
-<link rel="import" href="../../bower_components/mat-avatar/mat-avatar.html">
-<link rel="import" href="../../bower_components/mat-button/mat-button.html">
-<link rel="import" href="../../bower_components/mat-icon-button/mat-icon-button.html">
-<link rel="import" href="../../bower_components/mat-ripple/mat-ripple.html">
-<link rel="import" href="../../bower_components/mat-item/mat-item.html">
-<link rel="import" href="../../bower_components/mat-divider/mat-divider.html">
-<link rel="import" href="../../bower_components/mat-breadcrumb/mat-breadcrumb.html">
-<link rel="import" href="../../bower_components/web-socket/web-socket.html">
-<link rel="import" href="../../bower_components/mat-toast/mat-toast.html">
-<link rel="import" href="../../bower_components/mat-typography/mat-typography.html">
-<link rel="import" href="../../bower_components/mat-snackbar/mat-snackbar.html">
-<link rel="import" href="../../bower_components/mat-ink/mat-ink.html">
 
 <link rel="import" href="../../src/behaviors/async-behavior.html">
 
@@ -64,12 +46,11 @@
         <div class="flex vertical layout">
           <div class="inner-container">
             <iron-image src="http://localhost:8082/desktop/src/static/kazoup-logo.png"></iron-image>
-            <paper-progress indeterminate> </paper-progress>
+            <paper-progress indeterminate></paper-progress>
             <p class="info">[[info]]</p>
           </div>
         </div>
       </div>
-
     </section>
 
     <iron-ajax id="rpcElasticStatus"
@@ -169,6 +150,7 @@
             if (status.master_node.length) {
               // ES not configured, set settings and mapping
               if (_.isEmpty(status.metadata.indices)) {
+                this.set('info', "Initializing search engine config ..");
                 this.$.rpcElasticSettings.generateRequest();
               } else {
                 this._loadPage(1, 'web-app-activated');
@@ -183,6 +165,7 @@
         _handleElasticSettings: function(e) {
           if (e.detail.response) {
             this.async(function() {
+              this.set('info', "Applying search engine mapping ..");
               this.$.rpcElasticMapping.generateRequest();
             }, this.wait);
           }
