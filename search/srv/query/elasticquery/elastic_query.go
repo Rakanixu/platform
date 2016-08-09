@@ -3,7 +3,6 @@ package elasticquery
 import (
 	"bytes"
 	"github.com/kazoup/platform/search/srv/query"
-	"log"
 	"strconv"
 )
 
@@ -12,6 +11,8 @@ type ElasticQuery struct {
 	From     int64
 	Size     int64
 	Category string
+	Url      string
+	Depth    int64
 	Querier  query.Querier
 }
 
@@ -24,12 +25,40 @@ func (e *ElasticQuery) Query() (string, error) {
 	buffer.WriteString(`"query": {"bool":{"must":[`)
 	buffer.WriteString(e.filterTerm())
 	buffer.WriteString(`], "filter":[`)
-	buffer.WriteString(e.filterCategory())
+	buffer.WriteString(e.filterCategory() + ",")
+	buffer.WriteString(e.filterDepth() + ",")
+	buffer.WriteString(e.filterUrl())
 	buffer.WriteString(`]}}}`)
 
-	log.Println(buffer.String())
-
 	return buffer.String(), nil
+}
+
+func (e *ElasticQuery) filterDepth() string {
+	var buffer bytes.Buffer
+
+	if e.Depth <= 0 {
+		buffer.WriteString(`{}`)
+	} else {
+		buffer.WriteString(`{"term": {"depth": "`)
+		buffer.WriteString(strconv.FormatInt(e.Depth, 10))
+		buffer.WriteString(`"}}`)
+	}
+
+	return buffer.String()
+}
+
+func (e *ElasticQuery) filterUrl() string {
+	var buffer bytes.Buffer
+
+	if len(e.Url) <= 0 {
+		buffer.WriteString(`{}`)
+	} else {
+		buffer.WriteString(`{"term": {"url": "`)
+		buffer.WriteString(e.Url)
+		buffer.WriteString(`"}}`)
+	}
+
+	return buffer.String()
 }
 
 func (e *ElasticQuery) filterTerm() string {

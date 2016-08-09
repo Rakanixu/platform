@@ -23,6 +23,8 @@ func (s *Search) Search(ctx context.Context, req *proto.SearchRequest, rsp *prot
 		From:     req.From,
 		Size:     req.Size,
 		Category: req.Category,
+		Url:      req.Url,
+		Depth:    req.Depth,
 	}
 	elasticQuery, err := elasticQueryObj.Query()
 	if err != nil {
