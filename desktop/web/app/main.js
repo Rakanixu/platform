@@ -176,9 +176,9 @@ function startService(path, args) {
     es = spawn(path, args, {
         wd: path
     });
-    es.stdout.on("data", function(data) {
-        console.log("stdout: " + data);
-    });
+    //es.stdout.on("data", function(data) {
+    //    console.log("stdout: " + data);
+    //});
     es.on("close", function(code, signal) {
         console.log("stdout: es process terminated due to receipt of signal " + signal);
     });
