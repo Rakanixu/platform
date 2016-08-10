@@ -218,6 +218,7 @@
                             </mat-item>
 
                             <mat-menu id="breadcrumbsMenu" position="baseline">
+                                <mat-option label="My Files" on-tap="setCategory" data-value=""></mat-option>
                                 <template id="breadcrumbsStepsMenu" is="dom-repeat" items="[[breadcrumbs]]">
                                     <mat-option label="[[item.label]]" on-tap="browse"></mat-option>
                                 </template>
@@ -447,12 +448,15 @@
                     this.$.filterConverter.addEventListener('filter-changed', this._handleFilterChanged.bind(this));
 
                     window.addEventListener('web-app-activated', this.init.bind(this));
-                    window.addEventListener('resize', function() {
+                    window.addEventListener('resize', function(e) {
+                        e.preventDefault();
+
                         clearTimeout(resizeCallback);
                         resizeCallback = setTimeout(function() {
-                            this.checkBreadcrumbsView();
+                            this.checkBreadcrumbsView(0);
                         }.bind(this), 300);
                     }.bind(this));
+
 
 /*                    var that = this;
                     //POC to dectect we are on Desktop App
@@ -474,7 +478,7 @@
                      });*/
                 },
                 init: function(e) {
-                    this.checkBreadcrumbsView();
+                    this.checkBreadcrumbsView(0);
                     this.$.filterConverter.setValues({
                       term: "",
                       from: 0,
@@ -496,7 +500,7 @@
                     }
                     this.$.breadcrumbsSteps.render();
                     this.$.breadcrumbsStepsMenu.render();
-                    this.checkBreadcrumbsView();
+                    this.checkBreadcrumbsView(0);
 
                     this.search();
                 },
@@ -661,7 +665,7 @@
                             url: e.model.__data__.item._source.url,
                             depth: e.model.__data__.item._source.depth + 1
                         });
-                        this.checkBreadcrumbsView();
+                        this.checkBreadcrumbsView(0);
 
                         this.$.filterConverter.setValues({
                             from: 0,
@@ -703,7 +707,7 @@
                     }
                     this.refreshView();
                 },
-                checkBreadcrumbsView: function() {
+                checkBreadcrumbsView: function(count) {
                     this.async(function() {
                         var containerWidth = document.querySelector('.browse').getBoundingClientRect().width
                         var crumbsWidth = 0;
@@ -721,16 +725,13 @@
                             this.$.fitBreadcrumbs.style.display = 'block';
                         }
 
-                        if (crumbsWidth === 0) {
-                            this.checkBreadcrumbsView();
+                        if (crumbsWidth === 0 && count < 3) {
+                            this.checkBreadcrumbsView(count);
                         }
-                    });
+                    }, 10);
                 },
                 handleSearchHeader: function(selected) {
                     return (selected !== 0);
-                },
-                lastBreadcrumb: function() {
-                    console.log("asd")
                 }
             });
         }());
