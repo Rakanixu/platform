@@ -25,6 +25,7 @@ import (
 
 func main() {
 	wd, _ := os.Getwd()
+	contentDir := "/"
 	log.Printf("volume name: %s  path :%s", filepath.VolumeName(wd), wd)
 	service := web.NewService(web.Name("go.micro.web.desktop"))
 	service.Handle("/", http.FileServer(http.Dir("app")))
@@ -54,7 +55,8 @@ func main() {
 	service.Handle("/frame/", http.StripPrefix("/frame/", handler.NewFrameHandler(contentDir)))
 	service.Handle("/segments/", http.StripPrefix("/segments/", handler.NewStreamHandler(contentDir)))
 
-	service.Handle("/webm/", http.StripPrefix("/webm/", handler.NewWebmHandler(contentDir)))
+	service.Handle("/mp4/", http.StripPrefix("/mp4/", handler.NewMP4Handler(contentDir)))
+	service.Handle("/raw/", http.StripPrefix("/raw/", handler.NewRAWHandler(contentDir)))
 	service.Init()
 	service.Run()
 }

@@ -38,7 +38,9 @@ function createWindow() {
     win = new BrowserWindow({
         width: 1024,
         height: 768,
-        webSecurity: false
+	webPreferences: {
+        	webSecurity: false
+	}
     });
     //Start micro services
     startServices()
