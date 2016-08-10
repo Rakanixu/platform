@@ -37,6 +37,7 @@
 <link rel="import" href="../../bower_components/mat-typography/mat-typography.html">
 <link rel="import" href="../../bower_components/mat-snackbar/mat-snackbar.html">
 <link rel="import" href="../../bower_components/mat-ink/mat-ink.html">
+<link rel="import" href="../../bower_components/mat-menu/mat-menu.html">
 
 <link rel="import" href="../../src/behaviors/util-behavior.html">
 <link rel="import" href="../../src/filter-converter/filter-converter.html">
@@ -79,6 +80,12 @@
                 flex: 1;
                 -webkit-flex-basis: 0.000000001px;
                 flex-basis: 0.000000001px;
+            }
+
+            #noFitBreadcrumbs mat-item mat-avatar {
+                background-color: #21a9f5;
+                pointer-events: none;
+                margin: 0 0 0 -12px;
             }
 
             .listContainer {
@@ -181,7 +188,9 @@
                         <paper-icon-button id="searchViewIcon" icon="[[view.icon]]" on-tap="toggleView"></paper-icon-button>
 
                         <div class="middle breadcrumbs">
-                            <mat-breadcrumb class="bottom browse"
+                            <!-- Breadcrumbs while browsing. Breadcrumbs fits into screen -->
+                            <mat-breadcrumb id="fitBreadcrumbs"
+                                            class="browse"
                                             hidden$="[[handleSearchHeader(selectedCategory.index)]]"
                                             shift="true">
                                 <mat-breadcrumb-step label="My Files" on-tap="setCategory" data-value=""></mat-breadcrumb-step>
@@ -190,11 +199,29 @@
                                 </template>
                             </mat-breadcrumb>
 
+                            <!-- Breadcrumbs for static category. No browsing -->
                             <mat-breadcrumb class="bottom"
                                             hidden$="[[!handleSearchHeader(selectedCategory.index)]]"
                                             shift="true">
                                 <mat-breadcrumb-step label="[[selectedCategory.label]]"></mat-breadcrumb-step>
                             </mat-breadcrumb>
+                        </div>
+
+                        <!-- Mobile breadcrumbs style like. -->
+                        <div id="noFitBreadcrumbs" class="bottom">
+                            <mat-item label="[[lastBreadcrumb.label]]"
+                                      behavior="toggle"
+                                      class="light"
+                                      target="breadcrumbsMenu"
+                                      style="font-size:20px;font-weight:400;">
+                                <mat-avatar class="secondary" icon="mat:arrow-drop-down"></mat-avatar>
+                            </mat-item>
+
+                            <mat-menu id="breadcrumbsMenu" position="baseline">
+                                <template id="breadcrumbsStepsMenu" is="dom-repeat" items="[[breadcrumbs]]">
+                                    <mat-option label="[[item.label]]" on-tap="browse"></mat-option>
+                                </template>
+                            </mat-menu>
                         </div>
 
                         <paper-progress id="progressBar"
@@ -399,12 +426,33 @@
                         value: function() {
                             return [];
                         }
+                    },
+                    lastBreadcrumb: {
+                        type: Object,
+                        notify: true,
+                        value: function() {
+                            return {};
+                        }
                     }
                 },
+                observers: [
+                    'breadcrumbsChanged(breadcrumbs.*)'
+                ],
+                breadcrumbsChanged: function(newVal, oldVal) {
+                    this.set('lastBreadcrumb', this.breadcrumbs[this.breadcrumbs.length -1]);
+                },
                 ready: function() {
+                    var resizeCallback;
+
                     this.$.filterConverter.addEventListener('filter-changed', this._handleFilterChanged.bind(this));
 
                     window.addEventListener('web-app-activated', this.init.bind(this));
+                    window.addEventListener('resize', function() {
+                        clearTimeout(resizeCallback);
+                        resizeCallback = setTimeout(function() {
+                            this.checkBreadcrumbsView();
+                        }.bind(this), 300);
+                    }.bind(this));
 
 /*                    var that = this;
                     //POC to dectect we are on Desktop App
@@ -426,6 +474,7 @@
                      });*/
                 },
                 init: function(e) {
+                    this.checkBreadcrumbsView();
                     this.$.filterConverter.setValues({
                       term: "",
                       from: 0,
@@ -446,6 +495,8 @@
                         this.set('breadcrumbs', this.breadcrumbs);
                     }
                     this.$.breadcrumbsSteps.render();
+                    this.$.breadcrumbsStepsMenu.render();
+                    this.checkBreadcrumbsView();
 
                     this.search();
                 },
@@ -602,7 +653,7 @@
                 },
                 mainAction: function(e, detail) {
                     if (e.model.__data__.item._source.is_dir) {
-                        // Browse one level deep
+                        // Browse one level deeper
                         this.clearIronList();
 
                         this.push('breadcrumbs', {
@@ -610,11 +661,7 @@
                             url: e.model.__data__.item._source.url,
                             depth: e.model.__data__.item._source.depth + 1
                         });
-
-/*                        this.async(function() {
-// Get sizes and play with them once rendered
-                           console.log(this.$.)
-                        });*/
+                        this.checkBreadcrumbsView();
 
                         this.$.filterConverter.setValues({
                             from: 0,
@@ -656,8 +703,34 @@
                     }
                     this.refreshView();
                 },
+                checkBreadcrumbsView: function() {
+                    this.async(function() {
+                        var containerWidth = document.querySelector('.browse').getBoundingClientRect().width
+                        var crumbsWidth = 0;
+
+                        _.forEach(document.querySelectorAll('.browse mat-breadcrumb-step'), function(breadcrumb) {
+                            crumbsWidth += breadcrumb.getBoundingClientRect().width
+                        });
+
+                        if (crumbsWidth > containerWidth) {
+                            // Breadcrumbs does not fit available space, collapse as mobile
+                            this.$.noFitBreadcrumbs.style.display = 'block';
+                            this.$.fitBreadcrumbs.style.display = 'none';
+                        } else {
+                            this.$.noFitBreadcrumbs.style.display = 'none';
+                            this.$.fitBreadcrumbs.style.display = 'block';
+                        }
+
+                        if (crumbsWidth === 0) {
+                            this.checkBreadcrumbsView();
+                        }
+                    });
+                },
                 handleSearchHeader: function(selected) {
                     return (selected !== 0);
+                },
+                lastBreadcrumb: function() {
+                    console.log("asd")
                 }
             });
         }());

@@ -25,6 +25,10 @@ mat-breadcrumb-step mat-icon {
     color: #fff !important;
 }
 
+mat-item.light mat-ink {
+    color: white;
+}
+
 .title {
     margin-top: auto;
     margin-bottom: auto;
@@ -40,10 +44,6 @@ mat-breadcrumb-step mat-icon {
     bottom: 0;
 }
 
-.grid mat-item.light mat-ink {
-    color: white;
-}
-
 .grid mat-avatar {
     margin: auto auto 36px auto;
     zoom: 2;
@@ -55,6 +55,10 @@ mat-breadcrumb-step mat-icon {
 
 .mat-breadcrumb-step-0 .anchor.mat-breadcrumb-step:after {
     height: 0;
+}
+
+#noFitBreadcrumbs .mat-item-0 .label.mat-item {
+    font-size: 20px;
 }
 
 @media (min-width: 1281px) {
