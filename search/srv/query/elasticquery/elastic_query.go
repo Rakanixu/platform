@@ -13,6 +13,7 @@ type ElasticQuery struct {
 	Category string
 	Url      string
 	Depth    int64
+	Type     string
 	Querier  query.Querier
 }
 
@@ -23,14 +24,30 @@ func (e *ElasticQuery) Query() (string, error) {
 	buffer.WriteString(e.filterFrom() + ",")
 	buffer.WriteString(e.filterSize() + ",")
 	buffer.WriteString(`"query": {"bool":{"must":[`)
-	buffer.WriteString(e.filterTerm())
+	buffer.WriteString(e.queryTerm())
 	buffer.WriteString(`], "filter":[`)
 	buffer.WriteString(e.filterCategory() + ",")
 	buffer.WriteString(e.filterDepth() + ",")
-	buffer.WriteString(e.filterUrl())
+	buffer.WriteString(e.filterUrl() + ",")
+	buffer.WriteString(e.filterType())
 	buffer.WriteString(`]}}}`)
 
 	return buffer.String(), nil
+}
+
+func (e *ElasticQuery) filterType() string {
+	var buffer bytes.Buffer
+
+	switch e.Type {
+	case "files":
+		buffer.WriteString(`{"term": {"is_dir": false}}`)
+	case "directories":
+		buffer.WriteString(`{"term": {"is_dir": true}}`)
+	default:
+		buffer.WriteString(`{}`)
+	}
+
+	return buffer.String()
 }
 
 func (e *ElasticQuery) filterDepth() string {
@@ -61,7 +78,7 @@ func (e *ElasticQuery) filterUrl() string {
 	return buffer.String()
 }
 
-func (e *ElasticQuery) filterTerm() string {
+func (e *ElasticQuery) queryTerm() string {
 	var buffer bytes.Buffer
 
 	if len(e.Term) <= 0 {

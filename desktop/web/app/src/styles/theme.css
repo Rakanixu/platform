@@ -16,6 +16,10 @@ paper-icon-button[icon=menu] {
     margin-right: 18px !important;
 }
 
+mat-breadcrumb-step a {
+    cursor: pointer;
+}
+
 mat-breadcrumb-step a mat-ink,
 mat-breadcrumb-step mat-icon {
     color: #fff !important;
@@ -49,9 +53,12 @@ mat-breadcrumb-step mat-icon {
     display: none;
 }
 
+.mat-breadcrumb-step-0 .anchor.mat-breadcrumb-step:after {
+    height: 0;
+}
+
 @media (min-width: 1281px) {
-    mat-breadcrumb.title {
+    .breadcrumbs {
         margin-left: 0 !important;
     }
-
 }

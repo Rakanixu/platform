@@ -31,6 +31,7 @@
 <link rel="import" href="../../bower_components/mat-item/mat-item.html">
 <link rel="import" href="../../bower_components/mat-divider/mat-divider.html">
 <link rel="import" href="../../bower_components/mat-breadcrumb/mat-breadcrumb.html">
+<link rel="import" href="../../bower_components/mat-breadcrumb/mat-breadcrumb-step.html">
 <link rel="import" href="../../bower_components/web-socket/web-socket.html">
 <link rel="import" href="../../bower_components/mat-toast/mat-toast.html">
 <link rel="import" href="../../bower_components/mat-typography/mat-typography.html">
@@ -39,7 +40,6 @@
 
 <link rel="import" href="../../src/behaviors/util-behavior.html">
 <link rel="import" href="../../src/filter-converter/filter-converter.html">
-
 
 <dom-module id="web-app">
     <template>
@@ -61,6 +61,24 @@
 
             paper-toolbar mat-text-field {
                 margin-top: 16px;
+            }
+
+            .breadcrumbs {
+                margin-left: 60px;
+                font-family: 'Roboto', 'Noto', sans-serif;
+                -webkit-font-smoothing: antialiased;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                font-size: 20px;
+                font-weight: 400;
+                line-height: 1.2;
+                pointer-events: none;
+                -ms-flex: 1 1 0.000000001px;
+                -webkit-flex: 1;
+                flex: 1;
+                -webkit-flex-basis: 0.000000001px;
+                flex-basis: 0.000000001px;
             }
 
             .listContainer {
@@ -162,18 +180,22 @@
 
                         <paper-icon-button id="searchViewIcon" icon="[[view.icon]]" on-tap="toggleView"></paper-icon-button>
 
+                        <div class="middle breadcrumbs">
+                            <mat-breadcrumb class="bottom browse"
+                                            hidden$="[[handleSearchHeader(selectedCategory.index)]]"
+                                            shift="true">
+                                <mat-breadcrumb-step label="My Files" on-tap="setCategory" data-value=""></mat-breadcrumb-step>
+                                <template id="breadcrumbsSteps" is="dom-repeat" items="[[breadcrumbs]]">
+                                    <mat-breadcrumb-step label="[[item.label]]" on-tap="browse"></mat-breadcrumb-step>
+                                </template>
+                            </mat-breadcrumb>
 
-                        <mat-breadcrumb class="extended bottom title"
-                                        hidden$="[[handleSearchHeader(selectedCategory.index)]]"
-                                        shift>
-                            <mat-breadcrumb-step label="My files"></mat-breadcrumb-step>
-                        </mat-breadcrumb>
-
-                        <mat-breadcrumb class="extended bottom title"
-                                        hidden$="[[!handleSearchHeader(selectedCategory.index)]]"
-                                        shift>
-                            <mat-breadcrumb-step label="[[selectedCategory.label]]"></mat-breadcrumb-step>
-                        </mat-breadcrumb>
+                            <mat-breadcrumb class="bottom"
+                                            hidden$="[[!handleSearchHeader(selectedCategory.index)]]"
+                                            shift="true">
+                                <mat-breadcrumb-step label="[[selectedCategory.label]]"></mat-breadcrumb-step>
+                            </mat-breadcrumb>
+                        </div>
 
                         <paper-progress id="progressBar"
                                         class="middle fit"
@@ -371,10 +393,12 @@
                         notify: true,
                         value: false
                     },
-                    q: {
-                        type: String,
+                    breadcrumbs: {
+                        type: Array,
                         notify: true,
-                        value: ""
+                        value: function() {
+                            return [];
+                        }
                     }
                 },
                 ready: function() {
@@ -414,12 +438,22 @@
                     ipcRenderer.on("home-dir-message", this._handleHomeDir.bind(this));
                 },
                 _handleFilterChanged: function(e) {
+                    var level = this.$.filterConverter.getFilterAsObj().depth - 1
+
+                    // Remove deeper breadcrumbs
+                    if (level < this.breadcrumbs.length) {
+                        this.breadcrumbs.splice(level, this.breadcrumbs.length - level)
+                        this.set('breadcrumbs', this.breadcrumbs);
+                    }
+                    this.$.breadcrumbsSteps.render();
+
                     this.search();
                 },
                 _handleScroll: function(e) {
                     if (!this.$.rpcElastic.loading) {
                         if (this.$.listContainer.clientHeight + this.$.listContainer.scrollTop >
-                          ((this.$.searchList._virtualCount / this.$.searchList._itemsPerRow) * this.$.searchList._physicalAverage) - 300) {
+                          ((this.$.searchList._virtualCount / this.$.searchList._itemsPerRow) *
+                          this.$.searchList._physicalAverage) - 300) {
                             this.$.filterConverter.setValue('from', this.$.filterConverter.getFilterAsObj().from + 20);
                         }
                     }
@@ -491,6 +525,15 @@
                         depth: (e.target.dataset.value || this.$.filterConverter.getFilterAsObj().term) ? 0 : 1
                     });
                 },
+                browse: function(e, detail) {
+                    this.clearIronList();
+                    this.$.filterConverter.setValues({
+                        from: 0,
+                        size: 20,
+                        url: e.model.__data__.item.url,
+                        depth: e.model.__data__.item.depth
+                    });
+                },
                 search: function(request) {
                     this.set('loading', true);
                     this.set('rpcElasticParams', {
@@ -509,6 +552,7 @@
                         clearTimeout(this.searchAsYouTypeTimeout);
                         this.searchAsYouTypeTimeout = setTimeout(function() {
                             this.set('itemSelected', false);
+                            this.set('breadcrumbs', []);
                             this.clearIronList();
 
                             this.$.filterConverter.setValues({
@@ -516,7 +560,8 @@
                                 size: 20,
                                 term: term,
                                 url: '',
-                                depth: 0
+                                depth: 0,
+                                type: 'files'
                             });
                         }.bind(this), 450);
                     }
@@ -530,7 +575,8 @@
                         from: 0,
                         size: 20,
                         url: '/',
-                        depth: this.selectedCategory.index ? 0 : 1
+                        depth: this.selectedCategory.index ? 0 : 1,
+                        type: '' // By default get files and directories
                     });
                     this.toggleSearch();
                 },
@@ -556,14 +602,28 @@
                 },
                 mainAction: function(e, detail) {
                     if (e.model.__data__.item._source.is_dir) {
+                        // Browse one level deep
                         this.clearIronList();
+
+                        this.push('breadcrumbs', {
+                            label: e.model.__data__.item._source.name,
+                            url: e.model.__data__.item._source.url,
+                            depth: e.model.__data__.item._source.depth + 1
+                        });
+
+/*                        this.async(function() {
+// Get sizes and play with them once rendered
+                           console.log(this.$.)
+                        });*/
+
                         this.$.filterConverter.setValues({
                             from: 0,
                             size: 20,
-                            url:e.model.__data__.item._source.url,
+                            url: e.model.__data__.item._source.url,
                             depth: e.model.__data__.item._source.depth + 1
                         });
                     } else {
+                        // Detail view
                         this.set('item', e.model.__data__.item);
                         this.set('itemSelected', true);
                         this.$.mainDrawerPanel.openDrawer();
