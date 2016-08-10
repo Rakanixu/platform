@@ -283,13 +283,28 @@
                     </paper-toolbar>
 
                     <!-- Right Content -->
-                    <div class="content">
-                        <iron-image src="http://www.freedigitalphotos.net/images/img/homepage/87357.jpg"></iron-image>
 
+		  <template is="dom-if" if="[[isImage(item._source.category)]]">
+                    <div class="content">
+                        <iron-image style="width:100%" preload fade
+				src="http://localhost:8082/desktop/image?source=[[item._source.url]]&width=600&mode=fit&quality=100"></iron-image>
                         <mat-item label="[[item._source.name]]"
                                   description="[[item._source.url]]"
                                   tabindex="-1"></mat-item>
                     </div>
+
+		</template>
+ <template is="dom-if" if="[[isVideo(item._source.category)]]" restamp="true">
+                    <div class="content">
+ <video id="video" controls preload="auto" width="100%" >
+	 <source src="[[getVideo(item._source.url)]]">
+</video>
+                        <mat-item label="[[item._source.name]]"
+                                  description="[[item._source.url]]"
+                                  tabindex="-1"></mat-item>
+                    </div>
+
+		</template>
                 </paper-header-panel>
 
             </paper-drawer-panel>
@@ -681,6 +696,7 @@
                         this.set('item', e.model.__data__.item);
                         this.set('itemSelected', true);
                         this.$.mainDrawerPanel.openDrawer();
+			document.querySelector("video").load()
                     }
                 },
                 closeDetails: function(e, detail) {

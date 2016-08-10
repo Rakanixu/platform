@@ -44,6 +44,13 @@
       isImage: function(category) {
         return (category === 'Image Files');
       },
+      isVideo: function(category){
+	      return (category === 'Video Files')
+	},
+     getVideo: function(path) {
+	console.log("Getting video ----")
+	return "http://localhost:8082/desktop/raw/" + path;
+     },
       replaceAll: function(str, search, replacement) {
         return  str.replace(new RegExp(search, 'g'), replacement);
       }
