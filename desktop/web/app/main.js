@@ -172,6 +172,13 @@ ipcMain.on("home-dir-message", (event, arg) => {
     event.sender.send("home-dir-message", os.homedir());
 });
 
+ipcMain.on("user-info-message", (event, arg) => {
+    event.sender.send("user-info-message", {
+        user: os.userInfo(),
+        hostname: os.hostname()
+    });
+});
+
 function startService(path, args) {
     es = spawn(path, args, {
         wd: path

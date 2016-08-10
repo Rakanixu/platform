@@ -127,7 +127,7 @@
             <!-- Nav Content -->
             <div class="nav" drawer>
                 <paper-toolbar class="medium-tall left-menu">
-                    <label is="mat-label" class="bottom">Email</label>
+                    <label is="mat-label" class="bottom">[[user.user.username]]@[[user.hostname]] </label>
                 </paper-toolbar>
 
                 <div class="content">
@@ -355,6 +355,11 @@
                         type: Array,
                         value: [],
                     },
+                    user: {
+                        type: Object,
+                        notify: false,
+                        value:{}
+                    },
                     rpcStartScanParams: {
                         type: Object,
                         notify: true
@@ -469,13 +474,8 @@
                         });
                     }*/
 
-                    /*                this.$.rpc.body = this.rpcParams;
-                     this.$.rpc.generateRequest();*/
-
-                    /*ipcRenderer.send("disks-message");
-                     ipcRenderer.on('disks-message', function(event, disks) {
-                     console.log("Got disks", disks);
-                     });*/
+                    ipcRenderer.send("user-info-message");
+                    ipcRenderer.on("user-info-message", this._handleUser.bind(this));
                 },
                 init: function(e) {
                     this.checkBreadcrumbsView(0);
@@ -536,6 +536,9 @@
                     this.set('homeDirPath', detail);
                     this.$.snackbar.label = this.homeDirPath;
                     this.$.snackbar.show();
+                },
+                _handleUser: function(e, detail) {
+                    this.set('user', detail);
                 },
                 _computeListWidth: function(isMobile) {
                     // when in mobile screen size, make the list be 100% width to cover the whole screen
