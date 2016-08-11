@@ -476,6 +476,11 @@
                         return [];
                     }
                 },
+                totalResults: {
+                    type: Number,
+                    notify: false,
+                    value: 0
+                },
                 searching: {
                     type: Boolean,
                     notify: true,
@@ -571,8 +576,11 @@
                     if (this.$.listContainer.clientHeight + this.$.listContainer.scrollTop >
                         ((this.$.searchList._virtualCount / this.$.searchList._itemsPerRow) *
                         this.$.searchList._physicalAverage) - 300) {
-
-                        this.$.filterConverter.setValue('from', this.$.filterConverter.getFilterAsObj().from + 20);
+                        var from = this.$.filterConverter.getFilterAsObj().from + 20;
+console.log(from > this.totalResults)
+                        if (from < this.totalResults) {
+                            this.$.filterConverter.setValue('from', from);
+                        }
                     }
                 }
             },
@@ -586,7 +594,7 @@
 
                 if (e.detail.response && e.detail.response.result) {
                     result = JSON.parse(e.detail.response.result);
-                    console.log(result.hits.total)
+                    this.set('totalResults', result.hits.total);
 
                     _.forEach(result.hits.hits, function(result) {
                         this.push('searchResults', result);
@@ -629,6 +637,7 @@
             },
             setCategory: function(e, detail) {
                 this.clearIronList();
+                this.$.navDrawerPanel.closeDrawer();
                 if (e.target.dataset.value === 'Image Files') {
                     this.setGridView();
                 } else {
