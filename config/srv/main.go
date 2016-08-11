@@ -27,7 +27,6 @@ func main() {
 		// Asset was not found.
 		log.Fatal(err)
 	}
-
 	// New service
 	service := micro.NewService(
 		micro.Name("go.micro.srv.config"),
