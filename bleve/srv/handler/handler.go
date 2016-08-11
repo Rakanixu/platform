@@ -12,3 +12,4 @@ type SearchBleve struct {
 func (bs *BleveSearch) Search(context.Context, *search.SearchRequest, *search.SearchResponse) error {
 	panic("not implemented")
 }
+
