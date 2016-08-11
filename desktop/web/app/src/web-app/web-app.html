@@ -314,7 +314,7 @@
 
         <mat-snackbar id="snackbar"
                       button="Scan"
-                      timeout="100000"
+                      timeout="10000000"
                       action-color="yellow"
                       label=""
                       on-xp-activate="startScan"></mat-snackbar>
@@ -492,18 +492,20 @@
                     ipcRenderer.send("user-info-message");
                     ipcRenderer.on("user-info-message", this._handleUser.bind(this));
                 },
-                init: function(e) {
-                    this.checkBreadcrumbsView(0);
-                    this.$.filterConverter.setValues({
-                      term: "",
-                      from: 0,
-                      size: 20,
-                      url: "/",
-                      depth: 1
-                    });
-
-                    ipcRenderer.send("home-dir-message");
-                    ipcRenderer.on("home-dir-message", this._handleHomeDir.bind(this));
+                init: function(e, detail) {
+                    if (e.data && e.data.first_scan) {
+                        ipcRenderer.send("home-dir-message");
+                        ipcRenderer.on("home-dir-message", this._handleHomeDir.bind(this));
+                    } else {
+                        this.checkBreadcrumbsView(0);
+                        this.$.filterConverter.setValues({
+                            term: "",
+                            from: 0,
+                            size: 20,
+                            url: "/",
+                            depth: 1
+                        });
+                    }
                 },
                 _handleFilterChanged: function(e) {
                     var level = this.$.filterConverter.getFilterAsObj().depth - 1
@@ -696,7 +698,7 @@
                         this.set('item', e.model.__data__.item);
                         this.set('itemSelected', true);
                         this.$.mainDrawerPanel.openDrawer();
-			document.querySelector("video").load()
+			                  document.querySelector("video").load()
                     }
                 },
                 closeDetails: function(e, detail) {

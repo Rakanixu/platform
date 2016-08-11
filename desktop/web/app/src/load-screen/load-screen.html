@@ -80,6 +80,15 @@
                on-response="_handleElasticMapping"
                params="{{rpcElasticMappingParams}}"></iron-ajax>
 
+    <iron-ajax id="rpcElasticSearch"
+               method="POST"
+               content-type="application/json"
+               url="http://localhost:8082/rpc"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleElasticSearch"
+               params="{{rpcElasticSearchParams}}"></iron-ajax>
+
   </template>
 
   <script>
@@ -100,15 +109,15 @@
           info: {
             type: String,
             notify: false,
-            value: "Starting search engine .."
+            value: 'Starting search engine ..'
           },
           rpcElasticStatusParams: {
             type: Object,
             notify: false,
             value: function() {
               return {
-                service: "go.micro.srv.desktop",
-                method: "Elastic.Status",
+                service: 'go.micro.srv.desktop',
+                method: 'Elastic.Status',
               };
             }
           },
@@ -117,8 +126,8 @@
             notify: false,
             value: function() {
               return {
-                service: "go.micro.srv.desktop",
-                method: "Config.SetElasticSettings",
+                service: 'go.micro.srv.desktop',
+                method: 'Config.SetElasticSettings',
               };
             }
           },
@@ -127,8 +136,22 @@
             notify: false,
             value: function() {
               return {
-                service: "go.micro.srv.desktop",
-                method: "Config.SetElasticMapping",
+                service: 'go.micro.srv.desktop',
+                method: 'Config.SetElasticMapping',
+              };
+            }
+          },
+          rpcElasticSearchParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: 'go.micro.srv.desktop',
+                method: 'Search.Search',
+                request: {
+                  from: 0,
+                  size: 0
+                }
               };
             }
           }
@@ -137,6 +160,7 @@
           this.$.rpcElasticStatus.body = this.rpcElasticStatusParams;
           this.$.rpcElasticSettings.body = this.rpcElasticSettingsParams;
           this.$.rpcElasticMapping.body = this.rpcElasticMappingParams;
+          this.$.rpcElasticSearch.body = this.rpcElasticSearchParams;
 
           this.$.rpcElasticStatus.generateRequest();
         },
@@ -150,10 +174,10 @@
             if (status.master_node.length) {
               // ES not configured, set settings and mapping
               if (_.isEmpty(status.metadata.indices)) {
-                this.set('info', "Initializing search engine config ..");
+                this.set('info', 'Initializing search engine config ..');
                 this.$.rpcElasticSettings.generateRequest();
               } else {
-                this._loadPage(1, 'web-app-activated');
+                this.$.rpcElasticSearch.generateRequest();
               }
             } else {
               this.async(function() {
@@ -165,7 +189,7 @@
         _handleElasticSettings: function(e) {
           if (e.detail.response) {
             this.async(function() {
-              this.set('info', "Applying search engine mapping ..");
+              this.set('info', 'Applying search engine mapping ..');
               this.$.rpcElasticMapping.generateRequest();
             }, this.wait);
           }
@@ -173,8 +197,15 @@
         _handleElasticMapping: function(e) {
           if (e.detail.response) {
             this.async(function() {
-              this._loadPage(1, 'web-app-activated');
+              this.$.rpcElasticSearch.generateRequest();
             }, this.wait);
+          }
+        },
+        _handleElasticSearch: function(e) {
+          if (e.detail.response) {
+            this._loadPage(1, 'web-app-activated', {
+              first_scan: !JSON.parse(e.detail.response.result).hits.total
+            });
           }
         },
         _handleError: function(e) {
@@ -182,7 +213,7 @@
         },
         _loadPage: function(selected, eventName, obj) {
           document.querySelector('#ironPages').selected = selected;
-          this.fireEvent(eventName);
+          this.fireEvent(eventName, obj);
         }
       });
     }());
