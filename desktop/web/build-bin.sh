@@ -17,7 +17,7 @@ DESKTOP_DIR=$GOPATH/src/github.com/kazoup/platform/desktop
 #cd ../ui/frontend && npm install && npm install gulp && bower install && node_modules/gulp/bin/gulp.js && cd ../..
 
 # Build binary distributable
-rm -rf  $GOPATH/src/github.com/kazoup/platform/desktop/bin
+rm -rf  $GOPATH/src/github.com/kazoup/platform/desktop/web/bin
 # crosscompile Kazoup CLI
 cd $DESKTOP_DIR/srv
 gox -verbose -os="darwin linux windows" -arch="amd64" -output $DESKTOP_DIR/web/bin/{{.OS}}/{{.Arch}}/kazoup-desktop
@@ -26,5 +26,9 @@ gox -verbose -os="darwin linux windows" -arch="amd64" -output $DESKTOP_DIR/web/b
 cd $GOPATH/src/github.com/micro/micro
 gox -verbose -os="darwin linux windows" -arch="amd64" -output $DESKTOP_DIR/web/bin/{{.OS}}/{{.Arch}}/micro
 cd $WORKING_DIR
+cd $DESKTOP_DIR/web/bin/darwin/amd64 && wget http://evermeet.cx/ffmpeg/ffmpeg-3.1.2.7z && 7z x ffmpeg-3.1.2.7z && rm -rf ffmpeg-3.1.2.7z
+cd $DESKTOP_DIR/web/bin/darwin/amd64 && wget http://evermeet.cx/ffmpeg/ffprobe-3.1.2.7z && 7z x ffprobe-3.1.2.7z && rm -rf ffprobe-3.1.2.7z
+cd $DESKTOP_DIR/web/bin/linux/amd64 && wget http://johnvansickle.com/ffmpeg/releases/ffmpeg-release-32bit-static.tar.xz && tar -zxvf  ffmpeg-release-32bit-static.tar.xz && rm -rf ffmpeg-release-32bit-static.tar.xz  
+cd $DESKTOP_DIR/web/bin/windows/amd64 && wget https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-3.0.1-win64-static.7z && 7z x ffmpeg-3.0.1-win64-static.7z && rm -rf ffmpeg-3.0.1-win64-static.7z
 
-
+cd $WORKING_DIR

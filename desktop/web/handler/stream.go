@@ -26,6 +26,6 @@ func (s *StreamHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Streaming second %v of %v with idx %s", startTime, filePath, idx)
 	log.Printf("Streaming second %v of %v", startTime, filePath)
 	log.Printf("Streaming second %v of %v with idx %s", startTime, filePath, idx)
-	cmd := exec.Command("/Users/radekdymacz/Downloads/ffmpeg", "-ss", fmt.Sprintf("%v", startTime), "-t", "5", "-i", filePath, "-vcodec", "libx264", "-strict", "experimental", "-acodec", "aac", "-pix_fmt", "yuv420p", "-r", "25", "-profile:v", "baseline", "-b:v", "2000k", "-maxrate", "2500k", "-f", "mpegts", "-")
+	cmd := exec.Command(FFMPEGPath(), "-ss", fmt.Sprintf("%v", startTime), "-t", "5", "-i", filePath, "-vcodec", "libx264", "-strict", "experimental", "-acodec", "aac", "-pix_fmt", "yuv420p", "-r", "25", "-profile:v", "baseline", "-b:v", "2000k", "-maxrate", "2500k", "-f", "mpegts", "-")
 	ServeCommand(cmd, w)
 }

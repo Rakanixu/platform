@@ -138,7 +138,7 @@
                         <paper-icon-item on-tap="setCategory" data-value="Document Files">
                             <iron-icon icon="editor:insert-drive-file" item-icon></iron-icon>Documents
                         </paper-icon-item>
-                        <paper-icon-item on-tap="setCategory" data-value="Video Files">
+                        <paper-icon-item on-tap="setCategory" data-value="Video">
                             <iron-icon icon="av:movie" item-icon></iron-icon>Movies
                         </paper-icon-item>
                         <paper-icon-item on-tap="setCategory" data-value="Image Files">
@@ -197,55 +197,60 @@
                                 <template id="breadcrumbsSteps" is="dom-repeat" items="[[breadcrumbs]]">
                                     <mat-breadcrumb-step label="[[item.label]]" on-tap="browse"></mat-breadcrumb-step>
                                 </template>
-                            </mat-breadcrumb>
+    </mat-breadcrumb>
 
-                            <!-- Breadcrumbs for static category. No browsing -->
-                            <mat-breadcrumb class="bottom"
-                                            hidden$="[[!handleSearchHeader(selectedCategory.index)]]"
-                                            shift="true">
-                                <mat-breadcrumb-step label="[[selectedCategory.label]]"></mat-breadcrumb-step>
-                            </mat-breadcrumb>
-                        </div>
+    <!-- Breadcrumbs for static category. No browsing -->
+    <mat-breadcrumb class="bottom" hidden$="[[!handleSearchHeader(selectedCategory.index)]]"
+        shift="true">
+        <mat-breadcrumb-step label="[[selectedCategory.label]]"></mat-breadcrumb-step>
+    </mat-breadcrumb>
+    </div>
 
-                        <!-- Mobile breadcrumbs style like. -->
-                        <div id="noFitBreadcrumbs" class="bottom">
-                            <mat-item label="[[lastBreadcrumb.label]]"
-                                      behavior="toggle"
-                                      class="light"
-                                      target="breadcrumbsMenu"
-                                      style="font-size:20px;font-weight:400;">
-                                <mat-avatar class="secondary" icon="mat:arrow-drop-down"></mat-avatar>
-                            </mat-item>
+    <!-- Mobile breadcrumbs style like. -->
+    <div id="noFitBreadcrumbs" class="bottom">
+        <mat-item label="[[lastBreadcrumb.label]]" behavior="toggle" class="light" target="breadcrumbsMenu"
+            style="font-size:20px;font-weight:400;">
+            <mat-avatar class="secondary" icon="mat:arrow-drop-down"></mat-avatar>
+        </mat-item>
 
-                            <mat-menu id="breadcrumbsMenu" position="baseline">
-                                <mat-option label="My Files" on-tap="setCategory" data-value=""></mat-option>
-                                <template id="breadcrumbsStepsMenu" is="dom-repeat" items="[[breadcrumbs]]">
+        <mat-menu id="breadcrumbsMenu" position="baseline">
+            <mat-option label="My Files" on-tap="setCategory" data-value=""></mat-option>
+            <template id="breadcrumbsStepsMenu" is="dom-repeat" items="[[breadcrumbs]]">
                                     <mat-option label="[[item.label]]" on-tap="browse"></mat-option>
                                 </template>
-                            </mat-menu>
-                        </div>
+        </mat-menu>
+    </div>
 
-                        <paper-progress id="progressBar"
-                                        class="middle fit"
-                                        hidden$="[[!loading]]"
-                                        indeterminate></paper-progress>
-                    </paper-toolbar>
+    <paper-progress id="progressBar" class="middle fit" hidden$="[[!loading]]" indeterminate></paper-progress>
+    </paper-toolbar>
 
-                    <!-- Search results -->
-                    <div id="listContainer" class="listContainer" on-scroll="_handleScroll">
-                        <iron-list id="searchList" items="[[searchResults]]">
-                            <template>
+    <!-- Search results -->
+    <div id="listContainer" class="listContainer" on-scroll="_handleScroll">
+        <iron-list id="searchList" items="[[searchResults]]">
+            <template>
                                 <div>
                                     <template is="dom-if" if="{{!view.isGrid}}" restamp="true">
-                                        <mat-item on-tap="mainAction"
+                                        
+					    <template is="dom-if" if="{{isVideo(item._source.category)}}">
+					    <mat-item on-tap="mainAction"
+                                                  label="[[item._source.name]]"
+                                                  description="[[item._source.url]]">
+						    <iron-image class="primary" src="http://localhost:8082/desktop/frame/[[item._source.url]]"  width="128" height="72" sizing="cover" > </iron-image>
+                                            <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
+                                            </mat-item>
+				            </template>
+
+            <template is="dom-if" if="{{!isVideo(item._source.category)}}">
+					    <mat-item on-tap="mainAction"
                                                   label="[[item._source.name]]"
                                                   description="[[item._source.url]]">
                                             <mat-avatar class="primary" icon="[[isDir(item._source.is_dir)]]"></mat-avatar>
                                             <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
-                                        </mat-item>
-                                    </template>
+                                            </mat-item>
+				            </template>
+            </template>
 
-                                    <template is="dom-if" if="{{view.isGrid}}" restamp="true">
+            <template is="dom-if" if="{{view.isGrid}}" restamp="true">
                                         <div class="photoContainer grid" on-tap="mainAction">
                                             <div class="photoContent" tabindex$="[[tabIndex]]">
                                                 <template is="dom-if" if="[[isImage(item._source.category)]]">
@@ -253,38 +258,37 @@
                                                                 src="http://localhost:8082/desktop/image?source=[[item._source.url]]&width=356&height=356&mode=fit&quality=100"></iron-image>
                                                 </template>
 
-                                                <template is="dom-if" if="[[!isImage(item._source.category)]]">
+            <template is="dom-if" if="[[!isImage(item._source.category)]]">
                                                     <mat-avatar icon="[[isDir(item._source.is_dir)]]"></mat-avatar>
                                                 </template>
 
-                                                <div class="detail">
-                                                    <mat-item class="light"
-                                                              label="[[item._source.name]]"></mat-item>
-                                                </div>
-                                                <mat-ripple></mat-ripple>
-                                            </div>
-                                        </div>
-                                    </template>
-                                </div>
-                            </template>
-                        </iron-list>
-                    </div>
+            <div class="detail">
+                <mat-item class="light" label="[[item._source.name]]"></mat-item>
+            </div>
+            <mat-ripple></mat-ripple>
+    </div>
+    </div>
+    </template>
+    </div>
+    </template>
+    </iron-list>
+    </div>
 
-                </paper-header-panel>
+    </paper-header-panel>
 
-                <paper-header-panel class="content-panel drawer" drawer>
-                    <!-- Right Toolbar -->
-                    <paper-toolbar  class="medium-tall">
-                        <paper-icon-button icon="icons:close" on-tap="closeDetails" tabindex="-1"></paper-icon-button>
+    <paper-header-panel class="content-panel drawer" drawer>
+        <!-- Right Toolbar -->
+        <paper-toolbar class="medium-tall">
+            <paper-icon-button icon="icons:close" on-tap="closeDetails" tabindex="-1"></paper-icon-button>
 
-                        <div class="bottom">
-                            <span>[[item._source.name]]</span>
-                        </div>
-                    </paper-toolbar>
+            <div class="bottom">
+                <span>[[item._source.name]]</span>
+            </div>
+        </paper-toolbar>
 
-                    <!-- Right Content -->
+        <!-- Right Content -->
 
-		  <template is="dom-if" if="[[isImage(item._source.category)]]">
+        <template is="dom-if" if="[[isImage(item._source.category)]]">
                     <div class="content">
                         <iron-image style="width:100%" preload fade
 				src="http://localhost:8082/desktop/image?source=[[item._source.url]]&width=600&mode=fit&quality=100"></iron-image>
@@ -294,11 +298,11 @@
                     </div>
 
 		</template>
- <template is="dom-if" if="[[isVideo(item._source.category)]]" restamp="true">
+        <template is="dom-if" if="[[isVideo(item._source.category)]]" restamp="true">
                     <div class="content">
- <video id="video" controls preload="auto" width="100%" >
-	 <source src="[[getVideo(item._source.url)]]">
-</video>
+ 			<video id="video" controls preload="auto" width="100%" >
+	 		<source src="[[getVideo(item._source.url)]]">
+			</video>
                         <mat-item label="[[item._source.name]]"
                                   description="[[item._source.url]]"
                                   tabindex="-1"></mat-item>
@@ -353,105 +357,153 @@
 
         <iron-media-query query="(min-width: 1281px)"
                           query-matches="{{mediaQueryLarge}}"></iron-media-query>
+    </paper-header-panel>
 
+    </paper-drawer-panel>
+    </paper-drawer-panel>
+
+    <filter-converter id="filterConverter"></filter-converter>
+
+    <mat-snackbar id="snackbar" button="Scan" timeout="100000" action-color="yellow"
+        label="" on-xp-activate="startScan"></mat-snackbar>
+
+    <web-socket url="ws://localhost:8082/desktop/status" auto json on-open="_onOpen"
+        on-close="_onClose" on-message="_onMessage" on-error="_onError"></web-socket>
+
+    <iron-ajax id="rpcStartScan" method="POST" content-type="application/json" url="http://localhost:8082/rpc"
+        handle-as="json" on-error="_handleError" on-response="_handleStartScan" params="{{rpcStartScanParams}}"></iron-ajax>
+
+    <iron-ajax id="rpcElastic" method="POST" content-type="application/json" url="http://localhost:8082/rpc"
+        handle-as="json" on-error="_handleError" on-response="_handleElastic" params="{{rpcElasticParams}}"></iron-ajax>
+
+    <iron-media-query query="(min-width: 601px)" query-matches="{{mediaQuerySmall}}"></iron-media-query>
+
+    <iron-media-query query="(min-width: 961px)" query-matches="{{mediaQueryMedium}}"></iron-media-query>
+
+    <iron-media-query query="(min-width: 1281px)" query-matches="{{mediaQueryLarge}}"></iron-media-query>
     </template>
 
     <script>
         'use strict';
 
-        (function() {
-            Polymer({
+        (function()
+        {
+            Polymer(
+            {
                 is: 'web-app',
                 behaviors: [
                     Polymer.UtilBehaviorImp
                 ],
-                properties: {
-                    disks: {
+                properties:
+                {
+                    disks:
+                    {
                         type: Array,
                         value: [],
                     },
-                    user: {
+                    user:
+                    {
                         type: Object,
                         notify: false,
-                        value:{}
+                        value:
+                        {}
                     },
-                    rpcStartScanParams: {
+                    rpcStartScanParams:
+                    {
                         type: Object,
                         notify: true
                     },
-                    rpcElasticParams: {
+                    rpcElasticParams:
+                    {
                         type: Object,
                         notify: true
                     },
-                    rpcResponse: {
+                    rpcResponse:
+                    {
                         type: Object,
                         notify: true,
                         value: undefined
                     },
-                    homeDirPath: {
+                    homeDirPath:
+                    {
                         type: String,
                         notify: false
                     },
-                    selectedCategory: {
+                    selectedCategory:
+                    {
                         type: Object,
                         notify: true,
-                        value: function() {
+                        value: function()
+                        {
                             return {
                                 index: 0,
                                 label: 'My Files'
                             }
                         }
                     },
-                    item: {
+                    item:
+                    {
                         type: Object,
                         notify: true,
-                        value: function() {
+                        value: function()
+                        {
                             return {};
                         }
                     },
-                    itemSelected: {
+                    itemSelected:
+                    {
                         type: Boolean,
                         notify: true,
                         value: false
                     },
-                    view: {
+                    view:
+                    {
                         type: Object,
                         notify: true,
-                        value: function() {
+                        value: function()
+                        {
                             return {
                                 icon: 'icons:view-module',
                                 isGrid: false
                             };
                         }
                     },
-                    searchResults: {
+                    searchResults:
+                    {
                         type: Array,
                         notify: true,
-                        value: function() {
+                        value: function()
+                        {
                             return [];
                         }
                     },
-                    searching: {
+                    searching:
+                    {
                         type: Boolean,
                         notify: true,
                         value: false
                     },
-                    loading: {
+                    loading:
+                    {
                         type: Boolean,
                         notify: true,
                         value: false
                     },
-                    breadcrumbs: {
+                    breadcrumbs:
+                    {
                         type: Array,
                         notify: true,
-                        value: function() {
+                        value: function()
+                        {
                             return [];
                         }
                     },
-                    lastBreadcrumb: {
+                    lastBreadcrumb:
+                    {
                         type: Object,
                         notify: true,
-                        value: function() {
+                        value: function()
+                        {
                             return {};
                         }
                     }
@@ -459,38 +511,51 @@
                 observers: [
                     'breadcrumbsChanged(breadcrumbs.*)'
                 ],
-                breadcrumbsChanged: function(newVal, oldVal) {
-                    this.set('lastBreadcrumb', this.breadcrumbs[this.breadcrumbs.length -1]);
+                breadcrumbsChanged: function(newVal, oldVal)
+                {
+                    this.set('lastBreadcrumb', this.breadcrumbs[
+                        this.breadcrumbs.length - 1]);
                 },
-                ready: function() {
+                ready: function()
+                {
                     var resizeCallback;
 
-                    this.$.filterConverter.addEventListener('filter-changed', this._handleFilterChanged.bind(this));
+                    this.$.filterConverter.addEventListener(
+                        'filter-changed', this._handleFilterChanged
+                        .bind(this));
 
-                    window.addEventListener('web-app-activated', this.init.bind(this));
-                    window.addEventListener('resize', function(e) {
-                        e.preventDefault();
+                    window.addEventListener(
+                        'web-app-activated', this.init.bind(
+                            this));
+                    window.addEventListener('resize',
+                        function(e)
+                        {
+                            e.preventDefault();
 
-                        clearTimeout(resizeCallback);
-                        resizeCallback = setTimeout(function() {
-                            this.checkBreadcrumbsView(0);
-                        }.bind(this), 300);
-                    }.bind(this));
+                            clearTimeout(resizeCallback);
+                            resizeCallback = setTimeout(
+                                function()
+                                {
+                                    this.checkBreadcrumbsView(
+                                        0);
+                                }.bind(this), 300);
+                        }.bind(this));
 
 
-/*                    var that = this;
-                    //POC to dectect we are on Desktop App
-                    if (typeof window !== 'undefined' && window.process && window.process.type === "renderer") {
-                        console.log("We are in Electron ! Let's Go ! ");
-                        ipcRenderer.on('disks-message', function(event, disks) {
-                            that.disks = disks;
-                            that.$.toast.label = "Got disk " + disks[0]['description'];
-                            that.$.toast.show();
-                        });
-                    }*/
+                    /*                    var that = this;
+                                        //POC to dectect we are on Desktop App
+                                        if (typeof window !== 'undefined' && window.process && window.process.type === "renderer") {
+                                            console.log("We are in Electron ! Let's Go ! ");
+                                            ipcRenderer.on('disks-message', function(event, disks) {
+                                                that.disks = disks;
+                                                that.$.toast.label = "Got disk " + disks[0]['description'];
+                                                that.$.toast.show();
+                                            });
+                                        }*/
 
                     ipcRenderer.send("user-info-message");
-                    ipcRenderer.on("user-info-message", this._handleUser.bind(this));
+                    ipcRenderer.on("user-info-message", this._handleUser
+                        .bind(this));
                 },
                 init: function(e, detail) {
                     if (e.data && e.data.first_scan) {
@@ -507,12 +572,16 @@
                         });
                     }
                 },
-                _handleFilterChanged: function(e) {
-                    var level = this.$.filterConverter.getFilterAsObj().depth - 1
+                _handleFilterChanged: function(e)
+                {
+                    var level = this.$.filterConverter.getFilterAsObj()
+                        .depth - 1
 
                     // Remove deeper breadcrumbs
-                    if (level < this.breadcrumbs.length) {
-                        this.breadcrumbs.splice(level, this.breadcrumbs.length - level)
+                    if (level < this.breadcrumbs.length)
+                    {
+                        this.breadcrumbs.splice(level, this.breadcrumbs
+                            .length - level)
                         this.set('breadcrumbs', this.breadcrumbs);
                     }
                     this.$.breadcrumbsSteps.render();
@@ -521,237 +590,336 @@
 
                     this.search();
                 },
-                _handleScroll: function(e) {
-                    if (!this.$.rpcElastic.loading) {
-                        if (this.$.listContainer.clientHeight + this.$.listContainer.scrollTop >
-                          ((this.$.searchList._virtualCount / this.$.searchList._itemsPerRow) *
-                          this.$.searchList._physicalAverage) - 300) {
-                            this.$.filterConverter.setValue('from', this.$.filterConverter.getFilterAsObj().from + 20);
+                _handleScroll: function(e)
+                {
+                    if (!this.$.rpcElastic.loading)
+                    {
+                        if (this.$.listContainer.clientHeight +
+                            this.$.listContainer.scrollTop >
+                            ((this.$.searchList._virtualCount /
+                                    this.$.searchList._itemsPerRow
+                                ) *
+                                this.$.searchList._physicalAverage
+                            ) - 300)
+                        {
+                            this.$.filterConverter.setValue(
+                                'from', this.$.filterConverter
+                                .getFilterAsObj().from +
+                                20);
                         }
                     }
                 },
-                _handleStartScan: function(e) {
-                    if (e.detail.response) {
+                _handleStartScan: function(e)
+                {
+                    if (e.detail.response)
+                    {
                         this.search();
                     }
                 },
-                _handleElastic: function(e) {
+                _handleElastic: function(e)
+                {
                     var result;
 
-                    if (e.detail.response && e.detail.response.result) {
-                        result = JSON.parse(e.detail.response.result);
+                    if (e.detail.response && e.detail.response
+                        .result)
+                    {
+                        result = JSON.parse(e.detail.response
+                            .result);
                         console.log(result.hits.total)
 
-                        _.forEach(result.hits.hits, function(result) {
-                            this.push('searchResults', result);
+                        _.forEach(result.hits.hits, function(
+                            result)
+                        {
+                            this.push('searchResults',
+                                result);
                         }, this);
                         this.$.searchList.fire('iron-resize');
                     }
                     this.set('loading', false);
                 },
-                _handleHomeDir: function(e, detail) {
+                _handleHomeDir: function(e, detail)
+                {
                     this.set('homeDirPath', detail);
                     this.$.snackbar.label = this.homeDirPath;
                     this.$.snackbar.show();
                 },
-                _handleUser: function(e, detail) {
+                _handleUser: function(e, detail)
+                {
                     this.set('user', detail);
                 },
-                _computeListWidth: function(isMobile) {
+                _computeListWidth: function(isMobile)
+                {
                     // when in mobile screen size, make the list be 100% width to cover the whole screen
                     return isMobile ? '100%' : '35%';
                 },
-                _listTap: function() {
+                _listTap: function()
+                {
                     this.$.mainDrawerPanel.closeDrawer();
                 },
-                _onOpen: function() {
+                _onOpen: function()
+                {
                     console.log("Opening WS")
                 },
-                _onClose: function() {
+                _onClose: function()
+                {
                     console.log("Closing WS")
                 },
-                _onMessage: function(e) {
+                _onMessage: function(e)
+                {
                     //console.log("Message from WS ", e.detail)
                 },
-                _onError: function(e) {
+                _onError: function(e)
+                {
                     console.log(e)
                 },
-                clearIronList: function() {
+                clearIronList: function()
+                {
                     this.set('searchResults', []);
                     this.$.searchList.fire('iron-resize');
                 },
-                setCategory: function(e, detail) {
+                setCategory: function(e, detail)
+                {
                     this.clearIronList();
-                    if (e.target.dataset.value === 'Image Files') {
+                    if (e.target.dataset.value ===
+                        'Image Files')
+                    {
                         this.setGridView();
-                    } else {
+                    }
+                    else
+                    {
                         this.setListView();
                     }
                     this.refreshView();
-                    this.set('selectedCategory.label', e.target.dataset.value);
+                    this.set('selectedCategory.label', e.target
+                        .dataset.value);
 
                     // depth must be 0 for search
                     // When there is no search term and user didn't selected a category, then browse
-                    this.$.filterConverter.setValues({
+                    this.$.filterConverter.setValues(
+                    {
                         from: 0,
                         size: 20,
                         category: e.target.dataset.value,
                         url: '/',
-                        depth: (e.target.dataset.value || this.$.filterConverter.getFilterAsObj().term) ? 0 : 1
+                        depth: (e.target.dataset.value ||
+                            this.$.filterConverter
+                            .getFilterAsObj().term
+                        ) ? 0 : 1
                     });
                 },
-                browse: function(e, detail) {
+                browse: function(e, detail)
+                {
                     this.clearIronList();
-                    this.$.filterConverter.setValues({
+                    this.$.filterConverter.setValues(
+                    {
                         from: 0,
                         size: 20,
                         url: e.model.__data__.item.url,
                         depth: e.model.__data__.item.depth
                     });
                 },
-                search: function(request) {
+                search: function(request)
+                {
                     this.set('loading', true);
-                    this.set('rpcElasticParams', {
+                    this.set('rpcElasticParams',
+                    {
                         service: "go.micro.srv.desktop",
                         method: "Search.Search",
-                        request: this.$.filterConverter.getFilterAsObj()
+                        request: this.$.filterConverter
+                            .getFilterAsObj()
                     });
 
                     this.$.rpcElastic.body = this.rpcElasticParams;
                     this.$.rpcElastic.generateRequest();
                 },
-                searchAsYouType: function(e, detail) {
+                searchAsYouType: function(e, detail)
+                {
                     var term = this.$.search.input.value;
 
-                    if (term.length > 2 || term.length === 0) {
+                    if (term.length > 2 || term.length === 0)
+                    {
                         clearTimeout(this.searchAsYouTypeTimeout);
-                        this.searchAsYouTypeTimeout = setTimeout(function() {
-                            this.set('itemSelected', false);
-                            this.set('breadcrumbs', []);
-                            this.clearIronList();
+                        this.searchAsYouTypeTimeout =
+                            setTimeout(function()
+                            {
+                                this.set('itemSelected',
+                                    false);
+                                this.set('breadcrumbs', []);
+                                this.clearIronList();
 
-                            this.$.filterConverter.setValues({
-                                from: 0,
-                                size: 20,
-                                term: term,
-                                url: '',
-                                depth: 0,
-                                type: 'files'
-                            });
-                        }.bind(this), 450);
+                                this.$.filterConverter.setValues(
+                                {
+                                    from: 0,
+                                    size: 20,
+                                    term: term,
+                                    url: '',
+                                    depth: 0,
+                                    type: 'files'
+                                });
+                            }.bind(this), 450);
                     }
                 },
-                resetSearch: function(e, detail) {
+                resetSearch: function(e, detail)
+                {
                     this.set('itemSelected', false);
                     this.clearIronList();
 
-                    this.$.filterConverter.setValues({
+                    this.$.filterConverter.setValues(
+                    {
                         term: '',
                         from: 0,
                         size: 20,
                         url: '/',
-                        depth: this.selectedCategory.index ? 0 : 1,
+                        depth: this.selectedCategory.index ?
+                            0 : 1,
                         type: '' // By default get files and directories
                     });
                     this.toggleSearch();
                 },
-                toggleSearch: function(e, detail) {
-                    this.$.search.input.value = this.$.filterConverter.getFilterAsObj().term;
+                toggleSearch: function(e, detail)
+                {
+                    this.$.search.input.value = this.$.filterConverter
+                        .getFilterAsObj().term;
                     this.$.search._inputHandler();
 
-                    this.async(function() {
+                    this.async(function()
+                    {
                         this.$.search.focus();
                     }, 1);
                     this.set('searching', !this.searching);
                 },
-                startScan: function(e, detail) {
-                    this.set('rpcParams', {
+                startScan: function(e, detail)
+                {
+                    this.set('rpcParams',
+                    {
                         service: "go.micro.srv.desktop",
                         method: "Crawl.Start",
-                        request: {
+                        request:
+                        {
                             url: 'local://' + this.homeDirPath
                         }
                     });
                     this.$.rpcStartScan.body = this.rpcParams;
                     this.$.rpcStartScan.generateRequest();
                 },
-                mainAction: function(e, detail) {
-                    if (e.model.__data__.item._source.is_dir) {
+                mainAction: function(e, detail)
+                {
+                    if (e.model.__data__.item._source.is_dir)
+                    {
                         // Browse one level deeper
                         this.clearIronList();
 
-                        this.push('breadcrumbs', {
-                            label: e.model.__data__.item._source.name,
-                            url: e.model.__data__.item._source.url,
-                            depth: e.model.__data__.item._source.depth + 1
+                        this.push('breadcrumbs',
+                        {
+                            label: e.model.__data__.item
+                                ._source.name,
+                            url: e.model.__data__.item
+                                ._source.url,
+                            depth: e.model.__data__.item
+                                ._source.depth + 1
                         });
                         this.checkBreadcrumbsView(0);
 
-                        this.$.filterConverter.setValues({
+                        this.$.filterConverter.setValues(
+                        {
                             from: 0,
                             size: 20,
-                            url: e.model.__data__.item._source.url,
-                            depth: e.model.__data__.item._source.depth + 1
+                            url: e.model.__data__.item
+                                ._source.url,
+                            depth: e.model.__data__.item
+                                ._source.depth + 1
                         });
-                    } else {
+                    }
+                    else
+                    {
                         // Detail view
                         this.set('item', e.model.__data__.item);
                         this.set('itemSelected', true);
                         this.$.mainDrawerPanel.openDrawer();
-			                  document.querySelector("video").load()
+                        document.querySelector("video").load()
                     }
                 },
-                closeDetails: function(e, detail) {
+                closeDetails: function(e, detail)
+                {
                     this.set('itemSelected', false);
                     this.$.mainDrawerPanel.closeDrawer();
                 },
-                refreshView: function() {
+                refreshView: function()
+                {
                     this.$.searchList.fire('iron-resize');
                     this.$.searchList.notifyResize();
                     this.$.searchList.scrollToIndex(0);
                 },
-                setGridView: function() {
+                setGridView: function()
+                {
                     this.set('view.icon', 'icons:view-list');
                     this.$.searchList.setAttribute('grid', '');
                     this.set('view.isGrid', true);
                 },
-                setListView: function() {
+                setListView: function()
+                {
                     this.set('view.icon', 'icons:view-module');
                     this.$.searchList.removeAttribute('grid');
                     this.set('view.isGrid', false);
                 },
-                toggleView: function(e, detail) {
-                    if (this.view.isGrid) {
+                toggleView: function(e, detail)
+                {
+                    if (this.view.isGrid)
+                    {
                         this.setListView();
-                    } else {
+                    }
+                    else
+                    {
                         this.setGridView();
                     }
                     this.refreshView();
                 },
-                checkBreadcrumbsView: function(count) {
-                    this.async(function() {
-                        var containerWidth = document.querySelector('.browse').getBoundingClientRect().width
+                checkBreadcrumbsView: function(count)
+                {
+                    this.async(function()
+                    {
+                        var containerWidth = document
+                            .querySelector('.browse')
+                            .getBoundingClientRect().width
                         var crumbsWidth = 0;
 
-                        _.forEach(document.querySelectorAll('.browse mat-breadcrumb-step'), function(breadcrumb) {
-                            crumbsWidth += breadcrumb.getBoundingClientRect().width
+                        _.forEach(document.querySelectorAll(
+                            '.browse mat-breadcrumb-step'
+                        ), function(
+                            breadcrumb)
+                        {
+                            crumbsWidth +=
+                                breadcrumb.getBoundingClientRect()
+                                .width
                         });
 
-                        if (crumbsWidth > containerWidth) {
+                        if (crumbsWidth >
+                            containerWidth)
+                        {
                             // Breadcrumbs does not fit available space, collapse as mobile
-                            this.$.noFitBreadcrumbs.style.display = 'block';
-                            this.$.fitBreadcrumbs.style.display = 'none';
-                        } else {
-                            this.$.noFitBreadcrumbs.style.display = 'none';
-                            this.$.fitBreadcrumbs.style.display = 'block';
+                            this.$.noFitBreadcrumbs.style
+                                .display = 'block';
+                            this.$.fitBreadcrumbs.style
+                                .display = 'none';
+                        }
+                        else
+                        {
+                            this.$.noFitBreadcrumbs.style
+                                .display = 'none';
+                            this.$.fitBreadcrumbs.style
+                                .display = 'block';
                         }
 
-                        if (crumbsWidth === 0 && count < 3) {
-                            this.checkBreadcrumbsView(count);
+                        if (crumbsWidth === 0 &&
+                            count < 3)
+                        {
+                            this.checkBreadcrumbsView(
+                                count);
                         }
                     }, 10);
                 },
-                handleSearchHeader: function(selected) {
+                handleSearchHeader: function(selected)
+                {
                     return (selected !== 0);
                 }
             });

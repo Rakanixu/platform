@@ -45,10 +45,9 @@
         return (category === 'Image Files');
       },
       isVideo: function(category){
-	      return (category === 'Video Files')
+	      return (category === 'Video')
 	},
      getVideo: function(path) {
-	console.log("Getting video ----")
 	return "http://localhost:8082/desktop/raw/" + path;
      },
       replaceAll: function(str, search, replacement) {

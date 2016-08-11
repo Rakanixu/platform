@@ -6,11 +6,39 @@ import (
 	"io"
 	"log"
 	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 	"syscall"
 )
 
+func FFMPEGPath() string {
+
+	switch runtime.GOOS {
+	case "windows":
+		return "bin/windows/amd64/ffmpeg-3.0.1-win64-static/bin/ffmpeg.exe"
+	case "linux":
+		return "bin/linux/amd64/ffmpeg-3.1.2-32bit-static/ffmpeg"
+	case "darwin":
+		return "bin/darwin/amd64/ffmpeg"
+	default:
+		return ""
+	}
+}
+
+func FFProbePath() string {
+
+	switch runtime.GOOS {
+	case "windows":
+		return "bin/windows/amd64/ffmpeg-3.0.1-win64-static/bin/ffprobe.exe"
+	case "linux":
+		return "bin/linux/amd64/ffmpeg-3.1.2-32bit-static/ffprobe"
+	case "darwin":
+		return "bin/darwin/amd64/ffprobe"
+	default:
+		return ""
+	}
+}
 func ServeCommand(cmd *exec.Cmd, w io.Writer) error {
 	stdout, err := cmd.StdoutPipe()
 	defer stdout.Close()
@@ -53,7 +81,7 @@ func FilenameLooksLikeVideo(name string) bool {
 
 func GetRawFFMPEGInfo(path string) ([]byte, error) {
 	log.Printf("Executing ffprobe for %v", path)
-	cmd := exec.Command("/Users/radekdymacz/Downloads/ffprobe", "-v", "quiet", "-print_format", "json", "-show_format", ""+path+"")
+	cmd := exec.Command(FFProbePath(), "-v", "quiet", "-print_format", "json", "-show_format", ""+path+"")
 	data, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("Error executing ffprobe for file '%v':", path, err)
