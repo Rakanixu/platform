@@ -15,25 +15,7 @@ var (
 	CrawlClient crawl.CrawlClient
 )
 
-func Status(ws *websocket.Conn) {
-	log.Print("Recive message on websocket")
-	//for {
-
-	//	if err := websocket.JSON.Send(ws, "ping"); err != nil {
-	//		log.Print(err)
-	//		return
-	//	}
-	//	time.Sleep(2 * time.Second)
-	//}
-	////Recive message on websocket
-	//if err := websocket.JSON.Receive(ws, &m); err != nil {
-	//	fmt.Println("err", err)
-	//	return
-	//}
-	//c := crawl.NewCrawlClient("go.micro.srv.desktop", nil)
-	//
-	// Create new request to service go.micro.srv.example, method Example.Call
-	// Request can be empty as its actually ignored and merely used to call the handler
+func CrawlerStatus(ws *websocket.Conn) {
 	req := client.NewRequest("go.micro.srv.desktop", "Crawl.Status", &crawl.StatusRequest{})
 
 	stream, err := client.Stream(context.Background(), req)

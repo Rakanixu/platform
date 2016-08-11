@@ -45,5 +45,6 @@ func (s *WebmHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	)
 
 	log.Printf("Streaming %v", filePath)
+
 	ServeCommand(cmd, w)
 }

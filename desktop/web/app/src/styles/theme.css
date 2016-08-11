@@ -22,6 +22,7 @@
   /* Smoother startup */
   animation: fadein 0.5s;
 }
+
 paper-icon-item {
     cursor: pointer;
 }
@@ -88,5 +89,9 @@ mat-item.light mat-ink {
 @media (min-width: 1281px) {
     .breadcrumbs {
         margin-left: 0 !important;
+    }
+
+    #noFitBreadcrumbs {
+        margin-left: -15px !important;
     }
 }

@@ -26,6 +26,7 @@
 <link rel="import" href="../../bower_components/mat-icons/mat-icons.html">
 <link rel="import" href="../../bower_components/mat-avatar/mat-avatar.html">
 <link rel="import" href="../../bower_components/mat-button/mat-button.html">
+<link rel="import" href="../../bower_components/mat-raised-button/mat-raised-button.html">
 <link rel="import" href="../../bower_components/mat-icon-button/mat-icon-button.html">
 <link rel="import" href="../../bower_components/mat-ripple/mat-ripple.html">
 <link rel="import" href="../../bower_components/mat-item/mat-item.html">
@@ -64,6 +65,17 @@
                 margin-top: 16px;
             }
 
+            .scan-container {
+                position: absolute;
+                bottom: 15px;
+            }
+
+            .scan-container mat-raised-button {
+                background-color: var(--dark-primary);
+                color: #fff;
+                margin-left: 70px;
+            }
+
             .breadcrumbs {
                 margin-left: 60px;
                 font-family: 'Roboto', 'Noto', sans-serif;
@@ -80,6 +92,10 @@
                 flex: 1;
                 -webkit-flex-basis: 0.000000001px;
                 flex-basis: 0.000000001px;
+            }
+
+            #noFitBreadcrumbs {
+                margin-left: 40px;
             }
 
             #noFitBreadcrumbs mat-item mat-avatar {
@@ -160,6 +176,9 @@
                         </paper-icon-item>
                     </paper-menu>
 
+                    <div class="scan-container">
+                        <mat-raised-button id="scan" label="Start scan" background="#21a9f5"></mat-raised-button>
+                    </div>
                 </div>
             </div>
 
@@ -323,13 +342,13 @@
                       label=""
                       on-xp-activate="startScan"></mat-snackbar>
 
-        <web-socket url="ws://localhost:8082/desktop/status"
-                    auto
-                    json
+        <web-socket url="ws://localhost:8082/desktop/crawler/status"
                     on-open="_onOpen"
                     on-close="_onClose"
                     on-message="_onMessage"
-                    on-error="_onError"></web-socket>
+                    on-error="_onError"
+                    auto
+                    json></web-socket>
 
         <iron-ajax id="rpcStartScan"
                    method="POST"
@@ -671,6 +690,7 @@
                 _onError: function(e)
                 {
                     console.log(e)
+
                 },
                 clearIronList: function()
                 {

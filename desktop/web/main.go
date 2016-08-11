@@ -29,7 +29,7 @@ func main() {
 	log.Printf("volume name: %s  path :%s", filepath.VolumeName(wd), wd)
 	service := web.NewService(web.Name("go.micro.web.desktop"))
 	service.Handle("/", http.FileServer(http.Dir("app")))
-	service.Handle("/status", websocket.Handler(handler.Status))
+	service.Handle("/crawler/status", websocket.Handler(handler.CrawlerStatus))
 	service.HandleFunc("/google/login", auth_handler.HandleGoogleLogin)
 	service.HandleFunc("/GoogleCallback", auth_handler.HandleGoogleCallback)
 	service.HandleFunc("/microsoft/login", auth_handler.HandleMicrosoftLogin)
