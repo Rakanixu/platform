@@ -139,132 +139,158 @@
             }
         </style>
 
-<paper-drawer-panel id="navDrawerPanel" responsive-width="1280px">
-    <!-- Nav Content -->
-    <div class="nav" drawer>
-        <paper-toolbar class="medium-tall left-menu">
-            <label is="mat-label" class="bottom">[[user.user.username]]@[[user.hostname]] </label>
-        </paper-toolbar>
+        <paper-drawer-panel id="navDrawerPanel" responsive-width="1280px">
+            <!-- Nav Content -->
+            <div class="nav" drawer>
+                <paper-toolbar class="medium-tall left-menu">
+                    <label is="mat-label" class="bottom">[[user.user.username]]@[[user.hostname]] </label>
+                </paper-toolbar>
 
-        <div class="content">
-            <paper-menu selected="{{selectedCategory.index}}">
-                <paper-icon-item on-tap="setCategory" data-value="">
-                    <iron-icon icon="icons:home" item-icon></iron-icon>All
-                </paper-icon-item>
-                <paper-icon-item on-tap="setCategory" data-value="Document Files">
-                    <iron-icon icon="editor:insert-drive-file" item-icon></iron-icon>Documents
-                </paper-icon-item>
-                <paper-icon-item on-tap="setCategory" data-value="Video">
-                    <iron-icon icon="av:movie" item-icon></iron-icon>Movies
-                </paper-icon-item>
-                <paper-icon-item on-tap="setCategory" data-value="Image Files">
-                    <iron-icon icon="image:camera-alt" item-icon></iron-icon>Pictures
-                </paper-icon-item>
-                <paper-icon-item on-tap="setCategory" data-value="Audio Files">
-                    <iron-icon icon="image:audiotrack" item-icon></iron-icon>Audio
-                </paper-icon-item>
-            </paper-menu>
+                <div class="content">
+                    <paper-menu selected="{{selectedCategory.index}}">
+                        <paper-icon-item on-tap="setCategory" data-value="">
+                            <iron-icon icon="icons:home" item-icon></iron-icon>All
+                        </paper-icon-item>
+                        <paper-icon-item on-tap="setCategory" data-value="Document Files">
+                            <iron-icon icon="editor:insert-drive-file" item-icon></iron-icon>Documents
+                        </paper-icon-item>
+                        <paper-icon-item on-tap="setCategory" data-value="Video">
+                            <iron-icon icon="av:movie" item-icon></iron-icon>Movies
+                        </paper-icon-item>
+                        <paper-icon-item on-tap="setCategory" data-value="Image Files">
+                            <iron-icon icon="image:camera-alt" item-icon></iron-icon>Pictures
+                        </paper-icon-item>
+                        <paper-icon-item on-tap="setCategory" data-value="Audio Files">
+                            <iron-icon icon="image:audiotrack" item-icon></iron-icon>Audio
+                        </paper-icon-item>
+                    </paper-menu>
 
-            <mat-divider></mat-divider>
+                    <mat-divider></mat-divider>
 
-            <paper-menu>
-                <paper-icon-item>
-                    <iron-icon icon="icons:settings" item-icon></iron-icon>Settings
-                </paper-icon-item>
-                <paper-icon-item id="intercom_launch">
-                    <iron-icon icon="icons:feedback" item-icon></iron-icon>Feedback
-                </paper-icon-item>
-            </paper-menu>
+                    <paper-menu>
+                        <paper-icon-item>
+                            <iron-icon icon="icons:settings" item-icon></iron-icon>Settings
+                        </paper-icon-item>
+                        <paper-icon-item id="intercom_launch">
+                            <iron-icon icon="icons:feedback" item-icon></iron-icon>Feedback
+                        </paper-icon-item>
+                    </paper-menu>
 
-            <div class="scan-container">
-                <mat-raised-button id="scan" label="Start scan" background="#21a9f5"></mat-raised-button>
-            </div>
-        </div>
-    </div>
-
-    <paper-drawer-panel id="mainDrawerPanel" responsive-width="960px" drawer-width="[[_computeListWidth(_isMobile)]]"
-        narrow="{{_isMobile}}" force-narrow="[[!itemSelected]]" disable-swipe="true"
-        right-drawer main>
-        <paper-header-panel id="mainPaperHeaderPanel" class="list-panel main" main>
-
-            <!-- List Toolbar -->
-            <paper-toolbar class="medium-tall">
-                <paper-icon-button icon="menu" on-tap="openMenu" hidden$="[[mediaQueryLarge]]"></paper-icon-button>
-
-                <div class="flex horizontal layout" on-tap="toggleSearch" hidden$="[[searching]]">
-                    <div class="title flex">Kazoup Search</div>
-                    <mat-icon-button icon="mat:search" color="white"></mat-icon-button>
+                    <div class="scan-container">
+                        <mat-raised-button id="scan" label="Start scan" background="#21a9f5"></mat-raised-button>
+                    </div>
                 </div>
+            </div>
 
-                <mat-text-field id="search" class="flex" label="Search files" on-keyup="searchAsYouType"
-                    hidden$="[[!searching]]"></mat-text-field>
-                <mat-icon-button id="reset" icon="mat:clear" on-xp-activate="resetSearch" color="white"
-                    hidden$="[[!searching]]"></mat-icon-button>
+            <paper-drawer-panel id="mainDrawerPanel"
+                                responsive-width="960px"
+                                drawer-width="[[_computeListWidth(_isMobile)]]"
+                                narrow="{{_isMobile}}"
+                                force-narrow="[[!itemSelected]]"
+                                disable-swipe="true"
+                                right-drawer main>
+                <paper-header-panel id="mainPaperHeaderPanel" class="list-panel main" main>
 
-                <paper-icon-button id="searchViewIcon" icon="[[view.icon]]" on-tap="toggleView"></paper-icon-button>
+                    <!-- List Toolbar -->
+                    <paper-toolbar class="medium-tall">
+                        <paper-icon-button icon="menu"
+                                           on-tap="openMenu"
+                                           hidden$="[[mediaQueryLarge]]"></paper-icon-button>
 
-                <div class="middle breadcrumbs">
-                    <!-- Breadcrumbs while browsing. Breadcrumbs fits into screen -->
-                    <mat-breadcrumb id="fitBreadcrumbs" class="browse" hidden$="[[handleSearchHeader(selectedCategory.index)]]"
-                        shift="true">
-                        <mat-breadcrumb-step label="My Files" on-tap="setCategory" data-value=""></mat-breadcrumb-step>
-                        <template id="breadcrumbsSteps" is="dom-repeat" items="[[breadcrumbs]]">
+                        <div class="flex horizontal layout"
+                             on-tap="toggleSearch"
+                             hidden$="[[searching]]">
+                            <div class="title flex">Kazoup Search</div>
+                            <mat-icon-button icon="mat:search" color="white"></mat-icon-button>
+                        </div>
+
+                        <mat-text-field id="search"
+                                        class="flex"
+                                        label="Search files"
+                                        on-keyup="searchAsYouType"
+                                        hidden$="[[!searching]]"></mat-text-field>
+                        <mat-icon-button id="reset"
+                                         icon="mat:clear"
+                                         on-xp-activate="resetSearch"
+                                         color="white"
+                                         hidden$="[[!searching]]"></mat-icon-button>
+
+                        <paper-icon-button id="searchViewIcon" icon="[[view.icon]]" on-tap="toggleView"></paper-icon-button>
+
+                        <div class="middle breadcrumbs">
+                            <!-- Breadcrumbs while browsing. Breadcrumbs fits into screen -->
+                            <mat-breadcrumb id="fitBreadcrumbs"
+                                            class="browse"
+                                            hidden$="[[handleSearchHeader(selectedCategory.index)]]"
+                                            shift="true">
+                                <mat-breadcrumb-step label="My Files" on-tap="setCategory" data-value=""></mat-breadcrumb-step>
+                                <template id="breadcrumbsSteps" is="dom-repeat" items="[[breadcrumbs]]">
                                     <mat-breadcrumb-step label="[[item.label]]" on-tap="browse"></mat-breadcrumb-step>
                                 </template>
-                    </mat-breadcrumb>
+                            </mat-breadcrumb>
 
-                    <!-- Breadcrumbs for static category. No browsing -->
-                    <mat-breadcrumb class="bottom" hidden$="[[!handleSearchHeader(selectedCategory.index)]]"
-                        shift="true">
-                        <mat-breadcrumb-step label="[[selectedCategory.label]]"></mat-breadcrumb-step>
-                    </mat-breadcrumb>
-                </div>
+                            <!-- Breadcrumbs for static category. No browsing -->
+                            <mat-breadcrumb class="bottom"
+                                            hidden$="[[!handleSearchHeader(selectedCategory.index)]]"
+                                            shift="true">
+                                <mat-breadcrumb-step label="[[selectedCategory.label]]"></mat-breadcrumb-step>
+                            </mat-breadcrumb>
+                        </div>
 
-                <!-- Mobile breadcrumbs style like. -->
-                <div id="noFitBreadcrumbs" class="bottom">
-                    <mat-item label="[[lastBreadcrumb.label]]" behavior="toggle" class="light" target="breadcrumbsMenu"
-                        style="font-size:20px;font-weight:400;">
-                        <mat-avatar class="secondary" icon="mat:arrow-drop-down"></mat-avatar>
-                    </mat-item>
+                        <!-- Mobile breadcrumbs style like. -->
+                        <div id="noFitBreadcrumbs" class="bottom">
+                            <mat-item label="[[lastBreadcrumb.label]]"
+                                      behavior="toggle"
+                                      class="light"
+                                      target="breadcrumbsMenu"
+                                      style="font-size:20px;font-weight:400;">
+                                <mat-avatar class="secondary" icon="mat:arrow-drop-down"></mat-avatar>
+                            </mat-item>
 
-                    <mat-menu id="breadcrumbsMenu" position="baseline">
-                        <mat-option label="My Files" on-tap="setCategory" data-value=""></mat-option>
-                        <template id="breadcrumbsStepsMenu" is="dom-repeat" items="[[breadcrumbs]]">
-                                    <mat-option label="[[item.label]]" on-tap="browse"></mat-option>
-                                </template>
-                    </mat-menu>
-                </div>
+                            <mat-menu id="breadcrumbsMenu" position="baseline">
+                                <mat-option label="My Files" on-tap="setCategory" data-value=""></mat-option>
+                                <template id="breadcrumbsStepsMenu" is="dom-repeat" items="[[breadcrumbs]]">
+                                            <mat-option label="[[item.label]]" on-tap="browse"></mat-option>
+                                        </template>
+                            </mat-menu>
+                        </div>
 
-                <paper-progress id="progressBar" class="middle fit" hidden$="[[!loading]]" indeterminate></paper-progress>
-            </paper-toolbar>
+                        <paper-progress id="progressBar"
+                                        class="middle fit"
+                                        hidden$="[[!loading]]"
+                                        indeterminate></paper-progress>
+                    </paper-toolbar>
 
-            <!-- Search results -->
-            <div id="listContainer" class="listContainer" on-scroll="_handleScroll">
-                <iron-list id="searchList" items="[[searchResults]]">
-                    <template>
+                    <!-- Search results -->
+                    <div id="listContainer" class="listContainer" on-scroll="_handleScroll">
+                        <iron-list id="searchList" items="[[searchResults]]">
+                            <template>
                                 <div>
                                     <template is="dom-if" if="{{!view.isGrid}}" restamp="true">
-                                        
-					    <template is="dom-if" if="{{isVideo(item._source.category)}}">
-					    <mat-item on-tap="mainAction"
-                                                  label="[[item._source.name]]"
-                                                  description="[[item._source.url]]">
-						    <iron-image class="primary" src="http://localhost:8082/desktop/frame/[[item._source.url]]"  width="128" height="72" sizing="cover" > </iron-image>
-                                            <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
+                                        <template is="dom-if" if="{{isVideo(item._source.category)}}">
+                                            <mat-item on-tap="mainAction"
+                                                      label="[[item._source.name]]"
+                                                      description="[[item._source.url]]">
+                                                <iron-image class="primary"
+                                                            src="http://localhost:8082/desktop/frame/[[item._source.url]]"
+                                                            width="128"
+                                                            height="72"
+                                                            sizing="cover"></iron-image>
+                                                    <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
                                             </mat-item>
-				            </template>
+                                        </template>
 
-                    <template is="dom-if" if="{{!isVideo(item._source.category)}}">
-					    <mat-item on-tap="mainAction"
-                                                  label="[[item._source.name]]"
-                                                  description="[[item._source.url]]">
-                                            <mat-avatar class="primary" icon="[[isDir(item._source.is_dir)]]"></mat-avatar>
-                                            <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
+                                        <template is="dom-if" if="{{!isVideo(item._source.category)}}">
+                                            <mat-item on-tap="mainAction"
+                                                      label="[[item._source.name]]"
+                                                      description="[[item._source.url]]">
+                                                <mat-avatar class="primary" icon="[[isDir(item._source.is_dir)]]"></mat-avatar>
+                                                <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
                                             </mat-item>
-				            </template>
-                    </template>
+                                        </template>
+                                    </template>
 
-                    <template is="dom-if" if="{{view.isGrid}}" restamp="true">
+                                    <template is="dom-if" if="{{view.isGrid}}" restamp="true">
                                         <div class="photoContainer grid" on-tap="mainAction">
                                             <div class="photoContent" tabindex$="[[tabIndex]]">
                                                 <template is="dom-if" if="[[isImage(item._source.category)]]">
@@ -272,108 +298,110 @@
                                                                 src="http://localhost:8082/desktop/image?source=[[item._source.url]]&width=356&height=356&mode=fit&quality=100"></iron-image>
                                                 </template>
 
-                    <template is="dom-if" if="[[!isImage(item._source.category)]]">
+                                                <template is="dom-if" if="[[!isImage(item._source.category)]]">
                                                     <mat-avatar icon="[[isDir(item._source.is_dir)]]"></mat-avatar>
                                                 </template>
 
-                    <div class="detail">
-                        <mat-item class="light" label="[[item._source.name]]"></mat-item>
+                                                <div class="detail">
+                                                    <mat-item class="light" label="[[item._source.name]]"></mat-item>
+                                                </div>
+                                                <mat-ripple></mat-ripple>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </iron-list>
                     </div>
-                    <mat-ripple></mat-ripple>
-            </div>
-            </div>
-            </template>
-            </div>
-            </template>
-            </iron-list>
-            </div>
+                </paper-header-panel>
 
-        </paper-header-panel>
+                <paper-header-panel class="content-panel drawer" drawer>
+                    <!-- Right Toolbar -->
+                    <paper-toolbar class="medium-tall">
+                        <paper-icon-button icon="icons:close"
+                                           on-tap="closeDetails"
+                                           tabindex="-1"></paper-icon-button>
 
-        <paper-header-panel class="content-panel drawer" drawer>
-            <!-- Right Toolbar -->
-            <paper-toolbar class="medium-tall">
-                <paper-icon-button icon="icons:close" on-tap="closeDetails" tabindex="-1"></paper-icon-button>
+                        <div class="bottom">
+                            <span>[[item._source.name]]</span>
+                        </div>
+                    </paper-toolbar>
 
-                <div class="bottom">
-                    <span>[[item._source.name]]</span>
-                </div>
-            </paper-toolbar>
+                    <!-- Right Content -->
+                    <template is="dom-if" if="[[isImage(item._source.category)]]">
+                        <div class="content">
+                            <iron-image style="width:100%"
+                                        src="http://localhost:8082/desktop/image?source=[[item._source.url]]&width=600&mode=fit&quality=100"
+                                        preload
+                                        fade></iron-image>
+                            <mat-item label="[[item._source.name]]"
+                                      description="[[item._source.url]]"
+                                      tabindex="-1"></mat-item>
+                        </div>
+                    </template>
 
-            <!-- Right Content -->
+                    <template is="dom-if" if="[[isVideo(item._source.category)]]" restamp="true">
+                        <div class="content">
+                            <video id="video" controls preload="auto" width="100%">
+                                <source src="[[getVideo(item._source.url)]]">
+                            </video>
+                            <mat-item label="[[item._source.name]]"
+                                      description="[[item._source.url]]"
+                                      tabindex="-1"></mat-item>
+                        </div>
+                    </template>
+                </paper-header-panel>
 
-            <template is="dom-if" if="[[isImage(item._source.category)]]">
-                    <div class="content">
-                        <iron-image style="width:100%" preload fade
-				src="http://localhost:8082/desktop/image?source=[[item._source.url]]&width=600&mode=fit&quality=100"></iron-image>
-                        <mat-item label="[[item._source.name]]"
-                                  description="[[item._source.url]]"
-                                  tabindex="-1"></mat-item>
-                    </div>
+            </paper-drawer-panel>
+        </paper-drawer-panel>
 
-		</template>
-            <template is="dom-if" if="[[isVideo(item._source.category)]]" restamp="true">
-                    <div class="content">
- 			<video id="video" controls preload="auto" width="100%" >
-	 		<source src="[[getVideo(item._source.url)]]">
-			</video>
-                        <mat-item label="[[item._source.name]]"
-                                  description="[[item._source.url]]"
-                                  tabindex="-1"></mat-item>
-                    </div>
+        <filter-converter id="filterConverter"></filter-converter>
 
-		</template>
-        </paper-header-panel>
+        <mat-snackbar id="snackbar"
+                      button="Scan"
+                      timeout="10000000"
+                      action-color="yellow"
+                      label=""
+                      on-xp-activate="startScan"></mat-snackbar>
 
-    </paper-drawer-panel>
-</paper-drawer-panel>
+        <web-socket url="ws://localhost:8082/desktop/crawler/status"
+                    on-open="_onOpen"
+                    on-close="_onClose"
+                    on-message="_onMessage"
+                    on-error="_onError"
+                    auto
+                    json></web-socket>
 
-<filter-converter id="filterConverter"></filter-converter>
+        <iron-ajax id="rpcStartScan"
+                   method="POST"
+                   content-type="application/json"
+                   url="http://localhost:8082/rpc"
+                   handle-as="json"
+                   on-error="_handleError"
+                   on-response="_handleStartScan"
+                   params="{{rpcStartScanParams}}"></iron-ajax>
 
-<mat-snackbar id="snackbar" button="Scan" timeout="10000000" action-color="yellow"
-    label="" on-xp-activate="startScan"></mat-snackbar>
+        <iron-ajax id="rpcElastic"
+                   method="POST"
+                   content-type="application/json"
+                   url="http://localhost:8082/rpc"
+                    handle-as="json"
+                   on-error="_handleError"
+                   on-response="_handleElastic"
+                   params="{{rpcElasticParams}}"></iron-ajax>
 
-<web-socket url="ws://localhost:8082/desktop/crawler/status" on-open="_onOpen"
-    on-close="_onClose" on-message="_onMessage" on-error="_onError" auto json></web-socket>
+        <iron-media-query query="(min-width: 601px)"
+                          query-matches="{{mediaQuerySmall}}"></iron-media-query>
 
-<iron-ajax id="rpcStartScan" method="POST" content-type="application/json" url="http://localhost:8082/rpc"
-    handle-as="json" on-error="_handleError" on-response="_handleStartScan" params="{{rpcStartScanParams}}"></iron-ajax>
+        <iron-media-query query="(min-width: 961px)"
+                          query-matches="{{mediaQueryMedium}}"></iron-media-query>
 
-<iron-ajax id="rpcElastic" method="POST" content-type="application/json" url="http://localhost:8082/rpc"
-    handle-as="json" on-error="_handleError" on-response="_handleElastic" params="{{rpcElasticParams}}"></iron-ajax>
+        <iron-media-query query="(min-width: 1281px)"
+                          query-matches="{{mediaQueryLarge}}"></iron-media-query>
 
-<iron-media-query query="(min-width: 601px)" query-matches="{{mediaQuerySmall}}"></iron-media-query>
+    </template>
 
-<iron-media-query query="(min-width: 961px)" query-matches="{{mediaQueryMedium}}"></iron-media-query>
-
-<iron-media-query query="(min-width: 1281px)" query-matches="{{mediaQueryLarge}}"></iron-media-query>
-</paper-header-panel>
-
-</paper-drawer-panel>
-</paper-drawer-panel>
-
-<filter-converter id="filterConverter"></filter-converter>
-
-<mat-snackbar id="snackbar" button="Scan" timeout="100000" action-color="yellow"
-    label="" on-xp-activate="startScan"></mat-snackbar>
-
-<web-socket url="ws://localhost:8082/desktop/status" auto json on-open="_onOpen"
-    on-close="_onClose" on-message="_onMessage" on-error="_onError"></web-socket>
-
-<iron-ajax id="rpcStartScan" method="POST" content-type="application/json" url="http://localhost:8082/rpc"
-    handle-as="json" on-error="_handleError" on-response="_handleStartScan" params="{{rpcStartScanParams}}"></iron-ajax>
-
-<iron-ajax id="rpcElastic" method="POST" content-type="application/json" url="http://localhost:8082/rpc"
-    handle-as="json" on-error="_handleError" on-response="_handleElastic" params="{{rpcElasticParams}}"></iron-ajax>
-
-<iron-media-query query="(min-width: 601px)" query-matches="{{mediaQuerySmall}}"></iron-media-query>
-
-<iron-media-query query="(min-width: 961px)" query-matches="{{mediaQueryMedium}}"></iron-media-query>
-
-<iron-media-query query="(min-width: 1281px)" query-matches="{{mediaQueryLarge}}"></iron-media-query>
-</template>
-
-<script>
+    <script>
     'use strict';
 
     (function() {
@@ -477,46 +505,37 @@
                 'breadcrumbsChanged(breadcrumbs.*)'
             ],
             breadcrumbsChanged: function(newVal, oldVal) {
-                this.set('lastBreadcrumb', this.breadcrumbs[
-                    this.breadcrumbs.length - 1]);
+                this.set('lastBreadcrumb', this.breadcrumbs[this.breadcrumbs.length - 1]);
             },
             ready: function() {
                 var resizeCallback;
 
-                this.$.filterConverter.addEventListener(
-                    'filter-changed', this._handleFilterChanged
-                    .bind(this));
+                this.$.filterConverter.addEventListener('filter-changed', this._handleFilterChanged.bind(this));
 
-                window.addEventListener(
-                    'web-app-activated', this.init.bind(
-                        this));
-                window.addEventListener('resize',
-                    function(e) {
-                        e.preventDefault();
+                window.addEventListener('web-app-activated', this.init.bind(this));
+                window.addEventListener('resize',function(e) {
+                    e.preventDefault();
 
-                        clearTimeout(resizeCallback);
-                        resizeCallback = setTimeout(
-                            function() {
-                                this.checkBreadcrumbsView(
-                                    0);
-                            }.bind(this), 300);
-                    }.bind(this));
+                    clearTimeout(resizeCallback);
+                    resizeCallback = setTimeout(function() {
+                            this.checkBreadcrumbsView(0);
+                    }.bind(this), 300);
+                }.bind(this));
 
 
-                /*                    var that = this;
-                                    //POC to dectect we are on Desktop App
-                                    if (typeof window !== 'undefined' && window.process && window.process.type === "renderer") {
-                                        console.log("We are in Electron ! Let's Go ! ");
-                                        ipcRenderer.on('disks-message', function(event, disks) {
-                                            that.disks = disks;
-                                            that.$.toast.label = "Got disk " + disks[0]['description'];
-                                            that.$.toast.show();
-                                        });
-                                    }*/
+/*                    var that = this;
+                    //POC to dectect we are on Desktop App
+                    if (typeof window !== 'undefined' && window.process && window.process.type === "renderer") {
+                        console.log("We are in Electron ! Let's Go ! ");
+                        ipcRenderer.on('disks-message', function(event, disks) {
+                            that.disks = disks;
+                            that.$.toast.label = "Got disk " + disks[0]['description'];
+                            that.$.toast.show();
+                        });
+                    }*/
 
                 ipcRenderer.send("user-info-message");
-                ipcRenderer.on("user-info-message", this._handleUser
-                    .bind(this));
+                ipcRenderer.on("user-info-message", this._handleUser.bind(this));
             },
             init: function(e, detail) {
                 if (e.data && e.data.first_scan) {
@@ -534,13 +553,11 @@
                 }
             },
             _handleFilterChanged: function(e) {
-                var level = this.$.filterConverter.getFilterAsObj()
-                    .depth - 1
+                var level = this.$.filterConverter.getFilterAsObj().depth - 1
 
                 // Remove deeper breadcrumbs
                 if (level < this.breadcrumbs.length) {
-                    this.breadcrumbs.splice(level, this.breadcrumbs
-                        .length - level)
+                    this.breadcrumbs.splice(level, this.breadcrumbs.length - level)
                     this.set('breadcrumbs', this.breadcrumbs);
                 }
                 this.$.breadcrumbsSteps.render();
@@ -551,17 +568,11 @@
             },
             _handleScroll: function(e) {
                 if (!this.$.rpcElastic.loading) {
-                    if (this.$.listContainer.clientHeight +
-                        this.$.listContainer.scrollTop >
-                        ((this.$.searchList._virtualCount /
-                                this.$.searchList._itemsPerRow
-                            ) *
-                            this.$.searchList._physicalAverage
-                        ) - 300) {
-                        this.$.filterConverter.setValue(
-                            'from', this.$.filterConverter
-                            .getFilterAsObj().from +
-                            20);
+                    if (this.$.listContainer.clientHeight + this.$.listContainer.scrollTop >
+                        ((this.$.searchList._virtualCount / this.$.searchList._itemsPerRow) *
+                        this.$.searchList._physicalAverage) - 300) {
+
+                        this.$.filterConverter.setValue('from', this.$.filterConverter.getFilterAsObj().from + 20);
                     }
                 }
             },
@@ -573,16 +584,12 @@
             _handleElastic: function(e) {
                 var result;
 
-                if (e.detail.response && e.detail.response
-                    .result) {
-                    result = JSON.parse(e.detail.response
-                        .result);
+                if (e.detail.response && e.detail.response.result) {
+                    result = JSON.parse(e.detail.response.result);
                     console.log(result.hits.total)
 
-                    _.forEach(result.hits.hits, function(
-                        result) {
-                        this.push('searchResults',
-                            result);
+                    _.forEach(result.hits.hits, function(result) {
+                        this.push('searchResults', result);
                     }, this);
                     this.$.searchList.fire('iron-resize');
                 }
@@ -610,7 +617,7 @@
                 console.log("Closing WS")
             },
             _onMessage: function(e) {
-                //console.log("Message from WS ", e.detail)
+                console.log("Message from WS ", e.detail)
             },
             _onError: function(e) {
                 console.log(e)
@@ -622,15 +629,13 @@
             },
             setCategory: function(e, detail) {
                 this.clearIronList();
-                if (e.target.dataset.value ===
-                    'Image Files') {
+                if (e.target.dataset.value === 'Image Files') {
                     this.setGridView();
                 } else {
                     this.setListView();
                 }
                 this.refreshView();
-                this.set('selectedCategory.label', e.target
-                    .dataset.value);
+                this.set('selectedCategory.label', e.target.dataset.value);
 
                 // depth must be 0 for search
                 // When there is no search term and user didn't selected a category, then browse
@@ -639,10 +644,7 @@
                     size: 20,
                     category: e.target.dataset.value,
                     url: '/',
-                    depth: (e.target.dataset.value ||
-                        this.$.filterConverter
-                        .getFilterAsObj().term
-                    ) ? 0 : 1
+                    depth: (e.target.dataset.value || this.$.filterConverter.getFilterAsObj().term) ? 0 : 1
                 });
             },
             browse: function(e, detail) {
@@ -671,22 +673,20 @@
 
                 if (term.length > 2 || term.length === 0) {
                     clearTimeout(this.searchAsYouTypeTimeout);
-                    this.searchAsYouTypeTimeout =
-                        setTimeout(function() {
-                            this.set('itemSelected',
-                                false);
-                            this.set('breadcrumbs', []);
-                            this.clearIronList();
+                    this.searchAsYouTypeTimeout = setTimeout(function() {
+                        this.set('itemSelected', false);
+                        this.set('breadcrumbs', []);
+                        this.clearIronList();
 
-                            this.$.filterConverter.setValues({
-                                from: 0,
-                                size: 20,
-                                term: term,
-                                url: '',
-                                depth: 0,
-                                type: 'files'
-                            });
-                        }.bind(this), 450);
+                        this.$.filterConverter.setValues({
+                            from: 0,
+                            size: 20,
+                            term: term,
+                            url: '',
+                            depth: 0,
+                            type: 'files'
+                        });
+                    }.bind(this), 450);
                 }
             },
             resetSearch: function(e, detail) {
@@ -698,15 +698,13 @@
                     from: 0,
                     size: 20,
                     url: '/',
-                    depth: this.selectedCategory.index ?
-                        0 : 1,
+                    depth: this.selectedCategory.index ? 0 : 1,
                     type: '' // By default get files and directories
                 });
                 this.toggleSearch();
             },
             toggleSearch: function(e, detail) {
-                this.$.search.input.value = this.$.filterConverter
-                    .getFilterAsObj().term;
+                this.$.search.input.value = this.$.filterConverter.getFilterAsObj().term;
                 this.$.search._inputHandler();
 
                 this.async(function() {
@@ -731,22 +729,17 @@
                     this.clearIronList();
 
                     this.push('breadcrumbs', {
-                        label: e.model.__data__.item
-                            ._source.name,
-                        url: e.model.__data__.item
-                            ._source.url,
-                        depth: e.model.__data__.item
-                            ._source.depth + 1
+                        label: e.model.__data__.item._source.name,
+                        url: e.model.__data__.item._source.url,
+                        depth: e.model.__data__.item._source.depth + 1
                     });
                     this.checkBreadcrumbsView(0);
 
                     this.$.filterConverter.setValues({
                         from: 0,
                         size: 20,
-                        url: e.model.__data__.item
-                            ._source.url,
-                        depth: e.model.__data__.item
-                            ._source.depth + 1
+                        url: e.model.__data__.item._source.url,
+                        depth: e.model.__data__.item._source.depth + 1
                     });
                 } else {
                     // Detail view
@@ -785,38 +778,24 @@
             },
             checkBreadcrumbsView: function(count) {
                 this.async(function() {
-                    var containerWidth = document
-                        .querySelector('.browse')
-                        .getBoundingClientRect().width
+                    var containerWidth = document.querySelector('.browse').getBoundingClientRect().width;
                     var crumbsWidth = 0;
 
-                    _.forEach(document.querySelectorAll(
-                        '.browse mat-breadcrumb-step'
-                    ), function(
-                        breadcrumb) {
-                        crumbsWidth +=
-                            breadcrumb.getBoundingClientRect()
-                            .width
+                    _.forEach(document.querySelectorAll('.browse mat-breadcrumb-step'), function(breadcrumb) {
+                        crumbsWidth += breadcrumb.getBoundingClientRect().width
                     });
 
-                    if (crumbsWidth >
-                        containerWidth) {
+                    if (crumbsWidth > containerWidth) {
                         // Breadcrumbs does not fit available space, collapse as mobile
-                        this.$.noFitBreadcrumbs.style
-                            .display = 'block';
-                        this.$.fitBreadcrumbs.style
-                            .display = 'none';
+                        this.$.noFitBreadcrumbs.style.display = 'block';
+                        this.$.fitBreadcrumbs.style.display = 'none';
                     } else {
-                        this.$.noFitBreadcrumbs.style
-                            .display = 'none';
-                        this.$.fitBreadcrumbs.style
-                            .display = 'block';
+                        this.$.noFitBreadcrumbs.style.display = 'none';
+                        this.$.fitBreadcrumbs.style.display = 'block';
                     }
 
-                    if (crumbsWidth === 0 &&
-                        count < 3) {
-                        this.checkBreadcrumbsView(
-                            count);
+                    if (crumbsWidth === 0 && count < 3) {
+                        this.checkBreadcrumbsView(count);
                     }
                 }, 10);
             },
@@ -825,5 +804,5 @@
             }
         });
     }()); 
-</script>
+    </script>
 </dom-module>

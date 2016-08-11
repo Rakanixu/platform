@@ -183,7 +183,8 @@ ipcMain.on("user-info-message", (event, arg) => {
 
 function startService(path, args) {
     es = spawn(path, args, {
-        wd: path
+        wd: path,
+        stdio: 'ignore'
     });
     //es.stdout.on("data", function(data) {
     //    console.log("stdout: " + data);
