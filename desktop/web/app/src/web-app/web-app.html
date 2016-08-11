@@ -177,7 +177,9 @@
                     </paper-menu>
 
                     <div class="scan-container">
-                        <mat-raised-button id="scan" label="Start scan" background="#21a9f5"></mat-raised-button>
+                        <mat-raised-button id="scan"
+                                           on-tap="startScan"
+                                           label="Start scan"></mat-raised-button>
                     </div>
                 </div>
             </div>
@@ -539,14 +541,15 @@
                         });
                     }*/
 
+                ipcRenderer.send("home-dir-message");
+                ipcRenderer.on("home-dir-message", this._handleHomeDir.bind(this));
                 ipcRenderer.send("user-info-message");
                 ipcRenderer.on("user-info-message", this._handleUser.bind(this));
             },
             init: function(e, detail) {
                 if (e.data && e.data.first_scan) {
-                    ipcRenderer.send("home-dir-message");
-                    ipcRenderer.on("home-dir-message", this._handleHomeDir.bind(this));
-                } else {
+                    this.showScanSnack();
+                }else {
                     this.checkBreadcrumbsView(0);
                     this.$.filterConverter.setValues({
                         term: "",
@@ -577,7 +580,7 @@
                         ((this.$.searchList._virtualCount / this.$.searchList._itemsPerRow) *
                         this.$.searchList._physicalAverage) - 300) {
                         var from = this.$.filterConverter.getFilterAsObj().from + 20;
-console.log(from > this.totalResults)
+
                         if (from < this.totalResults) {
                             this.$.filterConverter.setValue('from', from);
                         }
@@ -605,8 +608,6 @@ console.log(from > this.totalResults)
             },
             _handleHomeDir: function(e, detail) {
                 this.set('homeDirPath', detail);
-                this.$.snackbar.label = this.homeDirPath;
-                this.$.snackbar.show();
             },
             _handleUser: function(e, detail) {
                 this.set('user', detail);
@@ -619,17 +620,24 @@ console.log(from > this.totalResults)
                 this.$.mainDrawerPanel.closeDrawer();
             },
             _onOpen: function() {
-                console.log("Opening WS")
+
             },
             _onClose: function() {
-                console.log("Closing WS")
+
             },
             _onMessage: function(e) {
-                console.log("Message from WS ", e.detail)
+                // No crawler running
+                if (_.isEmpty(e.detail)) {
+                    this.$.scan.removeAttribute('disabled');
+                // Crawler running
+                } else {
+                    this.$.scan.setAttribute('disabled', '');
+                }
+
+                console.log(_.isEmpty(e.detail))
             },
             _onError: function(e) {
                 console.log(e)
-
             },
             clearIronList: function() {
                 this.set('searchResults', []);
@@ -637,6 +645,7 @@ console.log(from > this.totalResults)
             },
             setCategory: function(e, detail) {
                 this.clearIronList();
+                this.set('itemSelected', false);
                 this.$.navDrawerPanel.closeDrawer();
                 if (e.target.dataset.value === 'Image Files') {
                     this.setGridView();
@@ -652,6 +661,7 @@ console.log(from > this.totalResults)
                     from: 0,
                     size: 20,
                     category: e.target.dataset.value,
+                    type: e.target.dataset.value ? 'files' : '',
                     url: '/',
                     depth: (e.target.dataset.value || this.$.filterConverter.getFilterAsObj().term) ? 0 : 1
                 });
@@ -784,6 +794,10 @@ console.log(from > this.totalResults)
                     this.setGridView();
                 }
                 this.refreshView();
+            },
+            showScanSnack: function(e) {
+                this.$.snackbar.label = this.homeDirPath;
+                this.$.snackbar.show();
             },
             checkBreadcrumbsView: function(count) {
                 this.async(function() {

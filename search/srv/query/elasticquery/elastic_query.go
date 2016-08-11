@@ -3,6 +3,7 @@ package elasticquery
 import (
 	"bytes"
 	"github.com/kazoup/platform/search/srv/query"
+	"log"
 	"strconv"
 )
 
@@ -30,9 +31,21 @@ func (e *ElasticQuery) Query() (string, error) {
 	buffer.WriteString(e.filterDepth() + ",")
 	buffer.WriteString(e.filterUrl() + ",")
 	buffer.WriteString(e.filterType())
-	buffer.WriteString(`]}}}`)
+	buffer.WriteString(`]}}, "sort":[`)
+	buffer.WriteString(e.defaultSorting())
+	buffer.WriteString(`]}`)
+
+	log.Println(buffer.String())
 
 	return buffer.String(), nil
+}
+
+func (e *ElasticQuery) defaultSorting() string {
+	var buffer bytes.Buffer
+
+	buffer.WriteString(`{"is_dir": "desc"},{"size": "desc"}`)
+
+	return buffer.String()
 }
 
 func (e *ElasticQuery) filterType() string {
