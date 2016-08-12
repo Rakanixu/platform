@@ -8,7 +8,7 @@ type Info struct {
 }
 
 type Scanner interface {
-	Start()
+	Start(map[int64]Scanner, int64)
 	Stop()
 	Info() (Info, error)
 }

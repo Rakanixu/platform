@@ -16,7 +16,7 @@ func Scans(ctx context.Context, endpoint *datasource.Endpoint) error {
 	}
 
 	handler.Crawls[l] = s
-	s.Start()
+	s.Start(handler.Crawls, l)
 
 	return nil
 }

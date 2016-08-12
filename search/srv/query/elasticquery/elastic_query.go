@@ -43,7 +43,9 @@ func (e *ElasticQuery) Query() (string, error) {
 func (e *ElasticQuery) defaultSorting() string {
 	var buffer bytes.Buffer
 
-	buffer.WriteString(`{"is_dir": "desc"},{"size": "desc"}`)
+	if e.From != 0 || e.Size != 0 {
+		buffer.WriteString(`{"is_dir": "desc"},{"size": "desc"}`)
+	}
 
 	return buffer.String()
 }

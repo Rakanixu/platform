@@ -20,7 +20,7 @@ var Crawls = make(map[int64]scanner.Scanner)
 // Start ...
 func (c *Crawl) Start(ctx context.Context, req *crawler.StartRequest, rsp *crawler.StartResponse) error {
 	l := int64(len(Crawls)) + 1
-	log.Print(req.Url)
+
 	// mapScanner ensures data validation
 	s, err := MapScanner(l, &datasource.Endpoint{
 		Url: req.Url,
@@ -31,7 +31,7 @@ func (c *Crawl) Start(ctx context.Context, req *crawler.StartRequest, rsp *crawl
 	}
 
 	Crawls[l] = s
-	s.Start()
+	s.Start(Crawls, l)
 
 	return nil
 }
@@ -72,6 +72,8 @@ func (c *Crawl) Search(ctx context.Context, req *crawler.SearchRequest, rsp *cra
 
 	return nil
 }
+
+// Status srv handler
 func (c *Crawl) Status(ctx context.Context, req *crawler.StatusRequest, stream crawler.Crawl_StatusStream) error {
 	log.Printf("Recived Crawl.Status req: %", req)
 	for {

@@ -35,7 +35,7 @@ func NewFake(id int64, conf map[string]string) scan.Scanner {
 }
 
 // Start fake scan
-func (f *Fake) Start() {
+func (f *Fake) Start(crawls map[int64]scan.Scanner, id int64) {
 	go func() {
 		for {
 			select {

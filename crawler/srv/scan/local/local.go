@@ -27,8 +27,6 @@ const topic string = "go.micro.topic.files"
 
 // NewLocal ...
 func NewLocal(id int64, rootPath string, conf map[string]string) (*Local, error) {
-
-	log.Print(path.Clean(rootPath))
 	return &Local{
 		Id:       id,
 		RootPath: path.Clean(rootPath),
@@ -38,8 +36,13 @@ func NewLocal(id int64, rootPath string, conf map[string]string) (*Local, error)
 }
 
 // Start ...
-func (fs *Local) Start() {
-	go filepath.Walk(fs.RootPath, fs.walkHandler())
+func (fs *Local) Start(crawls map[int64]scan.Scanner, index int64) {
+	go func() {
+		filepath.Walk(fs.RootPath, fs.walkHandler())
+		// Local scan finished
+		fs.Stop()
+		delete(crawls, index)
+	}()
 }
 
 // Stop ...
