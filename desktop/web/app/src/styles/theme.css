@@ -29,7 +29,8 @@ paper-icon-item {
 
 mat-text-field mat-ink input,
 mat-text-field mat-ink.label,
-mat-text-field .underline mat-ink {
+mat-text-field .underline mat-ink,
+mat-avatar a div mat-icon {
     color: #fff !important;
 }
 
@@ -52,6 +53,10 @@ mat-breadcrumb-step mat-icon {
 
 mat-item.light mat-ink {
     color: white;
+}
+
+mat-avatar.image {
+    border-radius: 0;
 }
 
 wave-player {

@@ -24,6 +24,7 @@
 <link rel="import" href="../../bower_components/mat-text-field/mat-text-field.html">
 <link rel="import" href="../../bower_components/mat-icon/mat-icon.html">
 <link rel="import" href="../../bower_components/mat-icons/mat-icons.html">
+<link rel="import" href="../../bower_components/mat-icons/image-icons.html">
 <link rel="import" href="../../bower_components/mat-avatar/mat-avatar.html">
 <link rel="import" href="../../bower_components/mat-button/mat-button.html">
 <link rel="import" href="../../bower_components/mat-raised-button/mat-raised-button.html">
@@ -116,7 +117,7 @@
                 position: relative;
                 width: 178px;
                 height: 178px;
-                margin: 4px;
+                margin: 1px;
                 background: white;
                 cursor: pointer;
             }
@@ -124,6 +125,7 @@
             .photoContainer:hover .detail {
                 background:rgba(0,0,0,0.6);
             }
+
 
             .photoContent > iron-image {
                 @apply(--layout-flex);
@@ -275,20 +277,29 @@
                                             <mat-item on-tap="mainAction"
                                                       label="[[item._source.name]]"
                                                       description="[[item._source.url]]">
-                                                <iron-image class="primary"
-                                                            src="http://localhost:8082/desktop/frame/[[item._source.url]]"
-                                                            width="128"
-                                                            height="72"
-                                                            sizing="cover"></iron-image>
-                                                    <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
+                                                <mat-avatar background="[[documentType(item._source.name)]]"
+                                                            class="primary image"
+                                                            icon-src="http://localhost:8082/desktop/frame/[[item._source.url]]"></mat-avatar>
+                                                <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
                                             </mat-item>
                                         </template>
 
-                                        <template is="dom-if" if="{{!isVideo(item._source.category)}}">
+                                        <template is="dom-if" if="{{isImage(item._source.category)}}">
                                             <mat-item on-tap="mainAction"
                                                       label="[[item._source.name]]"
                                                       description="[[item._source.url]]">
-                                                <mat-avatar class="primary" icon="[[isDir(item._source.is_dir)]]"></mat-avatar>
+                                                <mat-avatar background="[[documentType(item._source.name)]]"
+                                                            class="primary image"
+                                                            icon-src="http://localhost:8082/desktop/image?source=[[item._source.url]]&width=128&height=128&mode=fit&quality=100"></mat-avatar>
+                                                <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
+                                            </mat-item>
+                                        </template>
+
+                                        <template is="dom-if" if="{{isNoVisualMedia(item._source.category)}}">
+                                            <mat-item on-tap="mainAction"
+                                                      label="[[item._source.name]]"
+                                                      description="[[item._source.url]]">
+                                                <mat-avatar background="[[documentType(item._source.name)]]" class="primary" icon="[[getIcon(item._source.is_dir, item._source.category)]]"></mat-avatar>
                                                 <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
                                             </mat-item>
                                         </template>
@@ -303,7 +314,7 @@
                                                 </template>
 
                                                 <template is="dom-if" if="[[!isImage(item._source.category)]]">
-                                                    <mat-avatar icon="[[isDir(item._source.is_dir)]]"></mat-avatar>
+                                                    <mat-avatar icon="[[getIcon(item._source.is_dir, item._source.category)]]"></mat-avatar>
                                                 </template>
 
                                                 <div class="detail">
@@ -327,7 +338,7 @@
                                            tabindex="-1"></paper-icon-button>
 
                         <div class="bottom">
-                            <span>[[item._source.name]]</span>
+                            <mat-item label="[[item._source.name]]" class="light"></mat-item>
                         </div>
                     </paper-toolbar>
 
@@ -443,6 +454,11 @@
                 homeDirPath: {
                     type: String,
                     notify: false
+                },
+                size: {
+                    type: Number,
+                    notify: false,
+                    value: 40
                 },
                 selectedCategory: {
                     type: Object,
@@ -570,7 +586,7 @@
                     this.$.filterConverter.setValues({
                         term: "",
                         from: 0,
-                        size: 20,
+                        size: this.size,
                         url: "/",
                         depth: 1
                     });
@@ -676,7 +692,7 @@
                 // When there is no search term and user didn't selected a category, then browse
                 this.$.filterConverter.setValues({
                     from: 0,
-                    size: 20,
+                    size: this.size,
                     category: e.target.dataset.value,
                     type: e.target.dataset.value ? 'files' : '',
                     url: '/',
@@ -687,7 +703,7 @@
                 this.clearIronList();
                 this.$.filterConverter.setValues({
                     from: 0,
-                    size: 20,
+                    size: this.size,
                     url: e.model.__data__.item.url,
                     depth: e.model.__data__.item.depth
                 });
@@ -716,7 +732,7 @@
 
                         this.$.filterConverter.setValues({
                             from: 0,
-                            size: 20,
+                            size: this.size,
                             term: term,
                             url: '',
                             depth: 0,
@@ -732,7 +748,7 @@
                 this.$.filterConverter.setValues({
                     term: '',
                     from: 0,
-                    size: 20,
+                    size: this.size,
                     url: '/',
                     depth: this.selectedCategory.index ? 0 : 1,
                     type: '' // By default get files and directories
@@ -773,7 +789,7 @@
 
                     this.$.filterConverter.setValues({
                         from: 0,
-                        size: 20,
+                        size: this.size,
                         url: e.model.__data__.item._source.url,
                         depth: e.model.__data__.item._source.depth + 1
                     });
@@ -787,7 +803,9 @@
                         document.querySelector("video").load();
                     }
                     if (document.querySelector("wave-player")){
-                        document.querySelector("wave-player").wavesurfer.stop();
+                        try {
+                            document.querySelector("wave-player").wavesurfer.stop();
+                        } catch(e) {}
                         document.querySelector("wave-player").deactivateAnimation();
                         document.querySelector("wave-player").updateWavesurfer();
                         document.querySelector("wave-player wave").remove();

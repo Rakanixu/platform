@@ -30,16 +30,16 @@
 
         return monthNames[date.getMonth()] + ' ' + date.getUTCDate() + ', ' + date.getUTCFullYear();
       },
-      isDir: function(isDir) {
-        var icon;
-
-        if (isDir) {
-          icon = "mat:folder";
-        } else {
-          icon = "mat:description";
+      getIcon: function(isDir, category) {
+        if (category === 'Audio Files') {
+          return 'image:music-note'
         }
 
-        return icon;
+        if (isDir) {
+          return 'mat:folder';
+        } else {
+          return 'mat:description';
+        }
       },
       isImage: function(category) {
         return (category === 'Image Files');
@@ -47,12 +47,37 @@
       isVideo: function(category){
 	      return (category === 'Video');
 	    },
+      isNoVisualMedia: function(category) {
+        return (category !== 'Image Files' && category !== 'Video');
+      },
       isAudio: function(category) {
         return (category === 'Audio Files');
       },
+      isDirectory: function(isDir) {
+        return isDir ? 'directory' : 'file';
+      },
       getAsset: function(path) {
-        console.log("http://localhost:8082/desktop/raw/" + path)
 	      return "http://localhost:8082/desktop/raw/" + path;
+      },
+      documentType: function(fileName) {
+        var extension = fileName.split('.')[fileName.split('.').length - 1];
+
+        switch (extension) {
+          case 'doc':
+          case 'docx':
+            return 'blue';
+          case 'xls':
+          case 'xlsx':
+            return 'green';
+          case 'pdf':
+            return 'red';
+          case 'ppt':
+          case 'pptx':
+            return 'amber-900';
+          default:
+            return '';
+        }
+
       },
       replaceAll: function(str, search, replacement) {
         return  str.replace(new RegExp(search, 'g'), replacement);
