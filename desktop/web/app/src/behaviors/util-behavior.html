@@ -45,11 +45,15 @@
         return (category === 'Image Files');
       },
       isVideo: function(category){
-	      return (category === 'Video')
-	},
-     getVideo: function(path) {
-	return "http://localhost:8082/desktop/raw/" + path;
-     },
+	      return (category === 'Video');
+	    },
+      isAudio: function(category) {
+        return (category === 'Audio Files');
+      },
+      getAsset: function(path) {
+        console.log("http://localhost:8082/desktop/raw/" + path)
+	      return "http://localhost:8082/desktop/raw/" + path;
+      },
       replaceAll: function(str, search, replacement) {
         return  str.replace(new RegExp(search, 'g'), replacement);
       }

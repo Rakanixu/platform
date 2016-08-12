@@ -54,6 +54,41 @@ mat-item.light mat-ink {
     color: white;
 }
 
+wave-player {
+    width: 100%;
+}
+
+wave-player div.albuminfo {
+    display: none;
+}
+
+wave-player paper-fab#playbutton {
+    position: absolute;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0;
+    right: 0;
+    top: 48px !important;
+    float: right;
+    background-color: #FF5722 !important;
+}
+
+wave-player paper-material.controls {
+    background: #FF5722 !important;
+}
+
+wave-player paper-material#container {
+    background-color: transparent;
+}
+
+wave-player paper-material#container wave wave {
+    border-right: 1px solid #FF5722 !important;
+}
+
+wave-player paper-material#container:not(.waveActive) {
+    margin-top: 56px;
+}
+
 .title {
     margin-top: auto;
     margin-bottom: auto;

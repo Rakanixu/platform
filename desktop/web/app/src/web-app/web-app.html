@@ -40,6 +40,8 @@
 <link rel="import" href="../../bower_components/mat-ink/mat-ink.html">
 <link rel="import" href="../../bower_components/mat-menu/mat-menu.html">
 
+<link rel="import" href="../../bower_components/wave-player/wave-player.html">
+
 <link rel="import" href="../../src/behaviors/util-behavior.html">
 <link rel="import" href="../../src/filter-converter/filter-converter.html">
 
@@ -330,28 +332,31 @@
                     </paper-toolbar>
 
                     <!-- Right Content -->
-                    <template is="dom-if" if="[[isImage(item._source.category)]]">
-                        <div class="content">
+                    <div class="content">
+                        <template is="dom-if" if="[[isImage(item._source.category)]]">
                             <iron-image style="width:100%"
                                         src="http://localhost:8082/desktop/image?source=[[item._source.url]]&width=600&mode=fit&quality=100"
                                         preload
                                         fade></iron-image>
-                            <mat-item label="[[item._source.name]]"
-                                      description="[[item._source.url]]"
-                                      tabindex="-1"></mat-item>
-                        </div>
-                    </template>
+                        </template>
 
-                    <template is="dom-if" if="[[isVideo(item._source.category)]]" restamp="true">
-                        <div class="content">
+                        <template is="dom-if" if="[[isVideo(item._source.category)]]" restamp="true">
                             <video id="video" controls preload="auto" width="100%">
-                                <source src="[[getVideo(item._source.url)]]">
+                                <source src="[[getAsset(item._source.url)]]">
                             </video>
-                            <mat-item label="[[item._source.name]]"
-                                      description="[[item._source.url]]"
-                                      tabindex="-1"></mat-item>
-                        </div>
-                    </template>
+                        </template>
+
+                        <template is="dom-if" if="[[isAudio(item._source.category)]]" restamp="true">
+                            <wave-player id="wavePlayer"
+                                         wavecolor="#21a9f5"
+                                         progresscolor="#b1b1b1"
+                                         src="[[getAsset(item._source.url)]]"/>
+                        </template>
+
+                        <mat-item label="[[item._source.name]]"
+                                  description="[[item._source.url]]"
+                                  tabindex="-1"></mat-item>
+                    </div>
                 </paper-header-panel>
 
             </paper-drawer-panel>
@@ -459,7 +464,8 @@
                 itemSelected: {
                     type: Boolean,
                     notify: true,
-                    value: false
+                    value: false,
+                    observer: 'itemSelectedChanged'
                 },
                 view: {
                     type: Object,
@@ -513,6 +519,16 @@
             ],
             breadcrumbsChanged: function(newVal, oldVal) {
                 this.set('lastBreadcrumb', this.breadcrumbs[this.breadcrumbs.length - 1]);
+            },
+            itemSelectedChanged: function(oldval, newVal) {
+                if (!this.itemSelected) {
+                    if (document.querySelector("video")) {
+                        document.querySelector("video").pause();
+                    }
+                    if (document.querySelector("wave-player")){
+                        document.querySelector("wave-player").wavesurfer.stop();
+                    }
+                }
             },
             ready: function() {
                 var resizeCallback;
@@ -589,6 +605,7 @@
             },
             _handleStartScan: function(e) {
                 if (e.detail.response) {
+                    this.$.snackbar.hide();
                     this.search();
                 }
             },
@@ -765,7 +782,16 @@
                     this.set('item', e.model.__data__.item);
                     this.set('itemSelected', true);
                     this.$.mainDrawerPanel.openDrawer();
-                    document.querySelector("video").load()
+
+                    if (document.querySelector("video")) {
+                        document.querySelector("video").load();
+                    }
+                    if (document.querySelector("wave-player")){
+                        document.querySelector("wave-player").wavesurfer.stop();
+                        document.querySelector("wave-player").deactivateAnimation();
+                        document.querySelector("wave-player").updateWavesurfer();
+                        document.querySelector("wave-player wave").remove();
+                    }
                 }
             },
             closeDetails: function(e, detail) {
