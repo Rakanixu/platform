@@ -2,6 +2,9 @@
 const electron = require("electron");
 const fs = require("fs");
 const drivelist = require('drivelist');
+const remote = require("electron").remote;
+const dialog = electron.dialog;
+const {shell} = electron;
 // Module to control application life.
 const {
     app
@@ -179,6 +182,12 @@ ipcMain.on("user-info-message", (event, arg) => {
         user: os.userInfo(),
         hostname: os.hostname()
     });
+});
+
+ipcMain.on("open-file-message", (event, arg) => {
+    var filepath = arg.url.slice(1, arg.url.length);
+
+    shell.openItem(filepath);
 });
 
 function startService(path, args) {

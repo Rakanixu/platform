@@ -328,8 +328,12 @@
                     <!-- Right Toolbar -->
                     <paper-toolbar class="medium-tall">
                         <paper-icon-button icon="icons:close"
-                                           on-tap="closeDetails"
-                                           tabindex="-1"></paper-icon-button>
+                                           on-tap="closeDetails"></paper-icon-button>
+
+                        <div class="flex"></div>
+
+                        <paper-icon-button icon="icons:create"
+                                           on-tap="openFile"></paper-icon-button>
 
                         <div class="bottom">
                             <mat-item label="[[item._source.name]]" class="light" focused="false"></mat-item>
@@ -565,22 +569,12 @@
                     }.bind(this), 300);
                 }.bind(this));
 
+                ipcRenderer.on('home-dir-message', this._handleHomeDir.bind(this));
+                ipcRenderer.on('user-info-message', this._handleUser.bind(this));
+                ipcRenderer.on('open-file-message', this._handleOpenFile.bind(this));
 
-/*                    var that = this;
-                    //POC to dectect we are on Desktop App
-                    if (typeof window !== 'undefined' && window.process && window.process.type === "renderer") {
-                        console.log("We are in Electron ! Let's Go ! ");
-                        ipcRenderer.on('disks-message', function(event, disks) {
-                            that.disks = disks;
-                            that.$.toast.label = "Got disk " + disks[0]['description'];
-                            that.$.toast.show();
-                        });
-                    }*/
-
-                ipcRenderer.send("home-dir-message");
-                ipcRenderer.on("home-dir-message", this._handleHomeDir.bind(this));
-                ipcRenderer.send("user-info-message");
-                ipcRenderer.on("user-info-message", this._handleUser.bind(this));
+                ipcRenderer.send('home-dir-message');
+                ipcRenderer.send('user-info-message');
             },
             init: function(e, detail) {
                 if (e.data && e.data.first_scan) {
@@ -588,10 +582,10 @@
                 }else {
                     this.checkBreadcrumbsView(0);
                     this.$.filterConverter.setValues({
-                        term: "",
+                        term: '',
                         from: 0,
                         size: this.size,
-                        url: "/",
+                        url: '/',
                         depth: 1
                     });
                 }
@@ -674,6 +668,9 @@
             _onError: function(e) {
                 console.log(e)
             },
+            _handleOpenFile: function(e) {
+              console.log('_handleOpenFile')
+            },
             clearIronList: function() {
                 this.set('searchResults', []);
                 this.$.searchList.fire('iron-resize');
@@ -720,8 +717,8 @@
             search: function(request) {
                 this.set('loading', true);
                 this.set('rpcElasticParams', {
-                    service: "go.micro.srv.desktop",
-                    method: "Search.Search",
+                    service: 'go.micro.srv.desktop',
+                    method: 'Search.Search',
                     request: this.$.filterConverter
                         .getFilterAsObj()
                 });
@@ -779,8 +776,8 @@
             },
             startScan: function(e, detail) {
                 this.set('rpcParams', {
-                    service: "go.micro.srv.desktop",
-                    method: "Crawl.Start",
+                    service: 'go.micro.srv.desktop',
+                    method: 'Crawl.Start',
                     request: {
                         url: 'local://' + this.homeDirPath
                     }
@@ -789,8 +786,6 @@
                 this.$.rpcStartScan.generateRequest();
             },
             mainAction: function(e, detail) {
-
-                e.stopPropagation();
                 if (e.model.__data__.item._source.is_dir) {
                     // Browse one level deeper
                     this.clearIronList();
@@ -814,18 +809,23 @@
                     this.set('itemSelected', true);
                     this.$.mainDrawerPanel.openDrawer();
 
-                    if (document.querySelector("video")) {
-                        document.querySelector("video").load();
+                    if (document.querySelector('video')) {
+                        document.querySelector('video').load();
                     }
-                    if (document.querySelector("wave-player")){
+                    if (document.querySelector('wave-player')){
                         try {
-                            document.querySelector("wave-player").wavesurfer.stop();
+                            document.querySelector('wave-player').wavesurfer.stop();
                         } catch(e) {}
-                        document.querySelector("wave-player").deactivateAnimation();
-                        document.querySelector("wave-player").updateWavesurfer();
-                        document.querySelector("wave-player wave").remove();
+                        document.querySelector('wave-player').deactivateAnimation();
+                        document.querySelector('wave-player').updateWavesurfer();
+                        document.querySelector('wave-player wave').remove();
                     }
                 }
+            },
+            openFile: function(e) {
+                ipcRenderer.send('open-file-message', {
+                    url: this.item._source.url
+                });
             },
             closeDetails: function(e, detail) {
                 this.set('itemSelected', false);

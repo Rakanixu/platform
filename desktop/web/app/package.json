@@ -7,6 +7,7 @@
   "license": "UNLICENSED",
   "main": "main.js",
   "dependencies": {
-    "drivelist": "^3.2.2"
+    "drivelist": "^3.2.2",
+    "shell": "^0.3.2"
   }
 }
