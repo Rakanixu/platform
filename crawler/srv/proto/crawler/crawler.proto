@@ -51,3 +51,7 @@ message StatusResponse {
 message Metric {
    int64 count = 1;
 }
+message FileMessage {
+   string id = 1;
+   string data = 2;
+}

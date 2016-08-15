@@ -3,15 +3,16 @@ package local
 import (
 	"encoding/json"
 	"errors"
-	scan "github.com/kazoup/platform/crawler/srv/scan"
-	"github.com/kazoup/platform/structs"
-	"github.com/micro/go-micro/client"
-	example "github.com/micro/micro/examples/template/srv/proto/example"
-	"golang.org/x/net/context"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
+
+	"github.com/kazoup/platform/crawler/srv/proto/crawler"
+	scan "github.com/kazoup/platform/crawler/srv/scan"
+	"github.com/kazoup/platform/structs"
+	"github.com/micro/go-micro/client"
+	"golang.org/x/net/context"
 )
 
 // Local ...
@@ -83,9 +84,11 @@ func (fs *Local) walkHandler() filepath.WalkFunc {
 			}
 
 			//time.Sleep(1 * time.Millisecond)
-			msg := &example.Message{
-				Say: string(b),
+			msg := &crawler.FileMessage{
+				Id:   f.URL,
+				Data: string(b),
 			}
+
 			ctx := context.TODO()
 			if err := client.Publish(ctx, client.NewPublication(topic, msg)); err != nil {
 				log.Printf("Error pubslishing : %", err.Error())
