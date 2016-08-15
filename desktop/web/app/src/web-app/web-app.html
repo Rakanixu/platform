@@ -107,11 +107,6 @@
                 margin: 0 0 0 -12px;
             }
 
-            .listContainer {
-                height: 100%;
-                overflow: auto;
-            }
-
             .photoContent {
                 @apply(--layout);
                 position: relative;
@@ -140,6 +135,11 @@
                 color: white;
                 font-size: 14px;
                 font-weight: 100;
+            }
+
+            .big-video mat-item mat-avatar {
+                width: 113px;
+                height: 72px;
             }
         </style>
 
@@ -172,9 +172,6 @@
                     <mat-divider></mat-divider>
 
                     <paper-menu>
-                        <paper-icon-item>
-                            <iron-icon icon="icons:settings" item-icon></iron-icon>Settings
-                        </paper-icon-item>
                         <paper-icon-item id="intercom_launch">
                             <iron-icon icon="icons:feedback" item-icon></iron-icon>Feedback
                         </paper-icon-item>
@@ -206,7 +203,7 @@
                         <div class="flex horizontal layout"
                              on-tap="toggleSearch"
                              hidden$="[[searching]]">
-                            <div class="title flex">Kazoup Search</div>
+                            <div class="title flex">[[title]]</div>
                             <mat-icon-button icon="mat:search" color="white"></mat-icon-button>
                         </div>
 
@@ -233,13 +230,6 @@
                                 <template id="breadcrumbsSteps" is="dom-repeat" items="[[breadcrumbs]]">
                                     <mat-breadcrumb-step label="[[item.label]]" on-tap="browse"></mat-breadcrumb-step>
                                 </template>
-                            </mat-breadcrumb>
-
-                            <!-- Breadcrumbs for static category. No browsing -->
-                            <mat-breadcrumb class="bottom"
-                                            hidden$="[[!handleSearchHeader(selectedCategory.index)]]"
-                                            shift="true">
-                                <mat-breadcrumb-step label="[[selectedCategory.label]]"></mat-breadcrumb-step>
                             </mat-breadcrumb>
                         </div>
 
@@ -268,66 +258,70 @@
                     </paper-toolbar>
 
                     <!-- Search results -->
-                    <div id="listContainer" class="listContainer" on-scroll="_handleScroll">
-                        <iron-list id="searchList" items="[[searchResults]]">
-                            <template>
-                                <div>
-                                    <template is="dom-if" if="{{!view.isGrid}}" restamp="true">
-                                        <template is="dom-if" if="{{isVideo(item._source.category)}}">
-                                            <mat-item on-tap="mainAction"
-                                                      label="[[item._source.name]]"
-                                                      description="[[item._source.url]]">
-                                                <mat-avatar background="[[documentType(item._source.name)]]"
-                                                            class="primary image"
-                                                            icon-src="http://localhost:8082/desktop/frame/[[item._source.url]]"></mat-avatar>
-                                                <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
-                                            </mat-item>
-                                        </template>
-
-                                        <template is="dom-if" if="{{isImage(item._source.category)}}">
-                                            <mat-item on-tap="mainAction"
-                                                      label="[[item._source.name]]"
-                                                      description="[[item._source.url]]">
-                                                <mat-avatar background="[[documentType(item._source.name)]]"
-                                                            class="primary image"
-                                                            icon-src="http://localhost:8082/desktop/image?source=[[item._source.url]]&width=128&height=128&mode=fit&quality=100"></mat-avatar>
-                                                <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
-                                            </mat-item>
-                                        </template>
-
-                                        <template is="dom-if" if="{{isNoVisualMedia(item._source.category)}}">
-                                            <mat-item on-tap="mainAction"
-                                                      label="[[item._source.name]]"
-                                                      description="[[item._source.url]]">
-                                                <mat-avatar background="[[documentType(item._source.name)]]" class="primary" icon="[[getIcon(item._source.is_dir, item._source.category)]]"></mat-avatar>
-                                                <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
-                                            </mat-item>
-                                        </template>
+                    <iron-list id="searchList" items="[[searchResults]]" on-scroll="_handleScroll">
+                        <template>
+                            <div class$="[[bigVideoClass]]">
+                                <template is="dom-if" if="{{!view.isGrid}}" restamp="true">
+                                    <template is="dom-if" if="{{isVideo(item._source.category)}}">
+                                        <mat-item on-tap="mainAction"
+                                                  label="[[item._source.name]]"
+                                                  description="[[item._source.url]]">
+                                            <mat-avatar background="[[documentType(item._source.name)]]"
+                                                        class="primary image"
+                                                        icon-src="http://localhost:8082/desktop/frame/[[item._source.url]]"></mat-avatar>
+                                            <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
+                                        </mat-item>
                                     </template>
 
-                                    <template is="dom-if" if="{{view.isGrid}}" restamp="true">
-                                        <div class="photoContainer grid" on-tap="mainAction">
-                                            <div class="photoContent" tabindex$="[[tabIndex]]">
-                                                <template is="dom-if" if="[[isImage(item._source.category)]]">
-                                                    <iron-image sizing="contain"
-                                                                src="http://localhost:8082/desktop/image?source=[[item._source.url]]&width=356&height=356&mode=fit&quality=100"></iron-image>
-                                                </template>
+                                    <template is="dom-if" if="{{isImage(item._source.category)}}">
+                                        <mat-item on-tap="mainAction"
+                                                  label="[[item._source.name]]"
+                                                  description="[[item._source.url]]">
+                                            <mat-avatar background="[[documentType(item._source.name)]]"
+                                                        class="primary image"
+                                                        icon-src="http://localhost:8082/desktop/image?source=[[item._source.url]]&width=128&height=128&mode=fit&quality=100"></mat-avatar>
+                                            <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
+                                        </mat-item>
+                                    </template>
 
-                                                <template is="dom-if" if="[[!isImage(item._source.category)]]">
-                                                    <mat-avatar icon="[[getIcon(item._source.is_dir, item._source.category)]]"></mat-avatar>
-                                                </template>
+                                    <template is="dom-if" if="{{isNoVisualMedia(item._source.category)}}">
+                                        <mat-item on-tap="mainAction"
+                                                  label="[[item._source.name]]"
+                                                  description="[[item._source.url]]">
+                                            <mat-avatar background="[[documentType(item._source.name)]]" class="primary" icon="[[getIcon(item._source.is_dir, item._source.category)]]"></mat-avatar>
+                                            <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
+                                        </mat-item>
+                                    </template>
+                                </template>
 
-                                                <div class="detail">
-                                                    <mat-item class="light" label="[[item._source.name]]"></mat-item>
-                                                </div>
-                                                <mat-ripple></mat-ripple>
+                                <template is="dom-if" if="{{view.isGrid}}" restamp="true">
+                                    <div class="photoContainer grid" on-tap="mainAction">
+                                        <div class="photoContent" tabindex$="[[tabIndex]]">
+                                            <template is="dom-if" if="[[isImage(item._source.category)]]">
+                                                <iron-image sizing="contain"
+                                                            src="http://localhost:8082/desktop/image?source=[[item._source.url]]&width=356&height=356&mode=fit&quality=100"></iron-image>
+                                            </template>
+
+                                            <template is="dom-if" if="[[isVideo(item._source.category)]]">
+                                                <iron-image sizing="contain"
+                                                            src="http://localhost:8082/desktop/frame/[[item._source.url]]"></iron-image>
+                                            </template>
+
+                                            <template is="dom-if" if="[[isNoVisualMedia(item._source.category)]]">
+                                                <mat-avatar icon="[[getIcon(item._source.is_dir, item._source.category)]]"></mat-avatar>
+                                            </template>
+
+                                            <div class="detail">
+                                                <mat-item class="light" label="[[item._source.name]]"></mat-item>
                                             </div>
+                                            <mat-ripple></mat-ripple>
                                         </div>
-                                    </template>
-                                </div>
-                            </template>
-                        </iron-list>
-                    </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </iron-list>
+
                 </paper-header-panel>
 
                 <paper-header-panel class="content-panel drawer" drawer>
@@ -338,7 +332,7 @@
                                            tabindex="-1"></paper-icon-button>
 
                         <div class="bottom">
-                            <mat-item label="[[item._source.name]]" class="light"></mat-item>
+                            <mat-item label="[[item._source.name]]" class="light" focused="false"></mat-item>
                         </div>
                     </paper-toolbar>
 
@@ -458,7 +452,12 @@
                 size: {
                     type: Number,
                     notify: false,
-                    value: 40
+                    value: 45
+                },
+                title: {
+                    type: String,
+                    notify: false,
+                    value: 'Kazoup Search'
                 },
                 selectedCategory: {
                     type: Object,
@@ -528,6 +527,11 @@
                     value: function() {
                         return {};
                     }
+                },
+                bigVideoClass: {
+                    type: String,
+                    notify: false,
+                    value: ''
                 }
             },
             observers: [
@@ -608,10 +612,10 @@
             },
             _handleScroll: function(e) {
                 if (!this.$.rpcElastic.loading) {
-                    if (this.$.listContainer.clientHeight + this.$.listContainer.scrollTop >
+                    if (this.$.searchList.scrollTop >
                         ((this.$.searchList._virtualCount / this.$.searchList._itemsPerRow) *
-                        this.$.searchList._physicalAverage) - 300) {
-                        var from = this.$.filterConverter.getFilterAsObj().from + 20;
+                        this.$.searchList._physicalAverage) - (this.$.searchList.getBoundingClientRect().height + 300)) {
+                        var from = this.$.filterConverter.getFilterAsObj().from + this.size;
 
                         if (from < this.totalResults) {
                             this.$.filterConverter.setValue('from', from);
@@ -666,8 +670,6 @@
                 } else {
                     this.$.scan.setAttribute('disabled', '');
                 }
-
-                console.log(_.isEmpty(e.detail))
             },
             _onError: function(e) {
                 console.log(e)
@@ -685,8 +687,15 @@
                 } else {
                     this.setListView();
                 }
+
+                if (e.target.dataset.value === 'Video') {
+                    this.set('bigVideoClass', 'big-video');
+                } else {
+                    this.set('bigVideoClass', '');
+                }
+
                 this.refreshView();
-                this.set('selectedCategory.label', e.target.dataset.value);
+                this.set('title', (e.target.dataset.value ? e.target.dataset.value : 'Kazoup') + ' Search');
 
                 // depth must be 0 for search
                 // When there is no search term and user didn't selected a category, then browse
@@ -760,8 +769,12 @@
                 this.$.search._inputHandler();
 
                 this.async(function() {
+                    // Explicity remove all focus from <mat-item>
+                    _.forEach(document.querySelectorAll('mat-item'), function(el){
+                        el.setAttribute('tabindex', -1);
+                    });
                     this.$.search.focus();
-                }, 1);
+                }, 10);
                 this.set('searching', !this.searching);
             },
             startScan: function(e, detail) {
@@ -776,6 +789,8 @@
                 this.$.rpcStartScan.generateRequest();
             },
             mainAction: function(e, detail) {
+
+                e.stopPropagation();
                 if (e.model.__data__.item._source.is_dir) {
                     // Browse one level deeper
                     this.clearIronList();
@@ -817,9 +832,11 @@
                 this.$.mainDrawerPanel.closeDrawer();
             },
             refreshView: function() {
-                this.$.searchList.fire('iron-resize');
-                this.$.searchList.notifyResize();
-                this.$.searchList.scrollToIndex(0);
+                this.async(function() {
+                    this.$.searchList.fire('iron-resize');
+                    this.$.searchList.notifyResize();
+                    this.$.searchList.scrollToIndex(0);
+                }, 1);
             },
             setGridView: function() {
                 this.set('view.icon', 'icons:view-list');

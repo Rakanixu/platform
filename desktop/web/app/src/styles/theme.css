@@ -59,6 +59,10 @@ mat-avatar.image {
     border-radius: 0;
 }
 
+iron-list {
+    height: 100%;
+}
+
 wave-player {
     width: 100%;
 }
