@@ -44,6 +44,7 @@
 <link rel="import" href="../../bower_components/wave-player/wave-player.html">
 
 <link rel="import" href="../../src/behaviors/util-behavior.html">
+<link rel="import" href="../../src/behaviors/categories-map-behavior.html">
 <link rel="import" href="../../src/filter-converter/filter-converter.html">
 
 <dom-module id="web-app">
@@ -155,16 +156,16 @@
                         <paper-icon-item on-tap="setCategory" data-value="">
                             <iron-icon icon="icons:home" item-icon></iron-icon>All
                         </paper-icon-item>
-                        <paper-icon-item on-tap="setCategory" data-value="Document Files">
+                        <paper-icon-item on-tap="setCategory" data-value$="[[categoriesMap.documents]]">
                             <iron-icon icon="editor:insert-drive-file" item-icon></iron-icon>Documents
                         </paper-icon-item>
-                        <paper-icon-item on-tap="setCategory" data-value="Video">
+                        <paper-icon-item on-tap="setCategory" data-value$="[[categoriesMap.videos]]">
                             <iron-icon icon="av:movie" item-icon></iron-icon>Movies
                         </paper-icon-item>
-                        <paper-icon-item on-tap="setCategory" data-value="Image Files">
+                        <paper-icon-item on-tap="setCategory" data-value$="[[categoriesMap.images]]">
                             <iron-icon icon="image:camera-alt" item-icon></iron-icon>Pictures
                         </paper-icon-item>
-                        <paper-icon-item on-tap="setCategory" data-value="Audio Files">
+                        <paper-icon-item on-tap="setCategory" data-value$="[[categoriesMap.audios]]">
                             <iron-icon icon="image:audiotrack" item-icon></iron-icon>Audio
                         </paper-icon-item>
                     </paper-menu>
@@ -362,7 +363,7 @@
                                          src="[[getAsset(item._source.url)]]"/>
                         </template>
 
-                        <mat-item label="[[item._source.name]]"
+                        <mat-item label="Location"
                                   description="[[item._source.url]]"
                                   tabindex="-1"></mat-item>
                     </div>
@@ -424,7 +425,8 @@
         Polymer({
             is: 'web-app',
             behaviors: [
-                Polymer.UtilBehaviorImp
+                Polymer.UtilBehaviorImp,
+                Polymer.CategoriesMapBehaviorImp
             ],
             properties: {
                 disks: {
@@ -679,13 +681,13 @@
                 this.clearIronList();
                 this.set('itemSelected', false);
                 this.$.navDrawerPanel.closeDrawer();
-                if (e.target.dataset.value === 'Image Files') {
+                if (e.target.dataset.value === this.categoriesMap.images) {
                     this.setGridView();
                 } else {
                     this.setListView();
                 }
 
-                if (e.target.dataset.value === 'Video') {
+                if (e.target.dataset.value === this.categoriesMap.videos) {
                     this.set('bigVideoClass', 'big-video');
                 } else {
                     this.set('bigVideoClass', '');

@@ -1,0 +1,22 @@
+<script>
+  'use strict';
+
+  (function() {
+    Polymer.CategoriesMapBehaviorImp = {
+      properties: {
+        categoriesMap: {
+          type: Object,
+          notify: false,
+          value: function() {
+            return {
+              documents: 'Documents',
+              videos: 'Movies',
+              images: 'Pictures',
+              audios: 'Audio'
+            };
+          }
+        }
+      }
+    };
+  }());
+</script>

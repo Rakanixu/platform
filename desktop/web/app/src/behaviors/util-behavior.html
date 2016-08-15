@@ -31,7 +31,7 @@
         return monthNames[date.getMonth()] + ' ' + date.getUTCDate() + ', ' + date.getUTCFullYear();
       },
       getIcon: function(isDir, category) {
-        if (category === 'Audio Files') {
+        if (category === this.categoriesMap.audios) {
           return 'image:music-note'
         }
 
@@ -42,16 +42,16 @@
         }
       },
       isImage: function(category) {
-        return (category === 'Image Files');
+        return (category === this.categoriesMap.images);
       },
       isVideo: function(category){
-	      return (category === 'Video');
+	      return (category === this.categoriesMap.videos);
 	    },
       isNoVisualMedia: function(category) {
-        return (category !== 'Image Files' && category !== 'Video');
+        return (category !== this.categoriesMap.images && category !== this.categoriesMap.videos);
       },
       isAudio: function(category) {
-        return (category === 'Audio Files');
+        return (category === this.categoriesMap.audios);
       },
       isDirectory: function(isDir) {
         return isDir ? 'directory' : 'file';

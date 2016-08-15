@@ -322,7 +322,7 @@
     ]
   },
   {
-    "name": "Document Files",
+    "name": "Documents",
     "order": 1,
     "color": "#1f77b4",
     "extensions": [
@@ -484,7 +484,7 @@
     ]
   },
   {
-    "name": "Image Files",
+    "name": "Pictures",
     "order": 3,
     "color": "#d62728",
     "extensions": [
@@ -831,7 +831,7 @@
     ]
   },
   {
-    "name": "Audio Files",
+    "name": "Audio",
     "order": 5,
     "color": "#8c564b",
     "extensions": [
@@ -962,7 +962,7 @@
     ]
   },
   {
-   "name": "Video",
+   "name": "Movies",
     "order": 4,
     "color": "#9467bd",
     "extensions": [
