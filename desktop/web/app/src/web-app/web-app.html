@@ -289,7 +289,9 @@
                                         <mat-item on-tap="mainAction"
                                                   label="[[item._source.name]]"
                                                   description="[[item._source.url]]">
-                                            <mat-avatar background="[[documentType(item._source.name)]]" class="primary" icon="[[getIcon(item._source.is_dir, item._source.category)]]"></mat-avatar>
+                                            <mat-avatar background="[[documentType(item._source.name)]]"
+                                                        class="primary"
+                                                        icon="[[getIcon(item._source.is_dir, item._source.category)]]"></mat-avatar>
                                             <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
                                         </mat-item>
                                     </template>
@@ -309,7 +311,9 @@
                                             </template>
 
                                             <template is="dom-if" if="[[isNoVisualMedia(item._source.category)]]">
-                                                <mat-avatar icon="[[getIcon(item._source.is_dir, item._source.category)]]"></mat-avatar>
+                                                <mat-avatar background="[[documentType(item._source.name)]]"
+                                                            class="primary"
+                                                            icon="[[getIcon(item._source.is_dir, item._source.category)]]"></mat-avatar>
                                             </template>
 
                                             <div class="detail">
@@ -329,12 +333,14 @@
                     <!-- Right Toolbar -->
                     <paper-toolbar class="medium-tall">
                         <paper-icon-button icon="icons:close"
-                                           on-tap="closeDetails"></paper-icon-button>
+                                           on-tap="closeDetails"
+                                           tabindex="-1"></paper-icon-button>
 
                         <div class="flex"></div>
 
                         <paper-icon-button icon="icons:create"
-                                           on-tap="openFile"></paper-icon-button>
+                                           on-tap="openFile"
+                                           tabindex="-1"></paper-icon-button>
 
                         <div class="bottom">
                             <mat-item label="[[item._source.name]]" class="light" focused="false"></mat-item>
