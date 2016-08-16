@@ -12,15 +12,6 @@ type Elastic struct{}
 
 // Create srv handler
 func (es *Elastic) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.CreateResponse) error {
-	//var err error
-
-	//if err = DocRefFieldsExists(&proto.DocRef{
-	//	Index: req.Index,
-	//	Type:  req.Type,
-	//	Id:    req.Id,
-	//}); err != nil {
-	//	return err
-	//}
 
 	if err := elastic.Create(req); err != nil {
 		return errors.InternalServerError("go.micro.srv.elastic.Elastic.Create", err.Error())

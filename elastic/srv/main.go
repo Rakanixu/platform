@@ -8,6 +8,7 @@ import (
 	"github.com/kazoup/platform/elastic/srv/handler"
 	"github.com/micro/cli"
 	"github.com/micro/go-micro"
+	_ "github.com/micro/go-plugins/broker/nats"
 )
 
 func main() {

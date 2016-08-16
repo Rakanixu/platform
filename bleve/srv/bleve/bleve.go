@@ -2,20 +2,27 @@ package bleve
 
 import (
 	"log"
+	"sync"
 
 	"github.com/blevesearch/bleve"
+	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 )
 
 type BleveEngine struct {
-	IndexPath string
-	Idx       bleve.Index
-	Batch     bleve.Batch
+	IndexPath   string
+	Idx         bleve.Index
+	mu          sync.Mutex
+	Batch       bleve.Batch
+	BatchSize   int
+	FileChannel chan *crawler.FileMessage
 }
 
-func NewBleveEngine() *BleveEngine {
+func NewBleveEngine(path string) *BleveEngine {
 	return &BleveEngine{
-		IndexPath: "kazoup.idx",
-		Idx:       Init(),
+		IndexPath:   path,
+		Idx:         Init(),
+		BatchSize:   10000,
+		FileChannel: make(chan *crawler.FileMessage),
 	}
 }
 
@@ -37,4 +44,23 @@ func Init() bleve.Index {
 		return index
 	}
 	return index
+}
+
+//Batcher
+func (be *BleveEngine) Indexer() {
+	b := be.Idx.NewBatch()
+	go func() {
+		for {
+			v := <-be.FileChannel
+			if b.Size() < be.BatchSize {
+				b.Index(v.Id, v.Data)
+
+			} else {
+				be.Idx.Batch(b)
+				b.Reset()
+				s, _ := be.Idx.Stats().MarshalJSON()
+				log.Printf("Stats %", string(s))
+			}
+		}
+	}()
 }
