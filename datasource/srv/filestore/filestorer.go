@@ -14,7 +14,8 @@ type FileStorer interface {
 }
 
 type FileStore struct {
-	FileStorer
+	FileStorer         FileStorer
+	ElasticServiceName string
 }
 
 // Save FileStore configuration
@@ -25,7 +26,7 @@ func (fs *FileStore) Save(data interface{}) error {
 	}
 
 	srvReq := client.NewRequest(
-		"go.micro.srv.elastic",
+		fs.ElasticServiceName,
 		"Elastic.Create",
 		&elastic.CreateRequest{
 			Index: "datasources",

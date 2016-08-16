@@ -10,6 +10,8 @@ import (
 	crawler_handler "github.com/kazoup/platform/crawler/srv/handler"
 	crawler_proto "github.com/kazoup/platform/crawler/srv/proto/crawler"
 	crawler_subscriber "github.com/kazoup/platform/crawler/srv/subscriber"
+	datasource_handler "github.com/kazoup/platform/datasource/srv/handler"
+	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	elastic "github.com/kazoup/platform/elastic/srv/elastic"
 	elastic_handler "github.com/kazoup/platform/elastic/srv/handler"
 	indexer "github.com/kazoup/platform/elastic/srv/subscriber"
@@ -86,6 +88,12 @@ func main() {
 
 	// Flag handler
 	flag_proto.RegisterFlagHandler(service.Server(), &flag_handler.Flag{
+		Client:             service.Client(),
+		ElasticServiceName: elasticServiceName,
+	})
+
+	// DataSource handler
+	datasource_proto.RegisterDataSourceHandler(service.Server(), &datasource_handler.DataSource{
 		Client:             service.Client(),
 		ElasticServiceName: elasticServiceName,
 	})

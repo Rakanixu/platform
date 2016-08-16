@@ -1,0 +1,216 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-menu-button/paper-menu-button.html">
+
+<link rel="import" href="../../bower_components/mat-icon/mat-icon.html">
+<link rel="import" href="../../bower_components/mat-icons/mat-icons.html">
+<link rel="import" href="../../bower_components/mat-icons/hardware-icons.html">
+<link rel="import" href="../../bower_components/mat-icons/action-icons.html">
+
+<link rel="import" href="../../src/behaviors/util-behavior.html">
+<link rel="import" href="../../src/behaviors/nav-behavior.html">
+<link rel="import" href="../../src/behaviors/categories-map-behavior.html">
+
+<dom-module id="datasources-page">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style>
+      :host {
+        display: block;
+      }
+
+      iron-list {
+        overflow: visible !important;
+      }
+    </style>
+
+    <iron-list id="datasourcesList" items="[[datasourcesResults]]">
+      <template>
+        <mat-item label="[[getDatasourceUrl(item.url)]]"
+                  description="">
+          <mat-avatar class="primary"
+                      icon="[[getDatasourceIcon(item.url)]]"></mat-avatar>
+<!--          <mat-icon-button class="secondary"
+                           on-tap="startScan"
+                           icon="action:power-settings-new"
+                           color="blue"></mat-icon-button>-->
+
+
+          <mat-icon-button class="secondary"
+                           behavior="toggle"
+                           icon="mat:more-vert"
+                           target="[[item.id]]"></mat-icon-button>
+          <mat-menu id="[[item.id]]">
+            <mat-option label="Start scan" on-tap="startScan"></mat-option>
+            <mat-option label="Delete" on-tap="deleteDatasource"></mat-option>
+
+          </mat-menu>
+        </mat-item>
+
+
+      </template>
+    </iron-list>
+
+    <mat-dialog id="addDatasourceDialog" label="Add datasource">
+      <div>          <paper-menu-button class="secondary">
+        <paper-icon-button icon="menu" class="dropdown-trigger"></paper-icon-button>
+        <paper-menu class="dropdown-content">
+          <paper-item>Share</paper-item>
+          <paper-item>Settings</paper-item>
+          <paper-item>Help</paper-item>
+        </paper-menu>
+      </paper-menu-button>
+        <p>Type a path in your local file system</p>
+        <mat-text-field id="datasourceInput"
+                        class="flex"
+                        label="Path to scan"></mat-text-field>
+      </div>
+      <mat-button class="action" label="Cancel" on-tap="closeDatasourceDialog"></mat-button>
+      <mat-button class="action" label="Confirm" on-tap="addDatasource"></mat-button>
+    </mat-dialog>
+
+    <paper-toast id="toast" text=""></paper-toast>
+
+    <iron-ajax id="rpcGetDatasources"
+               method="POST"
+               content-type="application/json"
+               url="http://localhost:8082/rpc"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleGetDatasource"
+               params="[[rpcGetDatasourceParams]]"></iron-ajax>
+
+    <iron-ajax id="rpcAddDatasource"
+               method="POST"
+               content-type="application/json"
+               url="http://localhost:8082/rpc"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleAddDatasource"
+               params="{{rpcAddDatasourceParams}}"></iron-ajax>
+
+    <iron-ajax id="rpcStartScan"
+               method="POST"
+               content-type="application/json"
+               url="http://localhost:8082/rpc"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleStartScan"
+               params="[[rpcStartScanParams]]"></iron-ajax>
+
+  </template>
+
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'datasources-page',
+        behaviors: [
+          Polymer.UtilBehaviorImp,
+          Polymer.NavBehaviorImp,
+          Polymer.CategoriesMapBehaviorImp,
+          Polymer.AsyncBehaviorImp,
+          Polymer.CommonBehaviorImp
+        ],
+        properties: {
+          rpcGetDatasourceParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: 'go.micro.srv.desktop',
+                method: 'DataSource.Search',
+                request: {
+                  offset: 0,
+                  limit: 9999
+                }
+              };
+            }
+          },
+          rpcStartScanParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: 'go.micro.srv.desktop',
+                method: 'DataSource.Scan',
+                request: {
+                  id: ''
+                }
+              };
+            }
+          },
+          datasourcesResults: {
+            type: Array,
+            notify: true,
+            value: function() {
+              return [];
+            }
+          }
+        },
+        ready: function() {
+          this.$.rpcGetDatasources.body = this.rpcGetDatasourceParams;
+
+          window.addEventListener('datasources-page-activated', this.init.bind(this));
+        },
+        init: function(e, detail) {
+          this.set('loading', true);
+          this.$.rpcGetDatasources.generateRequest();
+        },
+        addDatasource: function(e) {
+          this.$.rpcAddDatasource.body = {
+            service: 'go.micro.srv.desktop',
+            method: 'DataSource.Create',
+            request: {
+              endpoint: {
+                url: 'local://' + this.$.datasourceInput.input.value
+              }
+            }
+          };
+
+          this.$.rpcAddDatasource.generateRequest();
+        },
+        startScan: function(e) {
+          this.set('loading', true);
+          this.rpcStartScanParams.request.id = e.model.__data__.item.id;
+          this.$.rpcStartScan.body = this.rpcStartScanParams;
+          this.$.rpcStartScan.generateRequest();
+        },
+        _handleStartScan: function(e) {
+          this.set('loading', false);
+        },
+        _handleGetDatasource: function(e) {
+          this.set('loading', false);
+          if (e.detail.response && e.detail.response.result) {
+            this.set('datasourcesResults', e.detail.response.result);
+            this.$.datasourcesList.fire('iron-resize');
+          }
+        },
+        _handleAddDatasource: function(e) {
+          if (e.detail.response) {
+            this.$.toast.text = 'New datasource created succesfully';
+            this.$.toast.show();
+            this.closeDatasourceDialog();
+            this.async(this.init, 1000);
+          }
+        },
+        _handleError: function(e) {
+          this.set('loading', false);
+          if (e.detail.request && e.detail.request.response) {
+            this.$.toast.text = e.detail.request.response.detail;
+            this.$.toast.show();
+          }
+        }
+      });
+    }());
+  </script>
+</dom-module>

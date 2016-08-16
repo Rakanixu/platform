@@ -1,0 +1,29 @@
+<script>
+  'use strict';
+
+  (function() {
+    Polymer.NavBehaviorImp = {
+      properties: {
+        user: {
+          type: Object,
+          notify: false,
+          value: {}
+        },
+      },
+      showSettingsPage: function(e) {
+        _.forEach(document.querySelectorAll('#navDrawerPanel'), function(el) {
+          el.closeDrawer();
+        });
+        document.querySelector('#ironPages').selected = 2;
+        this.fireEvent('settings-page-activated');
+      },
+      ready: function() {
+        ipcRenderer.on('user-info-message', this._handleUser.bind(this));
+        ipcRenderer.send('user-info-message');
+      },
+      _handleUser: function(e, detail) {
+        this.set('user', detail);
+      },
+    };
+  }());
+</script>

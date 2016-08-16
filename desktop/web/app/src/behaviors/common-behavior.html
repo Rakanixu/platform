@@ -1,0 +1,21 @@
+<script>
+  'use strict';
+
+  (function() {
+    Polymer.CommonBehaviorImp = {
+      properties: {
+        loading: {
+          type: Boolean,
+          notify: true,
+          value: false
+        }
+      },
+      openDatasourceDialog: function(e) {
+        document.querySelector('#addDatasourceDialog').show();
+      },
+      closeDatasourceDialog: function(e) {
+        document.querySelector('#addDatasourceDialog').toggle();
+      }
+    };
+  }());
+</script>

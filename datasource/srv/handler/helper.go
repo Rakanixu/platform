@@ -22,14 +22,21 @@ const (
 )
 
 // GetDataSource returns a FileStorer interface
-func GetDataSource(endpoint *proto.Endpoint) (filestorer.FileStorer, error) {
+func GetDataSource(ds *DataSource, endpoint *proto.Endpoint) (filestorer.FileStorer, error) {
 	if strings.Contains(endpoint.Url, fakeEndpoint) {
-		return &fake.Fake{}, nil
+		return &fake.Fake{
+			FileStore: filestorer.FileStore{
+				ElasticServiceName: ds.ElasticServiceName,
+			},
+		}, nil
 	}
 
 	if strings.Contains(endpoint.Url, localEndpoint) {
 		return &local.Local{
 			Endpoint: *endpoint,
+			FileStore: filestorer.FileStore{
+				ElasticServiceName: ds.ElasticServiceName,
+			},
 		}, nil
 	}
 
@@ -47,9 +54,9 @@ func GetDataSource(endpoint *proto.Endpoint) (filestorer.FileStorer, error) {
 }
 
 // DeleteDataSource deletes a datasource previously stored
-func DeleteDataSource(id string) error {
+func DeleteDataSource(ds *DataSource, id string) error {
 	srvReq := client.NewRequest(
-		"go.micro.srv.elastic",
+		ds.ElasticServiceName,
 		"Elastic.Delete",
 		&elastic.DeleteRequest{
 			Index: "datasources",
@@ -67,7 +74,7 @@ func DeleteDataSource(id string) error {
 }
 
 // SearchDataSources queries for datasources stored in ES
-func SearchDataSources(query string, limit int64, offset int64) ([]*proto.Endpoint, error) {
+func SearchDataSources(ds *DataSource, query string, limit int64, offset int64) ([]*proto.Endpoint, error) {
 	var result []*proto.Endpoint
 	var resultMap map[string]interface{}
 
@@ -76,7 +83,7 @@ func SearchDataSources(query string, limit int64, offset int64) ([]*proto.Endpoi
 	}
 
 	srvReq := client.NewRequest(
-		"go.micro.srv.elastic",
+		ds.ElasticServiceName,
 		"Elastic.Search",
 		&elastic.SearchRequest{
 			Index:  "datasources",
@@ -127,9 +134,9 @@ func SearchDataSources(query string, limit int64, offset int64) ([]*proto.Endpoi
 	return result, nil
 }
 
-func ScanDataSource(ctx context.Context, id string, ds *DataSource) error {
+func ScanDataSource(ds *DataSource, ctx context.Context, id string) error {
 	elasticSrvReq := client.NewRequest(
-		"go.micro.srv.elastic",
+		ds.ElasticServiceName,
 		"Elastic.Read",
 		&elastic.ReadRequest{
 			Index: "datasources",

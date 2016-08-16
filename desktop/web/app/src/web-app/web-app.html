@@ -24,6 +24,7 @@
 <link rel="import" href="../../bower_components/mat-text-field/mat-text-field.html">
 <link rel="import" href="../../bower_components/mat-icon/mat-icon.html">
 <link rel="import" href="../../bower_components/mat-icons/mat-icons.html">
+<link rel="import" href="../../bower_components/mat-dialog/mat-dialog.html">
 <link rel="import" href="../../bower_components/mat-icons/image-icons.html">
 <link rel="import" href="../../bower_components/mat-avatar/mat-avatar.html">
 <link rel="import" href="../../bower_components/mat-button/mat-button.html">
@@ -44,7 +45,9 @@
 <link rel="import" href="../../bower_components/wave-player/wave-player.html">
 
 <link rel="import" href="../../src/behaviors/util-behavior.html">
+<link rel="import" href="../../src/behaviors/nav-behavior.html">
 <link rel="import" href="../../src/behaviors/categories-map-behavior.html">
+<link rel="import" href="../../src/behaviors/common-behavior.html">
 <link rel="import" href="../../src/filter-converter/filter-converter.html">
 
 <dom-module id="web-app">
@@ -148,7 +151,7 @@
             <!-- Nav Content -->
             <div class="nav" drawer>
                 <paper-toolbar class="medium-tall left-menu">
-                    <label is="mat-label" class="bottom">[[user.user.username]]@[[user.hostname]] </label>
+                    <label is="mat-label" class="bottom">[[user.user.username]]@[[user.hostname]]</label>
                 </paper-toolbar>
 
                 <div class="content">
@@ -173,6 +176,9 @@
                     <mat-divider></mat-divider>
 
                     <paper-menu>
+                        <paper-icon-item id="settings" on-tap="showSettingsPage">
+                            <iron-icon icon="icons:settings" item-icon></iron-icon>Settings
+                        </paper-icon-item>
                         <paper-icon-item id="intercom_launch">
                             <iron-icon icon="icons:feedback" item-icon></iron-icon>Feedback
                         </paper-icon-item>
@@ -219,7 +225,9 @@
                                          color="white"
                                          hidden$="[[!searching]]"></mat-icon-button>
 
-                        <paper-icon-button id="searchViewIcon" icon="[[view.icon]]" on-tap="toggleView"></paper-icon-button>
+                        <paper-icon-button id="searchViewIcon"
+                                           icon="[[view.icon]]"
+                                           on-tap="toggleView"></paper-icon-button>
 
                         <div class="middle breadcrumbs">
                             <!-- Breadcrumbs while browsing. Breadcrumbs fits into screen -->
@@ -247,8 +255,8 @@
                             <mat-menu id="breadcrumbsMenu" position="baseline">
                                 <mat-option label="My Files" on-tap="setCategory" data-value=""></mat-option>
                                 <template id="breadcrumbsStepsMenu" is="dom-repeat" items="[[breadcrumbs]]">
-                                            <mat-option label="[[item.label]]" on-tap="browse"></mat-option>
-                                        </template>
+                                    <mat-option label="[[item.label]]" on-tap="browse"></mat-option>
+                                </template>
                             </mat-menu>
                         </div>
 
@@ -380,6 +388,8 @@
 
         <filter-converter id="filterConverter"></filter-converter>
 
+        <paper-toast id="toast" text=""></paper-toast>
+
         <mat-snackbar id="snackbar"
                       button="Scan"
                       timeout="10000000"
@@ -403,6 +413,15 @@
                    on-error="_handleError"
                    on-response="_handleStartScan"
                    params="{{rpcStartScanParams}}"></iron-ajax>
+
+        <iron-ajax id="rpcAddDatasource"
+                   method="POST"
+                   content-type="application/json"
+                   url="http://localhost:8082/rpc"
+                   handle-as="json"
+                   on-error="_handleError"
+                   on-response="_handleAddDatasource"
+                   params="{{rpcAddDatasourceParams}}"></iron-ajax>
 
         <iron-ajax id="rpcElastic"
                    method="POST"
@@ -432,17 +451,19 @@
             is: 'web-app',
             behaviors: [
                 Polymer.UtilBehaviorImp,
-                Polymer.CategoriesMapBehaviorImp
+                Polymer.NavBehaviorImp,
+                Polymer.CategoriesMapBehaviorImp,
+                Polymer.AsyncBehaviorImp,
+                Polymer.CommonBehaviorImp
             ],
             properties: {
                 disks: {
                     type: Array,
                     value: [],
                 },
-                user: {
+                rpcAddDatasourceParams: {
                     type: Object,
-                    notify: false,
-                    value: {}
+                    notify: true
                 },
                 rpcStartScanParams: {
                     type: Object,
@@ -521,11 +542,6 @@
                     notify: true,
                     value: false
                 },
-                loading: {
-                    type: Boolean,
-                    notify: true,
-                    value: false
-                },
                 breadcrumbs: {
                     type: Array,
                     notify: true,
@@ -578,16 +594,17 @@
                 }.bind(this));
 
                 ipcRenderer.on('home-dir-message', this._handleHomeDir.bind(this));
-                ipcRenderer.on('user-info-message', this._handleUser.bind(this));
-                ipcRenderer.on('open-file-message', this._handleOpenFile.bind(this));
-
                 ipcRenderer.send('home-dir-message');
-                ipcRenderer.send('user-info-message');
             },
             init: function(e, detail) {
                 if (e.data && e.data.first_scan) {
                     this.showScanSnack();
-                }else {
+                } else if (e.data && e.data.callback && e.data.e) {
+                    this[e.data.callback](e.data.e);
+                    if (e.data.e.selectedCategory) {
+                        this.set('selectedCategory', e.data.e.selectedCategory);
+                    }
+                } else {
                     this.checkBreadcrumbsView(0);
                     this.$.filterConverter.setValues({
                         term: '',
@@ -648,9 +665,6 @@
             _handleHomeDir: function(e, detail) {
                 this.set('homeDirPath', detail);
             },
-            _handleUser: function(e, detail) {
-                this.set('user', detail);
-            },
             _computeListWidth: function(isMobile) {
                 // when in mobile screen size, make the list be 100% width to cover the whole screen
                 return isMobile ? '100%' : '35%';
@@ -676,8 +690,19 @@
             _onError: function(e) {
                 console.log(e)
             },
-            _handleOpenFile: function(e) {
-              console.log('_handleOpenFile')
+            _handleError: function(e, detail) {
+                this.set('loading', false);
+                if (e.detail.request && e.detail.request.response) {
+                    this.$.toast.text = e.detail.request.response.detail;
+                    this.$.toast.show();
+                }
+            },
+            _handleAddDatasource: function(e) {
+                if (e.detail.response) {
+                    this.$.toast.text = 'New datasource created succesfully';
+                    this.$.toast.show();
+                    this.closeDatasourceDialog();
+                }
             },
             clearIronList: function() {
                 this.set('searchResults', []);
@@ -783,15 +808,40 @@
                 this.set('searching', !this.searching);
             },
             startScan: function(e, detail) {
-                this.set('rpcParams', {
+                this.$.rpcAddDatasource.body = {
+                    service: 'go.micro.srv.desktop',
+                    method: 'DataSource.Create',
+                    request: {
+                        endpoint: {
+                            url: 'local://' + this.homeDirPath
+                        }
+                    }
+                };
+
+                this.$.rpcAddDatasource.generateRequest();
+
+
+/*                this.$.rpcStartScan.body = {
                     service: 'go.micro.srv.desktop',
                     method: 'Crawl.Start',
                     request: {
                         url: 'local://' + this.homeDirPath
                     }
-                });
-                this.$.rpcStartScan.body = this.rpcParams;
-                this.$.rpcStartScan.generateRequest();
+                };
+                this.$.rpcStartScan.generateRequest();*/
+            },
+            addDatasource: function(e) {
+                this.$.rpcAddDatasource.body = {
+                    service: 'go.micro.srv.desktop',
+                    method: 'DataSource.Create',
+                    request: {
+                        endpoint: {
+                            url: 'local://' + this.$.datasourceInput.input.value
+                        }
+                    }
+                };
+
+                this.$.rpcAddDatasource.generateRequest();
             },
             mainAction: function(e, detail) {
                 if (e.model.__data__.item._source.is_dir) {

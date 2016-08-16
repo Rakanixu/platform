@@ -9,7 +9,8 @@ import (
 
 // DataSource struct
 type DataSource struct {
-	Client client.Client
+	Client             client.Client
+	ElasticServiceName string
 }
 
 // Create datasource handler
@@ -18,7 +19,7 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 		return errors.BadRequest("go.micro.srv.datasource", "url required")
 	}
 
-	dataSource, err := GetDataSource(req.Endpoint)
+	dataSource, err := GetDataSource(ds, req.Endpoint)
 	if err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
@@ -40,7 +41,7 @@ func (ds *DataSource) Delete(ctx context.Context, req *proto.DeleteRequest, rsp 
 		return errors.BadRequest("go.micro.srv.datasource", "id required")
 	}
 
-	if err := DeleteDataSource(req.Id); err != nil {
+	if err := DeleteDataSource(ds, req.Id); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 
@@ -49,7 +50,7 @@ func (ds *DataSource) Delete(ctx context.Context, req *proto.DeleteRequest, rsp 
 
 // Search datasources handler
 func (ds *DataSource) Search(ctx context.Context, req *proto.SearchRequest, rsp *proto.SearchResponse) error {
-	result, err := SearchDataSources(req.Query, req.Limit, req.Offset)
+	result, err := SearchDataSources(ds, req.Query, req.Limit, req.Offset)
 	if err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
@@ -65,7 +66,7 @@ func (ds *DataSource) Scan(ctx context.Context, req *proto.ScanRequest, rsp *pro
 		return errors.BadRequest("go.micro.srv.datasource", "id required")
 	}
 
-	if err := ScanDataSource(ctx, req.Id, ds); err != nil {
+	if err := ScanDataSource(ds, ctx, req.Id); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 

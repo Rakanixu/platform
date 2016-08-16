@@ -59,6 +59,19 @@
       getAsset: function(path) {
 	      return "http://localhost:8082/desktop/raw/" + path;
       },
+      getDatasourceType: function(datasource) {
+        return datasource.split('://')[0];
+      },
+      getDatasourceUrl: function(datasource) {
+        return datasource.split('://')[1];
+      },
+      getDatasourceIcon: function(datasource) {
+        switch (datasource.split('://')[0]) {
+          case 'local':
+            return 'hardware:laptop';
+            break;
+        }
+      },
       documentType: function(fileName) {
         var extension = fileName.split('.')[fileName.split('.').length - 1];
 
@@ -77,7 +90,6 @@
           default:
             return '';
         }
-
       },
       replaceAll: function(str, search, replacement) {
         return  str.replace(new RegExp(search, 'g'), replacement);

@@ -38,6 +38,17 @@ mat-text-field mat-ink.label {
     opacity: 0.7;
 }
 
+mat-dialog mat-text-field mat-ink input,
+mat-dialog mat-text-field mat-ink.label,
+mat-dialog mat-text-field .underline mat-ink,
+mat-dialog mat-avatar a div mat-icon {
+    color: #424540 !important;
+}
+
+mat-dialog mat-text-field mat-ink.label {
+    opacity: 0.7;
+}
+
 paper-icon-button[icon=menu] {
     margin-right: 18px !important;
 }
@@ -61,6 +72,10 @@ mat-avatar.image {
 
 iron-list {
     height: 100%;
+}
+
+paper-tabs {
+    width: 100%;
 }
 
 wave-player {
