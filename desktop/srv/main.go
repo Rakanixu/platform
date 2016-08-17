@@ -139,10 +139,7 @@ func main() {
 	}
 
 	// Attach search handler
-	search_proto.RegisterSearchHandler(service.Server(), &search_handler.Search{
-		Client:             service.Client(),
-		ElasticServiceName: elasticServiceName,
-	})
+	search_proto.RegisterSearchHandler(service.Server(), new(search_handler.Search))
 
 	// Attach crawler handler
 	crawler_proto.RegisterCrawlHandler(service.Server(), new(crawler_handler.Crawl))
