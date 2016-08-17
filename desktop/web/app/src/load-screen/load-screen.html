@@ -169,7 +169,7 @@
             // Check if ES is running
             if (status.master_node.length) {
               // ES not configured, set settings and mapping
-              if (_.isEmpty(status.metadata.indices)) {
+              if (_.isEmpty(status.metadata.indices.files)) {
                 this.set('info', 'Initializing search engine config ..');
                 this.$.rpcElasticSettings.generateRequest();
               } else {

@@ -60,14 +60,7 @@
     </iron-list>
 
     <mat-dialog id="addDatasourceDialog" label="Add datasource">
-      <div>          <paper-menu-button class="secondary">
-        <paper-icon-button icon="menu" class="dropdown-trigger"></paper-icon-button>
-        <paper-menu class="dropdown-content">
-          <paper-item>Share</paper-item>
-          <paper-item>Settings</paper-item>
-          <paper-item>Help</paper-item>
-        </paper-menu>
-      </paper-menu-button>
+      <div>
         <p>Type a path in your local file system</p>
         <mat-text-field id="datasourceInput"
                         class="flex"
@@ -187,6 +180,8 @@
         },
         _handleStartScan: function(e) {
           this.set('loading', false);
+          this.$.toast.text = 'Scan started succesfully';
+          this.$.toast.show();
         },
         _handleGetDatasource: function(e) {
           this.set('loading', false);
