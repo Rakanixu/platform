@@ -127,7 +127,7 @@
 
           <div class="scan-container">
             <mat-raised-button id="scan"
-                               on-tap="startScan"
+                               on-tap="scanAll"
                                label="Start scan"></mat-raised-button>
           </div>
         </div>
@@ -246,6 +246,9 @@
             callback: 'setCategory' // Internal method to be call
           });
           document.querySelector('#ironPages').selected = 1;
+        },
+        scanAll: function() {
+          document.querySelector('web-app').scanAll();
         },
         ready: function() {
           window.addEventListener('settings-page-activated', this.init.bind(this));

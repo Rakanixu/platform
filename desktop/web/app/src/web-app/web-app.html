@@ -186,7 +186,7 @@
 
                     <div class="scan-container">
                         <mat-raised-button id="scan"
-                                           on-tap="startScan"
+                                           on-tap="scanAll"
                                            label="Start scan"></mat-raised-button>
                     </div>
                 </div>
@@ -391,11 +391,11 @@
         <paper-toast id="toast" text=""></paper-toast>
 
         <mat-snackbar id="snackbar"
-                      button="Scan"
+                      button="OK"
                       timeout="10000000"
                       action-color="yellow"
                       label=""
-                      on-xp-activate="startScan"></mat-snackbar>
+                      on-xp-activate="addDatasourceAndScan"></mat-snackbar>
 
         <web-socket url="ws://localhost:8082/desktop/crawler/status"
                     on-open="_onOpen"
@@ -422,6 +422,15 @@
                    on-error="_handleError"
                    on-response="_handleAddDatasource"
                    params="{{rpcAddDatasourceParams}}"></iron-ajax>
+
+        <iron-ajax id="rpcGetDatasources"
+                   method="POST"
+                   content-type="application/json"
+                   url="http://localhost:8082/rpc"
+                   handle-as="json"
+                   on-error="_handleError"
+                   on-response="_handleGetDatasource"
+                   params="[[rpcGetDatasourcesParams]]"></iron-ajax>
 
         <iron-ajax id="rpcElastic"
                    method="POST"
@@ -465,9 +474,32 @@
                     type: Object,
                     notify: true
                 },
+                rpcGetDatasourcesParams: {
+                    type: Object,
+                    notify: false,
+                    value: function() {
+                        return {
+                            service: 'go.micro.srv.desktop',
+                            method: 'DataSource.Search',
+                            request: {
+                                offset: 0,
+                                limit: 9999
+                            }
+                        };
+                    }
+                },
                 rpcStartScanParams: {
                     type: Object,
-                    notify: true
+                    notify: true,
+                    value: function() {
+                        return {
+                            service: 'go.micro.srv.desktop',
+                            method: 'DataSource.Scan',
+                            request: {
+                                id: ''
+                            }
+                        };
+                    }
                 },
                 rpcElasticParams: {
                     type: Object,
@@ -645,7 +677,11 @@
             _handleStartScan: function(e) {
                 if (e.detail.response) {
                     this.$.snackbar.hide();
-                    this.search();
+                    this.$.toast.text = 'Scanning started, data will appear shortly';
+                    this.$.toast.show();
+                    this.async(function() {
+                        this.init({});
+                    }, 3500);
                 }
             },
             _handleElastic: function(e) {
@@ -701,7 +737,20 @@
                 if (e.detail.response) {
                     this.$.toast.text = 'New datasource created succesfully';
                     this.$.toast.show();
-                    this.closeDatasourceDialog();
+
+                    this.async(function() {
+                        this.$.rpcGetDatasources.body = this.rpcGetDatasourcesParams;
+                        this.$.rpcGetDatasources.generateRequest();
+                    }, 1000);
+                }
+            },
+            _handleGetDatasource: function(e) {
+                if (e.detail.response && e.detail.response.result) {
+                    _.forEach(e.detail.response.result, function(datasource) {
+                        this.rpcStartScanParams.request.id = datasource.id;
+                        this.$.rpcStartScan.body = this.rpcStartScanParams;
+                        this.$.rpcStartScan.generateRequest();
+                    }.bind(this));
                 }
             },
             clearIronList: function() {
@@ -807,7 +856,7 @@
                 }, 10);
                 this.set('searching', !this.searching);
             },
-            startScan: function(e, detail) {
+            addDatasourceAndScan: function(e, detail) {
                 this.$.rpcAddDatasource.body = {
                     service: 'go.micro.srv.desktop',
                     method: 'DataSource.Create',
@@ -819,29 +868,10 @@
                 };
 
                 this.$.rpcAddDatasource.generateRequest();
-
-
-/*                this.$.rpcStartScan.body = {
-                    service: 'go.micro.srv.desktop',
-                    method: 'Crawl.Start',
-                    request: {
-                        url: 'local://' + this.homeDirPath
-                    }
-                };
-                this.$.rpcStartScan.generateRequest();*/
             },
-            addDatasource: function(e) {
-                this.$.rpcAddDatasource.body = {
-                    service: 'go.micro.srv.desktop',
-                    method: 'DataSource.Create',
-                    request: {
-                        endpoint: {
-                            url: 'local://' + this.$.datasourceInput.input.value
-                        }
-                    }
-                };
-
-                this.$.rpcAddDatasource.generateRequest();
+            scanAll: function() {
+                this.$.rpcGetDatasources.body = this.rpcGetDatasourcesParams;
+                this.$.rpcGetDatasources.generateRequest();
             },
             mainAction: function(e, detail) {
                 if (e.model.__data__.item._source.is_dir) {
@@ -915,7 +945,7 @@
                 this.refreshView();
             },
             showScanSnack: function(e) {
-                this.$.snackbar.label = this.homeDirPath;
+                this.$.snackbar.label = 'Add your home folder ' + this.homeDirPath + ' to datasources';
                 this.$.snackbar.show();
             },
             checkBreadcrumbsView: function(count) {
