@@ -277,7 +277,7 @@
                                                   description="[[item._source.url]]">
                                             <mat-avatar background="[[documentType(item._source.name)]]"
                                                         class="primary image"
-                                                        icon-src="http://localhost:8082/desktop/frame/[[item._source.url]]"></mat-avatar>
+                                                        icon-src="[[getVideoFrame(item._source.url)]]"></mat-avatar>
                                             <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
                                         </mat-item>
                                     </template>
@@ -315,7 +315,7 @@
 
                                             <template is="dom-if" if="[[isVideo(item._source.category)]]">
                                                 <iron-image sizing="contain"
-                                                            src="http://localhost:8082/desktop/frame/[[item._source.url]]"></iron-image>
+                                                            src="[[getVideoFrame(item._source.url)]]"></iron-image>
                                             </template>
 
                                             <template is="dom-if" if="[[isNoVisualMedia(item._source.category)]]">

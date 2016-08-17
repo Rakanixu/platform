@@ -16,6 +16,15 @@
       'Dec'
     ];
 
+    function removeSlashesFromBegining(str) {
+      if (str[0] === '/') {
+        str = str.replace('/', '');
+        return removeSlashesFromBegining(str);
+      } else {
+        return str;
+      }
+    }
+
     Polymer.UtilBehaviorImp = {
       openMenu: function() {
         this.$.navDrawerPanel.openDrawer()
@@ -58,6 +67,9 @@
       },
       getAsset: function(path) {
 	      return "http://localhost:8082/desktop/raw/" + path;
+      },
+      getVideoFrame: function(url) {
+        return 'http://localhost:8082/desktop/frame/' + removeSlashesFromBegining(url);
       },
       getDatasourceType: function(datasource) {
         return datasource.split('://')[0];
