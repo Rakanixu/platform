@@ -1,95 +1,164 @@
 package bleve
 
 import (
-	//"errors"
+	"errors"
 	lib "github.com/blevesearch/bleve"
+	"github.com/kazoup/gabs"
+	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/kazoup/platform/db/srv/engine"
 	db "github.com/kazoup/platform/db/srv/proto/db"
-
+	"golang.org/x/net/context"
+	"io/ioutil"
+	"log"
 	"os"
-	//"path/filepath"
-	"path/filepath"
 	"sync"
 )
 
 var (
-	//IndexFiles = "/tmp/files.idx"
-	//IndexDatasources = "/tmp/datasources.idx"
-	//IndexFlags       = "/tmp/flags.idx"
 	dataPath        = os.TempDir()
 	kazoupNamespace = "/kazoup/"
-	indexPostfix    = ".idx"
+	files           = "files"
 )
 
 type bleve struct {
-	idx      lib.Index
-	mu       sync.Mutex
-	indexMap map[string]lib.Index
+	mu           sync.Mutex
+	indexMap     map[string]lib.Index
+	filesChannel chan *crawler.FileMessage
+	batchSize    int
 }
 
 func init() {
-	engine.Register(new(bleve))
+	engine.Register(&bleve{
+		indexMap:     make(map[string]lib.Index),
+		filesChannel: make(chan *crawler.FileMessage),
+		batchSize:    50,
+	})
 }
 
 func (b *bleve) Init() error {
+	err := errors.New("")
 
-	// Find all indexes folders in dataPath and sstore in dir
-	//dir := []byte{}
-	filepath.Walk(os.TempDir()+kazoupNamespace, b.walkHandler())
+	files, _ := ioutil.ReadDir(os.TempDir() + kazoupNamespace)
 
-	/*	for _, v := range dir {
-		b.idx, err = lib.Open(dataPath + v + indexPostfix)
-		if err != nil {
-
-		}
-		//append
-
-	}*/
-
-	/*	err := errors.New("")
-		b.mu.Lock()
-
-		b.mu.Unlock()
-		b.idx, err = lib.Open(IndexFiles)
+	b.mu.Lock()
+	for _, file := range files {
+		b.indexMap[file.Name()], err = lib.Open(os.TempDir() + kazoupNamespace + file.Name())
 		if err != nil {
 			mapping := lib.NewIndexMapping()
-			mapping.StoreDynamic = true
-
-			documentMapping := lib.NewTextFieldMapping()
-			documentMapping.Store = true
-
-			mapping.DefaultMapping.AddFieldMappingsAt("data", documentMapping)
-			b.idx, err = lib.New(IndexFiles, mapping)
+			b.indexMap[file.Name()], err = lib.New(os.TempDir()+kazoupNamespace+file.Name(), mapping)
 			if err != nil {
 				log.Fatalf("Error creating index : %s", err.Error())
 				return err
 			}
 			return nil
-		}*/
+		}
+	}
+	b.mu.Unlock()
+	if err := indexer(b); err != nil {
+		return err
+	}
 
 	return nil
 }
 
-func (b *bleve) Create(req *db.CreateRequest) (res *db.CreateResponse, err error) {
+func (b *bleve) Subscribe(ctx context.Context, msg *crawler.FileMessage) error {
+	b.filesChannel <- msg
 
-	return &db.CreateResponse{}, b.idx.Index(req.Id, req)
+	return nil
 }
 
-func (b *bleve) Read(req *db.ReadRequest) (res *db.ReadResponse, err error) {
+func (b *bleve) Create(req *db.CreateRequest) (*db.CreateResponse, error) {
+	response := &db.CreateResponse{}
+	if !b.indexExists(req.Index) {
+		return response, errors.New("Index does not exists")
+	}
+
+	return response, b.indexMap[req.Index].Index(req.Id, req.Data)
+}
+
+func (b *bleve) Read(req *db.ReadRequest) (*db.ReadResponse, error) {
 	response := &db.ReadResponse{}
 
-	document, err := b.idx.Document(req.Id)
+	if !b.indexExists(req.Index) {
+		return response, errors.New("Index does not exists")
+	}
+
+	document, err := b.indexMap[req.Index].Document(req.Id)
 	if err != nil {
 		return response, err
 	}
 
 	if document != nil {
-		for _, v := range document.Fields {
-			if v.Name() == "data" {
-				response.Result = string(v.Value())
-			}
-		}
+		response.Result = string(document.Fields[0].Value())
 	}
 
 	return response, err
+}
+
+func (b *bleve) Update(req *db.UpdateRequest) (*db.UpdateResponse, error) {
+	response := &db.UpdateResponse{}
+
+	if !b.indexExists(req.Index) {
+		return response, errors.New("Index does not exists")
+	}
+
+	return response, b.indexMap[req.Index].Index(req.Id, req.Data)
+}
+
+func (b *bleve) Delete(req *db.DeleteRequest) (*db.DeleteResponse, error) {
+	response := &db.DeleteResponse{}
+
+	if !b.indexExists(req.Index) {
+		return response, errors.New("Index does not exists")
+	}
+
+	return response, b.indexMap[req.Index].Delete(req.Id)
+}
+
+func (b *bleve) CreateIndexWithSettings(req *db.CreateIndexWithSettingsRequest) (*db.CreateIndexWithSettingsResponse, error) {
+	err := errors.New("")
+	response := &db.CreateIndexWithSettingsResponse{}
+
+	b.mu.Lock()
+	if b.indexExists(req.Index) {
+		return response, errors.New("Index already exists")
+	}
+
+	b.indexMap[req.Index], err = lib.Open(os.TempDir() + kazoupNamespace + req.Index)
+	if err != nil {
+		mapping := lib.NewIndexMapping()
+		b.indexMap[req.Index], err = lib.New(os.TempDir()+kazoupNamespace+req.Index, mapping)
+		if err != nil {
+			log.Fatalf("Error creating index : %s", err.Error())
+			return response, err
+		}
+	}
+	b.mu.Unlock()
+
+	return response, nil
+}
+
+func (b *bleve) PutMappingFromJSON(req *db.PutMappingFromJSONRequest) (*db.PutMappingFromJSONResponse, error) {
+	response := &db.PutMappingFromJSONResponse{}
+
+	return response, nil
+}
+
+func (b *bleve) Status(req *db.StatusRequest) (*db.StatusResponse, error) {
+	response := &db.StatusResponse{}
+
+	jsonStatus := gabs.New()
+	jsonStatus.SetP("bleve", "status.master_node")
+	jsonStatus.SetP(nil, "status.metadata.indexes")
+
+	for k, _ := range b.indexMap {
+		if b.indexExists(k) {
+			jsonStatus.SetP("open", "status.metadata.indexes."+k+".state")
+
+		}
+	}
+
+	response.Status = jsonStatus.String()
+
+	return response, nil
 }

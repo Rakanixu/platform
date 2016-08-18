@@ -9,6 +9,8 @@ import (
 	"github.com/micro/go-micro"
 )
 
+const FileTopic string = "go.micro.topic.files"
+
 func main() {
 	// New Service
 	service := micro.NewService(
@@ -21,6 +23,13 @@ func main() {
 		service.Server().NewHandler(new(handler.DB)),
 	)
 
+	// Attach indexer subscriber
+	//engine.Subscribe()
+	if err := service.Server().Subscribe(
+		service.Server().NewSubscriber(FileTopic, engine.Subscribe)); err != nil {
+		log.Fatal(err)
+	}
+
 	// Initialise service
 	service.Init()
 	// Init search engine
@@ -28,6 +37,7 @@ func main() {
 	if err := engine.Init(); err != nil {
 		log.Fatal(err)
 	}
+
 	// Run service
 	if err := service.Run(); err != nil {
 		log.Fatal(err)
