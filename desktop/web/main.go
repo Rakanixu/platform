@@ -1,10 +1,13 @@
 package main
 
 import (
+	"crypto/sha256"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+
+	_ "net/http/pprof"
 
 	"golang.org/x/net/websocket"
 
@@ -12,6 +15,8 @@ import (
 	"github.com/kazoup/platform/desktop/web/handler"
 	"github.com/micro/go-web"
 	"github.com/pierrre/imageserver"
+	imageserver_cache "github.com/pierrre/imageserver/cache"
+	imageserver_cache_memory "github.com/pierrre/imageserver/cache/memory"
 	imageserver_http "github.com/pierrre/imageserver/http"
 	imageserver_http_gift "github.com/pierrre/imageserver/http/gift"
 	imageserver_http_image "github.com/pierrre/imageserver/http/image"
@@ -21,6 +26,10 @@ import (
 	_ "github.com/pierrre/imageserver/image/jpeg"
 	_ "github.com/pierrre/imageserver/image/png"
 	imageserver_file "github.com/pierrre/imageserver/source/file"
+)
+
+var (
+	flagMemory = int64(128 * (1 << 20))
 )
 
 func main() {
@@ -45,7 +54,7 @@ func main() {
 			&imageserver_http_image.QualityParser{},
 		}),
 		Server: &imageserver.HandlerServer{
-			Server: &imageserver_file.Server{},
+			Server: newServerMemory(&imageserver_file.Server{}),
 			Handler: &imageserver_image.Handler{
 				Processor: &imageserver_image_gift.ResizeProcessor{},
 			},
@@ -60,4 +69,17 @@ func main() {
 	service.Handle("/webm/", http.StripPrefix("/webm/", handler.NewWebmHandler(contentDir)))
 	service.Init()
 	service.Run()
+}
+
+func newServerMemory(srv imageserver.Server) imageserver.Server {
+	if flagMemory <= 0 {
+		return srv
+	}
+	cch := imageserver_cache_memory.New(flagMemory)
+	kg := imageserver_cache.NewParamsHashKeyGenerator(sha256.New)
+	return &imageserver_cache.Server{
+		Server:       srv,
+		Cache:        cch,
+		KeyGenerator: kg,
+	}
 }
