@@ -1,7 +1,9 @@
 package structs
 
 import (
+	"crypto/md5"
 	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"mime"
 	"os"
@@ -19,7 +21,8 @@ import (
 
 // File model
 type File struct {
-	ExistsOnDisk bool `json:"exists_on_disk"`
+	ID           string `json:"id"`
+	ExistsOnDisk bool   `json:"exists_on_disk"`
 	//ID              string                  `json:"_id"`
 	ArchiveComplete bool                    `json:"archive_complete"`
 	FirstSeen       time.Time               `json:"first_seen"`
@@ -32,6 +35,7 @@ type File struct {
 
 // DesktopFile ...
 type DesktopFile struct {
+	ID       string      `json:"id"`
 	Name     string      `json:"name"`
 	URL      string      `json:"url"`
 	Modified time.Time   `json:"modified"`
@@ -61,6 +65,7 @@ type LocalFile struct {
 
 func NewDesktopFile(lf *LocalFile) *DesktopFile {
 	return &DesktopFile{
+		ID:       GetMD5Hash(lf.Path),
 		Name:     lf.Info.Name(),
 		URL:      "/" + lf.Path,
 		Modified: lf.Info.ModTime(),
@@ -229,4 +234,8 @@ func PseudoUUID() (uuid string) {
 
 func urlDepth(str string) int64 {
 	return int64(len(strings.Split(str, "/"))) - 1
+}
+func GetMD5Hash(text string) string {
+	hash := md5.Sum([]byte(text))
+	return hex.EncodeToString(hash[:])
 }

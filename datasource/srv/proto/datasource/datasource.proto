@@ -15,6 +15,7 @@ message Endpoint {
   int64 size = 3;
   int64 files = 4;
   int64 last_scan = 5;
+  Token token = 6;
 }
 
 message CreateRequest {
@@ -55,4 +56,11 @@ message ScanRequest {
 
 message ScanResponse {
 
+}
+
+message Token {
+ string access_token = 1;
+ string token_type = 2;
+ string refresh_token = 3;
+ string expiry = 4;
 }

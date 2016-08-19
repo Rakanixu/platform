@@ -6,6 +6,8 @@
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
@@ -55,6 +57,9 @@
 
     <mat-dialog id="addDatasourceDialog" label="Add datasource">
       <div>
+	<paper-button icon="favorite" on-tap="doAuth" data-url="http:///localhost:8082/desktop/google/login">Google Drive</paper-button>
+	<paper-button icon="favorite" on-tap="doAuth" data-url="http:///localhost:8082/desktop/microsoft/login">One Drive</paper-button>
+	<paper-button icon="favorite" on-tap="doAuth" data-url="http:///localhost:8082/desktop/slack/login">Slack</paper-button>
         <p>Type a path in your local file system</p>
         <mat-text-field id="datasourceInput"
                         class="flex"
@@ -177,6 +182,10 @@
           this.set('loading', true);
           this.$.rpcGetDatasources.generateRequest();
         },
+	doAuth: function(e){
+	//console.log("Sending auth message",e.target.getAttribute("data-url"))
+	ipcRenderer.send('auth-message',e.target.getAttribute("data-url"))
+	},
         addDatasource: function(e) {
           this.set('loading', true);
           this.$.rpcAddDatasource.body = {

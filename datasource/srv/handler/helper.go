@@ -3,22 +3,29 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"strings"
+
 	"github.com/kazoup/platform/datasource/srv/filestore"
 	fake "github.com/kazoup/platform/datasource/srv/filestore/fake"
+	googledrive "github.com/kazoup/platform/datasource/srv/filestore/googledrive"
 	local "github.com/kazoup/platform/datasource/srv/filestore/local"
+	onedrive "github.com/kazoup/platform/datasource/srv/filestore/onedrive"
+	slack "github.com/kazoup/platform/datasource/srv/filestore/slack"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
-	"strings"
 )
 
 const (
-	fakeEndpoint  = "fake"
-	localEndpoint = "local://"
-	nfsEndpoint   = "nfs://"
-	smbEndpoint   = "smb://"
-	topic         = "go.micro.topic.scan"
+	fakeEndpoint       = "fake"
+	localEndpoint      = "local://"
+	googledriveEnpoint = "googledrive://"
+	onedriveEndpoint   = "onedrive://"
+	slackEnpoint       = "slack://"
+	nfsEndpoint        = "nfs://"
+	smbEndpoint        = "smb://"
+	topic              = "go.micro.topic.scan"
 )
 
 // GetDataSource returns a FileStorer interface
@@ -40,8 +47,27 @@ func GetDataSource(ds *DataSource, endpoint *proto.Endpoint) (filestorer.FileSto
 		}, nil
 	}
 
-	if strings.Contains(endpoint.Url, nfsEndpoint) {
-		//return &blabla{}, nil
+	if strings.Contains(endpoint.Url, googledriveEnpoint) {
+		return &googledrive.Googledrive{
+			FileStore: filestorer.FileStore{
+				ElasticServiceName: ds.ElasticServiceName,
+			},
+		}, nil
+	}
+	if strings.Contains(endpoint.Url, onedriveEndpoint) {
+		return &onedrive.Onedrive{
+			FileStore: filestorer.FileStore{
+				ElasticServiceName: ds.ElasticServiceName,
+			},
+		}, nil
+	}
+	if strings.Contains(endpoint.Url, slackEnpoint) {
+		return &slack.Slack{
+
+			FileStore: filestorer.FileStore{
+				ElasticServiceName: ds.ElasticServiceName,
+			},
+		}, nil
 	}
 
 	if strings.Contains(endpoint.Url, smbEndpoint) {

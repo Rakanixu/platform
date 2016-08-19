@@ -21,11 +21,11 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 
 	dataSource, err := GetDataSource(ds, req.Endpoint)
 	if err != nil {
-		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
+		return errors.InternalServerError("go.micro.srv.datasource GetDataSource", err.Error())
 	}
 
 	if err := dataSource.Validate(); err != nil {
-		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
+		return errors.InternalServerError("go.micro.srv.datasource Validate", err.Error())
 	}
 
 	if err := dataSource.Save(req.Endpoint, req.Endpoint.Url); err != nil {
