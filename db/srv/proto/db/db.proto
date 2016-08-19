@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package go.micro.srv.elastic;
+package go.micro.srv.db;
 
 service Elastic {
   rpc Create(CreateRequest) returns (CreateResponse) {}

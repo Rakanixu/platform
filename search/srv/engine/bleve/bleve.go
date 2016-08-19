@@ -3,48 +3,66 @@ package bleve
 import (
 	"errors"
 	"fmt"
-	"log"
-
 	lib "github.com/blevesearch/bleve"
 	"github.com/kazoup/platform/search/srv/engine"
-	"github.com/kazoup/platform/search/srv/proto/search"
+	search "github.com/kazoup/platform/search/srv/proto/search"
+	"io/ioutil"
+	"log"
+	"os"
+	"sync"
 )
 
 var (
-	IndexPath = "/tmp/files.idx"
+	dataPath        = os.TempDir()
+	kazoupNamespace = "/kazoup/"
+	files           = "files"
 )
 
 type bleve struct {
-	idx lib.Index
+	mu       sync.Mutex
+	indexMap map[string]lib.Index
 }
 
 func init() {
-	log.Print("Registering bleve")
 	engine.Register(new(bleve))
 }
 
 func (b *bleve) Init() error {
-	log.Print("Initializing bleve")
 	err := errors.New("")
-	b.idx, err = lib.Open(IndexPath)
-	if err != nil {
 
-		log.Print("Index doesnt exists creating new one")
-		mapping := lib.NewIndexMapping()
-		b.idx, err = lib.New(IndexPath, mapping)
+	files, _ := ioutil.ReadDir(os.TempDir() + kazoupNamespace)
+
+	b.mu.Lock()
+	for _, file := range files {
+		b.indexMap[file.Name()], err = lib.Open(os.TempDir() + kazoupNamespace + file.Name())
 		if err != nil {
-			log.Printf("Error creating index : %s", err.Error())
-			return err
+			mapping := lib.NewIndexMapping()
+			b.indexMap[file.Name()], err = lib.New(os.TempDir()+kazoupNamespace+file.Name(), mapping)
+			if err != nil {
+				log.Fatalf("Error creating index : %s", err.Error())
+				return err
+			}
+			return nil
 		}
-		return nil
 	}
+	b.mu.Unlock()
 
-	log.Print("Succefuly open bleve index")
 	return nil
 }
 
-func (b *bleve) Search(req *search.SearchRequest) (res *search.SearchResponse, err error) {
-	log.Print("New querr %s", req.Term)
+func (b *bleve) Search(req *search.SearchRequest) (*search.SearchResponse, error) {
+	var indexSearch string
+
+	if len(req.Index) > 0 {
+		indexSearch = req.Index
+	} else {
+		indexSearch = files
+	}
+
+	if b.indexMap[indexSearch] == nil {
+		return &search.SearchResponse{}, errors.New("index does not exists")
+	}
+
 	qString := ""
 	if len(req.Term) > 0 {
 		qString += fmt.Sprintf("%s", req.Term)
@@ -56,19 +74,19 @@ func (b *bleve) Search(req *search.SearchRequest) (res *search.SearchResponse, e
 		qString += fmt.Sprintf("+depth:%s", string(req.Depth))
 	}
 
-	log.Printf("Query %s", qString)
 	q := lib.NewQueryStringQuery(qString)
 	br := lib.NewSearchRequest(q)
 	br.Highlight = lib.NewHighlightWithStyle("html")
-	//br.Fields = []string{"name","description"}
-	results, err := b.idx.Search(br)
+
+	results, err := b.indexMap[indexSearch].Search(br)
 	if err != nil {
 		log.Print(err.Error())
 		return &search.SearchResponse{}, nil
 	}
 	log.Print(results.String())
-	res = &search.SearchResponse{
+
+	return &search.SearchResponse{
 		Result: results.String(),
-	}
-	return res, nil
+		Info:   "",
+	}, nil
 }

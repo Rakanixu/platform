@@ -1,12 +1,12 @@
 package engine
 
 import (
-	"github.com/kazoup/platform/search/srv/proto/search"
+	search "github.com/kazoup/platform/search/srv/proto/search"
 )
 
 type Engine interface {
 	Init() error
-	Search(req *search.SearchRequest) (res *search.SearchResponse, err error)
+	Search(req *search.SearchRequest) (*search.SearchResponse, error)
 }
 
 var (
@@ -21,6 +21,6 @@ func Init() error {
 	return engine.Init()
 }
 
-func Search(req *search.SearchRequest) (res *search.SearchResponse, err error) {
+func Search(req *search.SearchRequest) (*search.SearchResponse, error) {
 	return engine.Search(req)
 }

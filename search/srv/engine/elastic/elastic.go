@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/kazoup/platform/search/srv/engine"
-	"github.com/kazoup/platform/search/srv/proto/search"
+	search "github.com/kazoup/platform/search/srv/proto/search"
 )
 
 var (

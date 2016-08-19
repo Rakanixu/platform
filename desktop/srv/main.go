@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	"strings"
+	//"strings"
 
 	config_data "github.com/kazoup/platform/config/srv/data"
 	config_handler "github.com/kazoup/platform/config/srv/handler"
@@ -15,11 +15,13 @@ import (
 	db_engine "github.com/kazoup/platform/db/srv/engine"
 	_ "github.com/kazoup/platform/db/srv/engine/bleve"
 	db_handler "github.com/kazoup/platform/db/srv/handler"
-	elastic "github.com/kazoup/platform/elastic/srv/elastic"
-	elastic_handler "github.com/kazoup/platform/elastic/srv/handler"
-	indexer "github.com/kazoup/platform/elastic/srv/subscriber"
+	//elastic "github.com/kazoup/platform/elastic/srv/elastic"
+	//elastic_handler "github.com/kazoup/platform/elastic/srv/handler"
+	//indexer "github.com/kazoup/platform/elastic/srv/subscriber"
 	flag_handler "github.com/kazoup/platform/flag/srv/handler"
 	flag_proto "github.com/kazoup/platform/flag/srv/proto/flag"
+	search_engine "github.com/kazoup/platform/search/srv/engine"
+	_ "github.com/kazoup/platform/search/srv/engine/bleve"
 	search_handler "github.com/kazoup/platform/search/srv/handler"
 	search_proto "github.com/kazoup/platform/search/srv/proto/search"
 
@@ -39,6 +41,8 @@ const ScanTopic string = "go.micro.topic.scan"
 const FileTopic string = "go.micro.topic.files"
 
 func main() {
+	cmd.Init()
+
 	// Services names
 	elasticServiceName := "go.micro.srv.desktop"
 
@@ -57,12 +61,13 @@ func main() {
 			},
 		),
 		micro.Action(func(c *cli.Context) {
-			parts := strings.Split(c.String("elasticsearch_hosts"), ",")
-			elastic.Hosts = parts
+			//parts := strings.Split(c.String("elasticsearch_hosts"), ",")
+			//elastic.Hosts = parts
 		}),
 	)
 
-	cmd.Init()
+	// Init srv
+	service.Init()
 
 	// Config handler
 	es_flags, err := config_data.Asset("data/es_flags.json")
@@ -100,7 +105,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Init search engine
+	// Init db engine
 	if err := db_engine.Init(); err != nil {
 		log.Fatal(err)
 	}
@@ -144,14 +149,12 @@ func main() {
 
 	go_micro_srv_monitor_monitor.RegisterMonitorHandler(service.Server(), new(handler.Monitor))
 
-	// Init srv
-	service.Init()
 	//Init elasticsearch
-	elastic.Init()
-	// Register search handler
-	service.Server().Handle(
-		service.Server().NewHandler(new(elastic_handler.Elastic)),
-	)
+	/*	elastic.Init()
+		// Register search handler
+		service.Server().Handle(
+			service.Server().NewHandler(new(elastic_handler.Elastic)),
+		)*/
 
 	if err := categories.SetMap(); err != nil {
 		log.Fatal(err)
@@ -160,15 +163,19 @@ func main() {
 	// Attach search handler
 	search_proto.RegisterSearchHandler(service.Server(), new(search_handler.Search))
 
+	if err := search_engine.Init(); err != nil {
+		log.Fatalf("%s", err)
+	}
+
 	// Attach crawler handler
 	crawler_proto.RegisterCrawlHandler(service.Server(), new(crawler_handler.Crawl))
 
 	// Attach indexer subsciber
-	if err := service.Server().Subscribe(
-		service.Server().NewSubscriber(FileTopic, indexer.FileSubscriber),
-	); err != nil {
-		log.Fatal(err)
-	}
+	/*	if err := service.Server().Subscribe(
+			service.Server().NewSubscriber(FileTopic, indexer.FileSubscriber),
+		); err != nil {
+			log.Fatal(err)
+		}*/
 
 	// Attach crawler subscriber
 	if err := service.Server().Subscribe(

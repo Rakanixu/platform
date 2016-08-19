@@ -38,7 +38,10 @@ func init() {
 func (b *bleve) Init() error {
 	err := errors.New("")
 
-	files, _ := ioutil.ReadDir(os.TempDir() + kazoupNamespace)
+	files, err := ioutil.ReadDir(os.TempDir() + kazoupNamespace)
+	if err != err {
+		return err
+	}
 
 	b.mu.Lock()
 	for _, file := range files {
@@ -48,11 +51,14 @@ func (b *bleve) Init() error {
 			b.indexMap[file.Name()], err = lib.New(os.TempDir()+kazoupNamespace+file.Name(), mapping)
 			if err != nil {
 				log.Fatalf("Error creating index : %s", err.Error())
+				log.Println("init bleve")
 				return err
 			}
 			return nil
 		}
+		log.Println("end loop")
 	}
+
 	b.mu.Unlock()
 	if err := indexer(b); err != nil {
 		return err
@@ -148,12 +154,12 @@ func (b *bleve) Status(req *db.StatusRequest) (*db.StatusResponse, error) {
 	response := &db.StatusResponse{}
 
 	jsonStatus := gabs.New()
-	jsonStatus.SetP("bleve", "status.master_node")
-	jsonStatus.SetP(nil, "status.metadata.indexes")
+	jsonStatus.SetP("bleve", "master_node")
+	jsonStatus.SetP(nil, "metadata.indices")
 
 	for k, _ := range b.indexMap {
 		if b.indexExists(k) {
-			jsonStatus.SetP("open", "status.metadata.indexes."+k+".state")
+			jsonStatus.SetP("open", "metadata.indices."+k+".state")
 
 		}
 	}
