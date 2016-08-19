@@ -12,6 +12,9 @@ import (
 	crawler_subscriber "github.com/kazoup/platform/crawler/srv/subscriber"
 	datasource_handler "github.com/kazoup/platform/datasource/srv/handler"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	db_engine "github.com/kazoup/platform/db/srv/engine"
+	_ "github.com/kazoup/platform/db/srv/engine/bleve"
+	db_handler "github.com/kazoup/platform/db/srv/handler"
 	elastic "github.com/kazoup/platform/elastic/srv/elastic"
 	elastic_handler "github.com/kazoup/platform/elastic/srv/handler"
 	indexer "github.com/kazoup/platform/elastic/srv/subscriber"
@@ -85,6 +88,22 @@ func main() {
 		ESFlags:            &es_flags,
 		ESMapping:          &es_mapping,
 	})
+
+	// Register Handler
+	service.Server().Handle(
+		service.Server().NewHandler(new(db_handler.DB)),
+	)
+
+	// Attach indexer subscriber
+	if err := service.Server().Subscribe(
+		service.Server().NewSubscriber(FileTopic, db_engine.Subscribe)); err != nil {
+		log.Fatal(err)
+	}
+
+	// Init search engine
+	if err := db_engine.Init(); err != nil {
+		log.Fatal(err)
+	}
 
 	// Flag handler
 	flag_proto.RegisterFlagHandler(service.Server(), &flag_handler.Flag{

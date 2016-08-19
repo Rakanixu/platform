@@ -24,7 +24,6 @@ func main() {
 	)
 
 	// Attach indexer subscriber
-	//engine.Subscribe()
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(FileTopic, engine.Subscribe)); err != nil {
 		log.Fatal(err)
