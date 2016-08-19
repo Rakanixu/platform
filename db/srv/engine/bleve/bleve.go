@@ -31,7 +31,7 @@ func init() {
 	engine.Register(&bleve{
 		indexMap:     make(map[string]lib.Index),
 		filesChannel: make(chan *crawler.FileMessage),
-		batchSize:    50,
+		batchSize:    1000,
 	})
 }
 
