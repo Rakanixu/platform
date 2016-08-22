@@ -2,11 +2,13 @@ package engine
 
 import (
 	search "github.com/kazoup/platform/search/srv/proto/search"
+	"github.com/micro/go-micro/client"
+	"golang.org/x/net/context"
 )
 
 type Engine interface {
 	Init() error
-	Search(req *search.SearchRequest) (*search.SearchResponse, error)
+	Search(ctx context.Context, req *search.SearchRequest, client client.Client, serviceName string) (*search.SearchResponse, error)
 }
 
 var (
@@ -21,6 +23,6 @@ func Init() error {
 	return engine.Init()
 }
 
-func Search(req *search.SearchRequest) (*search.SearchResponse, error) {
-	return engine.Search(req)
+func Search(ctx context.Context, req *search.SearchRequest, client client.Client, serviceName string) (*search.SearchResponse, error) {
+	return engine.Search(ctx, req, client, serviceName)
 }

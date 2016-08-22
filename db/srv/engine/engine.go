@@ -16,6 +16,7 @@ type Engine interface {
 	CreateIndexWithSettings(req *db.CreateIndexWithSettingsRequest) (*db.CreateIndexWithSettingsResponse, error)
 	PutMappingFromJSON(req *db.PutMappingFromJSONRequest) (*db.PutMappingFromJSONResponse, error)
 	Status(req *db.StatusRequest) (*db.StatusResponse, error)
+	Search(req *db.SearchRequest) (*db.SearchResponse, error)
 }
 
 var (
@@ -60,4 +61,8 @@ func PutMappingFromJSON(req *db.PutMappingFromJSONRequest) (*db.PutMappingFromJS
 
 func Status(req *db.StatusRequest) (*db.StatusResponse, error) {
 	return engine.Status(req)
+}
+
+func Search(req *db.SearchRequest) (*db.SearchResponse, error) {
+	return engine.Search(req)
 }

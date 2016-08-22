@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	//"strings"
 
 	config_data "github.com/kazoup/platform/config/srv/data"
 	config_handler "github.com/kazoup/platform/config/srv/handler"
@@ -15,13 +14,10 @@ import (
 	db_engine "github.com/kazoup/platform/db/srv/engine"
 	_ "github.com/kazoup/platform/db/srv/engine/bleve"
 	db_handler "github.com/kazoup/platform/db/srv/handler"
-	//elastic "github.com/kazoup/platform/elastic/srv/elastic"
-	//elastic_handler "github.com/kazoup/platform/elastic/srv/handler"
-	//indexer "github.com/kazoup/platform/elastic/srv/subscriber"
 	flag_handler "github.com/kazoup/platform/flag/srv/handler"
 	flag_proto "github.com/kazoup/platform/flag/srv/proto/flag"
 	search_engine "github.com/kazoup/platform/search/srv/engine"
-	_ "github.com/kazoup/platform/search/srv/engine/bleve"
+	_ "github.com/kazoup/platform/search/srv/engine/bleve_search"
 	search_handler "github.com/kazoup/platform/search/srv/handler"
 	search_proto "github.com/kazoup/platform/search/srv/proto/search"
 
@@ -94,18 +90,18 @@ func main() {
 		ESMapping:          &es_mapping,
 	})
 
-	// Register Handler
+	// Register DB handler Handler
 	service.Server().Handle(
 		service.Server().NewHandler(new(db_handler.DB)),
 	)
 
-	// Attach indexer subscriber
+	// Attach DB indexer subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(FileTopic, db_engine.Subscribe)); err != nil {
 		log.Fatal(err)
 	}
 
-	// Init db engine
+	// Init DB engine
 	if err := db_engine.Init(); err != nil {
 		log.Fatal(err)
 	}
@@ -149,19 +145,15 @@ func main() {
 
 	go_micro_srv_monitor_monitor.RegisterMonitorHandler(service.Server(), new(handler.Monitor))
 
-	//Init elasticsearch
-	/*	elastic.Init()
-		// Register search handler
-		service.Server().Handle(
-			service.Server().NewHandler(new(elastic_handler.Elastic)),
-		)*/
-
 	if err := categories.SetMap(); err != nil {
 		log.Fatal(err)
 	}
 
 	// Attach search handler
-	search_proto.RegisterSearchHandler(service.Server(), new(search_handler.Search))
+	search_proto.RegisterSearchHandler(service.Server(), &search_handler.Search{
+		Client:             service.Client(),
+		ElasticServiceName: elasticServiceName,
+	})
 
 	if err := search_engine.Init(); err != nil {
 		log.Fatalf("%s", err)
@@ -169,13 +161,6 @@ func main() {
 
 	// Attach crawler handler
 	crawler_proto.RegisterCrawlHandler(service.Server(), new(crawler_handler.Crawl))
-
-	// Attach indexer subsciber
-	/*	if err := service.Server().Subscribe(
-			service.Server().NewSubscriber(FileTopic, indexer.FileSubscriber),
-		); err != nil {
-			log.Fatal(err)
-		}*/
 
 	// Attach crawler subscriber
 	if err := service.Server().Subscribe(

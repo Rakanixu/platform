@@ -10,6 +10,7 @@ service Elastic {
   rpc CreateIndexWithSettings(CreateIndexWithSettingsRequest) returns (CreateIndexWithSettingsResponse) {}
   rpc PutMappingFromJSON(PutMappingFromJSONRequest) returns (PutMappingFromJSONRequest) {}
   rpc Status(StatusRequest) returns (StatusResponse) {}
+  rpc Search(SearchRequest) returns (SearchResponse) {}
 }
 
 message DocRef {
@@ -96,4 +97,20 @@ message StatusRequest {
 
 message StatusResponse {
   string status = 1;
+}
+
+message SearchRequest {
+  string index = 1;
+  string term = 2;
+  int64 from = 3;
+  int64 size = 4;
+  string category = 5;
+  string url = 6;
+  int64 depth = 7;
+  string type = 8;
+}
+
+message SearchResponse {
+  string result = 1;
+  string info = 2;
 }

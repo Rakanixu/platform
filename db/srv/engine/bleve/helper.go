@@ -1,12 +1,10 @@
 package bleve
 
 import (
-	//"encoding/json"
 	"errors"
-	//"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	lib "github.com/blevesearch/bleve"
 	"log"
-	//"time"
+	"os"
 )
 
 func (b *bleve) indexExists(index string) bool {
@@ -17,11 +15,11 @@ func (b *bleve) indexExists(index string) bool {
 }
 
 func indexer(b *bleve) error {
-	if !b.indexExists(files) {
+	if !b.indexExists(filesIndex) {
 		return errors.New("index does not exist")
 	}
 
-	batch := b.indexMap[files].NewBatch()
+	batch := b.indexMap[filesIndex].NewBatch()
 	//c := make(chan int)
 
 	go func() {
@@ -57,6 +55,20 @@ func indexer(b *bleve) error {
 }
 
 func doBatch(b *bleve, batch *lib.Batch) {
-	b.indexMap[files].Batch(batch)
+	b.indexMap[filesIndex].Batch(batch)
 	batch.Reset()
+}
+
+func openIndex(b *bleve, indexName string) error {
+	err := errors.New("")
+	b.indexMap[indexName], err = lib.Open(os.TempDir() + kazoupNamespace + indexName)
+	if err != nil {
+		mapping := lib.NewIndexMapping()
+		b.indexMap[indexName], err = lib.New(os.TempDir()+kazoupNamespace+indexName, mapping)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

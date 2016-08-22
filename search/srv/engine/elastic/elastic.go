@@ -5,6 +5,8 @@ import (
 
 	"github.com/kazoup/platform/search/srv/engine"
 	search "github.com/kazoup/platform/search/srv/proto/search"
+	"github.com/micro/go-micro/client"
+	"golang.org/x/net/context"
 )
 
 var (
@@ -25,6 +27,6 @@ func (e *elastic) Init() error {
 	return nil
 }
 
-func (e *elastic) Search(req *search.SearchRequest) (res *search.SearchResponse, err error) {
-	return nil
+func (e *elastic) Search(ctx context.Context, req *search.SearchRequest, client client.Client, serviceName string) (*search.SearchResponse, error) {
+	return &search.SearchResponse{}, nil
 }

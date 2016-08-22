@@ -83,3 +83,16 @@ func (db *DB) Status(ctx context.Context, req *proto.StatusRequest, rsp *proto.S
 
 	return nil
 }
+
+// Search db srv handler
+func (db *DB) Search(ctx context.Context, req *proto.SearchRequest, rsp *proto.SearchResponse) error {
+	response, err := engine.Search(req)
+	if err != nil {
+		return errors.InternalServerError("go.micro.srv.db", err.Error())
+	}
+
+	rsp.Result = response.Result
+	rsp.Info = response.Info
+
+	return nil
+}
