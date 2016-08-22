@@ -45,7 +45,8 @@ message SearchRequest {
 }
 
 message SearchResponse {
-  repeated Endpoint result = 1;
+  string result = 1;
+  string info = 2;
 }
 
 message ScanRequest {

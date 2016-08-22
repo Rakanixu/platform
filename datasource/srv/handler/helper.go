@@ -74,10 +74,7 @@ func DeleteDataSource(ds *DataSource, id string) error {
 }
 
 // SearchDataSources queries for datasources stored in ES
-func SearchDataSources(ds *DataSource, req *proto.SearchRequest) ([]*proto.Endpoint, error) {
-	var result []*proto.Endpoint
-	var resultMap map[string]interface{}
-
+func SearchDataSources(ds *DataSource, req *proto.SearchRequest) (*proto.SearchResponse, error) {
 	srvReq := client.NewRequest(
 		ds.ElasticServiceName,
 		"DB.Search",
@@ -98,39 +95,12 @@ func SearchDataSources(ds *DataSource, req *proto.SearchRequest) ([]*proto.Endpo
 		return nil, err
 	}
 
-	if err := json.Unmarshal([]byte(srvRes.Result), &resultMap); err != nil {
-		return nil, err
+	rsp := &proto.SearchResponse{
+		Result: srvRes.Result,
+		Info:   srvRes.Info,
 	}
 
-	var size, files, lastScan int64
-	for _, v := range resultMap["hits"].(map[string]interface{})["hits"].([]interface{}) {
-		// Sanitize possible empty values
-		if v.(map[string]interface{})["_source"].(map[string]interface{})["size"] == nil {
-			size = 0
-		} else {
-			size = int64(v.(map[string]interface{})["_source"].(map[string]interface{})["size"].(float64))
-		}
-		if v.(map[string]interface{})["_source"].(map[string]interface{})["files"] == nil {
-			files = 0
-		} else {
-			files = int64(v.(map[string]interface{})["_source"].(map[string]interface{})["files"].(float64))
-		}
-		if v.(map[string]interface{})["_source"].(map[string]interface{})["last_scan"] == nil {
-			lastScan = 0
-		} else {
-			lastScan = int64(v.(map[string]interface{})["_source"].(map[string]interface{})["last_scan"].(float64))
-		}
-
-		result = append(result, &proto.Endpoint{
-			Id:       v.(map[string]interface{})["_id"].(string),
-			Url:      v.(map[string]interface{})["_source"].(map[string]interface{})["url"].(string),
-			Size:     size,
-			Files:    files,
-			LastScan: lastScan,
-		})
-	}
-
-	return result, nil
+	return rsp, nil
 }
 
 func ScanDataSource(ds *DataSource, ctx context.Context, id string) error {

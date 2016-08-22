@@ -28,7 +28,7 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 
-	if err := dataSource.Save(req.Endpoint); err != nil {
+	if err := dataSource.Save(req.Endpoint, req.Endpoint.Url); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 
@@ -55,7 +55,8 @@ func (ds *DataSource) Search(ctx context.Context, req *proto.SearchRequest, rsp 
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 
-	rsp.Result = result
+	rsp.Result = result.Result
+	rsp.Info = result.Info
 
 	return nil
 }

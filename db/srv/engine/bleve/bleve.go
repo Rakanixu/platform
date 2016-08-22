@@ -1,6 +1,7 @@
 package bleve
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	lib "github.com/blevesearch/bleve"
@@ -170,6 +171,7 @@ func (b *bleve) Status(req *db.StatusRequest) (*db.StatusResponse, error) {
 
 func (b *bleve) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 	var indexSearch string
+	var sr *lib.SearchRequest
 
 	if len(req.Index) > 0 {
 		indexSearch = req.Index
@@ -192,19 +194,49 @@ func (b *bleve) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 		qString += fmt.Sprintf("+depth:%s", string(req.Depth))
 	}
 
-	q := lib.NewQueryStringQuery(qString)
-	br := lib.NewSearchRequest(q)
-	br.Highlight = lib.NewHighlightWithStyle("html")
+	// No fields specify, we want to match all documents in the index
+	if len(qString) == 0 {
+		q := lib.NewMatchAllQuery()
+		sr = &lib.SearchRequest{
+			Query: q,
+			Size:  int(req.Size),
+			From:  int(req.From),
+		}
+	} else {
+		q := lib.NewQueryStringQuery(qString)
+		sr = lib.NewSearchRequestOptions(q, int(req.Size), int(req.From), true)
 
-	results, err := b.indexMap[indexSearch].Search(br)
+	}
+	sr.Highlight = lib.NewHighlightWithStyle("html")
+	sr.Fields = []string{"*"} // Retrieve all fields
+	sr.Explain = true
+
+	results, err := b.indexMap[indexSearch].Search(sr)
 	if err != nil {
-		log.Print(err.Error())
 		return &db.SearchResponse{}, nil
 	}
-	log.Print(results.String())
+
+	var buffer bytes.Buffer
+	count := 0
+
+	buffer.WriteString(`[`)
+	for _, obj := range results.Hits {
+		for _, v := range obj.Fields {
+			buffer.WriteString(v.(string))
+
+			if count < len(results.Hits)-1 {
+				buffer.WriteString(`,`)
+			}
+		}
+		count++
+	}
+	buffer.WriteString(`]`)
+
+	jsonInfo := gabs.New()
+	jsonInfo.SetP(results.Total, "total")
 
 	return &db.SearchResponse{
-		Result: results.String(),
-		Info:   "",
+		Result: buffer.String(),
+		Info:   jsonInfo.String(),
 	}, nil
 }
