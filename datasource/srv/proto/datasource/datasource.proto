@@ -34,9 +34,14 @@ message DeleteResponse {
 }
 
 message SearchRequest {
-  string query = 1;
-  int64 limit = 2;
-  int64 offset = 3;
+  string index = 1;
+  string term = 2;
+  int64 from = 3;
+  int64 size = 4;
+  string category = 5;
+  string url = 6;
+  int64 depth = 7;
+  string type = 8;
 }
 
 message SearchResponse {

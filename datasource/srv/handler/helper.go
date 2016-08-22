@@ -7,7 +7,7 @@ import (
 	fake "github.com/kazoup/platform/datasource/srv/filestore/fake"
 	local "github.com/kazoup/platform/datasource/srv/filestore/local"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	elastic "github.com/kazoup/platform/elastic/srv/proto/elastic"
+	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"strings"
@@ -57,14 +57,14 @@ func GetDataSource(ds *DataSource, endpoint *proto.Endpoint) (filestorer.FileSto
 func DeleteDataSource(ds *DataSource, id string) error {
 	srvReq := client.NewRequest(
 		ds.ElasticServiceName,
-		"Elastic.Delete",
-		&elastic.DeleteRequest{
+		"DB.Delete",
+		&db_proto.DeleteRequest{
 			Index: "datasources",
 			Type:  "datasource",
 			Id:    id,
 		},
 	)
-	srvRes := &elastic.CreateResponse{}
+	srvRes := &db_proto.CreateResponse{}
 
 	if err := client.Call(context.Background(), srvReq, srvRes); err != nil {
 		return err
@@ -74,26 +74,25 @@ func DeleteDataSource(ds *DataSource, id string) error {
 }
 
 // SearchDataSources queries for datasources stored in ES
-func SearchDataSources(ds *DataSource, query string, limit int64, offset int64) ([]*proto.Endpoint, error) {
+func SearchDataSources(ds *DataSource, req *proto.SearchRequest) ([]*proto.Endpoint, error) {
 	var result []*proto.Endpoint
 	var resultMap map[string]interface{}
 
-	if len(query) <= 0 {
-		query = "*"
-	}
-
 	srvReq := client.NewRequest(
 		ds.ElasticServiceName,
-		"Elastic.Search",
-		&elastic.SearchRequest{
-			Index:  "datasources",
-			Type:   "datasource",
-			Query:  query,
-			Limit:  limit,
-			Offset: offset,
+		"DB.Search",
+		&db_proto.SearchRequest{
+			Index:    "datasources",
+			Type:     "datasource",
+			From:     req.From,
+			Size:     req.Size,
+			Category: req.Category,
+			Term:     req.Term,
+			Depth:    req.Depth,
+			Url:      req.Url,
 		},
 	)
-	srvRes := &elastic.SearchResponse{}
+	srvRes := &db_proto.SearchResponse{}
 
 	if err := client.Call(context.Background(), srvReq, srvRes); err != nil {
 		return nil, err
@@ -135,23 +134,23 @@ func SearchDataSources(ds *DataSource, query string, limit int64, offset int64) 
 }
 
 func ScanDataSource(ds *DataSource, ctx context.Context, id string) error {
-	elasticSrvReq := client.NewRequest(
+	dbSrvReq := client.NewRequest(
 		ds.ElasticServiceName,
-		"Elastic.Read",
-		&elastic.ReadRequest{
+		"DB.Read",
+		&db_proto.ReadRequest{
 			Index: "datasources",
 			Type:  "datasource",
 			Id:    id,
 		},
 	)
-	elasticSrvRes := &elastic.ReadResponse{}
+	dbSrvRes := &db_proto.ReadResponse{}
 
-	if err := client.Call(ctx, elasticSrvReq, elasticSrvRes); err != nil {
+	if err := client.Call(ctx, dbSrvReq, dbSrvRes); err != nil {
 		return err
 	}
 
 	var endpoint *proto.Endpoint
-	if err := json.Unmarshal([]byte(elasticSrvRes.Result), &endpoint); err != nil {
+	if err := json.Unmarshal([]byte(dbSrvRes.Result), &endpoint); err != nil {
 		return err
 	}
 

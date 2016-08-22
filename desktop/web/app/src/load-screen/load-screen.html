@@ -49,41 +49,41 @@
       </div>
     </section>
 
-    <iron-ajax id="rpcElasticStatus"
+    <iron-ajax id="rpcDbStatus"
                method="POST"
                content-type="application/json"
                url="http://localhost:8082/rpc"
                handle-as="json"
                on-error="_handleError"
-               on-response="_handleElasticStatus"
-               params="{{rpcElasticStatusParams}}"></iron-ajax>
+               on-response="_handleDbStatus"
+               params="{{rpcDbStatusParams}}"></iron-ajax>
 
-    <iron-ajax id="rpcElasticSettings"
+    <iron-ajax id="rpcDbFilesIndex"
                method="POST"
                content-type="application/json"
                url="http://localhost:8082/rpc"
                handle-as="json"
                on-error="_handleError"
-               on-response="_handleElasticSettings"
-               params="{{rpcElasticSettingsParams}}"></iron-ajax>
+               on-response="_handleDbFilesIndex"
+               params="{{rpcDbFilesIndexParams}}"></iron-ajax>
 
-    <iron-ajax id="rpcElasticMapping"
+    <iron-ajax id="rpcDbDatasourcesIndex"
                method="POST"
                content-type="application/json"
                url="http://localhost:8082/rpc"
                handle-as="json"
                on-error="_handleError"
-               on-response="_handleElasticMapping"
-               params="{{rpcElasticMappingParams}}"></iron-ajax>
+               on-response="_handleDbDatasourcesIndex"
+               params="{{rpcDbDatasorucesIndexParams}}"></iron-ajax>
 
-    <iron-ajax id="rpcElasticSearch"
+    <iron-ajax id="rpcSearch"
                method="POST"
                content-type="application/json"
                url="http://localhost:8082/rpc"
                handle-as="json"
                on-error="_handleError"
-               on-response="_handleElasticSearch"
-               params="{{rpcElasticSearchParams}}"></iron-ajax>
+               on-response="_handleSearch"
+               params="{{rpcSearchParams}}"></iron-ajax>
 
   </template>
 
@@ -107,7 +107,7 @@
             notify: false,
             value: 'Starting search engine ..'
           },
-          rpcElasticStatusParams: {
+          rpcDbStatusParams: {
             type: Object,
             notify: false,
             value: function() {
@@ -117,27 +117,33 @@
               };
             }
           },
-          rpcElasticSettingsParams: {
+          rpcDbFilesIndexParams: {
             type: Object,
             notify: false,
             value: function() {
               return {
                 service: 'go.micro.srv.desktop',
-                method: 'Config.SetElasticSettings',
+                method: 'DB.CreateIndexWithSettings',
+                request: {
+                  index: 'files'
+                }
               };
             }
           },
-          rpcElasticMappingParams: {
+          rpcDbDatasourcesIndexParams: {
             type: Object,
             notify: false,
             value: function() {
               return {
                 service: 'go.micro.srv.desktop',
-                method: 'Config.SetElasticMapping',
+                method: 'DB.CreateIndexWithSettings',
+                request: {
+                  index: 'datasources'
+                }
               };
             }
           },
-          rpcElasticSearchParams: {
+          rpcSearchParams: {
             type: Object,
             notify: false,
             value: function() {
@@ -153,14 +159,14 @@
           }
         },
         ready: function() {
-          this.$.rpcElasticStatus.body = this.rpcElasticStatusParams;
-          this.$.rpcElasticSettings.body = this.rpcElasticSettingsParams;
-          this.$.rpcElasticMapping.body = this.rpcElasticMappingParams;
-          this.$.rpcElasticSearch.body = this.rpcElasticSearchParams;
+          this.$.rpcDbStatus.body = this.rpcDbStatusParams;
+          this.$.rpcDbFilesIndex.body = this.rpcDbFilesIndexParams;
+          this.$.rpcDbDatasourcesIndex.body = this.rpcDbDatasourcesIndexParams;
+          this.$.rpcSearch.body = this.rpcSearchParams;
 
-          this.$.rpcElasticStatus.generateRequest();
+          this.$.rpcDbStatus.generateRequest();
         },
-        _handleElasticStatus: function(e) {
+        _handleDbStatus: function(e) {
           var status;
 
           if (e.detail.response && e.detail.response.status) {
@@ -168,39 +174,35 @@
 
             // Check if ES is running
             if (status.master_node.length) {
-              // ES not configured, set settings and mapping
+              this.set('info', 'Initializing search engine config ..');
+
+              // Create all needed indexes
+              if (_.isEmpty(status.metadata.indices.datasources)) {
+                this.$.rpcDbDatasourcesIndex.generateRequest();
+              }
+
               if (_.isEmpty(status.metadata.indices.files)) {
-                this.set('info', 'Initializing search engine config ..');
-                this.$.rpcElasticSettings.generateRequest();
+                this.$.rpcDbFilesIndex.generateRequest();
               } else {
-                this.$.rpcElasticSearch.generateRequest();
+                this.$.rpcSearch.generateRequest();
               }
             } else {
               this.async(function() {
-                this.$.rpcElasticStatus.generateRequest();
+                this.$.rpcDbStatus.generateRequest();
               }, this.wait);
             }
           }
         },
-        _handleElasticSettings: function(e) {
-          if (e.detail.response) {
-            this.async(function() {
-              this.set('info', 'Applying search engine mapping ..');
-              this.$.rpcElasticMapping.generateRequest();
-            }, this.wait);
-          }
+        _handleDbFilesIndex: function(e) {
+
         },
-        _handleElasticMapping: function(e) {
-          if (e.detail.response) {
-            this.async(function() {
-              this.$.rpcElasticSearch.generateRequest();
-            }, this.wait);
-          }
+        _handleDbDatasourcesIndex: function(e) {
+
         },
-        _handleElasticSearch: function(e) {
+        _handleSearch: function(e) {
           if (e.detail.response) {
             this._loadPage(1, 'web-app-activated', {
-              first_scan: !JSON.parse(e.detail.response.result).hits.total
+              first_scan: (e.detail.response.info && e.detail.response.info.total)
             });
           }
         },

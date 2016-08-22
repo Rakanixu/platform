@@ -688,12 +688,12 @@
                 var result;
 
                 if (e.detail.response && e.detail.response.result) {
-                    result = JSON.parse(e.detail.response.result);
+/*                    result = JSON.parse(e.detail.response.result);
                     this.set('totalResults', result.hits.total);
 
                     _.forEach(result.hits.hits, function(result) {
                         this.push('searchResults', result);
-                    }, this);
+                    }, this);*/
                     this.$.searchList.fire('iron-resize');
                 }
                 this.set('loading', false);
