@@ -7,9 +7,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/kazoup/platform/datasource/srv/proto/datasource"
-
-	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
@@ -82,24 +79,9 @@ func HandleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 	if err := json.Unmarshal(contents, &userInfo); err != nil {
 		fmt.Fprintf(w, "Error : %s", err.Error())
 	}
+	url := fmt.Sprintf("googledrive://%s", userInfo.Email)
+	if err := SaveDatasource(url, token); err != nil {
 
-	t := &go_micro_srv_datasource.Token{
-		AccessToken:  token.AccessToken,
-		TokenType:    token.TokenType,
-		RefreshToken: token.RefreshToken,
-		Expiry:       token.Expiry.String(),
-	}
-	c := go_micro_srv_datasource.NewDataSourceClient("go.micro.srv.desktop", nil)
-	endpoint := &go_micro_srv_datasource.Endpoint{
-		Url:   fmt.Sprintf("googledrive://%s", userInfo.Email),
-		Token: t,
-	}
-	req := &go_micro_srv_datasource.CreateRequest{
-		Endpoint: endpoint,
-	}
-
-	_, err = c.Create(context.TODO(), req)
-	if err != nil {
 		fmt.Fprintf(w, "Error adding data source %s \n", err.Error())
 	}
 

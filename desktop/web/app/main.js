@@ -36,6 +36,15 @@ let isDevelopment = process.env.NODE_ENV === "development";
 let feedURL = "https://protected-reaches-10740.herokuapp.com";
 const version = app.getVersion();
 
+
+function openFolderWindow(event,arg){
+	dialog.showOpenDialog({properties: ['openDirectory']},function(args){
+		
+    		event.sender.send("add-folder", args);
+		console.log(args)
+	})
+}
+
 function createAuthWindow(event,arg){
 	 console.log("Creating auth window")
 	 auth = new BrowserWindow({
@@ -200,7 +209,7 @@ ipcMain.on("disks-message", (event, arg) => {
     });
 });
 ipcMain.on("auth-message",createAuthWindow);
-
+ipcMain.on("open-folder",openFolderWindow);
 ipcMain.on("home-dir-message", (event, arg) => {
     event.sender.send("home-dir-message", os.homedir());
 });
