@@ -38,7 +38,7 @@ const version = app.getVersion();
 
 
 function openFolderWindow(event,arg){
-	dialog.showOpenDialog({properties: ['openDirectory']},function(args){
+	dialog.showOpenDialog(win,{properties: ['openDirectory']},function(args){
 		
     		event.sender.send("add-folder", args);
 		console.log(args)
