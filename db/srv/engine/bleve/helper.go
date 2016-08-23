@@ -1,8 +1,6 @@
 package bleve
 
 import (
-	"bytes"
-	"encoding/gob"
 	"errors"
 	lib "github.com/blevesearch/bleve"
 	"log"
