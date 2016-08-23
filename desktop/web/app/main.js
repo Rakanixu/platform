@@ -26,6 +26,7 @@ const {
 // Keep a global reference of the window object, if you don"t, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win;
+let auth;
 let es;
 let paths;
 let services;
@@ -34,6 +35,41 @@ let updateFeed = "";
 let isDevelopment = process.env.NODE_ENV === "development";
 let feedURL = "https://protected-reaches-10740.herokuapp.com";
 const version = app.getVersion();
+
+
+function openFolderWindow(event,arg){
+	dialog.showOpenDialog(win,{properties: ['openDirectory']},function(args){
+		
+    		event.sender.send("add-folder", args);
+		console.log(args)
+	})
+}
+
+function createAuthWindow(event,arg){
+	 console.log("Creating auth window")
+	 auth = new BrowserWindow({
+		 parent: win,
+		 modal:false,
+		 width:420,
+		 height: 590, 
+		 frame: true,
+		 webPreferences: {
+    			nodeIntegration: false
+  		}
+	 })
+	 auth.webContents.session.clearStorageData(function(){
+	 console.log(arg)
+         auth.loadURL(arg)
+	 });
+	 auth.show()
+
+    	auth.on("closed", () => {
+        // Dereference the window object, usually you would store windows
+        // in an array if your app supports multi windows, this is the time
+        // when you should delete the corresponding element.
+        auth = null;
+    	});
+}
 
 
 function createWindow() {
@@ -172,7 +208,8 @@ ipcMain.on("disks-message", (event, arg) => {
         event.sender.send("disks-message", disks);
     });
 });
-
+ipcMain.on("auth-message",createAuthWindow);
+ipcMain.on("open-folder",openFolderWindow);
 ipcMain.on("home-dir-message", (event, arg) => {
     event.sender.send("home-dir-message", os.homedir());
 });

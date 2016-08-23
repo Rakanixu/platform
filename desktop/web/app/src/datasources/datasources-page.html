@@ -6,6 +6,8 @@
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
@@ -34,14 +36,23 @@
       iron-list {
         overflow: visible !important;
       }
+      .big {
+   	 --iron-icon-height: 36px;
+   	 --iron-icon-width: 36px;
+  	}
+      #addDatasourceDialog {
+	      width:320px;
+      }
     </style>
 
     <template is="dom-repeat" items="[[datasourcesResults]]">
       <mat-item label="[[getDatasourceUrl(item.url)]]"
                 description="">
         <mat-avatar class="primary"
-                    icon$="[[getDatasourceIcon(item.url)]]"></mat-avatar>
-
+                    icon$="[[getDatasourceIcon(item.url)]]">
+	
+	</mat-avatar>
+	
         <mat-icon-button class="secondary"
                          behavior="toggle"
                          icon="mat:more-vert"
@@ -53,15 +64,39 @@
       </mat-item>
     </template>
 
-    <mat-dialog id="addDatasourceDialog" label="Add datasource">
+    <mat-dialog id="addDatasourceDialog" label="">
       <div>
-        <p>Type a path in your local file system</p>
+	
+	<paper-button  on-tap="doAuth" data-url="local://">
+	<iron-icon  class"big" icon="kazoup-icons:local"></iron-icon>
+	<mat-item   label="Local"/>
+	</paper-button>
+	
+	<paper-button on-tap="doAuth" data-url="http:///localhost:8082/desktop/slack/login">
+	<iron-icon class="big" icon="kazoup-icons:slack"></iron-icon>
+	<mat-item label="Slack"/>
+	</paper-button>
+	
+	<paper-button on-tap="doAuth" data-url="http:///localhost:8082/desktop/google/login">
+		<iron-icon class="big" icon="kazoup-icons:googledrive"></iron-icon>
+		<mat-item label="Google Drive"/>
+	</paper-button>
+	
+	<paper-button  on-tap="doAuth" data-url="http:///localhost:8082/desktop/microsoft/login">
+		<iron-icon class="big" icon="kazoup-icons:onedrive"></iron-icon>
+		<mat-item label="One Drive"/>
+	</paper-button>
+	
+         
+	<!--       
+	<p>Type a path in your local file system</p>
         <mat-text-field id="datasourceInput"
                         class="flex"
                         label="Path to scan"></mat-text-field>
+	-->
       </div>
       <mat-button class="action" label="Cancel" on-tap="closeDatasourceDialog"></mat-button>
-      <mat-button class="action" label="Confirm" on-tap="addDatasource"></mat-button>
+      <!--<mat-button class="action" label="Confirm" on-tap="addDatasource"></mat-button> -->
     </mat-dialog>
 
     <paper-toast id="toast" text=""></paper-toast>
@@ -102,6 +137,7 @@
                on-response="_handleStartScan"
                params="[[rpcStartScanParams]]"></iron-ajax>
 
+	<input id="localfolder" type="file" webkitdirectory directory style="display: none" />
   </template>
 
   <script>
@@ -172,11 +208,42 @@
           this.$.rpcGetDatasources.body = this.rpcGetDatasourceParams;
 
           window.addEventListener('datasources-page-activated', this.init.bind(this));
+
+          ipcRenderer.on('add-folder', this._addFolder.bind(this));
         },
         init: function(e, detail) {
           this.set('loading', true);
           this.$.rpcGetDatasources.generateRequest();
         },
+	_addFolder : function (e,folder){
+	console.log(folder)
+	if (folder.length > 0) {	
+          this.$.rpcAddDatasource.body = {
+            service: 'go.micro.srv.desktop',
+            method: 'DataSource.Create',
+            request: {
+              endpoint: {
+                url: 'local://' + folder[0]
+              }
+            }
+          };
+          this.$.rpcAddDatasource.generateRequest();
+
+	}
+	},
+	doAuth: function(e){
+	//console.log("Sending auth message",e.target.getAttribute("data-url"))
+	if (e.currentTarget.getAttribute("data-url") == "local://" )	
+	{
+	console.log("Fire local browser")
+	ipcRenderer.send('open-folder');
+	}else {
+
+	ipcRenderer.send('auth-message',e.currentTarget.getAttribute("data-url"))
+	}
+
+            this.closeDatasourceDialog();
+	},
         addDatasource: function(e) {
           this.set('loading', true);
           this.$.rpcAddDatasource.body = {
@@ -223,7 +290,7 @@
           if (e.detail.response) {
             this.$.toast.text = 'New datasource created succesfully';
             this.$.toast.show();
-            this.closeDatasourceDialog();
+          //  this.closeDatasourceDialog();
             this.async(this.init, 1000);
           }
         },
