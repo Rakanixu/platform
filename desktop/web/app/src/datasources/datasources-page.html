@@ -16,6 +16,8 @@
 <link rel="import" href="../../bower_components/mat-icons/mat-icons.html">
 <link rel="import" href="../../bower_components/mat-icons/hardware-icons.html">
 <link rel="import" href="../../bower_components/mat-icons/action-icons.html">
+<link rel="import" href="../../bower_components/mat-icon-button/mat-icon-button.html">
+<link rel="import" href="../../bower_components/mat-menu/mat-menu.html">
 
 <link rel="import" href="../../src/behaviors/util-behavior.html">
 <link rel="import" href="../../src/behaviors/nav-behavior.html">
@@ -124,9 +126,10 @@
                 service: 'go.micro.srv.desktop',
                 method: 'DataSource.Search',
                 request: {
-                  offset: 0,
-                  limit: 9999,
-                  type: 'datasource'
+                  from: 0,
+                  size: 9999,
+                  type: 'datasource',
+                  index: 'datasources'
                 }
               };
             }
@@ -213,7 +216,7 @@
         _handleGetDatasource: function(e) {
           this.set('loading', false);
           if (e.detail.response && e.detail.response.result) {
-            this.set('datasourcesResults', e.detail.response.result);
+            this.set('datasourcesResults', JSON.parse(e.detail.response.result));
           }
         },
         _handleAddDatasource: function(e) {
