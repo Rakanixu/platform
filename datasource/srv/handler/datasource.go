@@ -1,10 +1,12 @@
 package handler
 
 import (
+	"crypto/md5"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
+	"io"
 )
 
 // DataSource struct
@@ -28,7 +30,11 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 		return errors.InternalServerError("go.micro.srv.datasource Validate", err.Error())
 	}
 
-	if err := dataSource.Save(req.Endpoint, req.Endpoint.Url); err != nil {
+	hash := md5.New()
+	io.WriteString(hash, req.Endpoint.Url)
+	req.Endpoint.Id = getMD5Hash(req.Endpoint.Url)
+
+	if err := dataSource.Save(req.Endpoint, req.Endpoint.Id); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 

@@ -272,36 +272,36 @@
                         <template>
                             <div class$="[[bigVideoClass]]">
                                 <template is="dom-if" if="{{!view.isGrid}}" restamp="true">
-                                    <template is="dom-if" if="{{isVideo(item._source.category)}}">
+                                    <template is="dom-if" if="{{isVideo(item.category)}}">
                                         <mat-item on-tap="mainAction"
-                                                  label="[[item._source.name]]"
-                                                  description="[[item._source.url]]">
-                                            <mat-avatar background="[[documentType(item._source.name)]]"
+                                                  label="[[item.name]]"
+                                                  description="[[item.url]]">
+                                            <mat-avatar background="[[documentType(item.name)]]"
                                                         class="primary image"
-                                                        icon-src="[[getVideoFrame(item._source.url)]]"></mat-avatar>
-                                            <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
+                                                        icon-src="[[getVideoFrame(item.url)]]"></mat-avatar>
+                                            <span>[[timestampToHumanTime(item.modified)]], [[bytesToSize(item.size)]]</span>
                                         </mat-item>
                                     </template>
 
-                                    <template is="dom-if" if="{{isImage(item._source.category)}}">
+                                    <template is="dom-if" if="{{isImage(item.category)}}">
                                         <mat-item on-tap="mainAction"
-                                                  label="[[item._source.name]]"
-                                                  description="[[item._source.url]]">
-                                            <mat-avatar background="[[documentType(item._source.name)]]"
+                                                  label="[[item.name]]"
+                                                  description="[[item.url]]">
+                                            <mat-avatar background="[[documentType(item.name)]]"
                                                         class="primary image"
-                                                        icon-src="http://localhost:8082/desktop/image?source=[[item._source.url]]&width=128&height=128&mode=fit&quality=100"></mat-avatar>
-                                            <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
+                                                        icon-src="http://localhost:8082/desktop/image?source=[[item.url]]&width=128&height=128&mode=fit&quality=100"></mat-avatar>
+                                            <span>[[timestampToHumanTime(item.modified)]], [[bytesToSize(item.size)]]</span>
                                         </mat-item>
                                     </template>
 
-                                    <template is="dom-if" if="{{isNoVisualMedia(item._source.category)}}">
+                                    <template is="dom-if" if="{{isNoVisualMedia(item.category)}}">
                                         <mat-item on-tap="mainAction"
-                                                  label="[[item._source.name]]"
-                                                  description="[[item._source.url]]">
-                                            <mat-avatar background="[[documentType(item._source.name)]]"
+                                                  label="[[item.name]]"
+                                                  description="[[item.url]]">
+                                            <mat-avatar background="[[documentType(item.name)]]"
                                                         class="primary"
-                                                        icon="[[getIcon(item._source.is_dir, item._source.category)]]"></mat-avatar>
-                                            <span>[[timestampToHumanTime(item._source.modified)]], [[bytesToSize(item._source.size)]]</span>
+                                                        icon="[[getIcon(item.is_dir, item.category)]]"></mat-avatar>
+                                            <span>[[timestampToHumanTime(item.modified)]], [[bytesToSize(item.size)]]</span>
                                         </mat-item>
                                     </template>
                                 </template>
@@ -309,24 +309,24 @@
                                 <template is="dom-if" if="{{view.isGrid}}" restamp="true">
                                     <div class="photoContainer grid" on-tap="mainAction">
                                         <div class="photoContent" tabindex$="[[tabIndex]]">
-                                            <template is="dom-if" if="[[isImage(item._source.category)]]">
+                                            <template is="dom-if" if="[[isImage(item.category)]]">
                                                 <iron-image sizing="contain"
-                                                            src="http://localhost:8082/desktop/image?source=[[item._source.url]]&width=356&height=356&mode=fit&quality=100"></iron-image>
+                                                            src="http://localhost:8082/desktop/image?source=[[item.url]]&width=356&height=356&mode=fit&quality=100"></iron-image>
                                             </template>
 
-                                            <template is="dom-if" if="[[isVideo(item._source.category)]]">
+                                            <template is="dom-if" if="[[isVideo(item.category)]]">
                                                 <iron-image sizing="contain"
-                                                            src="[[getVideoFrame(item._source.url)]]"></iron-image>
+                                                            src="[[getVideoFrame(item.url)]]"></iron-image>
                                             </template>
 
-                                            <template is="dom-if" if="[[isNoVisualMedia(item._source.category)]]">
-                                                <mat-avatar background="[[documentType(item._source.name)]]"
+                                            <template is="dom-if" if="[[isNoVisualMedia(item.category)]]">
+                                                <mat-avatar background="[[documentType(item.name)]]"
                                                             class="primary"
-                                                            icon="[[getIcon(item._source.is_dir, item._source.category)]]"></mat-avatar>
+                                                            icon="[[getIcon(item.is_dir, item.category)]]"></mat-avatar>
                                             </template>
 
                                             <div class="detail">
-                                                <mat-item class="light" label="[[item._source.name]]"></mat-item>
+                                                <mat-item class="light" label="[[item.name]]"></mat-item>
                                             </div>
                                             <mat-ripple></mat-ripple>
                                         </div>
@@ -352,34 +352,34 @@
                                            tabindex="-1"></paper-icon-button>
 
                         <div class="bottom">
-                            <mat-item label="[[item._source.name]]" class="light" focused="false"></mat-item>
+                            <mat-item label="[[item.name]]" class="light" focused="false"></mat-item>
                         </div>
                     </paper-toolbar>
 
                     <!-- Right Content -->
                     <div class="content">
-                        <template is="dom-if" if="[[isImage(item._source.category)]]">
+                        <template is="dom-if" if="[[isImage(item.category)]]">
                             <iron-image style="width:100%"
-                                        src="http://localhost:8082/desktop/image?source=[[item._source.url]]&width=600&mode=fit&quality=100"
+                                        src="http://localhost:8082/desktop/image?source=[[item.url]]&width=600&mode=fit&quality=100"
                                         preload
                                         fade></iron-image>
                         </template>
 
-                        <template is="dom-if" if="[[isVideo(item._source.category)]]" restamp="true">
+                        <template is="dom-if" if="[[isVideo(item.category)]]" restamp="true">
                             <video id="video" controls preload="auto" width="100%">
-                                <source src="[[getAsset(item._source.url)]]">
+                                <source src="[[getAsset(item.url)]]">
                             </video>
                         </template>
 
-                        <template is="dom-if" if="[[isAudio(item._source.category)]]" restamp="true">
+                        <template is="dom-if" if="[[isAudio(item.category)]]" restamp="true">
                             <wave-player id="wavePlayer"
                                          wavecolor="#21a9f5"
                                          progresscolor="#b1b1b1"
-                                         src="[[getAsset(item._source.url)]]"/>
+                                         src="[[getAsset(item.url)]]"/>
                         </template>
 
                         <mat-item label="Location"
-                                  description="[[item._source.url]]"
+                                  description="[[item.url]]"
                                   tabindex="-1"></mat-item>
                     </div>
                 </paper-header-panel>
@@ -643,7 +643,7 @@
                         term: '',
                         from: 0,
                         size: this.size,
-                        url: '/',
+                        //url: '/',
                         depth: 1
                     });
                 }
@@ -689,12 +689,13 @@
                 var result;
 
                 if (e.detail.response && e.detail.response.result) {
-/*                    result = JSON.parse(e.detail.response.result);
-                    this.set('totalResults', result.hits.total);
+                    result = JSON.parse(e.detail.response.result);
 
-                    _.forEach(result.hits.hits, function(result) {
-                        this.push('searchResults', result);
-                    }, this);*/
+                    this.set('totalResults', JSON.parse(e.detail.response.info).total);
+
+                    _.forEach(result, function(record) {
+                        this.push('searchResults', record);
+                    }, this);
                     this.$.searchList.fire('iron-resize');
                 }
                 this.set('loading', false);
@@ -783,8 +784,8 @@
                     from: 0,
                     size: this.size,
                     category: e.target.dataset.value,
-                    type: e.target.dataset.value ? 'files' : '',
-                    url: '/',
+                    type: e.target.dataset.value ? 'file' : '',
+                    url: (e.target.dataset.value || this.$.filterConverter.getFilterAsObj().term) ? '' : '/',
                     depth: (e.target.dataset.value || this.$.filterConverter.getFilterAsObj().term) ? 0 : 1
                 });
             },
@@ -875,22 +876,22 @@
                 this.$.rpcGetDatasources.generateRequest();
             },
             mainAction: function(e, detail) {
-                if (e.model.__data__.item._source.is_dir) {
+                if (e.model.__data__.item.is_dir) {
                     // Browse one level deeper
                     this.clearIronList();
 
                     this.push('breadcrumbs', {
-                        label: e.model.__data__.item._source.name,
-                        url: e.model.__data__.item._source.url,
-                        depth: e.model.__data__.item._source.depth + 1
+                        label: e.model.__data__.item.name,
+                        url: e.model.__data__.item.url,
+                        depth: e.model.__data__.item.depth + 1
                     });
                     this.checkBreadcrumbsView(0);
 
                     this.$.filterConverter.setValues({
                         from: 0,
                         size: this.size,
-                        url: e.model.__data__.item._source.url,
-                        depth: e.model.__data__.item._source.depth + 1
+                        url: e.model.__data__.item.url,
+                        depth: e.model.__data__.item.depth + 1
                     });
                 } else {
                     // Detail view
@@ -913,7 +914,7 @@
             },
             openFile: function(e) {
                 ipcRenderer.send('open-file-message', {
-                    url: this.item._source.url
+                    url: this.item.url
                 });
             },
             closeDetails: function(e, detail) {

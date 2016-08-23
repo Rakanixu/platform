@@ -1,8 +1,11 @@
 package bleve
 
 import (
+	"encoding/json"
 	"errors"
 	lib "github.com/blevesearch/bleve"
+	"github.com/blevesearch/bleve/analysis/analyzers/keyword_analyzer"
+	"github.com/kazoup/platform/structs"
 	"log"
 	"os"
 )
@@ -28,7 +31,13 @@ func indexer(b *bleve) error {
 			case v := <-b.filesChannel:
 				log.Print("Ssubscriber", v.Id)
 				if batch.Size() < b.batchSize {
-					batch.Index(v.Id, v.Data)
+					file := new(structs.DesktopFile)
+
+					if err := json.Unmarshal([]byte(v.Data), file); err != nil {
+						log.Printf("%v", err)
+					}
+
+					batch.Index(v.Id, file)
 				} else {
 					log.Println("NOw batch")
 					doBatch(b, batch)
@@ -64,6 +73,8 @@ func openIndex(b *bleve, indexName string) error {
 	b.indexMap[indexName], err = lib.Open(os.TempDir() + kazoupNamespace + indexName)
 	if err != nil {
 		mapping := lib.NewIndexMapping()
+		mapping.DefaultAnalyzer = keyword_analyzer.Name
+
 		b.indexMap[indexName], err = lib.New(os.TempDir()+kazoupNamespace+indexName, mapping)
 		if err != nil {
 			return err

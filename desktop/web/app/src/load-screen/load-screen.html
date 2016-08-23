@@ -200,9 +200,13 @@
 
         },
         _handleSearch: function(e) {
+          var info;
+
           if (e.detail.response) {
+            info = JSON.parse(e.detail.response.info)
+
             this._loadPage(1, 'web-app-activated', {
-              first_scan: (e.detail.response.info && e.detail.response.info.total)
+              first_scan: (info.total) ? false : true
             });
           }
         },

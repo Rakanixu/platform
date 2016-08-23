@@ -2,6 +2,7 @@ package bleve
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	lib "github.com/blevesearch/bleve"
@@ -170,7 +171,7 @@ func (b *bleve) Status(req *db.StatusRequest) (*db.StatusResponse, error) {
 }
 
 func (b *bleve) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
-	var indexSearch string
+	var indexSearch, qString string
 	var sr *lib.SearchRequest
 
 	if len(req.Index) > 0 {
@@ -183,16 +184,20 @@ func (b *bleve) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 		return &db.SearchResponse{}, errors.New("index does not exists")
 	}
 
-	qString := ""
 	if len(req.Term) > 0 {
-		qString += fmt.Sprintf("%s", req.Term)
+		qString += fmt.Sprintf(" %s", req.Term)
 	}
 	if len(req.Category) > 0 {
-		qString += fmt.Sprintf("+category:%s", req.Category)
+		qString += fmt.Sprintf(" +category:%s", req.Category)
 	}
-	if req.Depth != 0 {
-		qString += fmt.Sprintf("+depth:%s", string(req.Depth))
+	if req.Depth > 0 {
+		qString += fmt.Sprintf(" +depth:>=%d +depth:<=%d", req.Depth, req.Depth)
 	}
+	if len(req.Url) > 0 {
+		qString += fmt.Sprintf(" +%s", req.Url)
+	}
+
+	log.Println(qString)
 
 	// No fields specify, we want to match all documents in the index
 	if len(qString) == 0 {
@@ -203,30 +208,31 @@ func (b *bleve) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 			From:  int(req.From),
 		}
 	} else {
+		log.Println(qString)
 		q := lib.NewQueryStringQuery(qString)
-		sr = lib.NewSearchRequestOptions(q, int(req.Size), int(req.From), true)
+		sr = lib.NewSearchRequestOptions(q, int(req.Size), int(req.From), false)
 
 	}
-	sr.Highlight = lib.NewHighlightWithStyle("html")
 	sr.Fields = []string{"*"} // Retrieve all fields
-	sr.Explain = true
 
 	results, err := b.indexMap[indexSearch].Search(sr)
 	if err != nil {
-		return &db.SearchResponse{}, nil
+		return &db.SearchResponse{}, err
 	}
 
 	var buffer bytes.Buffer
 	count := 0
 
+	/*	files, _ := json.Marshal(results.Hits)
+		log.Println(string(files))*/
+
 	buffer.WriteString(`[`)
 	for _, obj := range results.Hits {
-		for _, v := range obj.Fields {
-			buffer.WriteString(v.(string))
+		file, _ := json.Marshal(obj.Fields)
+		buffer.WriteString(string(file))
 
-			if count < len(results.Hits)-1 {
-				buffer.WriteString(`,`)
-			}
+		if count < len(results.Hits)-1 {
+			buffer.WriteString(`,`)
 		}
 		count++
 	}

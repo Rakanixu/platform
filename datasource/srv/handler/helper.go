@@ -5,6 +5,8 @@ import (
 	"errors"
 	"strings"
 
+	"crypto/md5"
+	"encoding/hex"
 	"github.com/kazoup/platform/datasource/srv/filestore"
 	fake "github.com/kazoup/platform/datasource/srv/filestore/fake"
 	googledrive "github.com/kazoup/platform/datasource/srv/filestore/googledrive"
@@ -160,4 +162,9 @@ func ScanDataSource(ds *DataSource, ctx context.Context, id string) error {
 	}
 
 	return nil
+}
+
+func getMD5Hash(text string) string {
+	hash := md5.Sum([]byte(text))
+	return hex.EncodeToString(hash[:])
 }

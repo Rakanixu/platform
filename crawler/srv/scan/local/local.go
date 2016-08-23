@@ -83,7 +83,6 @@ func (fs *Local) walkHandler() filepath.WalkFunc {
 				return errors.New("Error marshaling data")
 			}
 
-			//time.Sleep(1 * time.Millisecond)
 			msg := &crawler.FileMessage{
 				Id:   f.URL,
 				Data: string(b),

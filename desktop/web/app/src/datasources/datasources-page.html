@@ -36,10 +36,12 @@
       iron-list {
         overflow: visible !important;
       }
+
       .big {
-   	 --iron-icon-height: 36px;
-   	 --iron-icon-width: 36px;
-  	}
+        --iron-icon-height: 36px;
+        --iron-icon-width: 36px;
+  	  }
+
       #addDatasourceDialog {
 	      width:320px;
       }
@@ -50,8 +52,7 @@
                 description="">
         <mat-avatar class="primary"
                     icon$="[[getDatasourceIcon(item.url)]]">
-	
-	</mat-avatar>
+	      </mat-avatar>
 	
         <mat-icon-button class="secondary"
                          behavior="toggle"
@@ -66,37 +67,27 @@
 
     <mat-dialog id="addDatasourceDialog" label="">
       <div>
-	
-	<paper-button  on-tap="doAuth" data-url="local://">
-	<iron-icon  class"big" icon="kazoup-icons:local"></iron-icon>
-	<mat-item   label="Local"/>
-	</paper-button>
-	
-	<paper-button on-tap="doAuth" data-url="http:///localhost:8082/desktop/slack/login">
-	<iron-icon class="big" icon="kazoup-icons:slack"></iron-icon>
-	<mat-item label="Slack"/>
-	</paper-button>
-	
-	<paper-button on-tap="doAuth" data-url="http:///localhost:8082/desktop/google/login">
-		<iron-icon class="big" icon="kazoup-icons:googledrive"></iron-icon>
-		<mat-item label="Google Drive"/>
-	</paper-button>
-	
-	<paper-button  on-tap="doAuth" data-url="http:///localhost:8082/desktop/microsoft/login">
-		<iron-icon class="big" icon="kazoup-icons:onedrive"></iron-icon>
-		<mat-item label="One Drive"/>
-	</paper-button>
-	
-         
-	<!--       
-	<p>Type a path in your local file system</p>
-        <mat-text-field id="datasourceInput"
-                        class="flex"
-                        label="Path to scan"></mat-text-field>
-	-->
+        <paper-button  on-tap="doAuth" data-url="local://">
+          <iron-icon  class"big" icon="kazoup-icons:local"></iron-icon>
+          <mat-item   label="Local"/>
+        </paper-button>
+
+        <paper-button on-tap="doAuth" data-url="http:///localhost:8082/desktop/slack/login">
+          <iron-icon class="big" icon="kazoup-icons:slack"></iron-icon>
+          <mat-item label="Slack"/>
+        </paper-button>
+
+        <paper-button on-tap="doAuth" data-url="http:///localhost:8082/desktop/google/login">
+          <iron-icon class="big" icon="kazoup-icons:googledrive"></iron-icon>
+          <mat-item label="Google Drive"/>
+        </paper-button>
+
+        <paper-button  on-tap="doAuth" data-url="http:///localhost:8082/desktop/microsoft/login">
+          <iron-icon class="big" icon="kazoup-icons:onedrive"></iron-icon>
+          <mat-item label="One Drive"/>
+        </paper-button>
       </div>
       <mat-button class="action" label="Cancel" on-tap="closeDatasourceDialog"></mat-button>
-      <!--<mat-button class="action" label="Confirm" on-tap="addDatasource"></mat-button> -->
     </mat-dialog>
 
     <paper-toast id="toast" text=""></paper-toast>
