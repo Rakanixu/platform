@@ -8,6 +8,7 @@ import (
 	lib "github.com/blevesearch/bleve"
 	"github.com/kazoup/gabs"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
+	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/db/srv/engine"
 	db "github.com/kazoup/platform/db/srv/proto/db"
 	"golang.org/x/net/context"
@@ -76,11 +77,19 @@ func (b *bleve) Subscribe(ctx context.Context, msg *crawler.FileMessage) error {
 
 func (b *bleve) Create(req *db.CreateRequest) (*db.CreateResponse, error) {
 	response := &db.CreateResponse{}
+	ds := &datasource_proto.Endpoint{}
+
 	if !b.indexExists(req.Index) {
 		return response, errors.New("Index does not exists")
 	}
 
-	return response, b.indexMap[req.Index].Index(req.Id, req.Data)
+	if req.Type == "datasource" {
+		if err := json.Unmarshal([]byte(req.Data), ds); err != nil {
+			return response, err
+		}
+	}
+
+	return response, b.indexMap[req.Index].Index(req.Id, ds)
 }
 
 func (b *bleve) Read(req *db.ReadRequest) (*db.ReadResponse, error) {
@@ -95,9 +104,13 @@ func (b *bleve) Read(req *db.ReadRequest) (*db.ReadResponse, error) {
 		return response, err
 	}
 
+	jsonObj := gabs.New()
 	if document != nil {
-		response.Result = string(document.Fields[0].Value())
+		for _, v := range document.Fields {
+			jsonObj.Set(string(v.Value()), v.Name())
+		}
 	}
+	response.Result = jsonObj.String()
 
 	return response, err
 }
@@ -173,6 +186,8 @@ func (b *bleve) Status(req *db.StatusRequest) (*db.StatusResponse, error) {
 func (b *bleve) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 	var indexSearch, qString string
 	var sr *lib.SearchRequest
+	var buffer bytes.Buffer
+	count := 0
 
 	if len(req.Index) > 0 {
 		indexSearch = req.Index
@@ -184,6 +199,11 @@ func (b *bleve) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 		return &db.SearchResponse{}, errors.New("index does not exists")
 	}
 
+	if indexSearch == filesIndex {
+		qString += fmt.Sprintf(" +size:>%d", 0)
+	} else {
+		qString += fmt.Sprintf(" -id:%d", 0)
+	}
 	if len(req.Term) > 0 {
 		qString += fmt.Sprintf(" %s", req.Term)
 	}
@@ -197,22 +217,9 @@ func (b *bleve) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 		qString += fmt.Sprintf(" +%s", req.Url)
 	}
 
-	log.Println(qString)
-
-	// No fields specify, we want to match all documents in the index
-	if len(qString) == 0 {
-		q := lib.NewMatchAllQuery()
-		sr = &lib.SearchRequest{
-			Query: q,
-			Size:  int(req.Size),
-			From:  int(req.From),
-		}
-	} else {
-		log.Println(qString)
-		q := lib.NewQueryStringQuery(qString)
-		sr = lib.NewSearchRequestOptions(q, int(req.Size), int(req.From), false)
-
-	}
+	//log.Println(qString)
+	q := lib.NewQueryStringQuery(qString)
+	sr = lib.NewSearchRequestOptions(q, int(req.Size), int(req.From), false)
 	sr.Fields = []string{"*"} // Retrieve all fields
 
 	results, err := b.indexMap[indexSearch].Search(sr)
@@ -220,15 +227,12 @@ func (b *bleve) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 		return &db.SearchResponse{}, err
 	}
 
-	var buffer bytes.Buffer
-	count := 0
-
-	/*	files, _ := json.Marshal(results.Hits)
-		log.Println(string(files))*/
-
 	buffer.WriteString(`[`)
 	for _, obj := range results.Hits {
-		file, _ := json.Marshal(obj.Fields)
+		file, err := json.Marshal(obj.Fields)
+		if err != nil {
+			return &db.SearchResponse{}, err
+		}
 		buffer.WriteString(string(file))
 
 		if count < len(results.Hits)-1 {

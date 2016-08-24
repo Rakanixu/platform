@@ -1,12 +1,11 @@
 package handler
 
 import (
-	"encoding/json"
-	"errors"
-	"strings"
-
+	"bytes"
 	"crypto/md5"
 	"encoding/hex"
+	"encoding/json"
+	"errors"
 	"github.com/kazoup/platform/datasource/srv/filestore"
 	fake "github.com/kazoup/platform/datasource/srv/filestore/fake"
 	googledrive "github.com/kazoup/platform/datasource/srv/filestore/googledrive"
@@ -17,6 +16,8 @@ import (
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	"log"
+	"strings"
 )
 
 const (
@@ -147,10 +148,21 @@ func ScanDataSource(ds *DataSource, ctx context.Context, id string) error {
 		return err
 	}
 
+	log.Println("ss", dbSrvRes)
+	log.Println("ss", dbSrvRes.Result)
+
 	var endpoint *proto.Endpoint
-	if err := json.Unmarshal([]byte(dbSrvRes.Result), &endpoint); err != nil {
+
+	//bytes.NewBufferString("your string")
+	dec := json.NewDecoder(bytes.NewBufferString(dbSrvRes.Result))
+	if err := dec.Decode(&endpoint); err != nil {
 		return err
 	}
+
+	log.Println(endpoint)
+	/*	if err := json.Unmarshal([]byte(dbSrvRes.Result), &endpoint); err != nil {
+		return err
+	}*/
 
 	msg := ds.Client.NewPublication(
 		topic,

@@ -5,7 +5,6 @@ import (
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
-	"log"
 )
 
 type FileStorer interface {
@@ -24,7 +23,7 @@ func (fs *FileStore) Save(data interface{}, id string) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("FileStore.Save data: %s ES name %s", b, fs.ElasticServiceName)
+
 	srvReq := client.NewRequest(
 		fs.ElasticServiceName,
 		"DB.Create",

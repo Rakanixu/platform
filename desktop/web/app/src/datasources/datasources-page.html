@@ -57,8 +57,8 @@
         <mat-icon-button class="secondary"
                          behavior="toggle"
                          icon="mat:more-vert"
-                         target="[[item.id]]"></mat-icon-button>
-        <mat-menu id="[[item.id]]">
+                         target="id[[item.id]]"></mat-icon-button>
+        <mat-menu id="id[[item.id]]">
           <mat-option label="Start scan" on-tap="startScan"></mat-option>
           <mat-option label="Delete" on-tap="deleteDatasource"></mat-option>
         </mat-menu>
@@ -206,35 +206,29 @@
           this.set('loading', true);
           this.$.rpcGetDatasources.generateRequest();
         },
-	_addFolder : function (e,folder){
-	console.log(folder)
-	if (folder.length > 0) {	
-          this.$.rpcAddDatasource.body = {
-            service: 'go.micro.srv.desktop',
-            method: 'DataSource.Create',
-            request: {
-              endpoint: {
-                url: 'local://' + folder[0]
+	      _addFolder : function (e, folder){
+	        if (folder.length > 0) {
+            this.$.rpcAddDatasource.body = {
+              service: 'go.micro.srv.desktop',
+              method: 'DataSource.Create',
+              request: {
+                endpoint: {
+                  url: 'local://' + folder[0]
+                }
               }
-            }
-          };
-          this.$.rpcAddDatasource.generateRequest();
+            };
 
-	}
-	},
-	doAuth: function(e){
-	//console.log("Sending auth message",e.target.getAttribute("data-url"))
-	if (e.currentTarget.getAttribute("data-url") == "local://" )	
-	{
-	console.log("Fire local browser")
-	ipcRenderer.send('open-folder');
-	}else {
-
-	ipcRenderer.send('auth-message',e.currentTarget.getAttribute("data-url"))
-	}
-
-            this.closeDatasourceDialog();
-	},
+            this.$.rpcAddDatasource.generateRequest();
+	        }
+        },
+        doAuth: function(e){
+          if (e.currentTarget.getAttribute("data-url") == "local://" ) {
+            ipcRenderer.send('open-folder');
+          }else {
+            ipcRenderer.send('auth-message',e.currentTarget.getAttribute("data-url"));
+          }
+          this.closeDatasourceDialog();
+        },
         addDatasource: function(e) {
           this.set('loading', true);
           this.$.rpcAddDatasource.body = {
@@ -281,7 +275,6 @@
           if (e.detail.response) {
             this.$.toast.text = 'New datasource created succesfully';
             this.$.toast.show();
-          //  this.closeDatasourceDialog();
             this.async(this.init, 1000);
           }
         },

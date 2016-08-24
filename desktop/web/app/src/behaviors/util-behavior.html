@@ -81,15 +81,15 @@
         switch (datasource.split('://')[0]) {
           case 'local':
             return 'hardware:laptop';
-	    break;
-	  case 'slack':
-	    return 'kazoup-icons:slack';
             break;
-	  case 'googledrive':
-	    return 'kazoup-icons:googledrive';
+          case 'slack':
+            return 'kazoup-icons:slack';
             break;
-	  case 'onedrive':
-	    return 'kazoup-icons:onedrive';
+          case 'googledrive':
+            return 'kazoup-icons:googledrive';
+            break;
+          case 'onedrive':
+            return 'kazoup-icons:onedrive';
             break;
         }
       },
