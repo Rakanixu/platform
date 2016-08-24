@@ -5,6 +5,7 @@ import (
 	"errors"
 	lib "github.com/blevesearch/bleve"
 	"github.com/blevesearch/bleve/analysis/analyzers/keyword_analyzer"
+	_ "github.com/blevesearch/bleve/index/store/goleveldb"
 	"github.com/kazoup/platform/structs"
 	"log"
 	"os"
@@ -71,11 +72,13 @@ func doBatch(b *bleve, batch *lib.Batch) {
 func openIndex(b *bleve, indexName string) error {
 	err := errors.New("")
 	b.indexMap[indexName], err = lib.Open(os.TempDir() + kazoupNamespace + indexName)
+
 	if err != nil {
 		mapping := lib.NewIndexMapping()
 		mapping.DefaultAnalyzer = keyword_analyzer.Name
+		kvconfig := make(map[string]interface{})
 
-		b.indexMap[indexName], err = lib.New(os.TempDir()+kazoupNamespace+indexName, mapping)
+		b.indexMap[indexName], err = lib.NewUsing(os.TempDir()+kazoupNamespace+indexName, mapping, "upside_down", "goleveldb", kvconfig)
 		if err != nil {
 			return err
 		}

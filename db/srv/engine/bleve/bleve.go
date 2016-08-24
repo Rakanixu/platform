@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	lib "github.com/blevesearch/bleve"
 	"github.com/kazoup/gabs"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
@@ -41,8 +40,8 @@ func init() {
 
 func (b *bleve) Init() error {
 	err := errors.New("")
-
 	files, err := ioutil.ReadDir(os.TempDir() + kazoupNamespace)
+	// Creates directory if not exists, but err is not nil
 	if err != err {
 		return err
 	}
@@ -184,11 +183,12 @@ func (b *bleve) Status(req *db.StatusRequest) (*db.StatusResponse, error) {
 }
 
 func (b *bleve) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
-	var indexSearch, qString string
+	var indexSearch string
 	var sr *lib.SearchRequest
 	var buffer bytes.Buffer
-	prefixQuery := lib.NewPrefixQuery("")
 	count := 0
+
+	queries := []lib.Query{}
 
 	if len(req.Index) > 0 {
 		indexSearch = req.Index
@@ -200,33 +200,32 @@ func (b *bleve) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 		return &db.SearchResponse{}, errors.New("index does not exists")
 	}
 
-	if indexSearch == filesIndex {
-		qString += fmt.Sprintf(" +size:>%d", 0)
-	} else {
-		qString += fmt.Sprintf(" -id:%d", 0)
-	}
 	if len(req.Term) > 0 {
-		qString += fmt.Sprintf(" %s", req.Term)
+		termQuery := lib.NewMatchQuery(req.Term)
+		queries = append(queries, termQuery)
 	}
 	if len(req.Category) > 0 {
-		qString += fmt.Sprintf(" +category:%s", req.Category)
+		categoryQuery := lib.NewTermQuery(req.Category)
+		categoryQuery.SetField("category")
+		queries = append(queries, categoryQuery)
 	}
+
 	if req.Depth > 0 {
-		qString += fmt.Sprintf(" +depth:>=%d +depth:<=%d", req.Depth, req.Depth)
+		min := new(float64)
+		max := new(float64)
+		*min = float64(req.Depth)
+		*max = float64(req.Depth + 1)
+		depthQuery := lib.NewNumericRangeQuery(min, max)
+		depthQuery.SetField("depth")
+		queries = append(queries, depthQuery)
 	}
 	if len(req.Url) > 0 {
-		//qString += fmt.Sprintf(" +url:%s", req.Url)
-		prefixQuery = lib.NewPrefixQuery(req.Url)
-		prefixQuery.FieldVal = "url"
+		urlQuery := lib.NewPrefixQuery(req.Url)
+		urlQuery.SetField("url")
+		queries = append(queries, urlQuery)
 	}
-	log.Println(qString)
-	q := lib.NewQueryStringQuery(qString)
-	conjuntionQuery := lib.NewConjunctionQuery([]lib.Query{
-		q,
-		prefixQuery,
-	})
-	log.Println(conjuntionQuery)
-	sr = lib.NewSearchRequestOptions(conjuntionQuery, int(req.Size), int(req.From), false)
+
+	sr = lib.NewSearchRequestOptions(lib.NewConjunctionQuery(queries), int(req.Size), int(req.From), false)
 	sr.Fields = []string{"*"} // Retrieve all fields
 
 	results, err := b.indexMap[indexSearch].Search(sr)
