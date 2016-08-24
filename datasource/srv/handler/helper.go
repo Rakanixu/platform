@@ -16,7 +16,6 @@ import (
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
-	"log"
 	"strings"
 )
 
@@ -148,21 +147,11 @@ func ScanDataSource(ds *DataSource, ctx context.Context, id string) error {
 		return err
 	}
 
-	log.Println("ss", dbSrvRes)
-	log.Println("ss", dbSrvRes.Result)
-
 	var endpoint *proto.Endpoint
-
-	//bytes.NewBufferString("your string")
 	dec := json.NewDecoder(bytes.NewBufferString(dbSrvRes.Result))
 	if err := dec.Decode(&endpoint); err != nil {
 		return err
 	}
-
-	log.Println(endpoint)
-	/*	if err := json.Unmarshal([]byte(dbSrvRes.Result), &endpoint); err != nil {
-		return err
-	}*/
 
 	msg := ds.Client.NewPublication(
 		topic,

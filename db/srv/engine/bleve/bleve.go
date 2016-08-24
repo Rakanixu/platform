@@ -187,6 +187,7 @@ func (b *bleve) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 	var indexSearch, qString string
 	var sr *lib.SearchRequest
 	var buffer bytes.Buffer
+	prefixQuery := lib.NewPrefixQuery("")
 	count := 0
 
 	if len(req.Index) > 0 {
@@ -214,12 +215,18 @@ func (b *bleve) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 		qString += fmt.Sprintf(" +depth:>=%d +depth:<=%d", req.Depth, req.Depth)
 	}
 	if len(req.Url) > 0 {
-		qString += fmt.Sprintf(" +%s", req.Url)
+		//qString += fmt.Sprintf(" +url:%s", req.Url)
+		prefixQuery = lib.NewPrefixQuery(req.Url)
+		prefixQuery.FieldVal = "url"
 	}
-
-	//log.Println(qString)
+	log.Println(qString)
 	q := lib.NewQueryStringQuery(qString)
-	sr = lib.NewSearchRequestOptions(q, int(req.Size), int(req.From), false)
+	conjuntionQuery := lib.NewConjunctionQuery([]lib.Query{
+		q,
+		prefixQuery,
+	})
+	log.Println(conjuntionQuery)
+	sr = lib.NewSearchRequestOptions(conjuntionQuery, int(req.Size), int(req.From), false)
 	sr.Fields = []string{"*"} // Retrieve all fields
 
 	results, err := b.indexMap[indexSearch].Search(sr)

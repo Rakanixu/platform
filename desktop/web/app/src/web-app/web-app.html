@@ -749,6 +749,7 @@
             _handleGetDatasource: function(e) {
                 if (e.detail.response && e.detail.response.result) {
                     _.forEach(e.detail.response.result, function(datasource) {
+                        debugger;
                         this.rpcStartScanParams.request.id = datasource.id;
                         this.$.rpcStartScan.body = this.rpcStartScanParams;
                         this.$.rpcStartScan.generateRequest();
