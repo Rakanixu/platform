@@ -1,4 +1,4 @@
-package bleve_search
+package db_search
 
 import (
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
@@ -8,17 +8,17 @@ import (
 	"golang.org/x/net/context"
 )
 
-type bleve struct{}
+type dbSearch struct{}
 
 func init() {
-	engine.Register(new(bleve))
+	engine.Register(new(dbSearch))
 }
 
-func (b *bleve) Init() error {
+func (d *dbSearch) Init() error {
 	return nil
 }
 
-func (b *bleve) Search(ctx context.Context, req *search.SearchRequest, client client.Client, serviceName string) (*search.SearchResponse, error) {
+func (d *dbSearch) Search(ctx context.Context, req *search.SearchRequest, client client.Client, serviceName string) (*search.SearchResponse, error) {
 	srvReq := client.NewRequest(
 		serviceName,
 		"DB.Search",

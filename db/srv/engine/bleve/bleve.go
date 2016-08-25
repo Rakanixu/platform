@@ -179,6 +179,7 @@ func (b *bleve) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 	count := 0
 
 	queries := []lib.Query{}
+	prefixQueries := []lib.Query{}
 
 	if len(req.Index) > 0 {
 		indexSearch = req.Index
@@ -211,7 +212,7 @@ func (b *bleve) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 	if len(req.Url) > 0 {
 		urlQuery := lib.NewPrefixQuery(req.Url)
 		urlQuery.SetField("url")
-		queries = append(queries, urlQuery)
+		prefixQueries = append(prefixQueries, urlQuery)
 	}
 
 	if indexSearch != filesIndex {
@@ -219,7 +220,12 @@ func (b *bleve) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 		queries = append(queries, allQuery)
 	}
 
-	sr = lib.NewSearchRequestOptions(lib.NewConjunctionQuery(queries), int(req.Size), int(req.From), false)
+	query := lib.NewConjunctionQuery([]lib.Query{
+		prefixQueries[0],
+		lib.NewConjunctionQuery(queries),
+	})
+
+	sr = lib.NewSearchRequestOptions(query, int(req.Size), int(req.From), false)
 	sr.Fields = []string{"*"} // Retrieve all fields
 
 	results, err := b.indexMap[indexSearch].Search(sr)

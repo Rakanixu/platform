@@ -76,6 +76,15 @@
                on-response="_handleDbDatasourcesIndex"
                params="{{rpcDbDatasorucesIndexParams}}"></iron-ajax>
 
+    <iron-ajax id="rpcDbFilesMapping"
+               method="POST"
+               content-type="application/json"
+               url="http://localhost:8082/rpc"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleDbFilesMapping"
+               params="{{rpcDbFilesMappingParams}}"></iron-ajax>
+
     <iron-ajax id="rpcSearch"
                method="POST"
                content-type="application/json"
@@ -125,7 +134,8 @@
                 service: 'go.micro.srv.desktop',
                 method: 'DB.CreateIndexWithSettings',
                 request: {
-                  index: 'files'
+                  index: 'files',
+                  type: 'file'
                 }
               };
             }
@@ -138,7 +148,22 @@
                 service: 'go.micro.srv.desktop',
                 method: 'DB.CreateIndexWithSettings',
                 request: {
-                  index: 'datasources'
+                  index: 'datasources',
+                  type: 'datasource'
+                }
+              };
+            }
+          },
+          rpcDbFilesMappingParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: 'go.micro.srv.desktop',
+                method: 'DB.PutMappingFromJSON',
+                request: {
+                  index: 'files',
+                  type: 'file'
                 }
               };
             }
@@ -162,6 +187,7 @@
           this.$.rpcDbStatus.body = this.rpcDbStatusParams;
           this.$.rpcDbFilesIndex.body = this.rpcDbFilesIndexParams;
           this.$.rpcDbDatasourcesIndex.body = this.rpcDbDatasourcesIndexParams;
+          this.$.rpcDbFilesMapping.body = this.rpcDbFilesMappingParams;
           this.$.rpcSearch.body = this.rpcSearchParams;
 
           this.$.rpcDbStatus.generateRequest();
@@ -173,7 +199,7 @@
             status = JSON.parse(e.detail.response.status);
 
             // Check if ES is running
-            if (status.master_node.length) {
+            if (status.master_node.length) {debugger;
               this.set('info', 'Initializing search engine config ..');
 
               // Create all needed indexes
@@ -194,10 +220,17 @@
           }
         },
         _handleDbFilesIndex: function(e) {
-
+          this.async(function() {
+            this.$.rpcDbFilesMapping.generateRequest();
+          }, this.wait);
         },
         _handleDbDatasourcesIndex: function(e) {
 
+        },
+        _handleDbFilesMapping: function(e) {
+          this._loadPage(1, 'web-app-activated', {
+            first_scan: true
+          });
         },
         _handleSearch: function(e) {
           var info;

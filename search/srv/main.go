@@ -1,14 +1,16 @@
 package main
 
 import (
-	"log"
-
 	"github.com/kazoup/platform/search/srv/engine"
-
-	_ "github.com/kazoup/platform/search/srv/engine/bleve"
-	//_ "github.com/kazoup/platform/search/srv/engine/elastic"
+	"log"
+	//_ "github.com/kazoup/platform/search/srv/engine/bleve"
+	_ "github.com/kazoup/platform/search/srv/engine/db_search"
 	"github.com/kazoup/platform/search/srv/handler"
 	"github.com/micro/go-micro"
+)
+
+const (
+	elasticServiceName = "go.micro.srv.db"
 )
 
 func main() {
@@ -20,7 +22,10 @@ func main() {
 
 	// Register Handler
 	service.Server().Handle(
-		service.Server().NewHandler(&handler.Search{}),
+		service.Server().NewHandler(&handler.Search{
+			ElasticServiceName: elasticServiceName,
+			Client:             service.Client(),
+		}),
 	)
 
 	// Initialise service
