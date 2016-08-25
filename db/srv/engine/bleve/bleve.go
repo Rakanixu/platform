@@ -12,7 +12,6 @@ import (
 	db "github.com/kazoup/platform/db/srv/proto/db"
 	"golang.org/x/net/context"
 	"io/ioutil"
-	"log"
 	"os"
 	"sync"
 )
@@ -135,24 +134,15 @@ func (b *bleve) Delete(req *db.DeleteRequest) (*db.DeleteResponse, error) {
 }
 
 func (b *bleve) CreateIndexWithSettings(req *db.CreateIndexWithSettingsRequest) (*db.CreateIndexWithSettingsResponse, error) {
-	err := errors.New("")
 	response := &db.CreateIndexWithSettingsResponse{}
 
-	b.mu.Lock()
 	if b.indexExists(req.Index) {
 		return response, errors.New("Index already exists")
 	}
 
-	b.indexMap[req.Index], err = lib.Open(os.TempDir() + kazoupNamespace + req.Index)
-	if err != nil {
-		mapping := lib.NewIndexMapping()
-		b.indexMap[req.Index], err = lib.New(os.TempDir()+kazoupNamespace+req.Index, mapping)
-		if err != nil {
-			log.Fatalf("Error creating index : %s", err.Error())
-			return response, err
-		}
+	if err := openIndex(b, req.Index); err != nil {
+		return response, err
 	}
-	b.mu.Unlock()
 
 	return response, nil
 }
@@ -209,7 +199,6 @@ func (b *bleve) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 		categoryQuery.SetField("category")
 		queries = append(queries, categoryQuery)
 	}
-
 	if req.Depth > 0 {
 		min := new(float64)
 		max := new(float64)
@@ -223,6 +212,11 @@ func (b *bleve) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 		urlQuery := lib.NewPrefixQuery(req.Url)
 		urlQuery.SetField("url")
 		queries = append(queries, urlQuery)
+	}
+
+	if indexSearch != filesIndex {
+		allQuery := lib.NewMatchAllQuery()
+		queries = append(queries, allQuery)
 	}
 
 	sr = lib.NewSearchRequestOptions(lib.NewConjunctionQuery(queries), int(req.Size), int(req.From), false)
