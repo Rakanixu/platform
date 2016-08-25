@@ -626,9 +626,11 @@
                     }.bind(this), 300);
                 }.bind(this));
 
+	 if (window && window.process && window.process.type){
                 ipcRenderer.on('home-dir-message', this._handleHomeDir.bind(this));
                 ipcRenderer.send('home-dir-message');
-            },
+
+	 }},
             init: function(e, detail) {
                 if (e.data && e.data.first_scan) {
                     this.showScanSnack();

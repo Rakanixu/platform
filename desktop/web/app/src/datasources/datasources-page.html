@@ -200,8 +200,9 @@
 
           window.addEventListener('datasources-page-activated', this.init.bind(this));
 
+	 if (window && window.process && window.process.type){
           ipcRenderer.on('add-folder', this._addFolder.bind(this));
-        },
+	 }},
         init: function(e, detail) {
           this.set('loading', true);
           this.$.rpcGetDatasources.generateRequest();
@@ -222,11 +223,17 @@
 	        }
         },
         doAuth: function(e){
+	
+	 if (window && window.process && window.process.type){
           if (e.currentTarget.getAttribute("data-url") == "local://" ) {
             ipcRenderer.send('open-folder');
           }else {
             ipcRenderer.send('auth-message',e.currentTarget.getAttribute("data-url"));
           }
+	 } else {
+		 //TODO handle this in normal browser
+	 }
+	 this.localfolder.open()
           this.closeDatasourceDialog();
         },
         addDatasource: function(e) {

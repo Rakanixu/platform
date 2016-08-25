@@ -18,8 +18,13 @@
         this.fireEvent('settings-page-activated');
       },
       ready: function() {
-        ipcRenderer.on('user-info-message', this._handleUser.bind(this));
-        ipcRenderer.send('user-info-message');
+	 if (window && window.process && window.process.type){
+        	ipcRenderer.on('user-info-message', this._handleUser.bind(this));
+        	ipcRenderer.send('user-info-message');
+
+	 } else {
+		 //TODO handle on browser
+	 }
       },
       _handleUser: function(e, detail) {
         this.set('user', detail);
