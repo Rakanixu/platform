@@ -7,14 +7,10 @@ dependencies:
                 - ln -fs $HOME/$CIRCLE_PROJECT_REPONAME $HOME/.go_project/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
                 - echo 'export GOPATH=$GOPATH:$HOME/.go_project' >> ~/.circlerc
                 - sudo apt-get install ruby ruby-dev gcc make icnsutils graphicsmagick xz-utils
-                  #- go get -d  -v -t ./...
+                - go get -d -v -t ./...
 test:
         override:
-                - cd desktop && npm install && npm run dist  && cd ..
-                  #- ./build_ui.sh
-                  #- ./build_docker.sh
-                  #- ./build_desktop.sh
-                  #
+                - go test -v race ./...
 deployment:
         release:
                 branch: desktop
