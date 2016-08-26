@@ -1,7 +1,0 @@
-node_modules
-app/bower_components
-app/test/coverage
-dist
-.tmp
-.idea
-.sass-cache/

@@ -1,8 +1,0 @@
-{
-  "name": "Kazoup",
-  "short_name": "Kazoup",
-  "fullscreen": true,
-  "start_url": "/index.html",
-  "display": "standalone",
-  "orientation": "landscape"
-}

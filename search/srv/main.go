@@ -5,7 +5,7 @@ import (
 
 	"github.com/kazoup/platform/search/srv/engine"
 
-	_ "github.com/kazoup/platform/search/srv/engine/bleve"
+	_ "github.com/kazoup/platform/search/srv/engine/bleve_search"
 	//_ "github.com/kazoup/platform/search/srv/engine/elastic"
 	"github.com/kazoup/platform/search/srv/handler"
 	"github.com/micro/go-micro"
