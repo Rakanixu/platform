@@ -12,6 +12,7 @@ func main() {
 	service := web.NewService(web.Name("go.micro.web.auth"))
 	service.HandleFunc("/google/login", handler.HandleGoogleLogin)
 	service.HandleFunc("/GoogleCallback", handler.HandleGoogleCallback)
+	service.HandleFunc("/google/callback", handler.HandleGoogleCallback)
 	service.HandleFunc("/microsoft/login", handler.HandleMicrosoftLogin)
 	service.HandleFunc("/microsoft/callback", handler.HandleMicrosoftCallback)
 	service.HandleFunc("/slack/login", handler.HandleSlackLogin)
