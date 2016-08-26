@@ -199,7 +199,7 @@
             status = JSON.parse(e.detail.response.status);
 
             // Check if ES is running
-            if (status.master_node.length) {debugger;
+            if (status.master_node.length) {
               this.set('info', 'Initializing search engine config ..');
 
               // Create all needed indexes

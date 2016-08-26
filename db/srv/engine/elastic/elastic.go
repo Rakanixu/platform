@@ -19,8 +19,8 @@ type elastic struct {
 	bulk         *lib.BulkIndexer
 	filesChannel chan *crawler.FileMessage
 	esFlags      *[]byte
-	esMapping    *[]byte
-	esSettings   *[]byte
+	esMapping    *[]byte // For files
+	esSettings   *[]byte // For files index
 }
 
 func init() {
@@ -48,6 +48,7 @@ func init() {
 	})
 }
 
+// Init elastic db
 func (e *elastic) Init() error {
 	e.conn = lib.NewConn()
 	e.conn.SetHosts([]string{"localhost:9200"}) //TODO: replace for enterprise version, get flag
@@ -92,7 +93,6 @@ func (e *elastic) Read(req *db.ReadRequest) (*db.ReadResponse, error) {
 		Result: string(data),
 	}
 
-	log.Println(response)
 	return response, nil
 }
 
@@ -128,21 +128,14 @@ func (e *elastic) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 		return &db.SearchResponse{}, nil
 	}
 
-	log.Println("query ->", query)
-	log.Println("------------------")
-	log.Println("req ->", req)
-
 	out, err := e.conn.Search(req.Index, req.Type, nil, query)
-	//out, err := lib.Search(req.Index).Type(req.Type). /*.Size(size).From(from)*/ Search(query).Result(e.conn)
 	if err != nil {
 		return &db.SearchResponse{}, err
 	}
 
-	log.Println(out.Hits.Hits)
-
 	for _, v := range out.Hits.Hits {
 		var file *structs.DesktopFile
-		//log.Println(string(v.Source))
+
 		data, err := v.Source.MarshalJSON()
 		if err != nil {
 			return &db.SearchResponse{}, err
@@ -153,8 +146,6 @@ func (e *elastic) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 		}
 		results = append(results, file)
 	}
-
-	log.Println(results)
 
 	info := gabs.New()
 	info.Set(out.Hits.Total, "total")
@@ -207,6 +198,7 @@ func (e *elastic) PutMappingFromJSON(req *db.PutMappingFromJSONRequest) (*db.Put
 	return &db.PutMappingFromJSONResponse{}, nil
 }
 
+// Status elasticsearch cluster
 func (e *elastic) Status(req *db.StatusRequest) (*db.StatusResponse, error) {
 	clusterState, err := e.conn.ClusterState(lib.ClusterStateFilter{
 		FilterNodes:        true,

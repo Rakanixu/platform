@@ -626,11 +626,11 @@
                     }.bind(this), 300);
                 }.bind(this));
 
-	 if (window && window.process && window.process.type){
-                ipcRenderer.on('home-dir-message', this._handleHomeDir.bind(this));
-                ipcRenderer.send('home-dir-message');
-
-	 }},
+                if (window && window.process && window.process.type){
+                    ipcRenderer.on('home-dir-message', this._handleHomeDir.bind(this));
+                    ipcRenderer.send('home-dir-message');
+                }
+            },
             init: function(e, detail) {
                 if (e.data && e.data.first_scan) {
                     this.showScanSnack();
@@ -645,7 +645,7 @@
                         term: '',
                         from: 0,
                         size: this.size,
-                        //url: '/',
+                        type: 'file',
                         depth: 1
                     });
                 }
@@ -786,7 +786,7 @@
                     from: 0,
                     size: this.size,
                     category: e.target.dataset.value,
-                    type: e.target.dataset.value ? 'file' : '',
+                    type: 'file',
                     url: (e.target.dataset.value || this.$.filterConverter.getFilterAsObj().term) ? '' : '/',
                     depth: (e.target.dataset.value || this.$.filterConverter.getFilterAsObj().term) ? 0 : 1
                 });
@@ -796,6 +796,7 @@
                 this.$.filterConverter.setValues({
                     from: 0,
                     size: this.size,
+                    type: 'file',
                     url: e.model.__data__.item.url,
                     depth: e.model.__data__.item.depth
                 });
@@ -828,7 +829,7 @@
                             term: term,
                             url: '',
                             depth: 0,
-                            type: 'files'
+                            type: 'file'
                         });
                     }.bind(this), 450);
                 }
@@ -892,6 +893,7 @@
                     this.$.filterConverter.setValues({
                         from: 0,
                         size: this.size,
+                        type: 'file',
                         url: e.model.__data__.item.url,
                         depth: e.model.__data__.item.depth + 1
                     });

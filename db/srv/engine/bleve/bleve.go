@@ -37,6 +37,7 @@ func init() {
 	})
 }
 
+// Init bleve db / indexes
 func (b *bleve) Init() error {
 	err := errors.New("")
 	files, err := ioutil.ReadDir(os.TempDir() + kazoupNamespace)
@@ -67,12 +68,14 @@ func (b *bleve) Init() error {
 	return nil
 }
 
+// Subscribe to crawler file messages
 func (b *bleve) Subscribe(ctx context.Context, msg *crawler.FileMessage) error {
 	b.filesChannel <- msg
 
 	return nil
 }
 
+// Create record
 func (b *bleve) Create(req *db.CreateRequest) (*db.CreateResponse, error) {
 	response := &db.CreateResponse{}
 	ds := &datasource_proto.Endpoint{}
@@ -90,6 +93,7 @@ func (b *bleve) Create(req *db.CreateRequest) (*db.CreateResponse, error) {
 	return response, b.indexMap[req.Index].Index(req.Id, ds)
 }
 
+// Read record
 func (b *bleve) Read(req *db.ReadRequest) (*db.ReadResponse, error) {
 	response := &db.ReadResponse{}
 
@@ -113,6 +117,7 @@ func (b *bleve) Read(req *db.ReadRequest) (*db.ReadResponse, error) {
 	return response, err
 }
 
+// Update record
 func (b *bleve) Update(req *db.UpdateRequest) (*db.UpdateResponse, error) {
 	response := &db.UpdateResponse{}
 
@@ -123,6 +128,7 @@ func (b *bleve) Update(req *db.UpdateRequest) (*db.UpdateResponse, error) {
 	return response, b.indexMap[req.Index].Index(req.Id, req.Data)
 }
 
+// Delete record
 func (b *bleve) Delete(req *db.DeleteRequest) (*db.DeleteResponse, error) {
 	response := &db.DeleteResponse{}
 
@@ -133,6 +139,7 @@ func (b *bleve) Delete(req *db.DeleteRequest) (*db.DeleteResponse, error) {
 	return response, b.indexMap[req.Index].Delete(req.Id)
 }
 
+// CreateIndexWithSettings creates an bleve index
 func (b *bleve) CreateIndexWithSettings(req *db.CreateIndexWithSettingsRequest) (*db.CreateIndexWithSettingsResponse, error) {
 	response := &db.CreateIndexWithSettingsResponse{}
 
@@ -147,12 +154,14 @@ func (b *bleve) CreateIndexWithSettings(req *db.CreateIndexWithSettingsRequest) 
 	return response, nil
 }
 
+// PutMappingFromJSON not required for bleve
 func (b *bleve) PutMappingFromJSON(req *db.PutMappingFromJSONRequest) (*db.PutMappingFromJSONResponse, error) {
 	response := &db.PutMappingFromJSONResponse{}
 
 	return response, nil
 }
 
+// Status bleve indexes
 func (b *bleve) Status(req *db.StatusRequest) (*db.StatusResponse, error) {
 	response := &db.StatusResponse{}
 

@@ -9,8 +9,6 @@ import (
 )
 
 func FileSubscriber(ctx context.Context, msg *example.Message) error {
-	//log.Printf("Got message: %s", msg.Say)
-
 	err := elastic.Bulk.Index("files", "file", "", "", "", nil, msg.Say)
 	if err != nil {
 		log.Print("Bulk Indexer error %s", err.Error())

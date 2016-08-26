@@ -22,6 +22,8 @@ func indexer(e *elastic) error {
 	return nil
 }
 
+// TODO: use gabs (handle JSON in go)
+// ElasticQuery to generate DSL query from params
 type ElasticQuery struct {
 	Term     string
 	From     int64
@@ -32,6 +34,7 @@ type ElasticQuery struct {
 	Type     string
 }
 
+// Query generates a Elasticsearch DSL query
 func (e *ElasticQuery) Query() (string, error) {
 	var buffer bytes.Buffer
 
@@ -48,8 +51,6 @@ func (e *ElasticQuery) Query() (string, error) {
 	buffer.WriteString(`]}}, "sort":[`)
 	buffer.WriteString(e.defaultSorting())
 	buffer.WriteString(`]}`)
-
-	log.Println(buffer.String())
 
 	return buffer.String(), nil
 }
