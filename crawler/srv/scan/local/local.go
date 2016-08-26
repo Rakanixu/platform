@@ -1,18 +1,19 @@
 package local
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"log"
-	"os"
-	"path"
-	"path/filepath"
-
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	scan "github.com/kazoup/platform/crawler/srv/scan"
 	"github.com/kazoup/platform/structs"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	"log"
+	"os"
+	"path"
+	"path/filepath"
 )
 
 // Local ...
@@ -80,17 +81,16 @@ func (fs *Local) walkHandler() filepath.WalkFunc {
 
 			b, err := json.Marshal(f)
 			if err != nil {
-				return errors.New("Error marshaling data")
+				return err
 			}
 
 			msg := &crawler.FileMessage{
-				Id:   f.URL,
+				Id:   getMD5Hash(f.URL),
 				Data: string(b),
 			}
 
 			ctx := context.TODO()
 			if err := client.Publish(ctx, client.NewPublication(topic, msg)); err != nil {
-				log.Printf("Error pubslishing : %", err.Error())
 				return err
 			}
 
@@ -98,4 +98,9 @@ func (fs *Local) walkHandler() filepath.WalkFunc {
 
 		return nil
 	}
+}
+
+func getMD5Hash(text string) string {
+	hash := md5.Sum([]byte(text))
+	return hex.EncodeToString(hash[:])
 }

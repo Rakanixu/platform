@@ -483,8 +483,10 @@
                             service: 'go.micro.srv.desktop',
                             method: 'DataSource.Search',
                             request: {
-                                offset: 0,
-                                limit: 9999
+                                index: 'datasources',
+                                type: 'datasource',
+                                from: 0,
+                                size: 9999
                             }
                         };
                     }
@@ -749,7 +751,7 @@
                 }
             },
             _handleGetDatasource: function(e) {
-                if (e.detail.response && e.detail.response.result) {
+                if (e.detail.response && e.detail.response.result) {debugger;
                     _.forEach(JSON.parse(e.detail.response.result), function(datasource) {
                         this.rpcStartScanParams.request.id = datasource.id;
                         this.$.rpcStartScan.body = this.rpcStartScanParams;

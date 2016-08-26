@@ -2,6 +2,7 @@ package bleve
 
 import (
 	"bytes"
+	"crypto/md5"
 	"encoding/json"
 	"errors"
 	lib "github.com/blevesearch/bleve"
