@@ -751,7 +751,7 @@
                 }
             },
             _handleGetDatasource: function(e) {
-                if (e.detail.response && e.detail.response.result) {debugger;
+                if (e.detail.response && e.detail.response.result) {
                     _.forEach(JSON.parse(e.detail.response.result), function(datasource) {
                         this.rpcStartScanParams.request.id = datasource.id;
                         this.$.rpcStartScan.body = this.rpcStartScanParams;
