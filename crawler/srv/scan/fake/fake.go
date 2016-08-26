@@ -3,12 +3,13 @@ package fake
 import (
 	"encoding/json"
 	"fmt"
-	"time"
-
+	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	scan "github.com/kazoup/platform/crawler/srv/scan"
 	"github.com/kazoup/platform/structs"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	"log"
+	"time"
 )
 
 // Fake ...
@@ -52,14 +53,13 @@ func (f *Fake) Start(crawls map[int64]scan.Scanner, id int64) {
 				//Publish
 
 				msg := &crawler.FileMessage{
-					Id:   f.URL,
+					Id:   mockFile.ID,
 					Data: string(b),
 				}
 
 				ctx := context.TODO()
 				if err := client.Publish(ctx, client.NewPublication(topic, msg)); err != nil {
 					log.Printf("Error pubslishing : %", err.Error())
-					return err
 				}
 				time.Sleep(time.Second)
 			}
