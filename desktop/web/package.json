@@ -12,25 +12,34 @@
   },
   "dependencies": {
     "electron-spawn": "^5.0.0",
-    "glob": "^7.0.5"
+    "glob": "^7.0.5",
+    "npm-run-all": "^2.3.0"
   },
   "build": {
     "appId": "com.kazoup.app",
     "app-category-type": "public.app-category.productivity",
-    "extraResources" : ["elasticsearch"],
+    "extraResources": [
+      "elasticsearch"
+    ],
     "dmg": {
       "background": "build/background.png"
     },
     "win": {
       "iconUrl": "https://s3-eu-west-1.amazonaws.com/www.kazoup.com/img/favicon.ico",
-      "extraResources":["bin/windows"]
+      "extraResources": [
+        "bin/windows"
+      ]
     },
-    "mac":{
-	"extraResources":["bin/darwin"]
+    "mac": {
+      "extraResources": [
+        "bin/darwin"
+      ]
     },
     "linux": {
       "target": "deb",
-      "extraResources":["bin/linux"]
+      "extraResources": [
+        "bin/linux"
+      ]
     }
   },
   "scripts": {
@@ -46,8 +55,8 @@
     "release:linux": "copyfiles -f dist/*.deb release/",
     "release:win64": "copyfiles -f dist/win/{*.nupkg,*.exe,RELEASES} release/",
     "clean:release": "rm -rf release/* ",
-    "clean:dist":"rm -rf dist/*",
+    "clean:dist": "rm -rf dist/*",
     "release": "npm run clean:release && run-p release:*",
-    "all":"./build-bin.sh && run-p clean:* && npm run dep && npm run dist && npm run release"
+    "all": "./build-bin.sh && run-p clean:* && npm run dep && npm run dist && npm run release"
   }
 }

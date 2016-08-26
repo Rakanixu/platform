@@ -5,9 +5,6 @@ set -x
 
 REGISTRY=kazoup
 
-# Build UI
-
-cd ui/frontend && npm install && npm install gulp && bower install && node_modules/gulp/bin/gulp.js && cd ../..
 
 # Used to rebuild all the things
 
@@ -30,18 +27,6 @@ find * -type d -maxdepth 1 -print | while read dir; do
 	# build static binary
 	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo  .
 	
-	# build ui  		
-	if [[ ${dir%/*} = "ui" && ${dir#*/} != "static" ]]; then
-		mkdir -p frontend/dist/sections/${dir#*/}
-		cp -R -f ../frontend/dist/sections/${dir#*/} frontend/dist/sections
-		IMAGE=${dir#*/}-web
-	fi
-
-	if [[ ${dir%/*} = "ui" && ${dir#*/} = "static" ]]; then
-		mkdir -p frontend
-		cp -R -f ../frontend/dist frontend
-		IMAGE=${dir#*/}-web
-	fi
 
 	# build docker image
 	docker build -t $REGISTRY/$IMAGE .
