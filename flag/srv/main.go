@@ -19,7 +19,8 @@ func main() {
 	// Register Handler
 	service.Server().Handle(
 		service.Server().NewHandler(&handler.Flag{
-			ElasticServiceName: "go.micro.srv.elastic",
+			DbServiceName: "go.micro.srv.db",
+			Client:        service.Client(),
 		}),
 	)
 

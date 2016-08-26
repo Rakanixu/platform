@@ -1,7 +1,0 @@
-[
-  {
-    "key": "Daily file scanning",
-    "description": "Disabling may desynchronise indexing",
-    "value": true
-  }
-]

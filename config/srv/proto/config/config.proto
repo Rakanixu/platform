@@ -4,8 +4,6 @@ package go.micro.srv.config;
 
 service Config {
   rpc Status(StatusRequest) returns (StatusResponse) {}
-  rpc SetElasticSettings(SetElasticSettingsRequest) returns (SetElasticSettingsResponse) {}
-  rpc SetElasticMapping(SetElasticMappingRequest) returns (SetElasticMappingResponse) {}
   rpc SetFlags(SetFlagsRequest) returns (SetFlagsResponse) {}
 }
 
@@ -21,24 +19,9 @@ message StatusResponse {
   bool SMB_USER_EXISTS = 5;
 }
 
-message SetElasticSettingsRequest {
-
-}
-
-message SetElasticSettingsResponse {
-
-}
-
-message SetElasticMappingRequest {
-
-}
-
-message SetElasticMappingResponse {
-
-}
 
 message SetFlagsRequest {
-
+  string type = 1; // Desktop, enterprise
 }
 
 message SetFlagsResponse {

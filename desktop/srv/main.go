@@ -1,9 +1,6 @@
 package main
 
 import (
-	"log"
-
-	config_data "github.com/kazoup/platform/config/srv/data"
 	config_handler "github.com/kazoup/platform/config/srv/handler"
 	config_proto "github.com/kazoup/platform/config/srv/proto/config"
 	crawler_handler "github.com/kazoup/platform/crawler/srv/handler"
@@ -12,6 +9,7 @@ import (
 	datasource_handler "github.com/kazoup/platform/datasource/srv/handler"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_engine "github.com/kazoup/platform/db/srv/engine"
+	"log"
 	//_ "github.com/kazoup/platform/db/srv/engine/bleve"
 	_ "github.com/kazoup/platform/db/srv/engine/elastic"
 	db_handler "github.com/kazoup/platform/db/srv/handler"
@@ -34,14 +32,14 @@ import (
 	"github.com/micro/monitor-srv/proto/monitor"
 )
 
-const ScanTopic string = "go.micro.topic.scan"
-const FileTopic string = "go.micro.topic.files"
+const (
+	ScanTopic     = "go.micro.topic.scan"
+	FileTopic     = "go.micro.topic.files"
+	DbServiceName = "go.micro.srv.desktop"
+)
 
 func main() {
 	cmd.Init()
-
-	// Services names
-	elasticServiceName := "go.micro.srv.desktop"
 
 	// Desktop service
 	service := micro.NewService(
@@ -66,29 +64,9 @@ func main() {
 	// Init srv
 	service.Init()
 
-	// Config handler
-	es_flags, err := config_data.Asset("data/es_flags.json")
-	if err != nil {
-		// Asset was not found.
-		log.Fatal(err)
-	}
-	es_mapping, err := config_data.Asset("data/es_mapping_files_new.json")
-	if err != nil {
-		// Asset was not found.
-		log.Fatal(err)
-	}
-	es_settings, err := config_data.Asset("data/es_settings.json")
-	if err != nil {
-		// Asset was not found.
-		log.Fatal(err)
-	}
-
 	config_proto.RegisterConfigHandler(service.Server(), &config_handler.Config{
-		Client:             service.Client(),
-		ElasticServiceName: elasticServiceName,
-		ESSettings:         &es_settings,
-		ESFlags:            &es_flags,
-		ESMapping:          &es_mapping,
+		Client:        service.Client(),
+		DbServiceName: DbServiceName,
 	})
 
 	// Register DB handler Handler
@@ -109,14 +87,14 @@ func main() {
 
 	// Flag handler
 	flag_proto.RegisterFlagHandler(service.Server(), &flag_handler.Flag{
-		Client:             service.Client(),
-		ElasticServiceName: elasticServiceName,
+		Client:        service.Client(),
+		DbServiceName: DbServiceName,
 	})
 
 	// DataSource handler
 	datasource_proto.RegisterDataSourceHandler(service.Server(), &datasource_handler.DataSource{
 		Client:             service.Client(),
-		ElasticServiceName: elasticServiceName,
+		ElasticServiceName: DbServiceName,
 	})
 
 	// Monitoring services
@@ -153,7 +131,7 @@ func main() {
 	// Attach search handler
 	search_proto.RegisterSearchHandler(service.Server(), &search_handler.Search{
 		Client:             service.Client(),
-		ElasticServiceName: elasticServiceName,
+		ElasticServiceName: DbServiceName,
 	})
 
 	if err := search_engine.Init(); err != nil {
