@@ -28,12 +28,15 @@ Repo | Description
 [desktop](https://github.com/kazoup/platform/tree/master/desktop) | Kazoup desktop application for OSX, Windows and Linux
 
 
+
+
+
+
 ## Build
 
 This will build all platform 
 
 ```
-
 ./build.sh
 
 ```
