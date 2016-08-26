@@ -67,7 +67,7 @@ func HandleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 	code := r.FormValue("code")
 	token, err := googleOauthConfig.Exchange(oauth2.NoContext, code)
 	if err != nil {
-		fmt.Println("Code exchange failed with '%s'\n", err)
+		log.Printf("Code exchange failed with '%s'\n", err)
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
@@ -85,5 +85,5 @@ func HandleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Error adding data source %s \n", err.Error())
 	}
 
-	fmt.Fprintf(w, "Status: New Google Drive added. You can close the window.\n Info %s Resp: %s \n", userInfo, contents)
+	fmt.Fprintf(w, "Status: New Google Drive added. You can close the window.\n Info %s Resp: %s \n", userInfo.Email, contents)
 }
