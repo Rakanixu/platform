@@ -2,8 +2,17 @@ package engine
 
 import (
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
+	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db "github.com/kazoup/platform/db/srv/proto/db"
+	flag_proto "github.com/kazoup/platform/flag/srv/proto/flag"
+	"github.com/kazoup/platform/structs"
 	"golang.org/x/net/context"
+)
+
+const (
+	File       = "file"
+	Datasource = "datasource"
+	Flag       = "flag"
 )
 
 type Engine interface {
@@ -65,4 +74,17 @@ func Status(req *db.StatusRequest) (*db.StatusResponse, error) {
 
 func Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 	return engine.Search(req)
+}
+
+func TypeFactory(typ string) interface{} {
+	switch typ {
+	case File:
+		return &structs.DesktopFile{}
+	case Datasource:
+		return &datasource_proto.Endpoint{}
+	case Flag:
+		return &flag_proto.ReadResponse{}
+	}
+
+	return nil
 }

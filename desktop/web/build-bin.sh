@@ -11,6 +11,7 @@ DESKTOP_DIR=$GOPATH/src/github.com/kazoup/platform/desktop
 # add ES download to build on circle
 cd $DESKTOP_DIR/web && rm -rf elasticsearch && wget https://download.elastic.co/elasticsearch/release/org/elasticsearch/distribution/zip/elasticsearch/2.3.4/elasticsearch-2.3.4.zip 
 unzip elasticsearch-2.3.4.zip && rm -rf elasticsearch-2.3.4.zip && mv elasticsearch-2.3.4 elasticsearch
+elasticsearch/bin/plugin install mobz/elasticsearch-head
 
 #cd ../../../micro/micro && gox -verbose -os="darwin linux" -arch="386 amd64" -output $WORKING_DIR/bin/micro/{{.OS}}/{{.Arch}}/micro
 cd $WORKING_DIR

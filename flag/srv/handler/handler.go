@@ -8,7 +8,6 @@ import (
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
-	"log"
 	"strconv"
 )
 
@@ -26,10 +25,9 @@ func (f *Flag) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.
 
 	data, err := json.Marshal(req)
 	if err != nil {
-		log.Println(err)
 		return err
 	}
-	log.Println(string(data))
+
 	srvReq := f.Client.NewRequest(
 		f.DbServiceName,
 		"DB.Create",
@@ -158,10 +156,10 @@ func (f *Flag) List(ctx context.Context, req *proto.ListRequest, rsp *proto.List
 		f.DbServiceName,
 		"DB.Search",
 		&db.SearchRequest{
-			Index: "flags", // Hardcoded index for flags
-			Type:  "flag",  // Hardcoded type ...
-			From:  0,       // From the first one
-			Size:  1000000, // Hope you've got less than a million flags ...
+			Index: "flags",
+			Type:  "flag",
+			From:  0,
+			Size:  9999,
 		},
 	)
 	srvRsp := &db.SearchResponse{}
@@ -169,30 +167,7 @@ func (f *Flag) List(ctx context.Context, req *proto.ListRequest, rsp *proto.List
 		return errors.InternalServerError("go.micro.srv.flag.Flag.List", err.Error())
 	}
 
-	var input map[string]interface{}
-	var result []*proto.ReadResponse
-
-	json.Unmarshal([]byte(srvRsp.Result), &input)
-	// Iterate hits and generate slice of ReadResponse
-	for _, hit := range input["hits"].(map[string]interface{})["hits"].([]interface{}) {
-		var val bool
-
-		// Boolean values can be stored as empty and type boolean or false and type boolean in ES
-		if hit.(map[string]interface{})["_source"].(map[string]interface{})["value"] == nil ||
-			hit.(map[string]interface{})["_source"].(map[string]interface{})["value"].(bool) == false {
-			val = false
-		} else {
-			val = true
-		}
-
-		result = append(result, &proto.ReadResponse{
-			Key:         hit.(map[string]interface{})["_source"].(map[string]interface{})["key"].(string),
-			Description: hit.(map[string]interface{})["_source"].(map[string]interface{})["description"].(string),
-			Value:       val,
-		})
-	}
-
-	rsp.Result = result
+	rsp.Result = srvRsp.Result
 
 	return nil
 }

@@ -85,6 +85,15 @@
                on-response="_handleDbFilesMapping"
                params="{{rpcDbFilesMappingParams}}"></iron-ajax>
 
+    <iron-ajax id="rpcSetFlags"
+               method="POST"
+               content-type="application/json"
+               url="http://localhost:8082/rpc"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleSetFlags"
+               params="{{rpcSetFlagsParams}}"></iron-ajax>
+
     <iron-ajax id="rpcSearch"
                method="POST"
                content-type="application/json"
@@ -168,6 +177,19 @@
               };
             }
           },
+          rpcSetFlagsParams : {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: 'go.micro.srv.desktop',
+                method: 'Config.SetFlags',
+                request: {
+                  type: 'desktop'
+                }
+              };
+            }
+          },
           rpcSearchParams: {
             type: Object,
             notify: false,
@@ -176,6 +198,8 @@
                 service: 'go.micro.srv.desktop',
                 method: 'Search.Search',
                 request: {
+                  index: 'files',
+                  type: 'file',
                   from: 0,
                   size: 0
                 }
@@ -188,6 +212,7 @@
           this.$.rpcDbFilesIndex.body = this.rpcDbFilesIndexParams;
           this.$.rpcDbDatasourcesIndex.body = this.rpcDbDatasourcesIndexParams;
           this.$.rpcDbFilesMapping.body = this.rpcDbFilesMappingParams;
+          this.$.rpcSetFlags.body = this.rpcSetFlagsParams;
           this.$.rpcSearch.body = this.rpcSearchParams;
 
           this.$.rpcDbStatus.generateRequest();
@@ -205,6 +230,10 @@
               // Create all needed indexes
               if (_.isEmpty(status.metadata.indices.datasources)) {
                 this.$.rpcDbDatasourcesIndex.generateRequest();
+              }
+
+              if (_.isEmpty(status.metadata.indices.flags)) {
+                this.$.rpcSetFlags.generateRequest();
               }
 
               if (_.isEmpty(status.metadata.indices.files)) {
@@ -231,6 +260,9 @@
           this._loadPage(1, 'web-app-activated', {
             first_scan: true
           });
+        },
+        _handleSetFlags: function(e) {
+
         },
         _handleSearch: function(e) {
           var info;

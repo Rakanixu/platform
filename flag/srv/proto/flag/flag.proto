@@ -51,5 +51,5 @@ message ListRequest {
 }
 
 message ListResponse {
-  repeated ReadResponse result = 1;
+  string result = 1;
 }

@@ -8,7 +8,6 @@ import (
 	"github.com/kazoup/platform/db/srv/engine"
 	data "github.com/kazoup/platform/db/srv/engine/elastic/data"
 	db "github.com/kazoup/platform/db/srv/proto/db"
-	"github.com/kazoup/platform/structs"
 	lib "github.com/mattbaird/elastigo/lib"
 	"golang.org/x/net/context"
 	"log"
@@ -112,7 +111,7 @@ func (e *elastic) Delete(req *db.DeleteRequest) (*db.DeleteResponse, error) {
 
 // Search ES index
 func (e *elastic) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
-	var results []*structs.DesktopFile
+	var results []interface{}
 
 	eQuery := ElasticQuery{
 		Term:     req.Term,
@@ -134,17 +133,17 @@ func (e *elastic) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 	}
 
 	for _, v := range out.Hits.Hits {
-		var file *structs.DesktopFile
+		s := engine.TypeFactory(req.Type)
 
 		data, err := v.Source.MarshalJSON()
 		if err != nil {
 			return &db.SearchResponse{}, err
 		}
 
-		if err := json.Unmarshal(data, &file); err != nil {
+		if err := json.Unmarshal(data, &s); err != nil {
 			return &db.SearchResponse{}, err
 		}
-		results = append(results, file)
+		results = append(results, s)
 	}
 
 	info := gabs.New()

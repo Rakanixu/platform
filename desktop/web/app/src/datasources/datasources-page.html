@@ -1,5 +1,4 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../bower_components/iron-list/iron-list.html">
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../../bower_components/iron-icons/device-icons.html">
@@ -33,10 +32,6 @@
         display: block;
       }
 
-      iron-list {
-        overflow: visible !important;
-      }
-
       .big {
         --iron-icon-height: 36px;
         --iron-icon-width: 36px;
@@ -68,7 +63,7 @@
     <mat-dialog id="addDatasourceDialog" label="">
       <div>
         <paper-button  on-tap="doAuth" data-url="local://">
-          <iron-icon  class"big" icon="kazoup-icons:local"></iron-icon>
+          <iron-icon  class="big" icon="kazoup-icons:local"></iron-icon>
           <mat-item   label="Local"/>
         </paper-button>
 
