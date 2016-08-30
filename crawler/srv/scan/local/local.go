@@ -14,6 +14,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 )
 
 // Local ...
@@ -40,6 +41,7 @@ func NewLocal(id int64, rootPath string, conf map[string]string) (*Local, error)
 // Start ...
 func (fs *Local) Start(crawls map[int64]scan.Scanner, index int64) {
 	go func() {
+		fs.walkDatasourceParents()
 		filepath.Walk(fs.RootPath, fs.walkHandler())
 		// Local scan finished
 		fs.Stop()
@@ -60,6 +62,43 @@ func (fs *Local) Info() (scan.Info, error) {
 		Description: "File system scanner",
 		Config:      fs.Config,
 	}, nil
+}
+
+func (fs *Local) walkDatasourceParents() error {
+	//Remove starting '/'
+	pathHelper := strings.Split(fs.RootPath[1:], "/")
+	path := ""
+
+	for _, v := range pathHelper {
+		path += "/" + v
+		info, err := os.Lstat(path)
+		if err != nil {
+			return err
+		}
+
+		f := structs.NewDesktopFile(&structs.LocalFile{
+			Type: "LocalFile",
+			Path: path,
+			Info: info,
+		})
+
+		b, err := json.Marshal(f)
+		if err != nil {
+			return err
+		}
+
+		msg := &crawler.FileMessage{
+			Id:   getMD5Hash(f.URL),
+			Data: string(b),
+		}
+
+		ctx := context.TODO()
+		if err := client.Publish(ctx, client.NewPublication(topic, msg)); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (fs *Local) walkHandler() filepath.WalkFunc {

@@ -241,7 +241,7 @@
                                             class="browse"
                                             hidden$="[[handleSearchHeader(selectedCategory.index)]]"
                                             shift="true">
-                                <mat-breadcrumb-step label="My Files" on-tap="setCategory" data-value=""></mat-breadcrumb-step>
+                                <mat-breadcrumb-step label="My Files" on-tap="listDatasources"></mat-breadcrumb-step>
                                 <template id="breadcrumbsSteps" is="dom-repeat" items="[[breadcrumbs]]">
                                     <mat-breadcrumb-step label="[[item.label]]" on-tap="browse"></mat-breadcrumb-step>
                                 </template>
@@ -259,7 +259,7 @@
                             </mat-item>
 
                             <mat-menu id="breadcrumbsMenu" position="baseline">
-                                <mat-option label="My Files" on-tap="setCategory" data-value=""></mat-option>
+                                <mat-option label="My Files" on-tap="listDatasources"></mat-option>
                                 <template id="breadcrumbsStepsMenu" is="dom-repeat" items="[[breadcrumbs]]">
                                     <mat-option label="[[item.label]]" on-tap="browse"></mat-option>
                                 </template>
@@ -687,13 +687,25 @@
                 }
             },
             _handleFilterChanged: function(e) {
-                var level = this.$.filterConverter.getFilterAsObj().depth - 1
+                var url = this.$.filterConverter.getFilterAsObj().url,
+                    breadcrumbUrl = '',
+                    length = 0;
 
-                // Remove deeper breadcrumbs
-                if (level < this.breadcrumbs.length) {
-                    this.breadcrumbs.splice(level, this.breadcrumbs.length - level)
-                    this.set('breadcrumbs', this.breadcrumbs);
+                if (url.charAt(0) === '/') {
+                    url = url.substring(1);
                 }
+                length = url.split('/').length;
+
+                this.set('breadcrumbs', []);
+                _.forEach(url.split('/'), function(label, i) {
+                    breadcrumbUrl += '/' + label;
+                    this.push('breadcrumbs', {
+                        label: label,
+                        url: breadcrumbUrl,
+                        depth: i + 1
+                    });
+                }, this);
+
                 this.$.breadcrumbsSteps.render();
                 this.$.breadcrumbsStepsMenu.render();
                 this.checkBreadcrumbsView(0);
@@ -730,7 +742,7 @@
                     preloadRecords = 0,
                     initPosition = -1;
 
-                this.async(function() {
+            //    this.async(function() {
 
 
                 if (e.detail.response && e.detail.response.result) {
@@ -772,7 +784,7 @@
                     this.$.searchList.fire('iron-resize');
                 }
                 this.set('loading', false);
-}, 3000);
+//}, 3000);
 
             },
             _handleHomeDir: function(e, detail) {
@@ -865,7 +877,7 @@
                 }
 
                 this.refreshView();
-                this.set('title', (e.target.dataset.value ? e.target.dataset.value : 'Kazoup') + ' Search');
+                this.set('title', e.target.dataset.value + ' Search');
 
                 // depth must be 0 for search
                 // When there is no search term and user didn't selected a category, then browse
@@ -883,22 +895,25 @@
                 this.set('itemSelected', false);
                 this.$.navDrawerPanel.closeDrawer();
                 this.set('doScan', false);
+                this.set('breadcrumbs', []);
                 this.set('datasourceListView', true);
+                this.set('bigVideoClass', '');
+                this.set('title', 'Kazoup Search');
                 this.$.rpcGetDatasources.generateRequest();
-
             },
             browseDatasource: function(e, detail) {
                 if (this.getDatasourceType(e.model.__data__.item.url) === 'local') {
                     var url = this.getDatasourceUrl(e.model.__data__.item.url);
-                    var depth = url.split('/').length - 1;
+                    var depth = url.split('/').length;
 
                     this.$.filterConverter.setValues({
                         term: '',
+                        category: '',
                         from: 0,
                         size: this.size,
                         type: 'file',
                         depth: depth,
-                        url: '/' + url
+                        url: '/local' + url
                     });
                 }
             },
@@ -932,7 +947,6 @@
                     clearTimeout(this.searchAsYouTypeTimeout);
                     this.searchAsYouTypeTimeout = setTimeout(function() {
                         this.set('itemSelected', false);
-                        this.set('breadcrumbs', []);
                         this.clearIronList();
 
                         this.$.filterConverter.setValues({
@@ -994,13 +1008,6 @@
                 if (e.model.__data__.item.is_dir) {
                     // Browse one level deeper
                     this.clearIronList();
-
-                    this.push('breadcrumbs', {
-                        label: e.model.__data__.item.name,
-                        url: e.model.__data__.item.url,
-                        depth: e.model.__data__.item.depth + 1
-                    });
-                    this.checkBreadcrumbsView(0);
 
                     this.$.filterConverter.setValues({
                         from: 0,

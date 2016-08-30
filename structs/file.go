@@ -67,20 +67,20 @@ func NewDesktopFile(lf *LocalFile) *DesktopFile {
 	return &DesktopFile{
 		ID:       GetMD5Hash(lf.Path),
 		Name:     lf.Info.Name(),
-		URL:      "/" + lf.Path,
+		URL:      "/local" + lf.Path,
 		Modified: lf.Info.ModTime(),
 		Size:     lf.Info.Size(),
 		IsDir:    lf.Info.IsDir(),
 		Mode:     lf.Info.Mode(),
 		Category: categories.GetDocType(filepath.Ext(lf.Info.Name())),
-		Depth:    urlDepth(filepath.Dir(lf.Path)),
+		Depth:    urlDepth(lf.Path),
 	}
 }
 
 func NewDesktopFileOptimised(lf *LocalFile) *DesktopFileOptimised {
 	return &DesktopFileOptimised{
 		N: lf.Info.Name(),
-		U: "/" + lf.Path,
+		U: "/local" + lf.Path,
 		M: lf.Info.ModTime(),
 		S: lf.Info.Size(),
 		D: lf.Info.IsDir(),
@@ -104,7 +104,7 @@ func NewFileFromLocal(lf *LocalFile) *File {
 			Created:      lf.Info.ModTime(),
 			Modified:     lf.Info.ModTime(),
 			Filename:     lf.Info.Name(),
-			Dirpath:      "/" + filepath.Dir(lf.Path), // For consistency with other data sources, //x/y/z
+			Dirpath:      "/local" + filepath.Dir(lf.Path), // For consistency with other data sources, //x/y/z
 			Accessed:     lf.Info.ModTime(),
 			Fullpath:     lf.Path,
 			Sharepath:    filepath.VolumeName(lf.Path),
@@ -233,7 +233,7 @@ func PseudoUUID() (uuid string) {
 }
 
 func urlDepth(str string) int64 {
-	return int64(len(strings.Split(str, "/"))) - 1
+	return int64(len(strings.Split(str, "/")) - 1)
 }
 func GetMD5Hash(text string) string {
 	hash := md5.Sum([]byte(text))
