@@ -54,7 +54,7 @@ datasource-srv:
   - registry
 
 db-srv:
-  command: --registry_address=registry:8500
+  command: --registry_address=registry:8500 --elasticsearch_hosts=elasticsearch:9200
   image: kazoup/db-srv
   links:
   - registry
@@ -70,6 +70,11 @@ flag-srv:
   command: --registry_address=registry:8500
   image: kazoup/flag-srv:latest
   links:
-  - elasticsearch
+  - registry
+
+search-srv:
+  command: --registry_address=registry:8500
+  image: kazoup/search-srv:latest
+  links:
   - registry
 

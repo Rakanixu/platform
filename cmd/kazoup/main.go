@@ -96,6 +96,8 @@ func desktop(ctx *ccli.Context) {
 			}
 		}
 	}
+	//TODO:Start elasticsearch
+
 	wg.Wait()
 
 }
