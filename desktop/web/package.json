@@ -57,6 +57,6 @@
     "clean:release": "rm -rf release/* ",
     "clean:dist": "rm -rf dist/*",
     "release": "npm run clean:release && run-p release:*",
-    "all": "./build-bin.sh && run-p clean:* && npm run dep && npm run dist && npm run release"
+    "all": "./build.sh && run-p clean:* && npm run dep && npm run dist && npm run release"
   }
 }

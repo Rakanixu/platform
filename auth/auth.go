@@ -2,34 +2,33 @@ package auth
 
 import (
 	"log"
-	"time"
 
-	"github.com/kazoup/platform/auth/api/handler"
+	"github.com/kazoup/platform/auth/web/handler"
+	webmicro "github.com/micro/go-web"
 	"github.com/micro/cli"
-	"github.com/micro/go-micro"
 )
 
-func api(ctx *cli.Context) {
+func web(ctx *cli.Context) {
 
-	service := micro.NewService(
-		micro.Name("go.micro.api.auth"),
-		micro.RegisterTTL(time.Minute),
-		micro.RegisterInterval(time.Second*30),
-	)
+	service := webmicro.NewService(webmicro.Name("go.micro.web.auth"))
+	service.HandleFunc("/google/login", handler.HandleGoogleLogin)
+	service.HandleFunc("/GoogleCallback", handler.HandleGoogleCallback)
+	service.HandleFunc("/google/callback", handler.HandleGoogleCallback)
+	service.HandleFunc("/microsoft/login", handler.HandleMicrosoftLogin)
+	service.HandleFunc("/microsoft/callback", handler.HandleMicrosoftCallback)
+	service.HandleFunc("/slack/login", handler.HandleSlackLogin)
+	service.HandleFunc("/slack/callback", handler.HandleSlackCallback)
 
-	service.Server().Handle(
-		service.Server().NewHandler(new(handler.Auth)),
-	)
 	if err := service.Run(); err != nil {
-		log.Fatalf("%v", err)
+		log.Panic(err)
 	}
 }
 
 func authCommands() []cli.Command {
 	return []cli.Command{{
-		Name:   "api",
-		Usage:  "Run auth api service",
-		Action: api,
+		Name:   "web",
+		Usage:  "Run auth web service",
+		Action: web,
 	},
 	}
 }

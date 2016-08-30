@@ -291,20 +291,11 @@ function startServices(){
     // Starting all required services FIXME:
     if (process.platform == "win32") {
         elastic = startService(resourcesPath + "/elasticsearch/bin/elasticsearch.bat", []);
-        api = startService(resourcesPath 		+ "/bin/windows/" + archConvert(process.arch) + "/micro.exe", ["--registry=mdns", "api"])
-        web = startService(resourcesPath 		+ "/bin/windows/" + archConvert(process.arch) + "/micro.exe", ["--registry=mdns", "web"])
-        desktop = startService(resourcesPath 		+ "/bin/windows/" + archConvert(process.arch) + "/kazoup-desktop.exe", ["--registry=mdns"])
-        desktop_web = startService(resourcesPath 	+ "/bin/windows/" + archConvert(process.arch) + "/kazoup-web.exe", ["--registry=mdns"])
+        kazoup = startService(resourcesPath 		+ "/bin/windows/" + archConvert(process.arch) + "/kazoup.exe", ["desktop"])
     } else {
         elastic = startService(resourcesPath + "/elasticsearch/bin/elasticsearch", []);
-        api = startService(resourcesPath 		+ "/bin/" + process.platform + "/" + archConvert(process.arch) + "/micro", ["--registry=mdns", "api"])
-        web = startService(resourcesPath 		+ "/bin/" + process.platform + "/" + archConvert(process.arch) + "/micro", ["--registry=mdns", "web"])
-        desktop = startService(resourcesPath 		+ "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup-desktop", ["--registry=mdns"])
-        desktop_web = startService(resourcesPath 	+ "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup-web", ["--registry=mdns"])
+        kazoup = startService(resourcesPath 		+ "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup", ["desktop"])
     }
     running.push(elastic)
-    running.push(api)
-    running.push(web)
-    running.push(desktop)
-    running.push(desktop_web)
+    running.push(kazoup)
 }
