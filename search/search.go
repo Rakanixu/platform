@@ -1,10 +1,17 @@
-package elastic
+package search
 
 import (
+	"log"
+
+	"github.com/kazoup/platform/search/srv/engine"
+	_ "github.com/kazoup/platform/search/srv/engine/db_search"
 	"github.com/kazoup/platform/search/srv/handler"
 	"github.com/micro/cli"
 	"github.com/micro/go-micro"
-	"log"
+)
+
+const (
+	elasticServiceName = "go.micro.srv.db"
 )
 
 func srv(ctx *cli.Context) {
@@ -17,23 +24,33 @@ func srv(ctx *cli.Context) {
 	// Register Handler
 	service.Server().Handle(
 		service.Server().NewHandler(&handler.Search{
+			ElasticServiceName: elasticServiceName,
 			Client:             service.Client(),
-			ElasticServiceName: "go.micro.srv.elastic",
 		}),
 	)
 
+	if err := engine.Init(); err != nil {
+		log.Fatal(err)
+	}
 	// Run service
 	if err := service.Run(); err != nil {
 		log.Fatal(err)
 	}
 }
-
-func elasticCommands() []cli.Command {
+func searchCommands() []cli.Command {
+	return []cli.Command{{
+		Name:   "srv",
+		Usage:  "Run search srv service",
+		Action: srv,
+	},
+	}
+}
+func Commands() []cli.Command {
 	return []cli.Command{
 		{
-			Name:   "srv",
-			Usage:  "Run search srv",
-			Action: srv,
+			Name:        "config",
+			Usage:       "Search commands",
+			Subcommands: searchCommands(),
 		},
 	}
 }
