@@ -804,21 +804,22 @@
                 });
             },
             search: function(request) {
-                this.set('loading', true);
-                this.set('rpcElasticParams', {
-                    service: 'go.micro.srv.desktop',
-                    method: 'Search.Search',
-                    request: this.$.filterConverter
-                        .getFilterAsObj()
-                });
-
-                this.$.rpcElastic.body = this.rpcElasticParams;
-                this.$.rpcElastic.generateRequest();
+                if (!this.$.rpcElastic.loading) {
+                    this.set('loading', true);
+                    this.set('rpcElasticParams', {
+                        service: 'go.micro.srv.desktop',
+                        method: 'Search.Search',
+                        request: this.$.filterConverter
+                          .getFilterAsObj()
+                    });
+                    this.$.rpcElastic.body = this.rpcElasticParams;
+                    this.$.rpcElastic.generateRequest();
+                }
             },
             searchAsYouType: function(e, detail) {
                 var term = this.$.search.input.value;
 
-                if (term.length > 2 || term.length === 0) {
+                if ((term.length > 2 || term.length === 0) && !this.$.rpcElastic.loading) {
                     clearTimeout(this.searchAsYouTypeTimeout);
                     this.searchAsYouTypeTimeout = setTimeout(function() {
                         this.set('itemSelected', false);
