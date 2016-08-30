@@ -98,19 +98,19 @@
 
         <div class="content">
           <paper-menu selected="-1">
-            <paper-icon-item on-tap="showSearch" data-value="" data-index="0">
+            <paper-icon-item on-tap="showAllSearch">
               <iron-icon icon="icons:home" item-icon></iron-icon>All
             </paper-icon-item>
-            <paper-icon-item on-tap="showSearch" data-value$="[[categoriesMap.documents]]" data-index="1">
+            <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.documents]]" data-index="1">
               <iron-icon icon="editor:insert-drive-file" item-icon></iron-icon>Documents
             </paper-icon-item>
-            <paper-icon-item on-tap="showSearch" data-value$="[[categoriesMap.videos]]" data-index="2">
+            <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.videos]]" data-index="2">
               <iron-icon icon="av:movie" item-icon></iron-icon>Movies
             </paper-icon-item>
-            <paper-icon-item on-tap="showSearch" data-value$="[[categoriesMap.images]]" data-index="3">
+            <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.images]]" data-index="3">
               <iron-icon icon="image:camera-alt" item-icon></iron-icon>Pictures
             </paper-icon-item>
-            <paper-icon-item on-tap="showSearch" data-value$="[[categoriesMap.audios]]" data-index="4">
+            <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.audios]]" data-index="4">
               <iron-icon icon="image:audiotrack" item-icon></iron-icon>Audio
             </paper-icon-item>
           </paper-menu>
@@ -231,7 +231,14 @@
               break;
           }
         },
-        showSearch: function(e) {
+        showAllSearch: function(e) {
+          this.fireEvent('web-app-activated', {
+            e: {},
+            callback: 'listDatasources' // Internal method to be call
+          });
+          document.querySelector('#ironPages').selected = 1;
+        },
+        showCategorySearch: function(e) {
           this.fireEvent('web-app-activated', {
             e: {
               target: {

@@ -5,13 +5,14 @@ import (
 	"time"
 
 	"github.com/kazoup/platform/crawler/srv/handler"
+	"github.com/kazoup/platform/crawler/srv/subscriber"
 	"github.com/micro/cli"
 	"github.com/micro/go-micro"
 	_ "github.com/micro/go-plugins/broker/nats"
-	"github.com/kazoup/platform/crawler/srv/subscriber"
 )
 
 const topic string = "go.micro.topic.scan"
+
 func srv(ctx *cli.Context) {
 
 	service := micro.NewService(

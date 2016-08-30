@@ -145,7 +145,7 @@
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.desktop',
+                service: 'go.micro.srv.datasource',
                 method: 'DataSource.Search',
                 request: {
                   from: 0,
@@ -161,7 +161,7 @@
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.desktop',
+                service: 'go.micro.srv.datasource',
                 method: 'DataSource.Scan',
                 request: {
                   id: ''
@@ -174,7 +174,7 @@
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.desktop',
+                service: 'go.micro.srv.datasource',
                 method: 'DataSource.Delete',
                 request: {
                   id: ''
@@ -205,7 +205,7 @@
 	      _addFolder : function (e, folder){
 	        if (folder.length > 0) {
             this.$.rpcAddDatasource.body = {
-              service: 'go.micro.srv.desktop',
+              service: 'go.micro.srv.datasource',
               method: 'DataSource.Create',
               request: {
                 endpoint: {
@@ -234,7 +234,7 @@
         addDatasource: function(e) {
           this.set('loading', true);
           this.$.rpcAddDatasource.body = {
-            service: 'go.micro.srv.desktop',
+            service: 'go.micro.srv.datasource',
             method: 'DataSource.Create',
             request: {
               endpoint: {

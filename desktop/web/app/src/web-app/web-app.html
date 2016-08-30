@@ -20,6 +20,8 @@
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
 
+<link rel="import" href="../../bower_components/web-socket/web-socket.html">
+
 <link rel="import" href="../../bower_components/mat-list/mat-list.html">
 <link rel="import" href="../../bower_components/mat-text-field/mat-text-field.html">
 <link rel="import" href="../../bower_components/mat-icon/mat-icon.html">
@@ -35,7 +37,6 @@
 <link rel="import" href="../../bower_components/mat-divider/mat-divider.html">
 <link rel="import" href="../../bower_components/mat-breadcrumb/mat-breadcrumb.html">
 <link rel="import" href="../../bower_components/mat-breadcrumb/mat-breadcrumb-step.html">
-<link rel="import" href="../../bower_components/web-socket/web-socket.html">
 <link rel="import" href="../../bower_components/mat-toast/mat-toast.html">
 <link rel="import" href="../../bower_components/mat-typography/mat-typography.html">
 <link rel="import" href="../../bower_components/mat-snackbar/mat-snackbar.html">
@@ -48,6 +49,7 @@
 <link rel="import" href="../../src/behaviors/nav-behavior.html">
 <link rel="import" href="../../src/behaviors/categories-map-behavior.html">
 <link rel="import" href="../../src/behaviors/common-behavior.html">
+
 <link rel="import" href="../../src/filter-converter/filter-converter.html">
 <link rel="import" href="../../src/kazoup-icons/kazoup-icons.html">
 
@@ -485,7 +487,8 @@
                 Polymer.NavBehaviorImp,
                 Polymer.CategoriesMapBehaviorImp,
                 Polymer.AsyncBehaviorImp,
-                Polymer.CommonBehaviorImp
+                Polymer.CommonBehaviorImp,
+                Polymer.EndpointsBehaviorImp
             ],
             properties: {
                 disks: {
@@ -501,7 +504,7 @@
                     notify: false,
                     value: function() {
                         return {
-                            service: 'go.micro.srv.desktop',
+                            service: 'go.micro.srv.datasource',
                             method: 'DataSource.Search',
                             request: {
                                 index: 'datasources',
@@ -517,7 +520,7 @@
                     notify: true,
                     value: function() {
                         return {
-                            service: 'go.micro.srv.desktop',
+                            service: 'go.micro.srv.datasource',
                             method: 'DataSource.Scan',
                             request: {
                                 id: ''
@@ -931,7 +934,7 @@
                 if (!this.$.rpcElastic.loading) {
                     this.set('loading', true);
                     this.set('rpcElasticParams', {
-                        service: 'go.micro.srv.desktop',
+                        service: 'go.micro.srv.search',
                         method: 'Search.Search',
                         request: this.$.filterConverter
                           .getFilterAsObj()
@@ -990,7 +993,7 @@
             addDatasourceAndScan: function(e, detail) {
                 this.set('doScan', true);
                 this.$.rpcAddDatasource.body = {
-                    service: 'go.micro.srv.desktop',
+                    service: 'go.micro.srv.datasource',
                     method: 'DataSource.Create',
                     request: {
                         endpoint: {

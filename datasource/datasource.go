@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	 "github.com/kazoup/platform/datasource/srv/handler"
+	"github.com/kazoup/platform/datasource/srv/handler"
 	"github.com/micro/cli"
 	"github.com/micro/go-micro"
 )

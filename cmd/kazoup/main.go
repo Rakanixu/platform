@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/kardianos/osext"
 	auth "github.com/kazoup/platform/auth"
 	config "github.com/kazoup/platform/config"
 	crawler "github.com/kazoup/platform/crawler"
@@ -8,11 +9,10 @@ import (
 	db "github.com/kazoup/platform/db"
 	flag "github.com/kazoup/platform/flag"
 	search "github.com/kazoup/platform/search"
-	"github.com/kardianos/osext"
-	"github.com/micro/micro/web"
 	"github.com/micro/cli"
 	ccli "github.com/micro/cli"
 	"github.com/micro/go-micro/cmd"
+	"github.com/micro/micro/web"
 	"log"
 	"os"
 	"os/exec"
@@ -68,30 +68,30 @@ func setup(app *ccli.App) {
 func desktop(ctx *ccli.Context) {
 	var wg sync.WaitGroup
 	cmds := ctx.App.Commands
-	binary , _ := osext.Executable()	
-	for _,cmd := range cmds {
+	binary, _ := osext.Executable()
+	for _, cmd := range cmds {
 		if cmd.Name != "help" && len(cmd.Subcommands) > 0 {
-			for _,subcmd := range cmd.Subcommands { 
-			//time.Sleep(time.Second)
-			wg.Add(1)
-			log.Print(cmd.Name,subcmd.Name)
-			c := exec.Command(binary,"--registry=mdns",cmd.Name,subcmd.Name)
-			c.Stdout = os.Stdout
-			c.Stderr = os.Stderr
-			if err := c.Start();err != nil{
-				log.Print(err.Error())
-				wg.Done()
-			}
+			for _, subcmd := range cmd.Subcommands {
+				//time.Sleep(time.Second)
+				wg.Add(1)
+				log.Print(cmd.Name, subcmd.Name)
+				c := exec.Command(binary, "--registry=mdns", cmd.Name, subcmd.Name)
+				c.Stdout = os.Stdout
+				c.Stderr = os.Stderr
+				if err := c.Start(); err != nil {
+					log.Print(err.Error())
+					wg.Done()
+				}
 			}
 		}
-		if cmd.Name != "help" && len(cmd.Subcommands) == 0 && cmd.Name != "desktop"{
+		if cmd.Name != "help" && len(cmd.Subcommands) == 0 && cmd.Name != "desktop" {
 
 			wg.Add(1)
 			log.Print(cmd.Name)
-			c := exec.Command(binary,"--registry=mdns",cmd.Name)
+			c := exec.Command(binary, "--registry=mdns", cmd.Name)
 			c.Stdout = os.Stdout
 			c.Stderr = os.Stderr
-			if err := c.Start();err != nil{
+			if err := c.Start(); err != nil {
 				log.Print(err.Error())
 				wg.Done()
 			}
@@ -102,7 +102,6 @@ func desktop(ctx *ccli.Context) {
 	wg.Wait()
 
 }
-
 
 func desktopCommands() []cli.Command {
 	return []cli.Command{{

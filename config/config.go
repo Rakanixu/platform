@@ -9,7 +9,6 @@ import (
 	"github.com/micro/go-micro"
 )
 
-
 func srv(ctx *cli.Context) {
 
 	service := micro.NewService(

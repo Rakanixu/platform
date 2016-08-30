@@ -10,8 +10,8 @@ import (
 	"log"
 )
 
-
 const FileTopic string = "go.micro.topic.files"
+
 func srv(ctx *cli.Context) {
 
 	// New Service

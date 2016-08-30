@@ -1,0 +1,58 @@
+<script>
+  'use strict';
+  // NOT IN USE. CANNOT USE BEHAVIOUR VARIABLES WHEN DEFINING ELEMENT'S INNER PROPERTIES
+  // THOSE SHOULD BE DEFINED ON DOCUMENT.NAMESPACE
+  (function() {
+    Polymer.EndpointsBehaviorImp = {
+      properties: {
+        endpoints: {
+          type: Object,
+          notify: false,
+          value: function() {
+            return {
+              config: {
+                srv: 'go.micro.srv.config',
+                setFlags: 'Config.SetFlags',
+                status: 'Config.Status'
+              },
+              crawler: {
+                srv: 'go.micro.srv.crawler',
+                search: 'Crawler.Search'
+              },
+              datasource: {
+                srv: 'go.micro.srv.datasource',
+                create: 'Datasource.Create',
+                delete: 'Datasource.Delete',
+                search: 'Datasource.Search',
+                scan: 'Datasource.Scan'
+              },
+              db: {
+                srv: 'go.micro.srv.db',
+                create: 'DB.Create',
+                createIndexWithSettings: 'DB.CreateIndexWithSettings',
+                delete: 'DB.Delete',
+                putMappingFromJSON: 'DB.PutMappingFromJSON',
+                read: 'DB.Read',
+                search: 'DB.Search',
+                status: 'DB.Status',
+                update: 'DB.Update'
+              },
+              flag: {
+                srv: 'go.micro.srv.flag',
+                create: 'Flag.Create',
+                delete: 'Flag.Delete',
+                flip: 'Flag.Flip',
+                list: 'Flag.List',
+                read: 'Flag.Read'
+              },
+              search: {
+                srv: 'go.micro.srv.search',
+                search: 'Search.Search'
+              }
+            };
+          }
+        }
+      }
+    };
+  }());
+</script>

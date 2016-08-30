@@ -4,8 +4,8 @@ import (
 	"log"
 
 	"github.com/kazoup/platform/auth/web/handler"
-	webmicro "github.com/micro/go-web"
 	"github.com/micro/cli"
+	webmicro "github.com/micro/go-web"
 )
 
 func web(ctx *cli.Context) {

@@ -1,15 +1,12 @@
 package flag
 
 import (
-
 	"github.com/kazoup/platform/flag/srv/handler"
 	"github.com/micro/go-micro"
 
 	"github.com/micro/cli"
 	"log"
-
 )
-
 
 func srv(ctx *cli.Context) {
 
@@ -18,7 +15,6 @@ func srv(ctx *cli.Context) {
 		micro.Name("go.micro.srv.flag"),
 		micro.Version("latest"),
 	)
-
 
 	// Register Handler
 	service.Server().Handle(

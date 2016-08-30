@@ -112,7 +112,8 @@
       Polymer({
         is: 'load-screen',
         behaviors: [
-          Polymer.AsyncBehaviorImp
+          Polymer.AsyncBehaviorImp,
+          Polymer.EndpointsBehaviorImp
         ],
         properties: {
           wait: {
@@ -130,7 +131,7 @@
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.desktop',
+                service: 'go.micro.srv.db',
                 method: 'DB.Status',
               };
             }
@@ -140,7 +141,7 @@
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.desktop',
+                service: 'go.micro.srv.db',
                 method: 'DB.CreateIndexWithSettings',
                 request: {
                   index: 'files',
@@ -154,7 +155,7 @@
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.desktop',
+                service: 'go.micro.srv.db',
                 method: 'DB.CreateIndexWithSettings',
                 request: {
                   index: 'datasources',
@@ -168,7 +169,7 @@
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.desktop',
+                service: 'go.micro.srv.db',
                 method: 'DB.PutMappingFromJSON',
                 request: {
                   index: 'files',
@@ -182,7 +183,7 @@
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.desktop',
+                service: 'go.micro.srv.config',
                 method: 'Config.SetFlags',
                 request: {
                   type: 'desktop'
@@ -195,7 +196,7 @@
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.desktop',
+                service: 'go.micro.srv.search',
                 method: 'Search.Search',
                 request: {
                   index: 'files',
