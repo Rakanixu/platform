@@ -7,8 +7,11 @@ import (
 	"github.com/kazoup/platform/crawler/srv/handler"
 	"github.com/micro/cli"
 	"github.com/micro/go-micro"
+	_ "github.com/micro/go-plugins/broker/nats"
+	"github.com/kazoup/platform/crawler/srv/subscriber"
 )
 
+const topic string = "go.micro.topic.scan"
 func srv(ctx *cli.Context) {
 
 	service := micro.NewService(
@@ -20,6 +23,17 @@ func srv(ctx *cli.Context) {
 	service.Server().Handle(
 		service.Server().NewHandler(new(handler.Crawl)),
 	)
+
+	// Attach subscriber
+	if err := service.Server().Subscribe(
+		service.Server().NewSubscriber(
+			topic,
+			subscriber.Scans,
+		),
+	); err != nil {
+		log.Fatal(err)
+	}
+
 	if err := service.Run(); err != nil {
 		log.Fatalf("%v", err)
 	}

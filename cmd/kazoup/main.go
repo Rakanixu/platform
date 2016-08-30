@@ -5,7 +5,7 @@ import (
 	config "github.com/kazoup/platform/config"
 	crawler "github.com/kazoup/platform/crawler"
 	datasource "github.com/kazoup/platform/datasource"
-	elastic "github.com/kazoup/platform/elastic"
+	db "github.com/kazoup/platform/db"
 	"github.com/micro/micro/web"
 	"github.com/micro/cli"
 	ccli "github.com/micro/cli"
@@ -22,7 +22,7 @@ func main() {
 	app.Commands = append(app.Commands, config.Commands()...)
 	app.Commands = append(app.Commands, crawler.Commands()...)
 	app.Commands = append(app.Commands, datasource.Commands()...)
-	app.Commands = append(app.Commands, elastic.Commands()...)
+	app.Commands = append(app.Commands, db.Commands()...)
 	app.Commands = append(app.Commands, web.Commands()...)
 	app.Commands = append(app.Commands, desktopCommands()...)
 	app.Action = func(context *cli.Context) { cli.ShowAppHelp(context) }

@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	datasource_srv "github.com/kazoup/platform/datasource/srv/handler"
+	 "github.com/kazoup/platform/datasource/srv/handler"
 	"github.com/micro/cli"
 	"github.com/micro/go-micro"
 )
@@ -17,8 +17,12 @@ func srv(ctx *cli.Context) {
 		micro.RegisterInterval(time.Second*30),
 	)
 
+	// New service handler
 	service.Server().Handle(
-		service.Server().NewHandler(new(datasource_srv.DataSource)),
+		service.Server().NewHandler(&handler.DataSource{
+			Client:             service.Client(),
+			ElasticServiceName: "go.micro.srv.db",
+		}),
 	)
 	if err := service.Run(); err != nil {
 		log.Fatalf("%v", err)
