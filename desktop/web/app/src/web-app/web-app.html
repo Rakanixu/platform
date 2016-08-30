@@ -84,6 +84,11 @@
                 margin-left: 70px;
             }
 
+            .prepopulated mat-item div.body{
+                background: gray;
+                border-radius: 12px;
+            }
+
             .breadcrumbs {
                 margin-left: 60px;
                 font-family: 'Roboto', 'Noto', sans-serif;
@@ -270,7 +275,7 @@
                     <!-- Search results -->
                     <iron-list id="searchList" items="[[searchResults]]" on-scroll="_handleScroll">
                         <template>
-                            <div class$="[[bigVideoClass]]">
+                            <div class$="[[bigVideoClass]] [[getPrepopulatedClass(item.unknown)]]">
                                 <template is="dom-if" if="{{!view.isGrid}}" restamp="true">
                                     <template is="dom-if" if="{{isVideo(item.category)}}">
                                         <mat-item on-tap="mainAction"
@@ -690,19 +695,58 @@
                 }
             },
             _handleElastic: function(e) {
-                var result;
+                var result,
+                    helper = [],
+                    preloadRecords = 0,
+                    initPosition = -1;
+
+                this.async(function() {
+
 
                 if (e.detail.response && e.detail.response.result) {
                     result = JSON.parse(e.detail.response.result);
 
                     this.set('totalResults', JSON.parse(e.detail.response.info).total);
 
-                    _.forEach(result, function(record) {
-                        this.push('searchResults', record);
+                    // Get number of the empty records in results array
+                    _.forEach(this.searchResults, function(listRecord, i) {
+                        if (listRecord.unknown) {
+                            preloadRecords++;
+                            if (initPosition < 0) {
+                                initPosition = i;
+                            }
+                        }
                     }, this);
+
+                    _.forEach(result, function(record) {
+                        if (preloadRecords > 0) {
+                            // There are preload records on the list, replace with retieved data
+                            this.searchResults[initPosition] = record;
+                            initPosition++;
+                            preloadRecords--;
+                        } else {
+                            // List is full of proper data, keep pushing
+                            this.push('searchResults', record);
+                        }
+
+                        console.log(preloadRecords, initPosition)
+                    }, this);
+
+
+                    // Clear possible empty records
+                    _.forEach(this.searchResults, function(record) {
+                        if (record && !record.unknown) {
+                            helper.push(record);
+
+                        }
+                    }, this);
+
+                    this.searchResults = helper;
                     this.$.searchList.fire('iron-resize');
                 }
                 this.set('loading', false);
+}, 3000);
+
             },
             _handleHomeDir: function(e, detail) {
                 this.set('homeDirPath', detail);
@@ -761,6 +805,22 @@
             },
             clearIronList: function() {
                 this.set('searchResults', []);
+                for (var i = 0; i < this.size; i++) {
+                    this.push('searchResults', {
+                        unknown: true
+/*                        category: '',
+                        depth: '',
+                        id: '',
+                        is_dir: '',
+                        mode: '',
+                        modified: '',
+                        name: '',
+                        size: '',
+                        url: ''*/
+                    });
+                }
+
+                //this.set('searchResults', []);
                 this.$.searchList.fire('iron-resize');
             },
             setCategory: function(e, detail) {

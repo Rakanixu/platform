@@ -146,6 +146,11 @@ wave-player paper-material#container:not(.waveActive) {
     height: 0;
 }
 
+.prepopulated mat-item div.body{
+    background: gray;
+    border-radius: 12px;
+}
+
 #noFitBreadcrumbs .mat-item-0 .label.mat-item {
     font-size: 20px;
 }

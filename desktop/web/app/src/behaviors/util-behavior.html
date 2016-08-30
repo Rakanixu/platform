@@ -93,8 +93,15 @@
             break;
         }
       },
+      getPrepopulatedClass: function(record) {
+        return record ? 'prepopulated' : '';
+      },
       documentType: function(fileName) {
-        var extension = fileName.split('.')[fileName.split('.').length - 1];
+        var extension;
+
+        if (fileName) {
+          extension = fileName.split('.')[fileName.split('.').length - 1];
+        }
 
         switch (extension) {
           case 'doc':
