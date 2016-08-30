@@ -162,7 +162,7 @@
 
                 <div class="content">
                     <paper-menu selected="{{selectedCategory.index}}">
-                        <paper-icon-item on-tap="setCategory" data-value="">
+                        <paper-icon-item on-tap="listDatasources">
                             <iron-icon icon="icons:home" item-icon></iron-icon>All
                         </paper-icon-item>
                         <paper-icon-item on-tap="setCategory" data-value$="[[categoriesMap.documents]]">
@@ -272,8 +272,24 @@
                                         indeterminate></paper-progress>
                     </paper-toolbar>
 
+                    <!-- Datasource listing -->
+                    <iron-list id="datasourcesList" items="[[datasourceResults]]" hidden$="[[!datasourceListView]]">
+                        <template>
+                            <div>
+                                <mat-item on-tap="browseDatasource"
+                                          label="[[getDatasourceUrl(item.url)]]"
+                                          description="">
+                                    <mat-avatar class="primary"
+                                                icon$="[[getDatasourceIcon(item.url)]]">
+                                    </mat-avatar>
+
+                                </mat-item>
+                            </div>
+                        </template>
+                    </iron-list>
+
                     <!-- Search results -->
-                    <iron-list id="searchList" items="[[searchResults]]" on-scroll="_handleScroll">
+                    <iron-list id="searchList" items="[[searchResults]]" on-scroll="_handleScroll" hidden$="[[datasourceListView]]">
                         <template>
                             <div class$="[[bigVideoClass]] [[getPrepopulatedClass(item.unknown)]]">
                                 <template is="dom-if" if="{{!view.isGrid}}" restamp="true">
@@ -555,6 +571,11 @@
                     value: false,
                     observer: 'itemSelectedChanged'
                 },
+                doScan: {
+                    type: Boolean,
+                    notify: true,
+                    value: false,
+                },
                 view: {
                     type: Object,
                     notify: true,
@@ -563,6 +584,13 @@
                             icon: 'icons:view-module',
                             isGrid: false
                         };
+                    }
+                },
+                datasourceResults: {
+                    type: Array,
+                    notify: true,
+                    value: function() {
+                        return [];
                     }
                 },
                 searchResults: {
@@ -581,6 +609,11 @@
                     type: Boolean,
                     notify: true,
                     value: false
+                },
+                datasourceListView: {
+                    type: Boolean,
+                    notify: true,
+                    value: true
                 },
                 breadcrumbs: {
                     type: Array,
@@ -621,6 +654,8 @@
             ready: function() {
                 var resizeCallback;
 
+                this.$.rpcGetDatasources.body = this.rpcGetDatasourcesParams;
+
                 this.$.filterConverter.addEventListener('filter-changed', this._handleFilterChanged.bind(this));
 
                 window.addEventListener('web-app-activated', this.init.bind(this));
@@ -647,14 +682,8 @@
                         this.set('selectedCategory', e.data.e.selectedCategory);
                     }
                 } else {
+                    this.listDatasources();
                     this.checkBreadcrumbsView(0);
-                    this.$.filterConverter.setValues({
-                        term: '',
-                        from: 0,
-                        size: this.size,
-                        type: 'file',
-                        depth: 1
-                    });
                 }
             },
             _handleFilterChanged: function(e) {
@@ -668,6 +697,7 @@
                 this.$.breadcrumbsSteps.render();
                 this.$.breadcrumbsStepsMenu.render();
                 this.checkBreadcrumbsView(0);
+                this.set('datasourceListView', false);
 
                 this.search();
             },
@@ -728,10 +758,7 @@
                             // List is full of proper data, keep pushing
                             this.push('searchResults', record);
                         }
-
-                        console.log(preloadRecords, initPosition)
                     }, this);
-
 
                     // Clear possible empty records
                     _.forEach(this.searchResults, function(record) {
@@ -789,18 +816,26 @@
                     this.$.toast.show();
 
                     this.async(function() {
-                        this.$.rpcGetDatasources.body = this.rpcGetDatasourcesParams;
                         this.$.rpcGetDatasources.generateRequest();
                     }, 1000);
                 }
             },
             _handleGetDatasource: function(e) {
                 if (e.detail.response && e.detail.response.result) {
-                    _.forEach(JSON.parse(e.detail.response.result), function(datasource) {
-                        this.rpcStartScanParams.request.id = datasource.id;
-                        this.$.rpcStartScan.body = this.rpcStartScanParams;
-                        this.$.rpcStartScan.generateRequest();
-                    }.bind(this));
+                    var results = JSON.parse(e.detail.response.result);
+
+                    if (this.doScan) {
+                        // Scan datasources
+                        _.forEach(results, function(datasource) {
+                            this.rpcStartScanParams.request.id = datasource.id;
+                            this.$.rpcStartScan.body = this.rpcStartScanParams;
+                            this.$.rpcStartScan.generateRequest();
+                        }.bind(this));
+                    } else {
+                        // List datasources
+                        this.set('datasourceResults', results);
+                        this.$.datasourcesList.fire('iron-resize')
+                    }
                 }
             },
             clearIronList: function() {
@@ -808,19 +843,9 @@
                 for (var i = 0; i < this.size; i++) {
                     this.push('searchResults', {
                         unknown: true
-/*                        category: '',
-                        depth: '',
-                        id: '',
-                        is_dir: '',
-                        mode: '',
-                        modified: '',
-                        name: '',
-                        size: '',
-                        url: ''*/
                     });
                 }
 
-                //this.set('searchResults', []);
                 this.$.searchList.fire('iron-resize');
             },
             setCategory: function(e, detail) {
@@ -852,6 +877,30 @@
                     url: (e.target.dataset.value || this.$.filterConverter.getFilterAsObj().term) ? '' : '/',
                     depth: (e.target.dataset.value || this.$.filterConverter.getFilterAsObj().term) ? 0 : 1
                 });
+            },
+            listDatasources: function(e, detail) {
+                this.clearIronList();
+                this.set('itemSelected', false);
+                this.$.navDrawerPanel.closeDrawer();
+                this.set('doScan', false);
+                this.set('datasourceListView', true);
+                this.$.rpcGetDatasources.generateRequest();
+
+            },
+            browseDatasource: function(e, detail) {
+                if (this.getDatasourceType(e.model.__data__.item.url) === 'local') {
+                    var url = this.getDatasourceUrl(e.model.__data__.item.url);
+                    var depth = url.split('/').length - 1;
+
+                    this.$.filterConverter.setValues({
+                        term: '',
+                        from: 0,
+                        size: this.size,
+                        type: 'file',
+                        depth: depth,
+                        url: '/' + url
+                    });
+                }
             },
             browse: function(e, detail) {
                 this.clearIronList();
@@ -925,6 +974,7 @@
                 this.set('searching', !this.searching);
             },
             addDatasourceAndScan: function(e, detail) {
+                this.set('doScan', true);
                 this.$.rpcAddDatasource.body = {
                     service: 'go.micro.srv.desktop',
                     method: 'DataSource.Create',
@@ -934,11 +984,10 @@
                         }
                     }
                 };
-
                 this.$.rpcAddDatasource.generateRequest();
             },
             scanAll: function() {
-                this.$.rpcGetDatasources.body = this.rpcGetDatasourcesParams;
+                this.set('doScan', true);
                 this.$.rpcGetDatasources.generateRequest();
             },
             mainAction: function(e, detail) {
