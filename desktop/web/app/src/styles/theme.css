@@ -66,6 +66,11 @@ mat-item.light mat-ink {
     color: white;
 }
 
+mat-item.flag.mat-item-0 .ripple-ground.mat-item,
+mat-item.flag.mat-item-0 .ripple-waves.mat-item {
+    display: none !important;
+}
+
 mat-avatar.image {
     border-radius: 0;
 }
