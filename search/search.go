@@ -48,7 +48,7 @@ func searchCommands() []cli.Command {
 func Commands() []cli.Command {
 	return []cli.Command{
 		{
-			Name:        "config",
+			Name:        "search",
 			Usage:       "Search commands",
 			Subcommands: searchCommands(),
 		},

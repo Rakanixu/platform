@@ -67,8 +67,7 @@ func setup(app *ccli.App) {
 func desktop(ctx *ccli.Context) {
 	var wg sync.WaitGroup
 	cmds := ctx.App.Commands
-
-	log.Print(ctx.Args())
+	
 	for _,cmd := range cmds {
 		if cmd.Name != "help" && len(cmd.Subcommands) > 0 {
 			for _,subcmd := range cmd.Subcommands { 
