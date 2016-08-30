@@ -1,0 +1,41 @@
+<html><head><link rel="import" href="../mat-demo/mat-demo.html">
+<link rel="import" href="mat-checkbox.html">
+
+</head><body><dom-module id="mat-checkbox-demo">
+
+    <template>
+
+        <style>:host{display:block;}</style>
+
+        <mat-demo name="mat-checkbox" type="element" url="http://expandjs.com/elements/mat-checkbox">
+
+            <mat-demo-panel label="Default">
+                <script type="text/html">
+                    <mat-checkbox label="Normal"></mat-checkbox>
+                    <mat-checkbox label="Checked" checked></mat-checkbox>
+                    <mat-checkbox label="Disabled" disabled></mat-checkbox>
+                </script>
+                <mat-checkbox label="Normal"></mat-checkbox>
+                <mat-checkbox label="Checked" checked=""></mat-checkbox>
+                <mat-checkbox label="Disabled" disabled=""></mat-checkbox>
+            </mat-demo-panel>
+
+            <mat-demo-panel label="Flip">
+                <script type="text/html">
+                    <mat-checkbox label="Normal" flip></mat-checkbox>
+                    <mat-checkbox label="Checked" checked flip></mat-checkbox>
+                    <mat-checkbox label="Disabled" disabled flip></mat-checkbox>
+                </script>
+                <mat-checkbox label="Normal" flip=""></mat-checkbox>
+                <mat-checkbox label="Checked" checked="" flip=""></mat-checkbox>
+                <mat-checkbox label="Disabled" disabled="" flip=""></mat-checkbox>
+            </mat-demo-panel>
+
+        </mat-demo>
+
+    </template>
+
+    <script>Polymer({is:"mat-checkbox-demo"});</script>
+
+</dom-module>
+</body></html>

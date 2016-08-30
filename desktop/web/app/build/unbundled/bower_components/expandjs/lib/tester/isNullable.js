@@ -1,0 +1,1 @@
+!function(){"use strict";var e=require("../tester/isNaN"),r=require("../tester/isString"),t=require("../tester/isVoid");module.exports=function(i){return t(i)||r(i,!1)||e(i)}}();

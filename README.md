@@ -2,6 +2,9 @@
 
 Kazoup Analytics Platform is build on go-micro library which simplifies developing RPC micro services..
 
+
+
+
 ## Services
 
 Docker images for this services are stored and publicly available at [DockerHub](https://hub.docker.com/u/kazoup/)
@@ -22,13 +25,18 @@ Repo | Description
 [ui](https://github.com/kazoup/platform/tree/master/ui) | Web frontend  as micro services 
 [config](https://github.com/kazoup/platform/tree/master/config) | Config service for kazoup platform 
 [datasource](https://github.com/kazoup/platform/tree/master/datasource) | Datasource store and configure service
+[desktop](https://github.com/kazoup/platform/tree/master/desktop) | Kazoup desktop application for OSX, Windows and Linux
+
+
+
+
+
 
 ## Build
 
 This will build all platform 
 
 ```
-
 ./build.sh
 
 ```

@@ -1,0 +1,1 @@
+!function(){"use strict";var e=require("../tester/isRegExp"),r=require("../tester/isString");module.exports=function(t){var n,u,i,l;if(!r(t))return e(t)?t:void 0;if("/"!==t[0])return t?new RegExp(t):null;for(n=u=!1,i=1,l="";i<t.length&&(n=!u&&"/"===t[i],u=!u&&"\\"===t[i],!n);i+=1)l+=t[i];try{return n&&l?new RegExp(l,t.slice(i+1)):null}catch(e){return null}}}();

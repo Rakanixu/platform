@@ -1,0 +1,1 @@
+!function(){"use strict";var e=require("../tester/isNumeric"),r=require("../tester/isString"),t=require("../caster/toBoolean"),u=require("../caster/toNumber");module.exports=function(i,s){return"false"===i||"true"===i?t(i):e(i)?u(i):r(i)?i:s?null:void 0}}();

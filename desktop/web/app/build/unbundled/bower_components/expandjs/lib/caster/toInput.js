@@ -1,0 +1,1 @@
+!function(){"use strict";var r=require("../tester/isNumber"),e=require("../tester/isString");module.exports=function(t,i){return r(t)?t.toString():e(t)?t:i?"":void 0}}();

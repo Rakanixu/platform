@@ -1,0 +1,1 @@
+!function(){"use strict";module.exports=/^[^\sa-z]+[^\sa-z]*$|^$/}();

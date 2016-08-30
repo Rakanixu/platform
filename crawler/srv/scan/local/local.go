@@ -1,15 +1,18 @@
 package local
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"github.com/kazoup/go-homedir"
+	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	scan "github.com/kazoup/platform/crawler/srv/scan"
-	publish "github.com/kazoup/platform/publish/srv/proto/publish"
 	"github.com/kazoup/platform/structs"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	"log"
 	"os"
+	"path"
 	"path/filepath"
 )
 
@@ -26,22 +29,22 @@ const topic string = "go.micro.topic.files"
 
 // NewLocal ...
 func NewLocal(id int64, rootPath string, conf map[string]string) (*Local, error) {
-	path, err := homedir.Dir()
-	if err != nil {
-		return nil, err
-	}
-
 	return &Local{
 		Id:       id,
-		RootPath: path,
+		RootPath: path.Clean(rootPath),
 		Running:  make(chan bool, 1),
 		Config:   conf,
 	}, nil
 }
 
 // Start ...
-func (fs *Local) Start() {
-	go filepath.Walk(fs.RootPath, fs.walkHandler())
+func (fs *Local) Start(crawls map[int64]scan.Scanner, index int64) {
+	go func() {
+		filepath.Walk(fs.RootPath, fs.walkHandler())
+		// Local scan finished
+		fs.Stop()
+		delete(crawls, index)
+	}()
 }
 
 // Stop ...
@@ -61,37 +64,43 @@ func (fs *Local) Info() (scan.Info, error) {
 
 func (fs *Local) walkHandler() filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			log.Print("Got error %s", err)
+			return nil
+		}
 		select {
 		case <-fs.Running:
+			log.Print("Scanner stopped")
 			return errors.New("Scanner stopped")
 		default:
-			f := structs.NewFileFromLocal(&structs.LocalFile{
+			f := structs.NewDesktopFile(&structs.LocalFile{
 				Type: "LocalFile",
-				Path: "/" + path,
+				Path: path,
 				Info: info,
 			})
 
 			b, err := json.Marshal(f)
 			if err != nil {
-				return errors.New("Error marshaling data")
+				return err
 			}
 
-			req := client.NewRequest(
-				"go.micro.srv.publish",
-				"Publish.Send",
-				&publish.SendRequest{
-					Topic: topic,
-					Data:  string(b),
-				},
-			)
-			res := &publish.SendResponse{}
-
-			// Call Publish.Send
-			if err := client.Call(context.Background(), req, res); err != nil {
-				return errors.New("Error calling com.kazoup.srv.publish.Publish.Send")
+			msg := &crawler.FileMessage{
+				Id:   getMD5Hash(f.URL),
+				Data: string(b),
 			}
+
+			ctx := context.TODO()
+			if err := client.Publish(ctx, client.NewPublication(topic, msg)); err != nil {
+				return err
+			}
+
 		}
 
 		return nil
 	}
+}
+
+func getMD5Hash(text string) string {
+	hash := md5.Sum([]byte(text))
+	return hex.EncodeToString(hash[:])
 }

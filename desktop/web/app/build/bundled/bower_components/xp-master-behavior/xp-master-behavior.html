@@ -1,0 +1,6 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-array-behavior/xp-array-behavior.html">
+
+<script>Polymer.XPMasterBehaviorImp={_coupleSlave:function(e,a){var r=this;return r[e]||r[XP.setter(e,!0)]([]),r.append(e,a)},_decoupleSlave:function(e,a){var r=this,t=XP.indexOf(r[e]||[],a);return t>=0?r.pullAt(e,t):null},listeners:{"xp-slave":"_slaveHandler"},properties:{slavesMap:{notify:!0,readOnly:!0,type:Object,value:function(){return{}}}},_slaveHandler:function(e){var a=this,r=e.detail.couple,t=e.detail.isAttached,l=e.detail.selector,i=e.detail.firer,n=r&&l&&i&&a!==i&&XP.matches(a,l),o=n&&XP.findKey(a.slavesMap,function(e){return XP.matches(i,e)});o&&(e.stopPropagation(),a[t?"_coupleSlave":"_decoupleSlave"](o,i)&&r(a))}},Polymer.XPMasterBehavior=[Polymer.XPArrayBehavior,Polymer.XPMasterBehaviorImp];</script>
+</head><body></body></html>

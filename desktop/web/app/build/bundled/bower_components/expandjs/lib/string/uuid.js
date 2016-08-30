@@ -1,0 +1,1 @@
+!function(){"use strict";var e=require("uuid"),r=require("../assert/assertArgument"),t=require("../tester/isFunction"),u=require("../tester/isVoid");module.exports=function(i){return r(u(i)||t(i),1,"Function"),e.v4(i&&{rng:i})}}();

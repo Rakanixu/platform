@@ -1,0 +1,113 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
+
+<link rel="import" href="../../bower_components/mat-item/mat-item.html">
+
+<link rel="import" href="../../src/behaviors/util-behavior.html">
+<link rel="import" href="../../src/behaviors/nav-behavior.html">
+<link rel="import" href="../../src/behaviors/categories-map-behavior.html">
+
+<dom-module id="configuration-page">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style>
+      :host {
+        display: block;
+      }
+
+      .mat-item-0 .ripple-ground.mat-item,
+      .mat-item-0 .ripple-waves.mat-item {
+        display: none !important;
+      }
+    </style>
+
+    <template is="dom-repeat" items="[[flagsResults]]">
+      <mat-item class="flag"
+                label="[[item.key]]"
+                description="[[item.description]]">
+        <paper-toggle-button class="secondary"></paper-toggle-button>
+      </mat-item>
+    </template>
+
+    <paper-toast id="toast" text=""></paper-toast>
+
+    <iron-ajax id="rpcGetFlags"
+               method="POST"
+               content-type="application/json"
+               url="http://localhost:8082/rpc"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleGetFlags"
+               params="[[rpcGetFlagsParams]]"></iron-ajax>
+
+  </template>
+
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'configuration-page',
+        behaviors: [
+          Polymer.UtilBehaviorImp,
+          Polymer.NavBehaviorImp,
+          Polymer.CategoriesMapBehaviorImp,
+          Polymer.AsyncBehaviorImp,
+          Polymer.CommonBehaviorImp
+        ],
+        properties: {
+          rpcGetFlagsParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: 'go.micro.srv.desktop',
+                method: 'Flag.List',
+                request: {}
+              };
+            }
+          },
+          flagsResults: {
+            type: Array,
+            notify: true,
+            value: function() {
+              return [];
+            }
+          }
+        },
+        ready: function() {
+          this.$.rpcGetFlags.body = this.rpcGetFlagsParams;
+
+          window.addEventListener('configuration-page-activated', this.init.bind(this));
+        },
+        init: function(e, detail) {
+          this.set('loading', true);
+          this.$.rpcGetFlags.generateRequest();
+        },
+/*        clearRipples: function() {
+          _.forEach(document.querySelectorAll('mat-item.flag > div'), function(ripple) {
+            ripple.remove();
+          });
+        },*/
+        _handleGetFlags: function(e) {
+          this.set('loading', false);
+          if (e.detail.response && e.detail.response.result) {
+            this.set('flagsResults', JSON.parse(e.detail.response.result));
+      //      this.async(this.clearRipples, 100);
+          }
+        },
+        _handleError: function(e) {
+          this.set('loading', false);
+          if (e.detail.request && e.detail.request.response) {
+            this.$.toast.text = e.detail.request.response.detail;
+            this.$.toast.show();
+          }
+        }
+      });
+    }());
+  </script>
+</dom-module>

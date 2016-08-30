@@ -1,0 +1,18 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-spacing/mat-spacing.html">
+
+</head><body><dom-module id="mat-content">
+
+    <template strip-whitespace="">
+
+        <style>:host{@apply (--mat-padding-mobile);}:host([inset]){@apply (--mat-padding-mobile-inset);}@media (min-width: 960px){:host{@apply (--mat-padding-desktop);}:host([inset]){@apply (--mat-padding-desktop-inset);}}</style>
+
+        <content></content>
+
+    </template>
+
+    <script>Polymer({is:"mat-content",properties:{inset:{reflectToAttribute:!0,type:Boolean,value:!1}},created:function(){this.classList.add("content")}});</script>
+
+</dom-module>
+</body></html>

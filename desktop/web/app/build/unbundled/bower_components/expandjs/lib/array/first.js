@@ -1,0 +1,1 @@
+!function(){"use strict";var r=require("lodash"),e=require("../assert/assertArgument"),t=require("../caster/toArray");module.exports=function(s){return e(s=t(s),1,"Arrayable"),r.first(s)}}();

@@ -1,0 +1,27 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../xp-pages/xp-pages-behavior.html">
+<link rel="import" href="../xp-pages/xp-pages-styles.html">
+<link rel="import" href="mat-page.html">
+
+</head><body><dom-module id="mat-pages">
+
+    <template strip-whitespace="">
+
+        <style include="xp-pages-styles"></style>
+
+        <style>:host .slider{@apply (--layout-horizontal);@apply (--layout-fit);right:auto;transition:transform 0.33s;}:host .slider ::content > .page:not([active]){display:block !important;}</style>
+
+        <div class="wrapper">
+            <div class="slider">
+                <content></content>
+            </div>
+        </div>
+
+    </template>
+
+    <script>Polymer({is:"mat-pages",behaviors:[Polymer.XPPagesBehavior],observers:["_selectionChanged(items.*, selection, slider)"],properties:{itemTag:{readOnly:!0,type:String,value:"mat-page"},slider:{notify:!0,readOnly:!0},sliding:{notify:!0,readOnly:!0,reflectToAttribute:!0,type:Boolean,value:!1}},_selectionChanged:function(){var e=this,i=e.items||[],t=XP.indexOf(i,e.selection)||0;e._setSliding(!0),e.slider.style.transform="translateX("+(t&&100*-t/i.length)+"%)",e.slider.style.width=100*i.length+"%",e.debounce("sliding",e._setSliding.bind(e,!1),330)},ready:function(){this._setSlider(Polymer.dom(this.root).querySelector(".slider"))}});</script>
+
+</dom-module>
+</body></html>

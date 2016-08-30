@@ -1,0 +1,1 @@
+!function(){"use strict";var e=require("../assert/assertArgument"),t=require("../tester/isObject");module.exports=function(r,s){return e(t(r),1,"Object"),e(t(s),2,"Object"),r.top<0}}();

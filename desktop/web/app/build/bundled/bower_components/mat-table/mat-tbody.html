@@ -1,0 +1,19 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-table-behavior/xp-tbody-behavior.html">
+<link rel="import" href="../xp-table-behavior/xp-tbody-styles.html">
+
+</head><body><dom-module id="mat-tbody">
+
+    <template strip-whitespace="">
+
+        <style include="xp-tbody-styles"></style>
+
+        <content select=".table-row"></content>
+
+    </template>
+
+    <script>Polymer({is:"mat-tbody",behaviors:[Polymer.XPTableBodyBehavior]});</script>
+
+</dom-module>
+</body></html>

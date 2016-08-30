@@ -1,40 +1,75 @@
 package handler
 
 import (
+	"bytes"
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"github.com/kazoup/platform/datasource/srv/filestore"
 	fake "github.com/kazoup/platform/datasource/srv/filestore/fake"
+	googledrive "github.com/kazoup/platform/datasource/srv/filestore/googledrive"
 	local "github.com/kazoup/platform/datasource/srv/filestore/local"
+	onedrive "github.com/kazoup/platform/datasource/srv/filestore/onedrive"
+	slack "github.com/kazoup/platform/datasource/srv/filestore/slack"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	elastic "github.com/kazoup/platform/elastic/srv/proto/elastic"
+	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"strings"
 )
 
 const (
-	fakeEndpoint  = "fake"
-	localEndpoint = "local://"
-	nfsEndpoint   = "nfs://"
-	smbEndpoint   = "smb://"
-	topic         = "go.micro.topic.scan"
+	fakeEndpoint       = "fake"
+	localEndpoint      = "local://"
+	googledriveEnpoint = "googledrive://"
+	onedriveEndpoint   = "onedrive://"
+	slackEnpoint       = "slack://"
+	nfsEndpoint        = "nfs://"
+	smbEndpoint        = "smb://"
+	topic              = "go.micro.topic.scan"
 )
 
 // GetDataSource returns a FileStorer interface
-func GetDataSource(endpoint *proto.Endpoint) (filestorer.FileStorer, error) {
+func GetDataSource(ds *DataSource, endpoint *proto.Endpoint) (filestorer.FileStorer, error) {
 	if strings.Contains(endpoint.Url, fakeEndpoint) {
-		return &fake.Fake{}, nil
+		return &fake.Fake{
+			FileStore: filestorer.FileStore{
+				ElasticServiceName: ds.ElasticServiceName,
+			},
+		}, nil
 	}
 
 	if strings.Contains(endpoint.Url, localEndpoint) {
 		return &local.Local{
 			Endpoint: *endpoint,
+			FileStore: filestorer.FileStore{
+				ElasticServiceName: ds.ElasticServiceName,
+			},
 		}, nil
 	}
 
-	if strings.Contains(endpoint.Url, nfsEndpoint) {
-		//return &blabla{}, nil
+	if strings.Contains(endpoint.Url, googledriveEnpoint) {
+		return &googledrive.Googledrive{
+			FileStore: filestorer.FileStore{
+				ElasticServiceName: ds.ElasticServiceName,
+			},
+		}, nil
+	}
+	if strings.Contains(endpoint.Url, onedriveEndpoint) {
+		return &onedrive.Onedrive{
+			FileStore: filestorer.FileStore{
+				ElasticServiceName: ds.ElasticServiceName,
+			},
+		}, nil
+	}
+	if strings.Contains(endpoint.Url, slackEnpoint) {
+		return &slack.Slack{
+
+			FileStore: filestorer.FileStore{
+				ElasticServiceName: ds.ElasticServiceName,
+			},
+		}, nil
 	}
 
 	if strings.Contains(endpoint.Url, smbEndpoint) {
@@ -47,17 +82,17 @@ func GetDataSource(endpoint *proto.Endpoint) (filestorer.FileStorer, error) {
 }
 
 // DeleteDataSource deletes a datasource previously stored
-func DeleteDataSource(id string) error {
+func DeleteDataSource(ds *DataSource, id string) error {
 	srvReq := client.NewRequest(
-		"go.micro.srv.elastic",
-		"Elastic.Delete",
-		&elastic.DeleteRequest{
+		ds.ElasticServiceName,
+		"DB.Delete",
+		&db_proto.DeleteRequest{
 			Index: "datasources",
 			Type:  "datasource",
 			Id:    id,
 		},
 	)
-	srvRes := &elastic.CreateResponse{}
+	srvRes := &db_proto.CreateResponse{}
 
 	if err := client.Call(context.Background(), srvReq, srvRes); err != nil {
 		return err
@@ -67,84 +102,54 @@ func DeleteDataSource(id string) error {
 }
 
 // SearchDataSources queries for datasources stored in ES
-func SearchDataSources(query string, limit int64, offset int64) ([]*proto.Endpoint, error) {
-	var result []*proto.Endpoint
-	var resultMap map[string]interface{}
-
-	if len(query) <= 0 {
-		query = "*"
-	}
-
+func SearchDataSources(ds *DataSource, req *proto.SearchRequest) (*proto.SearchResponse, error) {
 	srvReq := client.NewRequest(
-		"go.micro.srv.elastic",
-		"Elastic.Search",
-		&elastic.SearchRequest{
-			Index:  "datasources",
-			Type:   "datasource",
-			Query:  query,
-			Limit:  limit,
-			Offset: offset,
+		ds.ElasticServiceName,
+		"DB.Search",
+		&db_proto.SearchRequest{
+			Index:    "datasources",
+			Type:     "datasource",
+			From:     req.From,
+			Size:     req.Size,
+			Category: req.Category,
+			Term:     req.Term,
+			Depth:    req.Depth,
+			Url:      req.Url,
 		},
 	)
-	srvRes := &elastic.SearchResponse{}
+	srvRes := &db_proto.SearchResponse{}
 
 	if err := client.Call(context.Background(), srvReq, srvRes); err != nil {
 		return nil, err
 	}
 
-	if err := json.Unmarshal([]byte(srvRes.Result), &resultMap); err != nil {
-		return nil, err
+	rsp := &proto.SearchResponse{
+		Result: srvRes.Result,
+		Info:   srvRes.Info,
 	}
 
-	var size, files, lastScan int64
-	for _, v := range resultMap["hits"].(map[string]interface{})["hits"].([]interface{}) {
-		// Sanitize possible empty values
-		if v.(map[string]interface{})["_source"].(map[string]interface{})["size"] == nil {
-			size = 0
-		} else {
-			size = int64(v.(map[string]interface{})["_source"].(map[string]interface{})["size"].(float64))
-		}
-		if v.(map[string]interface{})["_source"].(map[string]interface{})["files"] == nil {
-			files = 0
-		} else {
-			files = int64(v.(map[string]interface{})["_source"].(map[string]interface{})["files"].(float64))
-		}
-		if v.(map[string]interface{})["_source"].(map[string]interface{})["last_scan"] == nil {
-			lastScan = 0
-		} else {
-			lastScan = int64(v.(map[string]interface{})["_source"].(map[string]interface{})["last_scan"].(float64))
-		}
-
-		result = append(result, &proto.Endpoint{
-			Id:       v.(map[string]interface{})["_id"].(string),
-			Url:      v.(map[string]interface{})["_source"].(map[string]interface{})["url"].(string),
-			Size:     size,
-			Files:    files,
-			LastScan: lastScan,
-		})
-	}
-
-	return result, nil
+	return rsp, nil
 }
 
-func ScanDataSource(ctx context.Context, id string, ds *DataSource) error {
-	elasticSrvReq := client.NewRequest(
-		"go.micro.srv.elastic",
-		"Elastic.Read",
-		&elastic.ReadRequest{
+func ScanDataSource(ds *DataSource, ctx context.Context, id string) error {
+	dbSrvReq := client.NewRequest(
+		ds.ElasticServiceName,
+		"DB.Read",
+		&db_proto.ReadRequest{
 			Index: "datasources",
 			Type:  "datasource",
 			Id:    id,
 		},
 	)
-	elasticSrvRes := &elastic.ReadResponse{}
+	dbSrvRes := &db_proto.ReadResponse{}
 
-	if err := client.Call(ctx, elasticSrvReq, elasticSrvRes); err != nil {
+	if err := client.Call(ctx, dbSrvReq, dbSrvRes); err != nil {
 		return err
 	}
 
 	var endpoint *proto.Endpoint
-	if err := json.Unmarshal([]byte(elasticSrvRes.Result), &endpoint); err != nil {
+	dec := json.NewDecoder(bytes.NewBufferString(dbSrvRes.Result))
+	if err := dec.Decode(&endpoint); err != nil {
 		return err
 	}
 
@@ -158,4 +163,9 @@ func ScanDataSource(ctx context.Context, id string, ds *DataSource) error {
 	}
 
 	return nil
+}
+
+func getMD5Hash(text string) string {
+	hash := md5.Sum([]byte(text))
+	return hex.EncodeToString(hash[:])
 }

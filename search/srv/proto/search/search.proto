@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package go.micro.srv.search.search;
+
+import "github.com/kazoup/platform/search/srv/proto/search/messages.proto";
+
+service Search {
+  rpc Search(SearchRequest) returns (SearchResponse) {}
+}
+

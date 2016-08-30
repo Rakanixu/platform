@@ -1,0 +1,7 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-refirer-behavior/xp-refirer-behavior.html">
+<link rel="import" href="../xp-toast-behavior/xp-toast-behavior.html">
+
+<script>Polymer.XPSnackbarBehaviorImp={listeners:{"xp-activate":"_actionHandler"},properties:{button:{reflectToAttribute:!0,type:String}},created:function(){this.classList.remove("toast"),this.classList.add("snackbar")},_actionHandler:function(e){var r=this;e.detail.firer!==r&&(r.refire(e,e.type,{firer:r}).defaultPrevented||r.hide())}},Polymer.XPSnackbarBehavior=[Polymer.XPRefirerBehavior,Polymer.XPToastBehavior,Polymer.XPSnackbarBehaviorImp];</script>
+</head><body></body></html>

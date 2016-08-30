@@ -1,0 +1,1 @@
+!function(){"use strict";var e=require("../assert/assertArgument"),r=require("../tester/isVoid"),t=require("../tester/isFinite"),i=require("../tester/isIndex");module.exports=function(s,u){return e(t(s),1,"number"),e(r(u)||i(u),2,"number"),Math.round(s*(u=Math.pow(10,u||0)))/u}}();

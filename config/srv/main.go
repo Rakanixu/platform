@@ -1,13 +1,13 @@
 package main
 
 import (
-	"log"
-
 	"github.com/kazoup/platform/config/srv/handler"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/cmd"
+	"log"
 )
 
+//go-bindata -o data/bindata.go -pkg data data
 func main() {
 	cmd.Init()
 
@@ -19,7 +19,10 @@ func main() {
 
 	// Attach handler
 	service.Server().Handle(
-		service.Server().NewHandler(new(handler.Config)),
+		service.Server().NewHandler(&handler.Config{
+			Client:        service.Client(),
+			DbServiceName: "go.micro.srv.flag",
+		}),
 	)
 
 	// Initialize service

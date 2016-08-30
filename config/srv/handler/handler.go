@@ -2,18 +2,25 @@ package handler
 
 import (
 	"encoding/json"
-	"io/ioutil"
-
+	data "github.com/kazoup/platform/config/srv/data"
 	proto "github.com/kazoup/platform/config/srv/proto/config"
-	elastic "github.com/kazoup/platform/elastic/srv/proto/elastic"
 	flag "github.com/kazoup/platform/flag/srv/proto/flag"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
+	"log"
+)
+
+const (
+	Desktop    = "desktop"
+	Enterprise = "enterprise"
 )
 
 // Config struct
-type Config struct{}
+type Config struct {
+	Client        client.Client
+	DbServiceName string
+}
 
 // Status handler, retrieve kazoup appliance status
 func (c *Config) Status(ctx context.Context, req *proto.StatusRequest, rsp *proto.StatusResponse) error {
@@ -28,82 +35,47 @@ func (c *Config) Status(ctx context.Context, req *proto.StatusRequest, rsp *prot
 	return nil
 }
 
-// SetElasticSettings handler, sets ElasticSearch settings (check es_settings.json in repo) for files index
-func (c *Config) SetElasticSettings(ctx context.Context, req *proto.SetElasticSettingsRequest, rsp *proto.SetElasticSettingsResponse) error {
-	settings, err := ioutil.ReadFile("es_settings.json")
-	if err != nil {
-		return errors.InternalServerError("go.micro.srv.config", err.Error())
-	}
-
-	srvReq := client.NewRequest(
-		"go.micro.srv.elastic",
-		"Elastic.CreateIndexWithSettings",
-		&elastic.CreateIndexWithSettingsRequest{
-			Index:    "files",
-			Settings: string(settings),
-		},
-	)
-	srvRes := &elastic.CreateIndexWithSettingsResponse{}
-
-	if err := client.Call(ctx, srvReq, srvRes); err != nil {
-		return errors.InternalServerError("go.micro.api.config", err.Error())
-	}
-
-	return nil
-}
-
-// SetElasticSettings handler, sets ElasticSearch mapping for files index and file documents.(Check es_mapping_files.json in this repo)
-func (c *Config) SetElasticMapping(ctx context.Context, req *proto.SetElasticMappingRequest, rsp *proto.SetElasticMappingResponse) error {
-	mapping, err := ioutil.ReadFile("es_mapping_files.json")
-	if err != nil {
-		return errors.InternalServerError("go.micro.srv.config", err.Error())
-	}
-
-	srvReq := client.NewRequest(
-		"go.micro.srv.elastic",
-		"Elastic.PutMappingFromJSON",
-		&elastic.PutMappingFromJSONRequest{
-			Index:   "files",
-			Type:    "file",
-			Mapping: string(mapping),
-		},
-	)
-	srvRes := &elastic.PutMappingFromJSONResponse{}
-
-	if err := client.Call(ctx, srvReq, srvRes); err != nil {
-		return errors.InternalServerError("go.micro.api.config", err.Error())
-	}
-
-	return nil
-}
-
 // SetFlags handler, post kazoup appliance flags into elastic search. (Check es_flags.json)
 func (c *Config) SetFlags(ctx context.Context, req *proto.SetFlagsRequest, rsp *proto.SetFlagsResponse) error {
-	var flagsSlice []interface{}
+	var asset string
 
-	flags, err := ioutil.ReadFile("es_flags.json")
-	if err != nil {
-		return errors.InternalServerError("go.micro.srv.config", err.Error())
+	if len(req.Type) == 0 {
+		return errors.InternalServerError("go.micro.srv.config", "type required")
 	}
 
-	if err := json.Unmarshal(flags, &flagsSlice); err != nil {
+	if req.Type == Desktop {
+		asset = "data/es_desktop_flags.json"
+	}
+
+	if req.Type == Enterprise {
+		asset = "data/es_flags.json"
+	}
+
+	es_flags, err := data.Asset(asset)
+	if err != nil {
+		// Asset was not found.
+		log.Fatal(err)
+	}
+
+	var flagsSlice []interface{}
+
+	if err := json.Unmarshal(es_flags, &flagsSlice); err != nil {
 		return errors.InternalServerError("go.micro.srv.config", err.Error())
 	}
 
 	for _, v := range flagsSlice {
-		srvReq := client.NewRequest(
-			"go.micro.srv.flag",
+		srvReq := c.Client.NewRequest(
+			c.DbServiceName,
 			"Flag.Create",
-			// We ensure es_flags.json contains proper JSON, so fields will be there always
 			&flag.CreateRequest{
 				Key:         v.(map[string]interface{})["key"].(string),
 				Description: v.(map[string]interface{})["description"].(string),
 				Value:       v.(map[string]interface{})["value"].(bool),
 			},
 		)
-		srvRes := &elastic.CreateResponse{}
+		srvRes := &flag.CreateResponse{}
 
-		if err := client.Call(ctx, srvReq, srvRes); err != nil {
+		if err := c.Client.Call(ctx, srvReq, srvRes); err != nil {
 			return errors.InternalServerError("go.micro.api.config", err.Error())
 		}
 	}

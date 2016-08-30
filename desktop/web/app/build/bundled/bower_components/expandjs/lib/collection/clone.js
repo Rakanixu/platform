@@ -1,0 +1,1 @@
+!function(){"use strict";var e=require("lodash"),r=require("../assert/assertArgument"),t=require("../tester/isCollection"),i=require("../tester/isFunction"),s=require("../tester/isVoid"),u=require("../caster/toArray");module.exports=function(o,n,c){return r(t(o=u(o)||o),1,"Arrayable or Object"),r(s(n)||i(n),2,"Function"),e.clone(o,n,c)}}();

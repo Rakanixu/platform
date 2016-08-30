@@ -1,0 +1,46 @@
+<!doctype html>
+
+<html>
+
+<head>
+    <title>webapp</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="index.js"></script>
+    <script src="bower_components/filesize/lib/filesize.min.js"></script>
+    <link rel="stylesheet" href="src/styles/theme.css">
+    <link rel="import" href="src/styles/theme.html">
+
+    <link rel="import" href="bower_components/iron-pages/iron-pages.html">
+    <link rel="import" href="src/load-screen/load-screen.html">
+    <link rel="import" href="src/web-app/web-app.html">
+    <link rel="import" href="src/settings/settings-page.html">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/video.js/5.10.2/alt/video-js-cdn.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/5.10.2/video.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-hls/3.0.2/videojs-contrib-hls.js"></script>
+  
+    <script>
+    (function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',intercomSettings);}else{var d=document;var i=function(){i.c(arguments)};i.q=[];i.c=function(args){i.q.push(args)};w.Intercom=i;function l(){var s=d.createElement('script');s.type='text/javascript';s.async=true;
+s.src='https://widget.intercom.io/widget/{app_id}';
+var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);}if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})()
+window.Intercom('boot', {
+ app_id: '765edcee587b03dba65dcf9c8b7ea0b1f488a7c5',
+ widget: {
+ activator: '#intercom_launch'
+ } 
+});
+    </script>
+</head>
+</head>
+
+<body class="app">
+    <iron-pages id="ironPages" selected="0">
+        <load-screen></load-screen>
+        <web-app></web-app>
+        <settings-page></settings-page>
+    </iron-pages>
+</body>
+
+</html>

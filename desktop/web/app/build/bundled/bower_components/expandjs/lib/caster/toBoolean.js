@@ -1,0 +1,1 @@
+!function(){"use strict";var e=require("../tester/isDefined");module.exports=function(r,t){return e(r)?!!r&&"false"!==r:!t&&void 0}}();

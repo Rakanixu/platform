@@ -1,0 +1,1 @@
+!function(){"use strict";var e=require("../tester/isVoid"),r=require("../tester/isString"),t=require("../regex/snakeCaseRegex"),i=require("../operator/xnor");module.exports=function(s,n){return r(s)&&t.test(s)&&(e(n)||i(s.length,n))}}();

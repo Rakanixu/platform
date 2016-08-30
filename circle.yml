@@ -6,11 +6,18 @@ dependencies:
                 - mkdir -p $HOME/.go_project/src/github.com/$CIRCLE_PROJECT_USERNAME
                 - ln -fs $HOME/$CIRCLE_PROJECT_REPONAME $HOME/.go_project/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
                 - echo 'export GOPATH=$GOPATH:$HOME/.go_project' >> ~/.circlerc
-                  #- go get -d  -v -t ./...
+                - sudo apt-get install ruby ruby-dev gcc make icnsutils graphicsmagick xz-utils
+                - go get -d -v -t ./...
 test:
         override:
-                - ./build.sh
+                - go test -v -race ./...
 deployment:
+        release:
+                branch: desktop
+                commands:
+                        - sleep 10
+                        #- go get github.com/tcnksm/ghr
+                        #- ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace `git describe --tags` desktop/dist/
         hub: 
                 branch: master
                 commands:

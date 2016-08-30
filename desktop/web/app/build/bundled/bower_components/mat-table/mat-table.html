@@ -1,0 +1,30 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-ink/mat-ink-behavior.html">
+<link rel="import" href="../mat-ink/mat-ink-styles.html">
+<link rel="import" href="../mat-typography/mat-typography.html">
+<link rel="import" href="../xp-table-behavior/xp-table-behavior.html">
+<link rel="import" href="../xp-table-behavior/xp-table-styles.html">
+<link rel="import" href="mat-tbody.html">
+<link rel="import" href="mat-td.html">
+<link rel="import" href="mat-th.html">
+<link rel="import" href="mat-thead.html">
+<link rel="import" href="mat-tr.html">
+
+</head><body><dom-module id="mat-table">
+
+    <template strip-whitespace="">
+
+        <style include="mat-ink-styles"></style>
+        <style include="xp-table-styles"></style>
+
+        <style>:host{@apply (--mat-font-body);font-size:13px !important;}:host([foreground="dark"]) ::content .table-row .table-cell{border-top:1px solid hsla(0, 0%, 0%, 0.12);}:host([foreground="dark"]) ::content .table-row[active]{background:hsla(0, 0%, 0%, 0.02);}:host([foreground="dark"]) ::content .table-row:hover{background:hsla(0, 0%, 0%, 0.05);}:host([foreground="light"]) ::content .table-row .table-cell{border-top:1px solid hsla(0, 0%, 100%, 0.12);}:host([foreground="light"]) ::content .table-row[active]{background:hsla(0, 0%, 100%, 0.02);}:host([foreground="light"]) ::content .table-row:hover{background:hsla(0, 0%, 100%, 0.05);}</style>
+
+        <content select=".table-body,.table-header,.table-row"></content>
+
+    </template>
+
+    <script>Polymer({is:"mat-table",behaviors:[Polymer.MatInkBehavior,Polymer.XPTableBehavior]});</script>
+
+</dom-module>
+</body></html>

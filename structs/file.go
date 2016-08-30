@@ -1,24 +1,28 @@
 package structs
 
 import (
+	"crypto/md5"
 	"crypto/rand"
+	"encoding/hex"
 	"fmt"
+	"mime"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
+
 	"github.com/Pallinder/go-randomdata"
 	"github.com/kazoup/platform/structs/categories"
 	"github.com/kazoup/platform/structs/content"
 	"github.com/kazoup/platform/structs/intmap"
 	"github.com/kazoup/platform/structs/metadata"
 	"github.com/kazoup/platform/structs/permissions"
-	"mime"
-	"os"
-	"path/filepath"
-	"strings"
-	"time"
 )
 
 // File model
 type File struct {
-	ExistsOnDisk bool `json:"exists_on_disk"`
+	ID           string `json:"id"`
+	ExistsOnDisk bool   `json:"exists_on_disk"`
 	//ID              string                  `json:"_id"`
 	ArchiveComplete bool                    `json:"archive_complete"`
 	FirstSeen       time.Time               `json:"first_seen"`
@@ -29,11 +33,59 @@ type File struct {
 	Permissions     permissions.Permissions `json:"permissions"`
 }
 
+// DesktopFile ...
+type DesktopFile struct {
+	ID       string      `json:"id"`
+	Name     string      `json:"name"`
+	URL      string      `json:"url"`
+	Modified time.Time   `json:"modified"`
+	Size     int64       `json:"size"`
+	IsDir    bool        `json:"is_dir"`
+	Mode     os.FileMode `json:"mode"`
+	Category string      `json:"category"`
+	Depth    int64       `json:"depth"`
+}
+
+// Desktop file optimized
+type DesktopFileOptimised struct {
+	N string
+	U string
+	M time.Time
+	S int64
+	D bool
+	P os.FileMode
+}
+
 // LocalFile model
 type LocalFile struct {
 	Type string
 	Path string
 	Info os.FileInfo
+}
+
+func NewDesktopFile(lf *LocalFile) *DesktopFile {
+	return &DesktopFile{
+		ID:       GetMD5Hash(lf.Path),
+		Name:     lf.Info.Name(),
+		URL:      "/" + lf.Path,
+		Modified: lf.Info.ModTime(),
+		Size:     lf.Info.Size(),
+		IsDir:    lf.Info.IsDir(),
+		Mode:     lf.Info.Mode(),
+		Category: categories.GetDocType(filepath.Ext(lf.Info.Name())),
+		Depth:    urlDepth(filepath.Dir(lf.Path)),
+	}
+}
+
+func NewDesktopFileOptimised(lf *LocalFile) *DesktopFileOptimised {
+	return &DesktopFileOptimised{
+		N: lf.Info.Name(),
+		U: "/" + lf.Path,
+		M: lf.Info.ModTime(),
+		S: lf.Info.Size(),
+		D: lf.Info.IsDir(),
+		P: lf.Info.Mode(),
+	}
 }
 
 // NewFileFromLocal file constructor
@@ -167,7 +219,7 @@ func pathToIntmap(path string) intmap.Intmap {
 	return results
 }
 
-func pseudoUUID() (uuid string) {
+func PseudoUUID() (uuid string) {
 	b := make([]byte, 16)
 	_, err := rand.Read(b)
 	if err != nil {
@@ -178,4 +230,12 @@ func pseudoUUID() (uuid string) {
 	uuid = fmt.Sprintf("%X-%X-%X-%X-%X", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
 
 	return
+}
+
+func urlDepth(str string) int64 {
+	return int64(len(strings.Split(str, "/"))) - 1
+}
+func GetMD5Hash(text string) string {
+	hash := md5.Sum([]byte(text))
+	return hex.EncodeToString(hash[:])
 }

@@ -1,0 +1,6 @@
+elasticsearch
+bin
+dist
+release
+node_modules
+build/*

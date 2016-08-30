@@ -1,15 +1,18 @@
 package handler
 
 import (
+	"crypto/md5"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
+	"io"
 )
 
 // DataSource struct
 type DataSource struct {
-	Client client.Client
+	Client             client.Client
+	ElasticServiceName string
 }
 
 // Create datasource handler
@@ -18,16 +21,20 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 		return errors.BadRequest("go.micro.srv.datasource", "url required")
 	}
 
-	dataSource, err := GetDataSource(req.Endpoint)
+	dataSource, err := GetDataSource(ds, req.Endpoint)
 	if err != nil {
-		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
+		return errors.InternalServerError("go.micro.srv.datasource GetDataSource", err.Error())
 	}
 
 	if err := dataSource.Validate(); err != nil {
-		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
+		return errors.InternalServerError("go.micro.srv.datasource Validate", err.Error())
 	}
 
-	if err := dataSource.Save(req.Endpoint); err != nil {
+	hash := md5.New()
+	io.WriteString(hash, req.Endpoint.Url)
+	req.Endpoint.Id = getMD5Hash(req.Endpoint.Url)
+
+	if err := dataSource.Save(req.Endpoint, req.Endpoint.Id); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 
@@ -40,7 +47,7 @@ func (ds *DataSource) Delete(ctx context.Context, req *proto.DeleteRequest, rsp 
 		return errors.BadRequest("go.micro.srv.datasource", "id required")
 	}
 
-	if err := DeleteDataSource(req.Id); err != nil {
+	if err := DeleteDataSource(ds, req.Id); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 
@@ -49,12 +56,13 @@ func (ds *DataSource) Delete(ctx context.Context, req *proto.DeleteRequest, rsp 
 
 // Search datasources handler
 func (ds *DataSource) Search(ctx context.Context, req *proto.SearchRequest, rsp *proto.SearchResponse) error {
-	result, err := SearchDataSources(req.Query, req.Limit, req.Offset)
+	result, err := SearchDataSources(ds, req)
 	if err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 
-	rsp.Result = result
+	rsp.Result = result.Result
+	rsp.Info = result.Info
 
 	return nil
 }
@@ -65,7 +73,7 @@ func (ds *DataSource) Scan(ctx context.Context, req *proto.ScanRequest, rsp *pro
 		return errors.BadRequest("go.micro.srv.datasource", "id required")
 	}
 
-	if err := ScanDataSource(ctx, req.Id, ds); err != nil {
+	if err := ScanDataSource(ds, ctx, req.Id); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 

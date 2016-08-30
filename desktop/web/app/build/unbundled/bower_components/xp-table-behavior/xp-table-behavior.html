@@ -1,0 +1,7 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-master-behavior/xp-master-behavior.html">
+<link rel="import" href="../xp-selector/xp-selector-multi-behavior.html">
+
+<script>Polymer.XPTableBehaviorImp={sort:function(e,t){XP.assertArgument(XP.isString(e,!0),1,"string"),XP.assertArgument(XP.isVoid(t)||XP.isNumber(t),2,"number");var r=this,i=r.headers[0],l=i&&XP.find(i.cells,function(t){return t.index===e}),n=l&&l.order;return l?(XP.invoke(i.cells,"_setOrder",null),l._setOrder(0===t||!t&&"desc"===n?null:t>0||!t&&!n?"asc":"desc"),r.fire("xp-table-sort",{firer:r,index:l.index,order:l.order}),r):r},listeners:{"xp-active":"_switchHandler"},properties:{findDeep:{readOnly:!0,type:Boolean,value:!0},headers:{notify:!0,readOnly:!0,value:function(){return[]}},itemSelector:{type:String,value:".table-row"},multi:{reflectToAttribute:!0,type:Boolean,value:!0}},created:function(){this.classList.add("table")},ready:function(){this.slavesMap.headers=".table-header"},_switchHandler:function(e){if("click"!==e.type){var t=this,r=e.detail.isActive,i=e.detail.firer,l=t.headers[0];return l!==i?(r?t.select(i,!0):t.unselect(i,!1,!0),void(l&&(l.active=t.selection.length===t.items.length))):r?void t.selectAll():t.selection.length===t.items.length?void t.unselectAll():void(l&&(l.active=!1))}}},Polymer.XPTableBehavior=[Polymer.XPMasterBehavior,Polymer.XPSelectorMultiBehavior,Polymer.XPTableBehaviorImp];</script>
+</head><body></body></html>

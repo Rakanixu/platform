@@ -1,0 +1,1 @@
+!function(){"use strict";var e=require("lodash"),r=require("../assert/assertArgument"),t=require("../tester/isPredicate"),i=require("../tester/isObject");module.exports=function(s,u,n){return r(i(s),1,"Object"),r(t(u),2,"Function | Object | string"),e.findKey(s,u,n)}}();

@@ -1,0 +1,34 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-ink/mat-ink.html">
+<link rel="import" href="../mat-input-behavior/mat-input-behavior.html">
+<link rel="import" href="../mat-input-behavior/mat-input-styles.html">
+
+</head><body><dom-module id="mat-text-area">
+
+    <template strip-whitespace="">
+
+        <style include="mat-input-styles"></style>
+
+        <div class="wrapper">
+            <div class="main">
+                <mat-ink class="label" disabled="[[disabled]]" opacity="[[_computeLabelOpacity(floated)]]">[[label]]</mat-ink>
+                <div class="mirror"></div>
+                <mat-ink class="holder" disabled="[[disabled]]"><content select="textarea"></content></mat-ink>
+            </div>
+            <div class="underline">
+                <mat-ink class="default" opacity="divider"></mat-ink>
+                <mat-ink class="focused" opacity="divider"></mat-ink>
+            </div>
+            <mat-ink class="helper" disabled="[[disabled]]" opacity="hint">
+                <div class="counter">[[_computeCounter(chars, maxLength)]]</div>
+                <div class="description">[[_computeDescription(description, error, invalid, invalidMessage)]]</div>
+            </mat-ink>
+        </div>
+
+    </template>
+
+    <script>Polymer({is:"mat-text-area",behaviors:[Polymer.MatInputBehavior],_commitFrom:function(){var e=this;return e.value=e.input.value,e},_commitIndex:function(e){var t=this;return t.input.tabIndex=e,t},_commitTo:function(){var e=this;return e.value!==e.input.value&&(e.input.value=e.value),e},_inject:function(){var e=this,t=document.createElement("textarea");return t.textContent=e.value,e.listen(t,"input","_inputHandler"),e._setInput(Polymer.dom(e).appendChild(t)),e},_sanitize:function(){var e=this;return e.deburr&&(e.value=XP.deburr(e.input.value)),e},_update:function(){var e=this;return XP.setAttribute(e.input,"disabled",e.disabled),XP.setAttribute(e.input,"minLength",e.minLength),XP.setAttribute(e.input,"name",e.name),XP.setAttribute(e.input,"readonly",e.readonly),XP.setAttribute(e.input,"required",e.required),e},_validate:function(e){XP.assertArgument(XP.isVoid(e)||XP.isFalse(e)||XP.isString(e),1,"string");var t=this;return XP.isDefined(e)&&t.input.setCustomValidity(e||""),t._setInvalidMessage(t.input.validationMessage||null),t._setInvalid(t.input.validity.valid===!1),t._inputHandler(),t},observers:["update(deburr, maxLength, minLength, readonly, required)"],properties:{deburr:{reflectToAttribute:!0,type:Boolean,value:!1},description:{reflectToAttribute:!0,type:String},floated:{computed:"_computeFloated(empty, floatingLabel, focused, fullWidth, label)",notify:!0,reflectToAttribute:!0,type:Boolean,value:!1},floatingLabel:{reflectToAttribute:!0,type:Boolean,value:!1},fullWidth:{reflectToAttribute:!0,type:Boolean,value:!1},helperDisabled:{reflectToAttribute:!0,type:Boolean,value:!1},maxLength:{reflectToAttribute:!0,type:Number},maxRows:{reflectToAttribute:!0,type:Number},minLength:{reflectToAttribute:!0,type:Number},minRows:{reflectToAttribute:!0,type:Number},readonly:{reflectToAttribute:!0,type:Boolean,value:!1},required:{reflectToAttribute:!0,type:Boolean,value:!1}},created:function(){this.classList.add("text-area")},_inputHandler:function(){var e=this;Polymer.XPInputBehaviorImp._inputHandler.apply(e,arguments),e._setChars(e.input.value.length),e._setEmpty(0===e.input.value.length),e._setInvalid(!!e.invalidMessage||e.maxLength>0&&e.chars>e.maxLength)}});</script>
+
+</dom-module>
+</body></html>

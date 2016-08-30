@@ -3,13 +3,13 @@ package fake
 import (
 	"encoding/json"
 	"fmt"
-	"time"
-
+	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	scan "github.com/kazoup/platform/crawler/srv/scan"
-	publish "github.com/kazoup/platform/publish/srv/proto/publish"
 	"github.com/kazoup/platform/structs"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	"log"
+	"time"
 )
 
 // Fake ...
@@ -35,7 +35,7 @@ func NewFake(id int64, conf map[string]string) scan.Scanner {
 }
 
 // Start fake scan
-func (f *Fake) Start() {
+func (f *Fake) Start(crawls map[int64]scan.Scanner, id int64) {
 	go func() {
 		for {
 			select {
@@ -50,20 +50,17 @@ func (f *Fake) Start() {
 					fmt.Errorf("Error marshaling data")
 				}
 
-				req := client.NewRequest(
-					"go.micro.srv.publish",
-					"Publish.Send",
-					&publish.SendRequest{
-						Topic: topic,
-						Data:  string(b),
-					},
-				)
-				res := &publish.SendResponse{}
-				// Call Publish.Send
-				if err := client.Call(context.Background(), req, res); err != nil {
-					fmt.Errorf("%v", err)
+				//Publish
+
+				msg := &crawler.FileMessage{
+					Id:   mockFile.ID,
+					Data: string(b),
 				}
 
+				ctx := context.TODO()
+				if err := client.Publish(ctx, client.NewPublication(topic, msg)); err != nil {
+					log.Printf("Error pubslishing : %", err.Error())
+				}
 				time.Sleep(time.Second)
 			}
 		}

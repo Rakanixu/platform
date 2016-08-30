@@ -1,0 +1,28 @@
+{
+  "name": "xp-doc-parser",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "xp-doc-parser.html",
+  "description": "A custom element used to parse the documentation inside an html or javascript file",
+  "homepage": "http://expandjs.com/elements/xp-doc-parser",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "JSDoc",
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "xp-request": "ExpandJS/xp-request#0.10.0",
+    "polymer": "Polymer/polymer#^1.2.0"
+  }
+}

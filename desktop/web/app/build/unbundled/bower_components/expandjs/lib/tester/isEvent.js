@@ -1,0 +1,1 @@
+!function(){"use strict";var t=require("../tester/isVoid");module.exports=function(e,r){return!!(e&&e.type&&e.preventDefault&&e.stopPropagation)&&!(!t(r)&&e.type!==r)}}();

@@ -1,0 +1,33 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-icon-button/mat-icon-button.html">
+<link rel="import" href="../mat-icons/mat-icons.html">
+<link rel="import" href="../mat-ink/mat-ink.html">
+<link rel="import" href="../mat-input-behavior/mat-input-behavior.html">
+<link rel="import" href="../mat-input-behavior/mat-input-styles.html">
+<link rel="import" href="../mat-typography/mat-typography.html">
+<link rel="import" href="../xp-array-behavior/xp-array-behavior.html">
+
+</head><body><dom-module id="mat-radio">
+
+    <template strip-whitespace="">
+
+        <style include="mat-input-styles"></style>
+
+        <style>:host{@apply (--mat-font-subhead);cursor:pointer;display:block;height:48px;line-height:48px !important;}:host([label=""]),
+            :host(:not([label])){height:40px;margin:4px;width:40px;}:host([flip]){text-align:right;}:host(:not([flip])){text-align:left;}:host ::content input{display:none !important;}:host .wrapper{padding:0;}:host([label=""]) .button,
+            :host(:not([label])) .button{margin:0;}:host([label][flip]:not([label=""])) .button{right:-12px;position:absolute;}:host([label]:not([flip]):not([label=""])) .button{left:-12px;position:absolute;}:host .label{overflow:hidden;text-overflow:ellipsis !important;white-space:nowrap !important;}:host([flip]) .label{padding-right:52px;}:host(:not([flip])) .label{padding-left:52px;}:host .holder{--mat-icon-button-active-icon-one:{color:var(--mat-radio-color, #009688);opacity:1 !important;transform:scale(1) !important;visibility:inherit !important;};--mat-icon-button-active-icon-two:{color:var(--mat-radio-color, #009688);transform:scale(0.5);};}</style>
+
+        <content select="input"></content>
+
+        <div class="wrapper">
+            <mat-icon-button class="holder button" active="{{checked}}" active-icon="mat:brightness-1" disabled="[[disabled]]" focused="{{focused}}" icon="mat:radio-button-unchecked" on-click="_handleToggle"></mat-icon-button>
+            <mat-ink class="label" disabled="[[disabled]]" on-click="_handleToggle">[[label]]</mat-ink>
+        </div>
+
+    </template>
+
+    <script>Polymer({is:"mat-radio",behaviors:[Polymer.XPArrayBehavior,Polymer.MatInputBehavior],blur:function(){var e=this;return e.holder.blur(),e},focus:function(){var e=this;return e.holder.focus(),e},_commitFrom:function(){var e=this;return e.checked=e.input.checked,e.value=e.input.value,e},_commitIndex:function(e){var t=this;return t.holder.tabIndex=e,t},_commitTo:function(){var e=this;return e.checked!==e.input.checked&&(e.input.checked=e.checked),e.value!==e.input.value&&(e.input.value=e.value),e},_inject:function(){var e=this,t=document.createElement("input");return XP.setAttribute(t,"checked",e.checked),XP.setAttribute(t,"type",e.type),XP.setAttribute(t,"value",e.value),e._setInput(Polymer.dom(e).appendChild(t)),e},_update:function(){var e=this;return XP.setAttribute(e.input,"disabled",e.disabled),XP.setAttribute(e.input,"name",e.name),XP.setAttribute(e.input,"type",e.type),XP.setAttribute(e.input,"value",e.value),e},_validate:function(e){XP.assertArgument(XP.isVoid(e)||XP.isFalse(e)||XP.isString(e),1,"string");var t=this;return XP.isDefined(e)&&t.input.setCustomValidity(e||""),t._setInvalidMessage(t.input.validationMessage||null),t._setInvalid(t.input.validity.valid===!1),t},listeners:{keyup:"_handleToggle"},observers:["_checkedChanged(checked)"],properties:{empty:{notify:!0,readOnly:!0,reflectToAttribute:!0,type:Boolean,value:!1},flip:{reflectToAttribute:!0,type:Boolean,value:!1},type:{reflectToAttribute:!0,type:String,value:"radio"}},instances:[],_checkedChanged:function(){var e=this;e.checked&&XP.forEach(e.instances,function(t){t!==e&&t.name===e.name&&t.domHost===e.domHost&&t.form===e.form&&(t.checked=!1)})},created:function(){this.classList.add("radio")},ready:function(){this.append("instances",this)},_handleToggle:function(e){e.button||e.keyCode&&32!==e.keyCode||(this.checked=!0)}});</script>
+
+</dom-module>
+</body></html>

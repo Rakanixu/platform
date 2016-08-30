@@ -2,6 +2,7 @@ package categories
 
 import (
 	"encoding/json"
+	"log"
 )
 
 // Category struct to map file extension into its document type (category)
@@ -15,7 +16,13 @@ type Category struct {
 var categoryMap []*Category
 
 // SetMap helper
-func SetMap(mapping []byte) error {
+func SetMap() error {
+	// Load categories JSON map. categories_map.json
+	mapping, err := Asset("data/categories_map.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	if err := json.Unmarshal(mapping, &categoryMap); err != nil {
 		return err
 	}

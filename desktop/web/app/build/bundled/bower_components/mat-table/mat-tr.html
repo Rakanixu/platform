@@ -1,0 +1,23 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-checkbox/mat-checkbox.html">
+<link rel="import" href="../xp-table-behavior/xp-tr-behavior.html">
+<link rel="import" href="../xp-table-behavior/xp-tr-styles.html">
+
+</head><body><dom-module id="mat-tr">
+
+    <template strip-whitespace="">
+
+        <style include="xp-tr-styles"></style>
+
+        <style>:host .checkbox{margin:3px -12px 4px 12px;}:host-context(mat-table:not([selectable])) .checkbox{display:none !important;}</style>
+
+        <mat-checkbox class="checkbox" checked="{{active}}" on-xp-active="_switchHandler"></mat-checkbox>
+        <content select=".table-cell"></content>
+
+    </template>
+
+    <script>Polymer({is:"mat-tr",behaviors:[Polymer.XPTableRowBehavior]});</script>
+
+</dom-module>
+</body></html>

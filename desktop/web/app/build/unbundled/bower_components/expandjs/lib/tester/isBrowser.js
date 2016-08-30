@@ -1,0 +1,1 @@
+!function(n){"use strict";module.exports=function(){return n}}("undefined"!=typeof window);

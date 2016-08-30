@@ -1,10 +1,9 @@
 package main
 
 import (
-	"log"
-
 	"github.com/kazoup/platform/flag/srv/handler"
 	"github.com/micro/go-micro"
+	"log"
 )
 
 func main() {
@@ -19,7 +18,10 @@ func main() {
 
 	// Register Handler
 	service.Server().Handle(
-		service.Server().NewHandler(new(handler.Flag)),
+		service.Server().NewHandler(&handler.Flag{
+			DbServiceName: "go.micro.srv.db",
+			Client:        service.Client(),
+		}),
 	)
 
 	// Run service

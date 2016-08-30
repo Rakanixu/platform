@@ -1,0 +1,1 @@
+!function(e){"use strict";var r=require("../assert/assertArgument"),t=require("../dom/getBoundings"),i=require("../tester/isVoid"),n=require("../tester/isElement");module.exports=function(o){return r(i(o)||n(o),1,"Element"),Math.floor(o?t(o).height:e.innerHeight)}}("undefined"!=typeof window?window:global);

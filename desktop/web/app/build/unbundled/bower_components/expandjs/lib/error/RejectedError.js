@@ -1,0 +1,1 @@
+!function(){"use strict";var r=require("../error/CustomError");module.exports=function(e,t){r.call(this,"RejectedError",e+" is rejected",t)}}();

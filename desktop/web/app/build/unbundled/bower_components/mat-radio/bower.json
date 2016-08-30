@@ -1,0 +1,37 @@
+{
+  "name": "mat-radio",
+  "license": "BSD-3-Clause",
+  "version": "0.10.0",
+  "main": "mat-radio.html",
+  "description": "A custom element used to display a Material Design radio button",
+  "homepage": "http://expandjs.com/elements/mat-radio",
+  "authors": [
+    "Giuliano Rullo <g.rullo@expandjs.com>",
+    "Maurizio Stefàno <m.stefano@expandjs.com>",
+    "Robert Manolea <r.manolea@expandjs.com>"
+  ],
+  "keywords": [
+    "material design",
+    "material radio button",
+    "expandjs",
+    "web app",
+    "custom elements",
+    "web-components"
+  ],
+  "ignore": [
+    "**/.*"
+  ],
+  "dependencies": {
+    "expandjs": "ExpandJS/expandjs#0.10.0",
+    "mat-icon-button": "ExpandJS/mat-icon-button#0.10.0",
+    "mat-icons": "ExpandJS/mat-icons#0.10.0",
+    "mat-ink": "ExpandJS/mat-ink#0.10.0",
+    "mat-input-behavior": "ExpandJS/mat-input-behavior#0.10.0",
+    "mat-typography": "ExpandJS/mat-typography#0.10.0",
+    "xp-array-behavior": "ExpandJS/xp-array-behavior#0.10.0",
+    "polymer": "Polymer/polymer#^1.2.0"
+  },
+  "devDependencies": {
+    "mat-demo": "ExpandJS/mat-demo#0.10.0"
+  }
+}

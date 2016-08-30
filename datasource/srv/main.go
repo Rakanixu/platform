@@ -16,7 +16,8 @@ func main() {
 	// New service handler
 	service.Server().Handle(
 		service.Server().NewHandler(&handler.DataSource{
-			Client: service.Client(),
+			Client:             service.Client(),
+			ElasticServiceName: "go.micro.srv.db",
 		}),
 	)
 

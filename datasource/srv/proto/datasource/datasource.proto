@@ -12,9 +12,7 @@ service DataSource {
 message Endpoint {
   string id = 1;
   string url = 2;  // example: local://tmp/test, nfs://123.19.2.8/volume1, smb://10.17.77.3/volume1
-  int64 size = 3;
-  int64 files = 4;
-  int64 last_scan = 5;
+  Token token = 3;
 }
 
 message CreateRequest {
@@ -34,13 +32,19 @@ message DeleteResponse {
 }
 
 message SearchRequest {
-  string query = 1;
-  int64 limit = 2;
-  int64 offset = 3;
+  string index = 1;
+  string term = 2;
+  int64 from = 3;
+  int64 size = 4;
+  string category = 5;
+  string url = 6;
+  int64 depth = 7;
+  string type = 8;
 }
 
 message SearchResponse {
-  repeated Endpoint result = 1;
+  string result = 1;
+  string info = 2;
 }
 
 message ScanRequest {
@@ -49,4 +53,11 @@ message ScanRequest {
 
 message ScanResponse {
 
+}
+
+message Token {
+ string access_token = 1;
+ string token_type = 2;
+ string refresh_token = 3;
+ string expiry = 4;
 }

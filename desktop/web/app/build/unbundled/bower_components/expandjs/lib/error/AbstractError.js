@@ -1,0 +1,1 @@
+!function(){"use strict";var r=require("../error/CustomError");module.exports=function(t,e){r.call(this,"AbstractError",t+" is abstract and should be implemented first",e)}}();

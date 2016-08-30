@@ -1,0 +1,120 @@
+<script>
+  'use strict';
+  (function() {
+    var monthNames = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'July',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
+
+    function removeSlashesFromBegining(str) {
+      if (str[0] === '/') {
+        str = str.replace('/', '');
+        return removeSlashesFromBegining(str);
+      } else {
+        return str;
+      }
+    }
+
+    Polymer.UtilBehaviorImp = {
+      openMenu: function() {
+        this.$.navDrawerPanel.openDrawer()
+      },
+      bytesToSize: function(bytes) {
+        if (typeof bytes === 'number') {
+          return window.filesize(bytes);
+        }
+      },
+      timestampToHumanTime: function(timestamp) {
+        var date = new Date(timestamp);
+
+        return monthNames[date.getMonth()] + ' ' + date.getUTCDate() + ', ' + date.getUTCFullYear();
+      },
+      getIcon: function(isDir, category) {
+        if (category === this.categoriesMap.audios) {
+          return 'image:music-note'
+        }
+
+        if (isDir) {
+          return 'mat:folder';
+        } else {
+          return 'mat:description';
+        }
+      },
+      isImage: function(category) {
+        return (category === this.categoriesMap.images);
+      },
+      isVideo: function(category){
+	      return (category === this.categoriesMap.videos);
+	    },
+      isNoVisualMedia: function(category) {
+        return (category !== this.categoriesMap.images && category !== this.categoriesMap.videos);
+      },
+      isAudio: function(category) {
+        return (category === this.categoriesMap.audios);
+      },
+      isDirectory: function(isDir) {
+        return isDir ? 'directory' : 'file';
+      },
+      getAsset: function(path) {
+	      return "http://localhost:8082/desktop/raw/" + path;
+      },
+      getVideoFrame: function(url) {
+        return 'http://localhost:8082/desktop/frame/' + removeSlashesFromBegining(url);
+      },
+      getDatasourceType: function(datasource) {
+        return datasource.split('://')[0];
+      },
+      getDatasourceUrl: function(datasource) {
+        return datasource.split('://')[1];
+      },
+      getDatasourceIcon: function(datasource) {
+        switch (datasource.split('://')[0]) {
+          case 'local':
+            return 'hardware:laptop';
+            break;
+          case 'slack':
+            return 'kazoup-icons:slack';
+            break;
+          case 'googledrive':
+            return 'kazoup-icons:googledrive';
+            break;
+          case 'onedrive':
+            return 'kazoup-icons:onedrive';
+            break;
+        }
+      },
+      documentType: function(fileName) {
+        var extension = fileName.split('.')[fileName.split('.').length - 1];
+
+        switch (extension) {
+          case 'doc':
+          case 'docx':
+            return 'blue';
+          case 'xls':
+          case 'xlsx':
+            return 'green';
+          case 'pdf':
+            return 'red';
+          case 'ppt':
+          case 'pptx':
+            return 'amber-900';
+          default:
+            return '';
+        }
+      },
+      replaceAll: function(str, search, replacement) {
+        return  str.replace(new RegExp(search, 'g'), replacement);
+      }
+    };
+  }());
+</script>

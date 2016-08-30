@@ -1,0 +1,1 @@
+!function(){"use strict";var e=require("lodash"),r=require("../function/ary"),t=require("../assert/assertArgument"),i=require("../tester/isBindable"),s=require("../tester/isObject"),u=require("../collection/filter");module.exports=function(n,a,c){return t(s(n),1,"Object"),e.assign.apply(e,u(arguments,r(i,1)))}}();

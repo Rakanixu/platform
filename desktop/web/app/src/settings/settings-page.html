@@ -1,0 +1,263 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/av-icons.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../../bower_components/neon-animation/neon-animated-pages.html">
+
+<link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
+<link rel="import" href="../../bower_components/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
+
+<link rel="import" href="../../bower_components/mat-list/mat-list.html">
+<link rel="import" href="../../bower_components/mat-text-field/mat-text-field.html">
+<link rel="import" href="../../bower_components/mat-icon/mat-icon.html">
+<link rel="import" href="../../bower_components/mat-icons/mat-icons.html">
+<link rel="import" href="../../bower_components/mat-dialog/mat-dialog.html">
+<link rel="import" href="../../bower_components/mat-icons/image-icons.html">
+<link rel="import" href="../../bower_components/mat-avatar/mat-avatar.html">
+<link rel="import" href="../../bower_components/mat-button/mat-button.html">
+<link rel="import" href="../../bower_components/mat-raised-button/mat-raised-button.html">
+<link rel="import" href="../../bower_components/mat-icon-button/mat-icon-button.html">
+<link rel="import" href="../../bower_components/mat-ripple/mat-ripple.html">
+<link rel="import" href="../../bower_components/mat-item/mat-item.html">
+<link rel="import" href="../../bower_components/mat-divider/mat-divider.html">
+<link rel="import" href="../../bower_components/mat-breadcrumb/mat-breadcrumb.html">
+<link rel="import" href="../../bower_components/mat-breadcrumb/mat-breadcrumb-step.html">
+<link rel="import" href="../../bower_components/web-socket/web-socket.html">
+<link rel="import" href="../../bower_components/mat-toast/mat-toast.html">
+<link rel="import" href="../../bower_components/mat-typography/mat-typography.html">
+<link rel="import" href="../../bower_components/mat-snackbar/mat-snackbar.html">
+<link rel="import" href="../../bower_components/mat-ink/mat-ink.html">
+<link rel="import" href="../../bower_components/mat-menu/mat-menu.html">
+
+<link rel="import" href="../../src/behaviors/util-behavior.html">
+<link rel="import" href="../../src/behaviors/categories-map-behavior.html">
+
+<link rel="import" href="../../src/datasources/datasources-page.html">
+<link rel="import" href="../../src/configuration/configuration-page.html">
+
+<dom-module id="settings-page">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style>
+      :host {
+        display: block;
+      }
+
+      paper-header-panel {
+        --paper-header-panel-shadow: {
+          height: 0;
+        }
+      }
+
+      paper-header-panel[drawer] paper-toolbar {
+        --paper-toolbar-background: var(--dark-primary);
+      }
+
+      paper-toolbar mat-text-field {
+        margin-top: 16px;
+      }
+
+      paper-tabs {
+        --paper-tabs-selection-bar-color: var(--accent);
+      }
+
+      .scan-container {
+        position: absolute;
+        bottom: 15px;
+      }
+
+      .scan-container mat-raised-button {
+        background-color: var(--dark-primary);
+        color: #fff;
+        margin-left: 70px;
+      }
+    </style>
+
+    <paper-drawer-panel id="navDrawerPanel" responsive-width="1280px">
+      <!-- Nav Content -->
+      <div class="nav" drawer>
+        <paper-toolbar class="medium-tall left-menu">
+          <label is="mat-label" class="bottom">[[user.user.username]]@[[user.hostname]]</label>
+        </paper-toolbar>
+
+        <div class="content">
+          <paper-menu selected="-1">
+            <paper-icon-item on-tap="showSearch" data-value="" data-index="0">
+              <iron-icon icon="icons:home" item-icon></iron-icon>All
+            </paper-icon-item>
+            <paper-icon-item on-tap="showSearch" data-value$="[[categoriesMap.documents]]" data-index="1">
+              <iron-icon icon="editor:insert-drive-file" item-icon></iron-icon>Documents
+            </paper-icon-item>
+            <paper-icon-item on-tap="showSearch" data-value$="[[categoriesMap.videos]]" data-index="2">
+              <iron-icon icon="av:movie" item-icon></iron-icon>Movies
+            </paper-icon-item>
+            <paper-icon-item on-tap="showSearch" data-value$="[[categoriesMap.images]]" data-index="3">
+              <iron-icon icon="image:camera-alt" item-icon></iron-icon>Pictures
+            </paper-icon-item>
+            <paper-icon-item on-tap="showSearch" data-value$="[[categoriesMap.audios]]" data-index="4">
+              <iron-icon icon="image:audiotrack" item-icon></iron-icon>Audio
+            </paper-icon-item>
+          </paper-menu>
+
+          <mat-divider></mat-divider>
+
+          <paper-menu>
+            <paper-icon-item id="settings" on-tap="showSettingsPage">
+              <iron-icon icon="icons:settings" item-icon></iron-icon>Settings
+            </paper-icon-item>
+            <paper-icon-item id="intercom_launch">
+              <iron-icon icon="icons:feedback" item-icon></iron-icon>Feedback
+            </paper-icon-item>
+          </paper-menu>
+
+          <div class="scan-container">
+            <mat-raised-button id="scan"
+                               on-tap="scanAll"
+                               label="Start scan"></mat-raised-button>
+          </div>
+        </div>
+      </div>
+
+      <paper-drawer-panel id="mainDrawerPanel"
+                          responsive-width="99999px"
+                          disable-swipe="true"
+                          right-drawer main>
+        <paper-header-panel id="mainPaperHeaderPanel" class="list-panel main" main>
+
+          <!-- List Toolbar -->
+          <paper-toolbar class="medium-tall">
+            <paper-icon-button icon="menu"
+                               on-tap="openMenu"
+                               hidden$="[[mediaQueryLarge]]"></paper-icon-button>
+
+            <div class="flex horizontal layout">
+              <div class="title flex">Settings</div>
+              <paper-icon-button id="addDatasourceIcon"
+                                 icon="icons:add"
+                                 on-tap="openDatasourceDialog"
+                                 hidden$="[[!addDatasourceIconVisible]]"></paper-icon-button>
+            </div>
+
+            <paper-tabs class="middle horizontal layout fit" selected="{{selectedTab}}" scrollable>
+              <paper-tab class="flex">DATA SOURCES</paper-tab>
+              <paper-tab class="flex">CONFIGURATION</paper-tab>
+            </paper-tabs>
+
+            <paper-progress id="progressBar"
+                            class="middle fit"
+                            hidden$="[[!loading]]"
+                            indeterminate></paper-progress>
+          </paper-toolbar>
+
+          <!-- Search results -->
+          <div class="vertical layout center-justified">
+            <neon-animated-pages id="neonPages"
+                                 selected="[[selectedTab]]">
+              <neon-animatable>
+                <datasources-page></datasources-page>
+              </neon-animatable>
+
+              <neon-animatable>
+                <configuration-page></configuration-page>
+              </neon-animatable>
+            </neon-animated-pages>
+          </div>
+
+        </paper-header-panel>
+      </paper-drawer-panel>
+    </paper-drawer-panel>
+
+    <paper-toast id="toast" text=""></paper-toast>
+
+  </template>
+
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'settings-page',
+        behaviors: [
+          Polymer.UtilBehaviorImp,
+          Polymer.NavBehaviorImp,
+          Polymer.AsyncBehaviorImp,
+          Polymer.CategoriesMapBehaviorImp,
+          Polymer.CommonBehaviorImp
+        ],
+        properties: {
+          selectedTab: {
+            type: Object,
+            notify: false,
+            value: 0,
+            observer: 'selectedTabChanged'
+          },
+          addDatasourceIconVisible: {
+            type: Boolean,
+            notify: false,
+            value: true
+          }
+        },
+        selectedTabChanged: function(newVal, oldVal) {
+          if (oldVal !== undefined) {
+            this.activatePage();
+          }
+        },
+        activatePage: function() {
+          this.set('addDatasourceIconVisible', false);
+
+          switch (this.selectedTab) {
+            case 0:
+              this.set('addDatasourceIconVisible', true);
+              this.fireEvent('datasources-page-activated');
+              break;
+            case 1:
+              this.fireEvent('configuration-page-activated');
+              break;
+          }
+        },
+        showSearch: function(e) {
+          this.fireEvent('web-app-activated', {
+            e: {
+              target: {
+                dataset: {
+                  value: e.target.dataset.value
+                }
+              },
+              selectedCategory: {
+                index: e.target.dataset.index,
+                label: (e.target.dataset.index == 0) ? 'My Files' : ''
+              }
+            },
+            callback: 'setCategory' // Internal method to be call
+          });
+          document.querySelector('#ironPages').selected = 1;
+        },
+        scanAll: function() {
+          document.querySelector('web-app').scanAll();
+        },
+        ready: function() {
+          window.addEventListener('settings-page-activated', this.init.bind(this));
+        },
+        init: function(e, detail) {
+          this.activatePage();
+        }
+      });
+    }());
+  </script>
+</dom-module>

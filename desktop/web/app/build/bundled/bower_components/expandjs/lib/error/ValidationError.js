@@ -1,0 +1,1 @@
+!function(){"use strict";var r=require("../error/CustomError");module.exports=function(o,t,e){r.call(this,"ValidationError",o+" must be "+t,e)}}();

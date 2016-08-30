@@ -1,0 +1,17 @@
+<script>
+  'use strict';
+
+  (function() {
+    Polymer.AsyncBehaviorImp = {
+      fireEvent: function(eventName, obj) {
+        // Support for IE
+        // https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Creating_and_triggering_events
+        this._customEvent = document.createEvent('Event');
+        this._customEvent.initEvent(eventName, true, true);
+        this._customEvent.data = obj;
+
+        window.dispatchEvent(this._customEvent);
+      }
+    };
+  }());
+</script>

@@ -1,0 +1,6 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-targeter-behavior/xp-targeter-behavior.html">
+
+<script>Polymer.XPTooltipBehaviorImp={hide:function(){var e=this;return e.showed=!1,e},show:function(){var e=this;return e.showed=!0,e},toggle:function(){var e=this;return e.showed=!e.showed,e},listeners:{mouseout:"hide",mouseover:"show"},properties:{overlay:{notify:!0,readOnly:!0},self:{notify:!0,readOnly:!0,value:function(){return this}},showed:{notify:!0,reflectToAttribute:!0,type:Boolean,value:!1},tip:{reflectToAttribute:!0,type:String}},created:function(){this.classList.add("tooltip")}},Polymer.XPTooltipBehavior=[Polymer.XPTargeterBehavior,Polymer.XPTooltipBehaviorImp];</script>
+</head><body></body></html>
