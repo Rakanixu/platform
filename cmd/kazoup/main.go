@@ -6,6 +6,7 @@ import (
 	crawler "github.com/kazoup/platform/crawler"
 	datasource "github.com/kazoup/platform/datasource"
 	db "github.com/kazoup/platform/db"
+	flag "github.com/kazoup/platform/flag"
 	"github.com/micro/micro/web"
 	"github.com/micro/cli"
 	ccli "github.com/micro/cli"
@@ -23,6 +24,7 @@ func main() {
 	app.Commands = append(app.Commands, crawler.Commands()...)
 	app.Commands = append(app.Commands, datasource.Commands()...)
 	app.Commands = append(app.Commands, db.Commands()...)
+	app.Commands = append(app.Commands, flag.Commands()...)
 	app.Commands = append(app.Commands, web.Commands()...)
 	app.Commands = append(app.Commands, desktopCommands()...)
 	app.Action = func(context *cli.Context) { cli.ShowAppHelp(context) }
