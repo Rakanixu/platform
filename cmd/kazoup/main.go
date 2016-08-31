@@ -7,7 +7,9 @@ import (
 	crawler "github.com/kazoup/platform/crawler"
 	datasource "github.com/kazoup/platform/datasource"
 	db "github.com/kazoup/platform/db"
+	ui "github.com/kazoup/platform/desktop"
 	flag "github.com/kazoup/platform/flag"
+	media "github.com/kazoup/platform/media"
 	search "github.com/kazoup/platform/search"
 	"github.com/micro/cli"
 	ccli "github.com/micro/cli"
@@ -26,7 +28,9 @@ func main() {
 	app.Commands = append(app.Commands, crawler.Commands()...)
 	app.Commands = append(app.Commands, datasource.Commands()...)
 	app.Commands = append(app.Commands, db.Commands()...)
+	app.Commands = append(app.Commands, ui.Commands()...)
 	app.Commands = append(app.Commands, flag.Commands()...)
+	app.Commands = append(app.Commands, media.Commands()...)
 	app.Commands = append(app.Commands, search.Commands()...)
 	app.Commands = append(app.Commands, web.Commands()...)
 	app.Commands = append(app.Commands, desktopCommands()...)

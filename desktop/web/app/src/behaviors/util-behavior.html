@@ -76,10 +76,10 @@
         return stripDataOrigin(path);
       },
       getAsset: function(path) {
-	      return "http://localhost:8082/desktop/raw/" + removeSlashesFromBegining(stripDataOrigin(path));
+	      return "http://localhost:8082/media/raw/" + removeSlashesFromBegining(stripDataOrigin(path));
       },
       getVideoFrame: function(url) {
-        return 'http://localhost:8082/desktop/frame/' + removeSlashesFromBegining(stripDataOrigin(url));
+        return 'http://localhost:8082/media/frame/' + removeSlashesFromBegining(stripDataOrigin(url));
       },
       getDatasourceType: function(datasource) {
         return datasource.split('://')[0];

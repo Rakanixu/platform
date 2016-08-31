@@ -312,7 +312,7 @@
                                                   description="[[item.url]]">
                                             <mat-avatar background="[[documentType(item.name)]]"
                                                         class="primary image"
-                                                        icon-src="http://localhost:8082/desktop/image?source=[[getLocalAsset(item.url)]]&width=128&height=128&mode=fit&quality=100"></mat-avatar>
+                                                        icon-src="http://localhost:8082/media/image?source=[[getLocalAsset(item.url)]]&width=128&height=128&mode=fit&quality=100"></mat-avatar>
                                             <span>[[timestampToHumanTime(item.modified)]], [[bytesToSize(item.size)]]</span>
                                         </mat-item>
                                     </template>
@@ -334,7 +334,7 @@
                                         <div class="photoContent" tabindex$="[[tabIndex]]">
                                             <template is="dom-if" if="[[isImage(item.category)]]">
                                                 <iron-image sizing="contain"
-                                                            src="http://localhost:8082/desktop/image?source=[[getLocalAsset(item.url)]]&width=356&height=356&mode=fit&quality=100"></iron-image>
+                                                            src="http://localhost:8082/media/image?source=[[getLocalAsset(item.url)]]&width=356&height=356&mode=fit&quality=100"></iron-image>
                                             </template>
 
                                             <template is="dom-if" if="[[isVideo(item.category)]]">
@@ -383,7 +383,7 @@
                     <div class="content">
                         <template is="dom-if" if="[[isImage(item.category)]]">
                             <iron-image style="width:100%"
-                                        src="http://localhost:8082/desktop/image?source=[[getLocalAsset(item.url)]]&width=600&mode=fit&quality=100"
+                                        src="http://localhost:8082/media/image?source=[[getLocalAsset(item.url)]]&width=600&mode=fit&quality=100"
                                         preload
                                         fade></iron-image>
                         </template>
@@ -421,7 +421,7 @@
                       label=""
                       on-xp-activate="addDatasourceAndScan"></mat-snackbar>
 
-        <web-socket url="ws://localhost:8082/desktop/crawler/status"
+        <web-socket url="ws://localhost:8082/media/crawler/status"
                     on-open="_onOpen"
                     on-close="_onClose"
                     on-message="_onMessage"
@@ -996,7 +996,7 @@
             },
             openFile: function(e) {
                 ipcRenderer.send('open-file-message', {
-                    url: this.item.url
+                    url: this.getLocalAsset(this.item.url)
                 });
             },
             closeDetails: function(e, detail) {

@@ -222,9 +222,7 @@ ipcMain.on("user-info-message", (event, arg) => {
 });
 
 ipcMain.on("open-file-message", (event, arg) => {
-    var filepath = arg.url.slice(1, arg.url.length);
-
-    shell.openItem(filepath);
+    shell.openItem(arg.url);
 });
 
 function startService(path, args) {
