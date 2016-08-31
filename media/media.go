@@ -62,7 +62,6 @@ func web(ctx *cli.Context) {
 	service.Handle("/webm/", http.StripPrefix("/webm/", handler.NewWebmHandler(contentDir)))
 
 	service.Run()
-
 }
 
 func newServerMemory(srv imageserver.Server) imageserver.Server {
