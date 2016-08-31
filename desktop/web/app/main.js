@@ -169,10 +169,13 @@ app.on("window-all-closed", () => {
     // to stay active until the user quits explicitly with Cmd + Q
     //
     //es.kill("SIGHUP");
-    for (var i = 0; i < running.length; i++) {
-        running[i].kill("SIGHUP");
-        console.log("Killing " + i);
+    if (!isDevelopment) {
+        for (var i = 0; i < running.length; i++) {
+            running[i].kill("SIGHUP");
+            console.log("Killing " + i);
+        }
     }
+
     if (process.platform !== "darwin") {
         app.quit();
     }
@@ -281,19 +284,21 @@ function startServices(){
     resourcesPath = "";
     //Set resources path depending if we running in development - needs to do it better
     if (!isDevelopment) {
-        resourcesPath = process.resourcesPath;
+        resourcesPath = process.resourcesPath;// Starting all required services FIXME:
+        if (process.platform == "win32") {
+            elastic = startService(resourcesPath + "/elasticsearch/bin/elasticsearch.bat", []);
+            kazoup = startService(resourcesPath 		+ "/bin/windows/" + archConvert(process.arch) + "/kazoup.exe", ["desktop"])
+        } else {
+            elastic = startService(resourcesPath + "/elasticsearch/bin/elasticsearch", []);
+            kazoup = startService(resourcesPath 		+ "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup", ["desktop"])
+        }
+        running.push(elastic)
+        running.push(kazoup)
+
     } else {
         //TODO: stupid hack fixme should we point to desktop folder ?
         resourcesPath = __dirname + "/..";
+
     }
-    // Starting all required services FIXME:
-    if (process.platform == "win32") {
-        elastic = startService(resourcesPath + "/elasticsearch/bin/elasticsearch.bat", []);
-        kazoup = startService(resourcesPath 		+ "/bin/windows/" + archConvert(process.arch) + "/kazoup.exe", ["desktop"])
-    } else {
-        elastic = startService(resourcesPath + "/elasticsearch/bin/elasticsearch", []);
-        kazoup = startService(resourcesPath 		+ "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup", ["desktop"])
-    }
-    running.push(elastic)
-    running.push(kazoup)
+
 }
