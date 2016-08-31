@@ -312,7 +312,7 @@
                                                   description="[[item.url]]">
                                             <mat-avatar background="[[documentType(item.name)]]"
                                                         class="primary image"
-                                                        icon-src="http://localhost:8082/desktop/image?source=[[item.url]]&width=128&height=128&mode=fit&quality=100"></mat-avatar>
+                                                        icon-src="http://localhost:8082/desktop/image?source=[[getLocalAsset(item.url)]]&width=128&height=128&mode=fit&quality=100"></mat-avatar>
                                             <span>[[timestampToHumanTime(item.modified)]], [[bytesToSize(item.size)]]</span>
                                         </mat-item>
                                     </template>
@@ -334,7 +334,7 @@
                                         <div class="photoContent" tabindex$="[[tabIndex]]">
                                             <template is="dom-if" if="[[isImage(item.category)]]">
                                                 <iron-image sizing="contain"
-                                                            src="http://localhost:8082/desktop/image?source=[[item.url]]&width=356&height=356&mode=fit&quality=100"></iron-image>
+                                                            src="http://localhost:8082/desktop/image?source=[[getLocalAsset(item.url)]]&width=356&height=356&mode=fit&quality=100"></iron-image>
                                             </template>
 
                                             <template is="dom-if" if="[[isVideo(item.category)]]">
@@ -383,7 +383,7 @@
                     <div class="content">
                         <template is="dom-if" if="[[isImage(item.category)]]">
                             <iron-image style="width:100%"
-                                        src="http://localhost:8082/desktop/image?source=[[item.url]]&width=600&mode=fit&quality=100"
+                                        src="http://localhost:8082/desktop/image?source=[[getLocalAsset(item.url)]]&width=600&mode=fit&quality=100"
                                         preload
                                         fade></iron-image>
                         </template>
@@ -436,7 +436,7 @@
                    handle-as="json"
                    on-error="_handleError"
                    on-response="_handleStartScan"
-                   params="{{rpcStartScanParams}}"></iron-ajax>
+                   params="[[rpcStartScanParams]]"></iron-ajax>
 
         <iron-ajax id="rpcAddDatasource"
                    method="POST"
@@ -445,7 +445,7 @@
                    handle-as="json"
                    on-error="_handleError"
                    on-response="_handleAddDatasource"
-                   params="{{rpcAddDatasourceParams}}"></iron-ajax>
+                   params="[[rpcAddDatasourceParams]]"></iron-ajax>
 
         <iron-ajax id="rpcGetDatasources"
                    method="POST"
@@ -463,7 +463,7 @@
                     handle-as="json"
                    on-error="_handleError"
                    on-response="_handleElastic"
-                   params="{{rpcElasticParams}}"></iron-ajax>
+                   params="[[rpcElasticParams]]"></iron-ajax>
 
         <iron-media-query query="(min-width: 601px)"
                           query-matches="{{mediaQuerySmall}}"></iron-media-query>
@@ -740,55 +740,17 @@
                 }
             },
             _handleElastic: function(e) {
-                var result,
-                    helper = [],
-                    preloadRecords = 0,
-                    initPosition = -1;
-
-            //    this.async(function() {
-
+                var result;
 
                 if (e.detail.response && e.detail.response.result) {
                     result = JSON.parse(e.detail.response.result);
-
                     this.set('totalResults', JSON.parse(e.detail.response.info).total);
-
-                    // Get number of the empty records in results array
-                    _.forEach(this.searchResults, function(listRecord, i) {
-                        if (listRecord.unknown) {
-                            preloadRecords++;
-                            if (initPosition < 0) {
-                                initPosition = i;
-                            }
-                        }
-                    }, this);
-
                     _.forEach(result, function(record) {
-                        if (preloadRecords > 0) {
-                            // There are preload records on the list, replace with retieved data
-                            this.searchResults[initPosition] = record;
-                            initPosition++;
-                            preloadRecords--;
-                        } else {
-                            // List is full of proper data, keep pushing
-                            this.push('searchResults', record);
-                        }
+                        this.push('searchResults', record);
                     }, this);
-
-                    // Clear possible empty records
-                    _.forEach(this.searchResults, function(record) {
-                        if (record && !record.unknown) {
-                            helper.push(record);
-
-                        }
-                    }, this);
-
-                    this.searchResults = helper;
                     this.$.searchList.fire('iron-resize');
                 }
                 this.set('loading', false);
-//}, 3000);
-
             },
             _handleHomeDir: function(e, detail) {
                 this.set('homeDirPath', detail);
@@ -855,12 +817,6 @@
             },
             clearIronList: function() {
                 this.set('searchResults', []);
-                for (var i = 0; i < this.size; i++) {
-                    this.push('searchResults', {
-                        unknown: true
-                    });
-                }
-
                 this.$.searchList.fire('iron-resize');
             },
             setCategory: function(e, detail) {

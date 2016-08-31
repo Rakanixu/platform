@@ -25,6 +25,13 @@
       }
     }
 
+    function stripDataOrigin(str) {
+      if (str.substring(0, 6) === '/local') {
+        return str.substring(6, str.length);
+      }
+      return str
+    }
+
     Polymer.UtilBehaviorImp = {
       openMenu: function() {
         this.$.navDrawerPanel.openDrawer()
@@ -65,11 +72,14 @@
       isDirectory: function(isDir) {
         return isDir ? 'directory' : 'file';
       },
+      getLocalAsset: function(path) {
+        return stripDataOrigin(path);
+      },
       getAsset: function(path) {
-	      return "http://localhost:8082/desktop/raw/" + path;
+	      return "http://localhost:8082/desktop/raw/" + removeSlashesFromBegining(stripDataOrigin(path));
       },
       getVideoFrame: function(url) {
-        return 'http://localhost:8082/desktop/frame/' + removeSlashesFromBegining(url);
+        return 'http://localhost:8082/desktop/frame/' + removeSlashesFromBegining(stripDataOrigin(url));
       },
       getDatasourceType: function(datasource) {
         return datasource.split('://')[0];
