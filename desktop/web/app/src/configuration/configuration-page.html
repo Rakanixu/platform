@@ -83,16 +83,10 @@
           this.set('loading', true);
           this.$.rpcGetFlags.generateRequest();
         },
-/*        clearRipples: function() {
-          _.forEach(document.querySelectorAll('mat-item.flag > div'), function(ripple) {
-            ripple.remove();
-          });
-        },*/
         _handleGetFlags: function(e) {
           this.set('loading', false);
           if (e.detail.response && e.detail.response.result) {
             this.set('flagsResults', JSON.parse(e.detail.response.result));
-      //      this.async(this.clearRipples, 100);
           }
         },
         _handleError: function(e) {
