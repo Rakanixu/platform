@@ -232,11 +232,11 @@
                                          on-xp-activate="resetSearch"
                                          color="white"
                                          hidden$="[[!searching]]"></mat-icon-button>
-
+                        <!--
                         <paper-icon-button id="searchViewIcon"
                                            icon="[[view.icon]]"
                                            on-tap="toggleView"></paper-icon-button>
-
+                        -->
                         <div class="middle breadcrumbs">
                             <!-- Breadcrumbs while browsing. Breadcrumbs fits into screen -->
                             <mat-breadcrumb id="fitBreadcrumbs"
@@ -677,6 +677,8 @@
                 }
             },
             init: function(e, detail) {
+                this.clearIronList();
+
                 if (e.data && e.data.first_scan) {
                     this.showScanSnack();
                 } else if (e.data && e.data.callback && e.data.e) {
@@ -694,20 +696,22 @@
                     breadcrumbUrl = '',
                     length = 0;
 
-                if (url.charAt(0) === '/') {
-                    url = url.substring(1);
-                }
-                length = url.split('/').length;
-
                 this.set('breadcrumbs', []);
-                _.forEach(url.split('/'), function(label, i) {
-                    breadcrumbUrl += '/' + label;
-                    this.push('breadcrumbs', {
-                        label: label,
-                        url: breadcrumbUrl,
-                        depth: i + 1
-                    });
-                }, this);
+                if (url.length) {
+                    if (url.charAt(0) === '/') {
+                        url = url.substring(1);
+                    }
+                    length = url.split('/').length;
+
+                    _.forEach(url.split('/'), function(label, i) {
+                        breadcrumbUrl += '/' + label;
+                        this.push('breadcrumbs', {
+                            label: label,
+                            url: breadcrumbUrl,
+                            depth: i + 1
+                        });
+                    }, this);
+                }
 
                 this.$.breadcrumbsSteps.render();
                 this.$.breadcrumbsStepsMenu.render();
@@ -837,6 +841,7 @@
 
                 this.refreshView();
                 this.set('title', e.target.dataset.value + ' Search');
+                this.set('searching', false);
 
                 // depth must be 0 for search
                 // When there is no search term and user didn't selected a category, then browse
@@ -844,6 +849,7 @@
                     from: 0,
                     size: this.size,
                     category: e.target.dataset.value,
+                    term: '',
                     type: 'file',
                     url: (e.target.dataset.value || this.$.filterConverter.getFilterAsObj().term) ? '' : '/',
                     depth: (e.target.dataset.value || this.$.filterConverter.getFilterAsObj().term) ? 0 : 1
@@ -852,15 +858,22 @@
             listDatasources: function(e, detail) {
                 this.clearIronList();
                 this.set('itemSelected', false);
+                this.$.filterConverter.setValue('category', '');
                 this.$.navDrawerPanel.closeDrawer();
                 this.set('doScan', false);
                 this.set('breadcrumbs', []);
-                this.set('datasourceListView', true);
+                if (this.$.search.input.value) {
+                    this.set('datasourceListView', false);
+                } else {
+                    this.set('datasourceListView', true);
+                }
                 this.set('bigVideoClass', '');
                 this.set('title', 'Kazoup Search');
                 this.$.rpcGetDatasources.generateRequest();
             },
             browseDatasource: function(e, detail) {
+                this.clearIronList();
+
                 if (this.getDatasourceType(e.model.__data__.item.url) === 'local') {
                     var url = this.getDatasourceUrl(e.model.__data__.item.url);
                     var depth = url.split('/').length;
@@ -883,7 +896,7 @@
                     size: this.size,
                     type: 'file',
                     url: e.model.__data__.item.url,
-                    depth: e.model.__data__.item.depth
+                    depth: this.$.filterConverter.getFilterAsObj().term ? 0 : e.model.__data__.item.depth
                 });
             },
             search: function(request) {
@@ -906,13 +919,14 @@
                     clearTimeout(this.searchAsYouTypeTimeout);
                     this.searchAsYouTypeTimeout = setTimeout(function() {
                         this.set('itemSelected', false);
+                        this.set('datasourceListView', false);
                         this.clearIronList();
 
                         this.$.filterConverter.setValues({
                             from: 0,
                             size: this.size,
                             term: term,
-                            url: '',
+                            url: this.$.filterConverter.getFilterAsObj().url ? this.$.filterConverter.getFilterAsObj().url : '',
                             depth: 0,
                             type: 'file'
                         });
@@ -920,21 +934,24 @@
                 }
             },
             resetSearch: function(e, detail) {
+                var depth;
+
                 this.set('itemSelected', false);
                 this.clearIronList();
+                this.toggleSearch();
 
                 this.$.filterConverter.setValues({
                     term: '',
                     from: 0,
                     size: this.size,
-                    url: '/',
-                    depth: this.selectedCategory.index ? 0 : 1,
+                    url: '',
+                    depth: this.$.filterConverter.getFilterAsObj().category ? 0 : 1,
                     type: '' // By default get files and directories
                 });
-                this.toggleSearch();
             },
             toggleSearch: function(e, detail) {
-                this.$.search.input.value = this.$.filterConverter.getFilterAsObj().term;
+                this.$.search.input.value = this.$.filterConverter.getFilterAsObj().term ?
+                  this.$.filterConverter.getFilterAsObj().term : '';
                 this.$.search._inputHandler();
 
                 this.async(function() {
@@ -967,11 +984,13 @@
                 if (e.model.__data__.item.is_dir) {
                     // Browse one level deeper
                     this.clearIronList();
+                    this.set('searching', false);
 
                     this.$.filterConverter.setValues({
                         from: 0,
                         size: this.size,
                         type: 'file',
+                        term: '',
                         url: e.model.__data__.item.url,
                         depth: e.model.__data__.item.depth + 1
                     });
