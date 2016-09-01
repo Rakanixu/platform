@@ -17,7 +17,7 @@ type Crawl struct{}
 
 var Crawls = make(map[int64]scanner.Scanner)
 
-// Start ...
+// Start ... Just for debugging sync, all start / stop to a crawler must be done async with messages
 func (c *Crawl) Start(ctx context.Context, req *crawler.StartRequest, rsp *crawler.StartResponse) error {
 	l := int64(len(Crawls)) + 1
 
@@ -36,7 +36,7 @@ func (c *Crawl) Start(ctx context.Context, req *crawler.StartRequest, rsp *crawl
 	return nil
 }
 
-// Stop ...
+// Stop ... Just for debugging sync, all start / stop to a crawler must be done async with messages
 func (c *Crawl) Stop(ctx context.Context, req *crawler.StopRequest, rsp *crawler.StopResponse) error {
 	scan, ok := Crawls[int64(req.Id)]
 

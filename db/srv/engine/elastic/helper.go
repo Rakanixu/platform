@@ -14,7 +14,7 @@ func indexer(e *elastic) error {
 		for {
 			select {
 			case v := <-e.filesChannel:
-				if err := e.bulk.Index("files", "file", v.Id, "", "", nil, v.Data); err != nil {
+				if err := e.bulk.Index(v.Index, "file", v.Id, "", "", nil, v.Data); err != nil {
 					log.Print("Bulk Indexer error %s", err)
 				}
 			}

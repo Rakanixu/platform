@@ -21,6 +21,7 @@ import (
 type Local struct {
 	Id       int64
 	RootPath string
+	Index    string
 	Running  chan bool
 	Config   map[string]string
 	Scanner  scan.Scanner
@@ -29,23 +30,24 @@ type Local struct {
 const topic string = "go.micro.topic.files"
 
 // NewLocal ...
-func NewLocal(id int64, rootPath string, conf map[string]string) (*Local, error) {
+func NewLocal(id int64, rootPath string, index string, conf map[string]string) (*Local, error) {
 	return &Local{
 		Id:       id,
 		RootPath: path.Clean(rootPath),
+		Index:    index,
 		Running:  make(chan bool, 1),
 		Config:   conf,
 	}, nil
 }
 
 // Start ...
-func (fs *Local) Start(crawls map[int64]scan.Scanner, index int64) {
+func (fs *Local) Start(crawls map[int64]scan.Scanner, ds int64) {
 	go func() {
 		fs.walkDatasourceParents()
 		filepath.Walk(fs.RootPath, fs.walkHandler())
 		// Local scan finished
 		fs.Stop()
-		delete(crawls, index)
+		delete(crawls, ds)
 	}()
 }
 
@@ -88,8 +90,9 @@ func (fs *Local) walkDatasourceParents() error {
 		}
 
 		msg := &crawler.FileMessage{
-			Id:   getMD5Hash(f.URL),
-			Data: string(b),
+			Id:    getMD5Hash(f.URL),
+			Index: fs.Index,
+			Data:  string(b),
 		}
 
 		ctx := context.TODO()
@@ -124,8 +127,9 @@ func (fs *Local) walkHandler() filepath.WalkFunc {
 			}
 
 			msg := &crawler.FileMessage{
-				Id:   getMD5Hash(f.URL),
-				Data: string(b),
+				Id:    getMD5Hash(f.URL),
+				Index: fs.Index,
+				Data:  string(b),
 			}
 
 			ctx := context.TODO()

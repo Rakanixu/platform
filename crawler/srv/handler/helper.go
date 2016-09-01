@@ -21,7 +21,7 @@ func MapScanner(id int64, dataSource *datasource.Endpoint) (scanner.Scanner, err
 	case "fake":
 		s = fake.NewFake(id, config)
 	case "local":
-		s, err = local.NewLocal(id, dsUrl[1], config)
+		s, err = local.NewLocal(id, dsUrl[1], dataSource.Index, config)
 	default:
 		err = errors.BadRequest("go.micro.srv.crawler.Crawl.Start", "Error creating scanner")
 	}
