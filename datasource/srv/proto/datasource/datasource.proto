@@ -12,7 +12,8 @@ service DataSource {
 message Endpoint {
   string id = 1;
   string url = 2;  // example: local://tmp/test, nfs://123.19.2.8/volume1, smb://10.17.77.3/volume1
-  Token token = 3;
+  string index = 3;
+  Token token = 4;
 }
 
 message CreateRequest {

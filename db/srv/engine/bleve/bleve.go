@@ -265,3 +265,27 @@ func (b *bleve) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 		Info:   jsonInfo.String(),
 	}, nil
 }
+
+// RenameIndexAlias to assign indexes (aliases) per datasource
+func (b *bleve) AddAlias(req *db.AddAliasRequest) (*db.AddAliasResponse, error) {
+	// TODO: implement
+	return &db.AddAliasResponse{}, nil
+}
+
+// DeleteIndex from bleve
+func (b *bleve) DeleteIndex(req *db.DeleteIndexRequest) (*db.DeleteIndexResponse, error) {
+	// TODO: implement
+	return &db.DeleteIndexResponse{}, nil
+}
+
+// DeleteAlias from bleve
+func (b *bleve) DeleteAlias(req *db.DeleteAliasRequest) (*db.DeleteAliasResponse, error) {
+	// TODO: implement
+	return &db.DeleteAliasResponse{}, nil
+}
+
+// RenameAlias from bleve
+func (b *bleve) RenameAlias(req *db.RenameAliasRequest) (*db.RenameAliasResponse, error) {
+	// TODO: implement
+	return &db.RenameAliasResponse{}, nil
+}

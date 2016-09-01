@@ -96,3 +96,43 @@ func (db *DB) Search(ctx context.Context, req *proto.SearchRequest, rsp *proto.S
 
 	return nil
 }
+
+// RenameIndexAlias db srv handler
+func (db *DB) AddAlias(ctx context.Context, req *proto.AddAliasRequest, rsp *proto.AddAliasResponse) error {
+	_, err := engine.AddAlias(req)
+	if err != nil {
+		return errors.InternalServerError("go.micro.srv.db", err.Error())
+	}
+
+	return nil
+}
+
+// DeleteIndex db srv handler
+func (db *DB) DeleteIndex(ctx context.Context, req *proto.DeleteIndexRequest, rsp *proto.DeleteIndexResponse) error {
+	_, err := engine.DeleteIndex(req)
+	if err != nil {
+		return errors.InternalServerError("go.micro.srv.db", err.Error())
+	}
+
+	return nil
+}
+
+// DeleteAlias db srv handler
+func (db *DB) DeleteAlias(ctx context.Context, req *proto.DeleteAliasRequest, rsp *proto.DeleteAliasResponse) error {
+	_, err := engine.DeleteAlias(req)
+	if err != nil {
+		return errors.InternalServerError("go.micro.srv.db", err.Error())
+	}
+
+	return nil
+}
+
+// RenameAlias db srv handler
+func (db *DB) RenameAlias(ctx context.Context, req *proto.RenameAliasRequest, rsp *proto.RenameAliasResponse) error {
+	_, err := engine.RenameAlias(req)
+	if err != nil {
+		return errors.InternalServerError("go.micro.srv.db", err.Error())
+	}
+
+	return nil
+}

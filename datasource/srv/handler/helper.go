@@ -165,6 +165,68 @@ func ScanDataSource(ds *DataSource, ctx context.Context, id string) error {
 	return nil
 }
 
+func CreateIndexWithAlias(ds *DataSource, ctx context.Context, endpoint *proto.Endpoint) error {
+	// Create index
+	createIndexSrvReq := client.NewRequest(
+		ds.ElasticServiceName,
+		"DB.CreateIndexWithSettings",
+		&db_proto.CreateIndexWithSettingsRequest{
+			Index: endpoint.Index,
+		},
+	)
+	createIndexSrvRes := &db_proto.CreateIndexWithSettingsResponse{}
+
+	if err := client.Call(ctx, createIndexSrvReq, createIndexSrvRes); err != nil {
+		return err
+	}
+
+	// Put mapping
+	mappingSrvReq := client.NewRequest(
+		ds.ElasticServiceName,
+		"DB.PutMappingFromJSON",
+		&db_proto.PutMappingFromJSONRequest{
+			Index: endpoint.Index,
+			Type:  "files",
+		},
+	)
+	mappingSrvRes := &db_proto.PutMappingFromJSONResponse{}
+
+	if err := client.Call(ctx, mappingSrvReq, mappingSrvRes); err != nil {
+		return err
+	}
+
+	// Create DS alias
+	addAliasReq := client.NewRequest(
+		ds.ElasticServiceName,
+		"DB.AddAlias",
+		&db_proto.AddAliasRequest{
+			Index: endpoint.Index,
+			Alias: endpoint.Id,
+		},
+	)
+	addAliasRes := &db_proto.AddAliasResponse{}
+
+	if err := client.Call(ctx, addAliasReq, addAliasRes); err != nil {
+		return err
+	}
+
+	// Create specific "files" alias
+	addAliasReq = client.NewRequest(
+		ds.ElasticServiceName,
+		"DB.AddAlias",
+		&db_proto.AddAliasRequest{
+			Index: endpoint.Index,
+			Alias: "files",
+		},
+	)
+
+	if err := client.Call(ctx, addAliasReq, addAliasRes); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func getMD5Hash(text string) string {
 	hash := md5.Sum([]byte(text))
 	return hex.EncodeToString(hash[:])

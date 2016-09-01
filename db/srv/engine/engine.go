@@ -26,6 +26,10 @@ type Engine interface {
 	PutMappingFromJSON(req *db.PutMappingFromJSONRequest) (*db.PutMappingFromJSONResponse, error)
 	Status(req *db.StatusRequest) (*db.StatusResponse, error)
 	Search(req *db.SearchRequest) (*db.SearchResponse, error)
+	AddAlias(req *db.AddAliasRequest) (*db.AddAliasResponse, error)
+	DeleteIndex(req *db.DeleteIndexRequest) (*db.DeleteIndexResponse, error)
+	DeleteAlias(req *db.DeleteAliasRequest) (*db.DeleteAliasResponse, error)
+	RenameAlias(req *db.RenameAliasRequest) (*db.RenameAliasResponse, error)
 }
 
 var (
@@ -74,6 +78,22 @@ func Status(req *db.StatusRequest) (*db.StatusResponse, error) {
 
 func Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 	return engine.Search(req)
+}
+
+func AddAlias(req *db.AddAliasRequest) (*db.AddAliasResponse, error) {
+	return engine.AddAlias(req)
+}
+
+func DeleteIndex(req *db.DeleteIndexRequest) (*db.DeleteIndexResponse, error) {
+	return engine.DeleteIndex(req)
+}
+
+func DeleteAlias(req *db.DeleteAliasRequest) (*db.DeleteAliasResponse, error) {
+	return engine.DeleteAlias(req)
+}
+
+func RenameAlias(req *db.RenameAliasRequest) (*db.RenameAliasResponse, error) {
+	return engine.RenameAlias(req)
 }
 
 func TypeFactory(typ string) interface{} {

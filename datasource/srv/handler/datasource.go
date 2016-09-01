@@ -1,12 +1,10 @@
 package handler
 
 import (
-	"crypto/md5"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
-	"io"
 )
 
 // DataSource struct
@@ -26,15 +24,29 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 		return errors.InternalServerError("go.micro.srv.datasource GetDataSource", err.Error())
 	}
 
-	if err := dataSource.Validate(); err != nil {
-		return errors.InternalServerError("go.micro.srv.datasource Validate", err.Error())
+	datasourcesList, err := SearchDataSources(ds, &proto.SearchRequest{
+		Index: "datasources",
+		Type:  "datasource",
+		From:  0,
+		Size:  9999,
+	})
+
+	datasources := "[]"
+	if datasourcesList != nil {
+		datasources = datasourcesList.Result
 	}
 
-	hash := md5.New()
-	io.WriteString(hash, req.Endpoint.Url)
-	req.Endpoint.Id = getMD5Hash(req.Endpoint.Url)
+	// Validate and assigns Id and index
+	endpoint, err := dataSource.Validate(datasources)
+	if err != nil {
+		return errors.BadRequest("go.micro.srv.datasource", err.Error())
+	}
 
-	if err := dataSource.Save(req.Endpoint, req.Endpoint.Id); err != nil {
+	if err := dataSource.Save(endpoint, endpoint.Id); err != nil {
+		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
+	}
+
+	if err := CreateIndexWithAlias(ds, ctx, endpoint); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 

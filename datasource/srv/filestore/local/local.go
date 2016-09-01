@@ -1,11 +1,17 @@
 package local
 
 import (
-	"os"
-	"strings"
-
+	"crypto/md5"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
 	filestorer "github.com/kazoup/platform/datasource/srv/filestore"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"os"
+	"strconv"
+	"strings"
+	"time"
 )
 
 // Local struct
@@ -15,14 +21,42 @@ type Local struct {
 	DataOrigin string
 }
 
-// Validate local datasource (directory exists)
-func (l *Local) Validate() error {
+// Validate local datasource (directory exists) and check for intersections between local datasources
+func (l *Local) Validate(datasources string) (*proto_datasource.Endpoint, error) {
 	i := strings.LastIndex(l.Endpoint.Url, "//")
 
 	l.DataOrigin = l.Endpoint.Url[i+1 : len(l.Endpoint.Url)] // Local filesystem path
 	if _, err := os.Stat(l.DataOrigin); os.IsNotExist(err) {
-		return err
+		return nil, err
 	}
 
-	return nil
+	var endpoints []*proto.Endpoint
+
+	if err := json.Unmarshal([]byte(datasources), &endpoints); err != nil {
+		return nil, err
+	}
+
+	for _, v := range endpoints {
+		if len(v.Url) >= len(l.Endpoint.Url) {
+			if strings.Contains(v.Url, l.Endpoint.Url) {
+				return nil, errors.New("Datasource trying to create is parent of existing ones. Delete them to create a parent datasource.")
+			}
+		} else {
+			if strings.Contains(l.Endpoint.Url, v.Url) {
+				// Datasource tying to create is a child of an existing one
+				return nil, errors.New("Datasource trying to create is being covered by an existing one. Kick off scan if data not present.")
+			}
+		}
+
+	}
+
+	l.Endpoint.Id = getMD5Hash(l.Endpoint.Url)
+	l.Endpoint.Index = "index" + strconv.Itoa(int(time.Now().UnixNano()))
+
+	return &l.Endpoint, nil
+}
+
+func getMD5Hash(text string) string {
+	hash := md5.Sum([]byte(text))
+	return hex.EncodeToString(hash[:])
 }

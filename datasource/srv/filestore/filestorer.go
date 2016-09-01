@@ -2,13 +2,14 @@ package filestorer
 
 import (
 	"encoding/json"
+	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 )
 
 type FileStorer interface {
-	Validate() error
+	Validate(datasources string) (*datasource_proto.Endpoint, error)
 	Save(data interface{}, id string) error
 }
 

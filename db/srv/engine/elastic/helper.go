@@ -2,6 +2,9 @@ package elastic
 
 import (
 	"bytes"
+	"encoding/json"
+	"errors"
+	lib "github.com/mattbaird/elastigo/lib"
 	"log"
 	"strconv"
 )
@@ -32,6 +35,49 @@ type ElasticQuery struct {
 	Url      string
 	Depth    int64
 	Type     string
+}
+
+type JsonRemoveAliases struct {
+	Actions []JsonAliasRemove `json:"actions"`
+}
+
+type JsonAliasRemove struct {
+	Remove lib.JsonAlias `json:"remove"`
+}
+
+// The API allows you to remove an index alias through an API.
+func (e *elastic) RemoveAlias(index string, alias string) (lib.BaseResponse, error) {
+	var url string
+	var retval lib.BaseResponse
+
+	if len(index) > 0 {
+		url = "/_aliases"
+	} else {
+		return retval, errors.New("alias required")
+	}
+
+	jsonAliases := JsonRemoveAliases{}
+	jsonAliasRemove := JsonAliasRemove{}
+	jsonAliasRemove.Remove.Alias = alias
+	jsonAliasRemove.Remove.Index = index
+	jsonAliases.Actions = append(jsonAliases.Actions, jsonAliasRemove)
+	requestBody, err := json.Marshal(jsonAliases)
+
+	if err != nil {
+		return retval, err
+	}
+
+	body, err := e.conn.DoCommand("POST", url, nil, requestBody)
+	if err != nil {
+		return retval, err
+	}
+
+	jsonErr := json.Unmarshal(body, &retval)
+	if jsonErr != nil {
+		return retval, jsonErr
+	}
+
+	return retval, err
 }
 
 // Query generates a Elasticsearch DSL query

@@ -11,6 +11,10 @@ service Elastic {
   rpc PutMappingFromJSON(PutMappingFromJSONRequest) returns (PutMappingFromJSONRequest) {}
   rpc Status(StatusRequest) returns (StatusResponse) {}
   rpc Search(SearchRequest) returns (SearchResponse) {}
+  rpc AddAlias(AddAliasRequest) returns (AddAliasResponse) {}
+  rpc DeleteIndex(DeleteIndexRequest) returns (DeleteIndexResponse) {}
+  rpc DeleteAlias(DeleteAliasRequest) returns (DeleteAliasResponse) {}
+  rpc RenameAlias(RenameAliasRequest) returns (RenameAliasResponse) {}
 }
 
 message DocRef {
@@ -113,4 +117,40 @@ message SearchRequest {
 message SearchResponse {
   string result = 1;
   string info = 2;
+}
+
+message AddAliasRequest {
+  string index = 1;
+  string alias = 2;
+}
+
+message AddAliasResponse {
+
+}
+
+message DeleteIndexRequest {
+  string index = 1;
+}
+
+message DeleteIndexResponse {
+
+}
+
+message DeleteAliasRequest {
+  string index = 1;
+  string alias = 2;
+}
+
+message DeleteAliasResponse {
+
+}
+
+message RenameAliasRequest {
+  string index = 1;
+  string old_alias = 2;
+  string new_alias = 3;
+}
+
+message RenameAliasResponse {
+
 }

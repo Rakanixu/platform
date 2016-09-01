@@ -58,15 +58,6 @@
                on-response="_handleDbStatus"
                params="{{rpcDbStatusParams}}"></iron-ajax>
 
-    <iron-ajax id="rpcDbFilesIndex"
-               method="POST"
-               content-type="application/json"
-               url="http://localhost:8082/rpc"
-               handle-as="json"
-               on-error="_handleError"
-               on-response="_handleDbFilesIndex"
-               params="{{rpcDbFilesIndexParams}}"></iron-ajax>
-
     <iron-ajax id="rpcDbDatasourcesIndex"
                method="POST"
                content-type="application/json"
@@ -75,15 +66,6 @@
                on-error="_handleError"
                on-response="_handleDbDatasourcesIndex"
                params="{{rpcDbDatasorucesIndexParams}}"></iron-ajax>
-
-    <iron-ajax id="rpcDbFilesMapping"
-               method="POST"
-               content-type="application/json"
-               url="http://localhost:8082/rpc"
-               handle-as="json"
-               on-error="_handleError"
-               on-response="_handleDbFilesMapping"
-               params="{{rpcDbFilesMappingParams}}"></iron-ajax>
 
     <iron-ajax id="rpcSetFlags"
                method="POST"
@@ -136,20 +118,6 @@
               };
             }
           },
-          rpcDbFilesIndexParams: {
-            type: Object,
-            notify: false,
-            value: function() {
-              return {
-                service: 'go.micro.srv.db',
-                method: 'DB.CreateIndexWithSettings',
-                request: {
-                  index: 'files',
-                  type: 'file'
-                }
-              };
-            }
-          },
           rpcDbDatasourcesIndexParams: {
             type: Object,
             notify: false,
@@ -160,20 +128,6 @@
                 request: {
                   index: 'datasources',
                   type: 'datasource'
-                }
-              };
-            }
-          },
-          rpcDbFilesMappingParams: {
-            type: Object,
-            notify: false,
-            value: function() {
-              return {
-                service: 'go.micro.srv.db',
-                method: 'DB.PutMappingFromJSON',
-                request: {
-                  index: 'files',
-                  type: 'file'
                 }
               };
             }
@@ -196,11 +150,9 @@
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.search',
-                method: 'Search.Search',
+                service: 'go.micro.srv.datasource',
+                method: 'DataSource.Search',
                 request: {
-                  index: 'files',
-                  type: 'file',
                   from: 0,
                   size: 0
                 }
@@ -210,9 +162,7 @@
         },
         ready: function() {
           this.$.rpcDbStatus.body = this.rpcDbStatusParams;
-          this.$.rpcDbFilesIndex.body = this.rpcDbFilesIndexParams;
           this.$.rpcDbDatasourcesIndex.body = this.rpcDbDatasourcesIndexParams;
-          this.$.rpcDbFilesMapping.body = this.rpcDbFilesMappingParams;
           this.$.rpcSetFlags.body = this.rpcSetFlagsParams;
           this.$.rpcSearch.body = this.rpcSearchParams;
 
@@ -237,11 +187,9 @@
                 this.$.rpcSetFlags.generateRequest();
               }
 
-              if (_.isEmpty(status.metadata.indices.files)) {
-                this.$.rpcDbFilesIndex.generateRequest();
-              } else {
+              this.async(function() {
                 this.$.rpcSearch.generateRequest();
-              }
+              }, this.wait);
             } else {
               this.async(function() {
                 this.$.rpcDbStatus.generateRequest();
@@ -249,18 +197,8 @@
             }
           }
         },
-        _handleDbFilesIndex: function(e) {
-          this.async(function() {
-            this.$.rpcDbFilesMapping.generateRequest();
-          }, this.wait);
-        },
         _handleDbDatasourcesIndex: function(e) {
 
-        },
-        _handleDbFilesMapping: function(e) {
-          this._loadPage(1, 'web-app-activated', {
-            first_scan: true
-          });
         },
         _handleSetFlags: function(e) {
 

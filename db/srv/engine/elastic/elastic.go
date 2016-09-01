@@ -217,3 +217,53 @@ func (e *elastic) Status(req *db.StatusRequest) (*db.StatusResponse, error) {
 
 	return response, err
 }
+
+// AddAlias to assign indexes (aliases) per datasource
+func (e *elastic) AddAlias(req *db.AddAliasRequest) (*db.AddAliasResponse, error) {
+	_, err := e.conn.AddAlias(req.Index, req.Alias)
+	if err != nil {
+		return nil, err
+	}
+
+	return &db.AddAliasResponse{}, nil
+}
+
+// DeleteIndex from ES
+func (e *elastic) DeleteIndex(req *db.DeleteIndexRequest) (*db.DeleteIndexResponse, error) {
+	_, err := e.conn.DeleteIndex(req.Index)
+	if err != nil {
+		return nil, err
+	}
+
+	return &db.DeleteIndexResponse{}, nil
+}
+
+// DeleteAlias from ES
+func (e *elastic) DeleteAlias(req *db.DeleteAliasRequest) (*db.DeleteAliasResponse, error) {
+	_, err := e.RemoveAlias(req.Index, req.Alias)
+	if err != nil {
+		return nil, err
+	}
+
+	return &db.DeleteAliasResponse{}, nil
+}
+
+// RenameAlias from ES
+func (e *elastic) RenameAlias(req *db.RenameAliasRequest) (*db.RenameAliasResponse, error) {
+	var err error
+	log.Println("RENAMINFG")
+	_, err = e.RemoveAlias(req.Index, req.OldAlias)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = e.AddAlias(&db.AddAliasRequest{
+		Index: req.Index,
+		Alias: req.NewAlias,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &db.RenameAliasResponse{}, nil
+}
