@@ -178,6 +178,23 @@ func (e *elastic) CreateIndexWithSettings(req *db.CreateIndexWithSettingsRequest
 
 // PutMappingFromJSON puts a mapping into ES
 func (e *elastic) PutMappingFromJSON(req *db.PutMappingFromJSONRequest) (*db.PutMappingFromJSONResponse, error) {
+	var clusterHealth lib.ClusterHealthResponse
+	var err error
+
+	// Check for cluster health, continue when changes from red to safer (yellow / green)
+	// http://xbib.org/elasticsearch/2.1.1/apidocs/org/elasticsearch/indices/IndexPrimaryShardNotAllocatedException.html
+	clusterHealth, err = e.conn.Health(req.Index)
+	if err != nil {
+		return &db.PutMappingFromJSONResponse{}, err
+	}
+
+	for clusterHealth.Status == "red" {
+		clusterHealth, err = e.conn.Health(req.Index)
+		if err != nil {
+			return &db.PutMappingFromJSONResponse{}, err
+		}
+	}
+
 	if len(req.Type) == 0 {
 		return nil, errors.New("document type required")
 	}
@@ -251,7 +268,7 @@ func (e *elastic) DeleteAlias(req *db.DeleteAliasRequest) (*db.DeleteAliasRespon
 // RenameAlias from ES
 func (e *elastic) RenameAlias(req *db.RenameAliasRequest) (*db.RenameAliasResponse, error) {
 	var err error
-	log.Println("RENAMINFG")
+
 	_, err = e.RemoveAlias(req.Index, req.OldAlias)
 	if err != nil {
 		return nil, err

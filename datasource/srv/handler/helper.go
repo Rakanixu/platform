@@ -186,7 +186,7 @@ func CreateIndexWithAlias(ds *DataSource, ctx context.Context, endpoint *proto.E
 		"DB.PutMappingFromJSON",
 		&db_proto.PutMappingFromJSONRequest{
 			Index: endpoint.Index,
-			Type:  "files",
+			Type:  "file",
 		},
 	)
 	mappingSrvRes := &db_proto.PutMappingFromJSONResponse{}
