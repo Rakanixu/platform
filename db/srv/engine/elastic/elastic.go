@@ -164,13 +164,20 @@ func (e *elastic) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 func (e *elastic) CreateIndexWithSettings(req *db.CreateIndexWithSettingsRequest) (*db.CreateIndexWithSettingsResponse, error) {
 	var settingsMap map[string]interface{}
 
-	if err := json.Unmarshal(*e.esSettings, &settingsMap); err != nil {
+	exists, err := e.conn.IndicesExists(req.Index)
+	if err != nil {
 		return &db.CreateIndexWithSettingsResponse{}, err
 	}
 
-	_, err := e.conn.CreateIndexWithSettings(req.Index, settingsMap)
-	if err != nil {
-		return &db.CreateIndexWithSettingsResponse{}, err
+	if !exists {
+		if err := json.Unmarshal(*e.esSettings, &settingsMap); err != nil {
+			return &db.CreateIndexWithSettingsResponse{}, err
+		}
+
+		_, err := e.conn.CreateIndexWithSettings(req.Index, settingsMap)
+		if err != nil {
+			return &db.CreateIndexWithSettingsResponse{}, err
+		}
 	}
 
 	return &db.CreateIndexWithSettingsResponse{}, nil
