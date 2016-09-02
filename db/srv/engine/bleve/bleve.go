@@ -23,17 +23,19 @@ var (
 )
 
 type bleve struct {
-	mu           sync.Mutex
-	indexMap     map[string]lib.Index
-	filesChannel chan *crawler.FileMessage
-	batchSize    int
+	mu              sync.Mutex
+	indexMap        map[string]lib.Index
+	filesChannel    chan *crawler.FileMessage
+	crawlerFinished chan *crawler.CrawlerFinishedMessage
+	batchSize       int
 }
 
 func init() {
 	engine.Register(&bleve{
-		indexMap:     make(map[string]lib.Index),
-		filesChannel: make(chan *crawler.FileMessage),
-		batchSize:    1000,
+		indexMap:        make(map[string]lib.Index),
+		filesChannel:    make(chan *crawler.FileMessage),
+		crawlerFinished: make(chan *crawler.CrawlerFinishedMessage),
+		batchSize:       1000,
 	})
 }
 
@@ -65,12 +67,23 @@ func (b *bleve) Init() error {
 		return err
 	}
 
+	if err := enricher(b); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // Subscribe to crawler file messages
-func (b *bleve) Subscribe(ctx context.Context, msg *crawler.FileMessage) error {
+func (b *bleve) SubscribeFiles(ctx context.Context, msg *crawler.FileMessage) error {
 	b.filesChannel <- msg
+
+	return nil
+}
+
+// Subscribe to crawler file messages
+func (b *bleve) SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedMessage) error {
+	b.crawlerFinished <- msg
 
 	return nil
 }

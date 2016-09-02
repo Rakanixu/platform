@@ -29,10 +29,11 @@ type Local struct {
 }
 
 const (
-	topic       = "go.micro.topic.files"
-	indexHelper = "files_helper"
-	filesAlias  = "files"
-	fileType    = "file"
+	filesTopic           = "go.micro.topic.files"
+	crawlerFinishedTopic = "go.micro.topic.crawlerfinished"
+	indexHelper          = "files_helper"
+	filesAlias           = "files"
+	fileType             = "file"
 )
 
 // NewLocal ...
@@ -54,6 +55,7 @@ func (fs *Local) Start(crawls map[int64]scan.Scanner, ds int64) {
 		// Local scan finished
 		fs.Stop()
 		delete(crawls, ds)
+		fs.sendCrawlerFinishedMsg()
 	}()
 }
 
@@ -138,7 +140,7 @@ func (fs *Local) walkDatasourceParents() error {
 		}
 
 		ctx := context.TODO()
-		if err := client.Publish(ctx, client.NewPublication(topic, msg)); err != nil {
+		if err := client.Publish(ctx, client.NewPublication(filesTopic, msg)); err != nil {
 			return err
 		}
 	}
@@ -175,7 +177,7 @@ func (fs *Local) walkHandler() filepath.WalkFunc {
 			}
 
 			ctx := context.TODO()
-			if err := client.Publish(ctx, client.NewPublication(topic, msg)); err != nil {
+			if err := client.Publish(ctx, client.NewPublication(filesTopic, msg)); err != nil {
 				return err
 			}
 
@@ -183,6 +185,18 @@ func (fs *Local) walkHandler() filepath.WalkFunc {
 
 		return nil
 	}
+}
+
+func (fs *Local) sendCrawlerFinishedMsg() error {
+	msg := &crawler.CrawlerFinishedMessage{
+		DatasourceId: fs.Index,
+	}
+
+	if err := client.Publish(context.Background(), client.NewPublication(crawlerFinishedTopic, msg)); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func getMD5Hash(text string) string {

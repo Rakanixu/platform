@@ -17,7 +17,8 @@ const (
 
 type Engine interface {
 	Init() error
-	Subscribe(ctx context.Context, msg *crawler.FileMessage) error
+	SubscribeFiles(ctx context.Context, msg *crawler.FileMessage) error
+	SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedMessage) error
 	Create(req *db.CreateRequest) (*db.CreateResponse, error)
 	Read(req *db.ReadRequest) (*db.ReadResponse, error)
 	Update(req *db.UpdateRequest) (*db.UpdateResponse, error)
@@ -44,8 +45,12 @@ func Init() error {
 	return engine.Init()
 }
 
-func Subscribe(ctx context.Context, msg *crawler.FileMessage) error {
-	return engine.Subscribe(ctx, msg)
+func SubscribeFiles(ctx context.Context, msg *crawler.FileMessage) error {
+	return engine.SubscribeFiles(ctx, msg)
+}
+
+func SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedMessage) error {
+	return engine.SubscribeCrawlerFinished(ctx, msg)
 }
 
 func Create(req *db.CreateRequest) (*db.CreateResponse, error) {

@@ -14,11 +14,12 @@ import (
 )
 
 type elastic struct {
-	conn         *lib.Conn
-	bulk         *lib.BulkIndexer
-	filesChannel chan *crawler.FileMessage
-	esMapping    *[]byte // For files
-	esSettings   *[]byte // For files index
+	conn            *lib.Conn
+	bulk            *lib.BulkIndexer
+	filesChannel    chan *crawler.FileMessage
+	crawlerFinished chan *crawler.CrawlerFinishedMessage
+	esMapping       *[]byte // For files
+	esSettings      *[]byte // For files index
 }
 
 func init() {
@@ -34,9 +35,10 @@ func init() {
 	}
 
 	engine.Register(&elastic{
-		filesChannel: make(chan *crawler.FileMessage),
-		esMapping:    &es_mapping,
-		esSettings:   &es_settings,
+		filesChannel:    make(chan *crawler.FileMessage),
+		crawlerFinished: make(chan *crawler.CrawlerFinishedMessage),
+		esMapping:       &es_mapping,
+		esSettings:      &es_settings,
 	})
 }
 
@@ -52,6 +54,10 @@ func (e *elastic) Init() error {
 		return err
 	}
 
+	if err := enricher(e); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -63,8 +69,15 @@ func (e *elastic) Create(req *db.CreateRequest) (*db.CreateResponse, error) {
 }
 
 // Subscribe to crawler file messages
-func (e *elastic) Subscribe(ctx context.Context, msg *crawler.FileMessage) error {
+func (e *elastic) SubscribeFiles(ctx context.Context, msg *crawler.FileMessage) error {
 	e.filesChannel <- msg
+
+	return nil
+}
+
+// Subscribe to crawler finished message
+func (e *elastic) SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedMessage) error {
+	e.crawlerFinished <- msg
 
 	return nil
 }
@@ -119,10 +132,8 @@ func (e *elastic) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 	if err != nil {
 		return &db.SearchResponse{}, nil
 	}
-	log.Println("B", query)
+
 	out, err := e.conn.Search(req.Index, req.Type, nil, query)
-	log.Println(out)
-	log.Println("A", err)
 	if err != nil {
 		return &db.SearchResponse{}, err
 	}

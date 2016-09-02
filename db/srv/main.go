@@ -10,7 +10,10 @@ import (
 	"log"
 )
 
-const FileTopic string = "go.micro.topic.files"
+const (
+	FileTopic            = "go.micro.topic.files"
+	CrawlerFinishedTopic = "go.micro.topic.crawlerfinished"
+)
 
 func main() {
 	// New Service
@@ -38,7 +41,13 @@ func main() {
 
 	// Attach indexer subscriber
 	if err := service.Server().Subscribe(
-		service.Server().NewSubscriber(FileTopic, engine.Subscribe)); err != nil {
+		service.Server().NewSubscriber(FileTopic, engine.SubscribeFiles)); err != nil {
+		log.Fatal(err)
+	}
+
+	// Attach crawler finished subscriber
+	if err := service.Server().Subscribe(
+		service.Server().NewSubscriber(CrawlerFinishedTopic, engine.SubscribeCrawlerFinished)); err != nil {
 		log.Fatal(err)
 	}
 

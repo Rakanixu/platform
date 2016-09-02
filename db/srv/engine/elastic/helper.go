@@ -25,6 +25,20 @@ func indexer(e *elastic) error {
 	return nil
 }
 
+func enricher(e *elastic) error {
+	go func() {
+		for {
+			select {
+			case v := <-e.crawlerFinished:
+				log.Println(v)
+
+			}
+		}
+	}()
+
+	return nil
+}
+
 // TODO: use gabs (handle JSON in go)
 // ElasticQuery to generate DSL query from params
 type ElasticQuery struct {

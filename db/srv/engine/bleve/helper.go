@@ -64,6 +64,11 @@ func indexer(b *bleve) error {
 	return nil
 }
 
+func enricher(b *bleve) error {
+	// TODO: implement
+	return nil
+}
+
 func doBatch(b *bleve, batch *lib.Batch) {
 	b.indexMap[filesIndex].Batch(batch)
 	batch.Reset()

@@ -46,13 +46,19 @@ message StatusRequest {
 }
 
 message StatusResponse {
-   int64 counter= 1;	
+  int64 counter= 1;
 }
+
 message Metric {
-   int64 count = 1;
+  int64 count = 1;
 }
+
 message FileMessage {
-   string id = 1;
-   string index = 2;
-   string data = 3;
+  string id = 1;
+  string index = 2;
+  string data = 3;
+}
+
+message CrawlerFinishedMessage {
+  string datasource_id = 1;
 }
