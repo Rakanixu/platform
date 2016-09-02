@@ -39,6 +39,12 @@
     "url": {
       "type": "string",
       "analyzer": "path_analyzer"
+    },
+    "is_dir": {
+      "type": "boolean"
+    },
+    "size": {
+      "type": "long"
     }
   }
 }

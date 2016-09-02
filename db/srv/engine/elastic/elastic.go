@@ -17,17 +17,11 @@ type elastic struct {
 	conn         *lib.Conn
 	bulk         *lib.BulkIndexer
 	filesChannel chan *crawler.FileMessage
-	esFlags      *[]byte
 	esMapping    *[]byte // For files
 	esSettings   *[]byte // For files index
 }
 
 func init() {
-	es_flags, err := data.Asset("data/es_flags.json")
-	if err != nil {
-		// Asset was not found.
-		log.Fatal(err)
-	}
 	es_mapping, err := data.Asset("data/es_mapping_files_new.json")
 	if err != nil {
 		// Asset was not found.
@@ -41,7 +35,6 @@ func init() {
 
 	engine.Register(&elastic{
 		filesChannel: make(chan *crawler.FileMessage),
-		esFlags:      &es_flags,
 		esMapping:    &es_mapping,
 		esSettings:   &es_settings,
 	})
@@ -126,15 +119,16 @@ func (e *elastic) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 	if err != nil {
 		return &db.SearchResponse{}, nil
 	}
-
+	log.Println("B", query)
 	out, err := e.conn.Search(req.Index, req.Type, nil, query)
+	log.Println(out)
+	log.Println("A", err)
 	if err != nil {
 		return &db.SearchResponse{}, err
 	}
 
 	for _, v := range out.Hits.Hits {
 		s := engine.TypeFactory(req.Type)
-
 		data, err := v.Source.MarshalJSON()
 		if err != nil {
 			return &db.SearchResponse{}, err
