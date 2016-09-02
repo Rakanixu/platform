@@ -16,6 +16,7 @@ import (
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	"log"
 	"strings"
 )
 
@@ -28,6 +29,7 @@ const (
 	nfsEndpoint        = "nfs://"
 	smbEndpoint        = "smb://"
 	topic              = "go.micro.topic.scan"
+	filesHelperIndex   = "files_helper"
 )
 
 // GetDataSource returns a FileStorer interface
@@ -85,6 +87,7 @@ func GetDataSource(ds *DataSource, endpoint *proto.Endpoint) (filestorer.FileSto
 func DeleteDataSource(ds *DataSource, id string) error {
 	var endpoint *proto.Endpoint
 
+	// Get datasource
 	readReq := client.NewRequest(
 		ds.ElasticServiceName,
 		"DB.Read",
@@ -104,6 +107,12 @@ func DeleteDataSource(ds *DataSource, id string) error {
 		return err
 	}
 
+	// Remove records from helper index that only belongs to the datasource
+	if err := cleanFilesHelperIndex(ds, endpoint); err != nil {
+		return err
+	}
+
+	// Delete record from datasources index
 	srvReq := client.NewRequest(
 		ds.ElasticServiceName,
 		"DB.Delete",
@@ -119,6 +128,7 @@ func DeleteDataSource(ds *DataSource, id string) error {
 		return err
 	}
 
+	// Remove index for datasource associated with it
 	deleteIndexReq := client.NewRequest(
 		ds.ElasticServiceName,
 		"DB.DeleteIndex",
@@ -259,6 +269,64 @@ func CreateIndexWithAlias(ds *DataSource, ctx context.Context, endpoint *proto.E
 	}
 
 	return nil
+}
+
+func cleanFilesHelperIndex(ds *DataSource, endpoint *proto.Endpoint) error {
+	var datasources []*proto.Endpoint
+
+	rsp, err := SearchDataSources(ds, &proto.SearchRequest{
+		Index: "datasources",
+		Type:  "datasource",
+		From:  0,
+		Size:  9999,
+	})
+	if err != nil {
+		return err
+	}
+
+	if err := json.Unmarshal([]byte(rsp.Result), &datasources); err != nil {
+		return err
+	}
+
+	idx := strings.LastIndex(endpoint.Url, "/")
+	if idx > 0 {
+		deleteZombieRecords(ds, datasources, endpoint.Url[:idx])
+	}
+
+	return nil
+}
+
+func deleteZombieRecords(ds *DataSource, datasources []*proto.Endpoint, urlToDelete string) {
+	delete := 0
+
+	for _, v := range datasources {
+		if !strings.Contains(v.Url, urlToDelete) {
+			log.Println("something to delete", v.Url, urlToDelete)
+			delete++
+		}
+	}
+
+	if delete >= len(datasources)-1 {
+		deleteReq := client.NewRequest(
+			ds.ElasticServiceName,
+			"DB.Delete",
+			&db_proto.DeleteRequest{
+				Index: filesHelperIndex,
+				Type:  "file",
+				Id:    getMD5Hash(urlToDelete[len(localEndpoint):]),
+			},
+		)
+		deleteRes := &db_proto.DeleteResponse{}
+
+		if err := client.Call(context.Background(), deleteReq, deleteRes); err != nil {
+			log.Println("ERROR", err)
+		}
+		idx := strings.LastIndex(urlToDelete, "/")
+
+		if idx > 0 && urlToDelete[:idx] != "local:/" {
+			deleteZombieRecords(ds, datasources, urlToDelete[:idx])
+		}
+	}
 }
 
 func getMD5Hash(text string) string {

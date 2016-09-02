@@ -61,11 +61,12 @@ type LocalFile struct {
 	Type string
 	Path string
 	Info os.FileInfo
+	Id   string
 }
 
 func NewDesktopFile(lf *LocalFile) *DesktopFile {
 	return &DesktopFile{
-		ID:       GetMD5Hash(lf.Path),
+		ID:       lf.Id,
 		Name:     lf.Info.Name(),
 		URL:      "/local" + lf.Path,
 		Modified: lf.Info.ModTime(),
@@ -235,6 +236,7 @@ func PseudoUUID() (uuid string) {
 func urlDepth(str string) int64 {
 	return int64(len(strings.Split(str, "/")) - 1)
 }
+
 func GetMD5Hash(text string) string {
 	hash := md5.Sum([]byte(text))
 	return hex.EncodeToString(hash[:])

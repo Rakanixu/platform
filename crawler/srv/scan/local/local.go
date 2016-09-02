@@ -123,6 +123,7 @@ func (fs *Local) walkDatasourceParents() error {
 			Type: "LocalFile",
 			Path: path,
 			Info: info,
+			Id:   getMD5Hash(path),
 		})
 
 		b, err := json.Marshal(f)
@@ -131,7 +132,7 @@ func (fs *Local) walkDatasourceParents() error {
 		}
 
 		msg := &crawler.FileMessage{
-			Id:    getMD5Hash(f.URL),
+			Id:    f.ID,
 			Index: indexHelper,
 			Data:  string(b),
 		}
