@@ -697,7 +697,7 @@
                     length = 0;
 
                 this.set('breadcrumbs', []);
-                if (url.length) {
+                if (url && url.length) {
                     if (url.charAt(0) === '/') {
                         url = url.substring(1);
                     }
@@ -782,7 +782,7 @@
                 }
             },
             _onError: function(e) {
-                console.log(e)
+                //console.log(e)
             },
             _handleError: function(e, detail) {
                 this.set('loading', false);
@@ -827,20 +827,20 @@
                 this.clearIronList();
                 this.set('itemSelected', false);
                 this.$.navDrawerPanel.closeDrawer();
-                if (e.target.dataset.value === this.categoriesMap.images) {
+                if (e.currentTarget.dataset.value === this.categoriesMap.images) {
                     this.setGridView();
                 } else {
                     this.setListView();
                 }
 
-                if (e.target.dataset.value === this.categoriesMap.videos) {
+                if (e.currentTarget.dataset.value === this.categoriesMap.videos) {
                     this.set('bigVideoClass', 'big-video');
                 } else {
                     this.set('bigVideoClass', '');
                 }
 
                 this.refreshView();
-                this.set('title', e.target.dataset.value + ' Search');
+                this.set('title', e.currentTarget.dataset.value + ' Search');
                 this.set('searching', false);
 
                 // depth must be 0 for search
@@ -848,11 +848,11 @@
                 this.$.filterConverter.setValues({
                     from: 0,
                     size: this.size,
-                    category: e.target.dataset.value,
+                    category: e.currentTarget.dataset.value,
                     term: '',
                     type: 'file',
-                    url: (e.target.dataset.value || this.$.filterConverter.getFilterAsObj().term) ? '' : '/',
-                    depth: (e.target.dataset.value || this.$.filterConverter.getFilterAsObj().term) ? 0 : 1
+                    url: (e.currentTarget.dataset.value || this.$.filterConverter.getFilterAsObj().term) ? '' : '/',
+                    depth: (e.currentTarget.dataset.value || this.$.filterConverter.getFilterAsObj().term) ? 0 : 1
                 });
             },
             listDatasources: function(e, detail) {

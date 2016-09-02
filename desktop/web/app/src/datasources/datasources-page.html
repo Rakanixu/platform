@@ -85,7 +85,7 @@
       <mat-button class="action" label="Cancel" on-tap="closeDatasourceDialog"></mat-button>
     </mat-dialog>
 
-    <paper-toast id="toast" text=""></paper-toast>
+    <paper-toast id="toast" duration="6000" text=""></paper-toast>
 
     <iron-ajax id="rpcGetDatasources"
                method="POST"
@@ -123,7 +123,7 @@
                on-response="_handleStartScan"
                params="[[rpcStartScanParams]]"></iron-ajax>
 
-	<input id="localfolder" type="file" webkitdirectory directory style="display: none" />
+	  <input id="localfolder" type="file" webkitdirectory directory style="display: none" />
   </template>
 
   <script>
@@ -195,9 +195,10 @@
 
           window.addEventListener('datasources-page-activated', this.init.bind(this));
 
-	 if (window && window.process && window.process.type){
-          ipcRenderer.on('add-folder', this._addFolder.bind(this));
-	 }},
+          if (window && window.process && window.process.type){
+            ipcRenderer.on('add-folder', this._addFolder.bind(this));
+          }
+        },
         init: function(e, detail) {
           this.set('loading', true);
           this.$.rpcGetDatasources.generateRequest();
@@ -217,18 +218,18 @@
             this.$.rpcAddDatasource.generateRequest();
 	        }
         },
-        doAuth: function(e){
-	
-	 if (window && window.process && window.process.type){
-          if (e.currentTarget.getAttribute("data-url") == "local://" ) {
-            ipcRenderer.send('open-folder');
-          }else {
-            ipcRenderer.send('auth-message',e.currentTarget.getAttribute("data-url"));
+        doAuth: function(e) {
+          if (window && window.process && window.process.type){
+                if (e.currentTarget.getAttribute("data-url") == "local://" ) {
+                  ipcRenderer.send('open-folder');
+                }else {
+                  ipcRenderer.send('auth-message',e.currentTarget.getAttribute("data-url"));
+                }
+          } else {
+           //TODO handle this in normal browser
           }
-	 } else {
-		 //TODO handle this in normal browser
-	 }
-	 this.localfolder.open()
+
+	        this.localfolder.open();
           this.closeDatasourceDialog();
         },
         addDatasource: function(e) {
@@ -275,6 +276,7 @@
         },
         _handleAddDatasource: function(e) {
           if (e.detail.response) {
+            this.closeDatasourceDialog();
             this.$.toast.text = 'New datasource created succesfully';
             this.$.toast.show();
             this.async(this.init, 1000);

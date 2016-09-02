@@ -241,14 +241,14 @@
         showCategorySearch: function(e) {
           this.fireEvent('web-app-activated', {
             e: {
-              target: {
+              currentTarget: {
                 dataset: {
-                  value: e.target.dataset.value
+                  value: e.currentTarget.dataset.value
                 }
               },
               selectedCategory: {
-                index: e.target.dataset.index,
-                label: (e.target.dataset.index == 0) ? 'My Files' : ''
+                index: e.currentTarget.dataset.index,
+                label: (e.currentTarget.dataset.index == 0) ? 'My Files' : ''
               }
             },
             callback: 'setCategory' // Internal method to be call
