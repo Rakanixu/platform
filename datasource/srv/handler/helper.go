@@ -81,8 +81,29 @@ func GetDataSource(ds *DataSource, endpoint *proto.Endpoint) (filestorer.FileSto
 	return nil, err
 }
 
-// DeleteDataSource deletes a datasource previously stored
+// DeleteDataSource deletes a datasource previously stored and index associated with it
 func DeleteDataSource(ds *DataSource, id string) error {
+	var endpoint *proto.Endpoint
+
+	readReq := client.NewRequest(
+		ds.ElasticServiceName,
+		"DB.Read",
+		&db_proto.ReadRequest{
+			Index: "datasources",
+			Type:  "datasource",
+			Id:    id,
+		},
+	)
+	readRes := &db_proto.ReadResponse{}
+
+	if err := client.Call(context.Background(), readReq, readRes); err != nil {
+		return err
+	}
+
+	if err := json.Unmarshal([]byte(readRes.Result), &endpoint); err != nil {
+		return err
+	}
+
 	srvReq := client.NewRequest(
 		ds.ElasticServiceName,
 		"DB.Delete",
@@ -92,9 +113,22 @@ func DeleteDataSource(ds *DataSource, id string) error {
 			Id:    id,
 		},
 	)
-	srvRes := &db_proto.CreateResponse{}
+	srvRes := &db_proto.DeleteResponse{}
 
 	if err := client.Call(context.Background(), srvReq, srvRes); err != nil {
+		return err
+	}
+
+	deleteIndexReq := client.NewRequest(
+		ds.ElasticServiceName,
+		"DB.DeleteIndex",
+		&db_proto.DeleteIndexRequest{
+			Index: endpoint.Index,
+		},
+	)
+	deleteIndexRes := &db_proto.DeleteResponse{}
+
+	if err := client.Call(context.Background(), deleteIndexReq, deleteIndexRes); err != nil {
 		return err
 	}
 
