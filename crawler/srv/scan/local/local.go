@@ -7,6 +7,7 @@ import (
 	"errors"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	scan "github.com/kazoup/platform/crawler/srv/scan"
+	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/structs"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
@@ -27,7 +28,12 @@ type Local struct {
 	Scanner  scan.Scanner
 }
 
-const topic string = "go.micro.topic.files"
+const (
+	topic       = "go.micro.topic.files"
+	indexHelper = "files_helper"
+	filesAlias  = "files"
+	fileType    = "file"
+)
 
 // NewLocal ...
 func NewLocal(id int64, rootPath string, index string, conf map[string]string) (*Local, error) {
@@ -67,12 +73,47 @@ func (fs *Local) Info() (scan.Info, error) {
 }
 
 func (fs *Local) walkDatasourceParents() error {
-	//Remove starting '/'
+	// Create index and put mapping if does not exist
+	c := db_proto.NewDBClient("", nil)
+
+	_, err := c.CreateIndexWithSettings(
+		context.Background(),
+		&db_proto.CreateIndexWithSettingsRequest{
+			Index: indexHelper,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.PutMappingFromJSON(
+		context.Background(),
+		&db_proto.PutMappingFromJSONRequest{
+			Index: indexHelper,
+			Type:  fileType,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.AddAlias(
+		context.Background(),
+		&db_proto.AddAliasRequest{
+			Index: indexHelper,
+			Alias: filesAlias,
+		},
+	)
+	if err != nil {
+		return err
+	}
+
+	// Generate files from root to datasource entry point
 	pathHelper := strings.Split(fs.RootPath[1:], "/")
 	path := ""
 
-	for _, v := range pathHelper {
-		path += "/" + v
+	for i := 0; i < len(pathHelper)-1; i++ {
+		path += "/" + pathHelper[i]
 		info, err := os.Lstat(path)
 		if err != nil {
 			return err
@@ -91,7 +132,7 @@ func (fs *Local) walkDatasourceParents() error {
 
 		msg := &crawler.FileMessage{
 			Id:    getMD5Hash(f.URL),
-			Index: fs.Index,
+			Index: indexHelper,
 			Data:  string(b),
 		}
 
