@@ -2,7 +2,6 @@ package main
 
 import (
 	"crypto/sha256"
-	auth_handler "github.com/kazoup/platform/auth/web/handler"
 	"github.com/kazoup/platform/media/web/handler"
 	"github.com/micro/go-web"
 	"github.com/pierrre/imageserver"
@@ -17,10 +16,8 @@ import (
 	_ "github.com/pierrre/imageserver/image/jpeg"
 	_ "github.com/pierrre/imageserver/image/png"
 	imageserver_file "github.com/pierrre/imageserver/source/file"
-	"golang.org/x/net/websocket"
 	"log"
 	"net/http"
-	_ "net/http/pprof"
 	"os"
 	"path/filepath"
 )
@@ -34,14 +31,6 @@ func main() {
 	contentDir := "/"
 	log.Printf("volume name: %s  path :%s", filepath.VolumeName(wd), wd)
 	service := web.NewService(web.Name("go.micro.web.media"))
-	service.Handle("/", http.FileServer(http.Dir("app")))
-	service.Handle("/crawler/status", websocket.Handler(handler.CrawlerStatus))
-	service.HandleFunc("/google/login", auth_handler.HandleGoogleLogin)
-	service.HandleFunc("/GoogleCallback", auth_handler.HandleGoogleCallback)
-	service.HandleFunc("/microsoft/login", auth_handler.HandleMicrosoftLogin)
-	service.HandleFunc("/microsoft/callback", auth_handler.HandleMicrosoftCallback)
-	service.HandleFunc("/slack/login", auth_handler.HandleSlackLogin)
-	service.HandleFunc("/slack/callback", auth_handler.HandleSlackCallback)
 	//http://localhost:8082/desktop/image?source=/Users/radekdymacz/Pictures/city-wallpaper.jpg&width=300&height=300&mode=fit&quality=50
 	service.Handle("/image", &imageserver_http.Handler{
 		Parser: imageserver_http.ListParser([]imageserver_http.Parser{
