@@ -16,7 +16,7 @@ var (
 )
 
 func CrawlerStatus(ws *websocket.Conn) {
-	req := client.NewRequest("go.micro.srv.desktop", "Crawl.Status", &crawl.StatusRequest{})
+	req := client.NewRequest("go.micro.srv.crawl", "Crawl.Status", &crawl.StatusRequest{})
 
 	stream, err := client.Stream(context.Background(), req)
 	if err != nil {

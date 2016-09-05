@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"github.com/kazoup/platform/media/web/handler"
 	"github.com/micro/go-web"
+	"golang.org/x/net/websocket"
 	"github.com/pierrre/imageserver"
 	imageserver_cache "github.com/pierrre/imageserver/cache"
 	imageserver_cache_memory "github.com/pierrre/imageserver/cache/memory"
@@ -49,7 +50,8 @@ func main() {
 	service.Handle("/stream/", http.StripPrefix("/stream/", handler.NewPlaylistHandler(contentDir)))
 	service.Handle("/frame/", http.StripPrefix("/frame/", handler.NewFrameHandler(contentDir)))
 	service.Handle("/segments/", http.StripPrefix("/segments/", handler.NewStreamHandler(contentDir)))
-
+	//TODO move to crawler web service
+	service.Handle("/crawler/status", websocket.Handler(handler.CrawlerStatus))
 	service.Handle("/mp4/", http.StripPrefix("/mp4/", handler.NewMP4Handler(contentDir)))
 	service.Handle("/raw/", http.StripPrefix("/raw/", handler.NewRAWHandler(contentDir)))
 	service.Handle("/webm/", http.StripPrefix("/webm/", handler.NewWebmHandler(contentDir)))
