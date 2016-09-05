@@ -5,13 +5,12 @@ import (
 	proto "github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/kazoup/platform/crawler/srv/subscriber"
 	"github.com/kazoup/platform/structs/categories"
+	"github.com/kazoup/platform/structs/globals"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/server"
 	_ "github.com/micro/go-plugins/broker/nats"
 	"log"
 )
-
-const topic string = "go.micro.topic.scan"
 
 func main() {
 	if err := categories.SetMap(); err != nil {
@@ -25,18 +24,14 @@ func main() {
 
 	// Init srv
 	service.Init()
-	proto.RegisterCrawlHandler(service.Server(), new(handler.Crawl))
+
 	// Attach handler
-	//service.Server().Handle(
-	//	service.Server().NewHandler(
-	//		new(handler.Crawl),
-	//	),
-	//)
+	proto.RegisterCrawlHandler(service.Server(), new(handler.Crawl))
 
 	// Attach subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
-			topic,
+			globals.ScanTopic,
 			subscriber.Scans,
 		),
 	); err != nil {

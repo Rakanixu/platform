@@ -3,17 +3,16 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/slack"
 	"io/ioutil"
 	"log"
 	"net/http"
-
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/slack"
 )
 
 var (
 	slackOauthConfig = &oauth2.Config{
-		RedirectURL:  "http://localhost:8082/desktop/slack/callback",
+		RedirectURL:  "http://localhost:8082/auth/slack/callback",
 		ClientID:     "2506087186.66729631906",
 		ClientSecret: "53ea1f0afa4560b7e070964fb2b0c5d6",
 		Scopes:       []string{"files:read", "files:write:user", "team:read"},
@@ -41,7 +40,6 @@ func HandleSlackLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleSlackCallback(w http.ResponseWriter, r *http.Request) {
-
 	state := r.FormValue("state")
 	if state != oauthStateString {
 		fmt.Printf("invalid oauth state, expected '%s', got '%s'\n", oauthStateString, state)
@@ -71,13 +69,20 @@ func HandleSlackCallback(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, err.Error())
 	}
 	if !sr.OK {
-
 		fmt.Fprintf(w, "Error $s", sr)
 	}
 	url := fmt.Sprintf("slack://%s", sr.Team.Name)
 	if err := SaveDatasource(url, token); err != nil {
-
 		fmt.Fprintf(w, err.Error())
 	}
-	fmt.Fprintf(w, "Content: %s\n %s\n", token.AccessToken, contents)
+
+	// Close window, not reacheable by electron any more
+	fmt.Fprintf(w, "%s", `
+		<script>
+		'use stric';
+			(function() {
+				window.close();
+			}());
+		</script>
+	`)
 }

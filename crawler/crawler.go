@@ -4,14 +4,13 @@ import (
 	"github.com/kazoup/platform/crawler/srv/handler"
 	"github.com/kazoup/platform/crawler/srv/subscriber"
 	"github.com/kazoup/platform/structs/categories"
+	"github.com/kazoup/platform/structs/globals"
 	"github.com/micro/cli"
 	"github.com/micro/go-micro"
 	_ "github.com/micro/go-plugins/broker/nats"
 	"log"
 	"time"
 )
-
-const topic string = "go.micro.topic.scan"
 
 func srv(ctx *cli.Context) {
 
@@ -32,7 +31,7 @@ func srv(ctx *cli.Context) {
 	// Attach subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
-			topic,
+			globals.ScanTopic,
 			subscriber.Scans,
 		),
 	); err != nil {

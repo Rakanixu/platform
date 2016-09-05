@@ -6,6 +6,7 @@ import (
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	scan "github.com/kazoup/platform/crawler/srv/scan"
 	"github.com/kazoup/platform/structs"
+	"github.com/kazoup/platform/structs/globals"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"log"
@@ -21,14 +22,11 @@ type Fake struct {
 	Scanner scan.Scanner
 }
 
-// TODO: topic
-const topic string = "go.micro.topic.files"
-
 // NewFake creates a Fake instance
 func NewFake(id int64, conf map[string]string) scan.Scanner {
 	return &Fake{
 		Id:      id,
-		Type:    "fake",
+		Type:    globals.Fake,
 		Config:  conf,
 		Running: make(chan bool, 1),
 	}
@@ -58,7 +56,7 @@ func (f *Fake) Start(crawls map[int64]scan.Scanner, id int64) {
 				}
 
 				ctx := context.TODO()
-				if err := client.Publish(ctx, client.NewPublication(topic, msg)); err != nil {
+				if err := client.Publish(ctx, client.NewPublication(globals.FilesTopic, msg)); err != nil {
 					log.Printf("Error pubslishing : %", err.Error())
 				}
 				time.Sleep(time.Second)

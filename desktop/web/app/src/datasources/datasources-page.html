@@ -123,7 +123,6 @@
                on-response="_handleStartScan"
                params="[[rpcStartScanParams]]"></iron-ajax>
 
-	  <input id="localfolder" type="file" webkitdirectory directory style="display: none" />
   </template>
 
   <script>
@@ -197,39 +196,26 @@
 
           if (window && window.process && window.process.type){
             ipcRenderer.on('add-folder', this._addFolder.bind(this));
+            ipcRenderer.on('auth-callback-message', this._authSuccessful.bind(this));
           }
         },
         init: function(e, detail) {
           this.set('loading', true);
-          this.$.rpcGetDatasources.generateRequest();
-        },
-	      _addFolder : function (e, folder){
-	        if (folder.length > 0) {
-            this.$.rpcAddDatasource.body = {
-              service: 'go.micro.srv.datasource',
-              method: 'DataSource.Create',
-              request: {
-                endpoint: {
-                  url: 'local://' + folder[0]
-                }
-              }
-            };
-
-            this.$.rpcAddDatasource.generateRequest();
-	        }
+          this.async(function() {
+            this.$.rpcGetDatasources.generateRequest();
+          }, 300);
         },
         doAuth: function(e) {
           if (window && window.process && window.process.type){
-                if (e.currentTarget.getAttribute("data-url") == "local://" ) {
+                if (e.currentTarget.getAttribute('data-url') == 'local://' ) {
                   ipcRenderer.send('open-folder');
                 }else {
-                  ipcRenderer.send('auth-message',e.currentTarget.getAttribute("data-url"));
+                  ipcRenderer.send('auth-message',e.currentTarget.getAttribute('data-url'));
                 }
           } else {
            //TODO handle this in normal browser
           }
 
-	        this.localfolder.open();
           this.closeDatasourceDialog();
         },
         addDatasource: function(e) {
@@ -256,6 +242,24 @@
           this.rpcDeleteDatasourceParams.request.id = e.model.__data__.item.id;
           this.$.rpcDeleteDatasource.body = this.rpcDeleteDatasourceParams;
           this.$.rpcDeleteDatasource.generateRequest();
+        },
+        _addFolder : function (e, folder) {
+          if (folder.length > 0) {
+            this.$.rpcAddDatasource.body = {
+              service: 'go.micro.srv.datasource',
+              method: 'DataSource.Create',
+              request: {
+                endpoint: {
+                  url: 'local://' + folder[0]
+                }
+              }
+            };
+
+            this.$.rpcAddDatasource.generateRequest();
+          }
+        },
+        _authSuccessful: function(e, detail) {
+          this.init()
         },
         _handleStartScan: function(e) {
           this.set('loading', false);

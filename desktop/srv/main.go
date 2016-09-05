@@ -21,6 +21,7 @@ import (
 	search_proto "github.com/kazoup/platform/search/srv/proto/search"
 
 	"github.com/kazoup/platform/structs/categories"
+	"github.com/kazoup/platform/structs/globals"
 	"github.com/micro/cli"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/broker/mock"
@@ -33,8 +34,6 @@ import (
 )
 
 const (
-	ScanTopic     = "go.micro.topic.scan"
-	FileTopic     = "go.micro.topic.files"
 	DbServiceName = "go.micro.srv.desktop"
 )
 
@@ -76,7 +75,7 @@ func main() {
 
 	// Attach DB indexer subscriber
 	if err := service.Server().Subscribe(
-		service.Server().NewSubscriber(FileTopic, db_engine.SubscribeFiles)); err != nil {
+		service.Server().NewSubscriber(globals.FilesTopic, db_engine.SubscribeFiles)); err != nil {
 		log.Fatal(err)
 	}
 
@@ -144,7 +143,7 @@ func main() {
 	// Attach crawler subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
-			ScanTopic,
+			globals.ScanTopic,
 			crawler_subscriber.Scans,
 		),
 	); err != nil {

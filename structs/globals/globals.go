@@ -1,24 +1,14 @@
 package globals
 
-/*
+const (
+	FilesTopic           = "go.micro.topic.files"
+	ScanTopic            = "go.micro.topic.scan"
+	CrawlerFinishedTopic = "go.micro.topic.crawlerfinished"
+	IndexHelper          = "files_helper"
+	FilesAlias           = "files"
+	FileType             = "file"
 
-var Globals */
-/*=  []struct {
-	ServiceName string
-	Label string
-}{
-	{"auth", "go.micro.srv.auth"}
-}*/ /*
-
-
-func SetGlobas (params) {
-	Globals =  []struct {
-	ServiceName string
-	Label string
-}{
-	{"auth", "go.micro.srv.auth"}
-}
-}
-
-
-*/
+	Fake  = "fake"
+	Local = "local"
+	Slack = "slack"
+)
