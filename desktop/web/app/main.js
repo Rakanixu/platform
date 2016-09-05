@@ -37,49 +37,48 @@ let feedURL = "https://protected-reaches-10740.herokuapp.com";
 const version = app.getVersion();
 
 
-function openFolderWindow(event,arg){
-	dialog.showOpenDialog(win,{properties: ['openDirectory']},function(args){
-		
-    		event.sender.send("add-folder", args);
-		console.log(args)
-	})
+function openFolderWindow(event, arg) {
+    dialog.showOpenDialog(win,{properties: ['openDirectory']},function(args){
+        event.sender.send("add-folder", args);
+    });
 }
 
-function createAuthWindow(event,arg){
-	 console.log("Creating auth window")
-	 auth = new BrowserWindow({
-		 parent: win,
-		 modal:false,
-		 width:420,
-		 height: 590, 
-		 frame: true,
-		 webPreferences: {
-    			nodeIntegration: false
-  		}
-	 })
-	 auth.webContents.session.clearStorageData(function(){
-	 console.log(arg)
-         auth.loadURL(arg)
-	 });
-	 auth.show()
+function createAuthWindow(event, arg) {
+    auth = new BrowserWindow({
+        parent: win,
+        modal:false,
+        width:420,
+        height: 590,
+        frame: true,
+        webPreferences: {
+          nodeIntegration: true
+        }
+    });
 
-    	auth.on("closed", () => {
-        // Dereference the window object, usually you would store windows
-        // in an array if your app supports multi windows, this is the time
-        // when you should delete the corresponding element.
-        auth = null;
-    	});
+    auth.webContents.session.clearStorageData(function() {
+        auth.loadURL(arg)
+    });
+
+    auth.on("closed", () => {
+        // Let main window has the focus again
+        event.sender.send('auth-callback-message');
+    });
+
+    auth.show();
 }
 
+function focusMainWindow(event, arg) {
+    event.sender.send("auth-callback-message", {});
+}
 
 function createWindow() {
     // Create the browser window.
     win = new BrowserWindow({
         width: 1024,
         height: 768,
-	webPreferences: {
-        	webSecurity: false
-	}
+        webPreferences: {
+              webSecurity: false
+        }
     });
     //Start micro services
     startServices()
@@ -212,6 +211,7 @@ ipcMain.on("disks-message", (event, arg) => {
     });
 });
 ipcMain.on("auth-message",createAuthWindow);
+ipcMain.on("auth-callback-message", focusMainWindow);
 ipcMain.on("open-folder",openFolderWindow);
 ipcMain.on("home-dir-message", (event, arg) => {
     event.sender.send("home-dir-message", os.homedir());

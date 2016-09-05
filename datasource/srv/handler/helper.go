@@ -67,7 +67,7 @@ func GetDataSource(ds *DataSource, endpoint *proto.Endpoint) (filestorer.FileSto
 	}
 	if strings.Contains(endpoint.Url, slackEnpoint) {
 		return &slack.Slack{
-
+			Endpoint: *endpoint,
 			FileStore: filestorer.FileStore{
 				ElasticServiceName: ds.ElasticServiceName,
 			},
@@ -107,39 +107,44 @@ func DeleteDataSource(ds *DataSource, id string) error {
 		return err
 	}
 
-	// Remove records from helper index that only belongs to the datasource
-	if err := cleanFilesHelperIndex(ds, endpoint); err != nil {
-		return err
-	}
+	if endpoint != nil {
+		// Specific clean up for local datasources
+		if strings.Contains(endpoint.Url, localEndpoint) {
+			// Remove records from helper index that only belongs to the datasource
+			if err := cleanFilesHelperIndex(ds, endpoint); err != nil {
+				return err
+			}
+		}
 
-	// Delete record from datasources index
-	srvReq := client.NewRequest(
-		ds.ElasticServiceName,
-		"DB.Delete",
-		&db_proto.DeleteRequest{
-			Index: "datasources",
-			Type:  "datasource",
-			Id:    id,
-		},
-	)
-	srvRes := &db_proto.DeleteResponse{}
+		// Delete record from datasources index
+		srvReq := client.NewRequest(
+			ds.ElasticServiceName,
+			"DB.Delete",
+			&db_proto.DeleteRequest{
+				Index: "datasources",
+				Type:  "datasource",
+				Id:    id,
+			},
+		)
+		srvRes := &db_proto.DeleteResponse{}
 
-	if err := client.Call(context.Background(), srvReq, srvRes); err != nil {
-		return err
-	}
+		if err := client.Call(context.Background(), srvReq, srvRes); err != nil {
+			return err
+		}
 
-	// Remove index for datasource associated with it
-	deleteIndexReq := client.NewRequest(
-		ds.ElasticServiceName,
-		"DB.DeleteIndex",
-		&db_proto.DeleteIndexRequest{
-			Index: endpoint.Index,
-		},
-	)
-	deleteIndexRes := &db_proto.DeleteResponse{}
+		// Remove index for datasource associated with it
+		deleteIndexReq := client.NewRequest(
+			ds.ElasticServiceName,
+			"DB.DeleteIndex",
+			&db_proto.DeleteIndexRequest{
+				Index: endpoint.Index,
+			},
+		)
+		deleteIndexRes := &db_proto.DeleteResponse{}
 
-	if err := client.Call(context.Background(), deleteIndexReq, deleteIndexRes); err != nil {
-		return err
+		if err := client.Call(context.Background(), deleteIndexReq, deleteIndexRes); err != nil {
+			return err
+		}
 	}
 
 	return nil
