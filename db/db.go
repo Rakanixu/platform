@@ -1,18 +1,13 @@
 package db
 
 import (
-	"github.com/micro/cli"
-	"github.com/micro/go-micro"
-
 	"github.com/kazoup/platform/db/srv/engine"
 	_ "github.com/kazoup/platform/db/srv/engine/elastic"
 	"github.com/kazoup/platform/db/srv/handler"
+	"github.com/kazoup/platform/structs/globals"
+	"github.com/micro/cli"
+	"github.com/micro/go-micro"
 	"log"
-)
-
-const (
-	FileTopic            = "go.micro.topic.files"
-	CrawlerFinishedTopic = "go.micro.topic.crawlerfinished"
 )
 
 func srv(ctx *cli.Context) {
@@ -42,13 +37,13 @@ func srv(ctx *cli.Context) {
 
 	// Attach indexer subscriber
 	if err := service.Server().Subscribe(
-		service.Server().NewSubscriber(FileTopic, engine.SubscribeFiles)); err != nil {
+		service.Server().NewSubscriber(globals.FilesTopic, engine.SubscribeFiles)); err != nil {
 		log.Fatal(err)
 	}
 
 	// Attach crawler finished subscriber
 	if err := service.Server().Subscribe(
-		service.Server().NewSubscriber(CrawlerFinishedTopic, engine.SubscribeCrawlerFinished)); err != nil {
+		service.Server().NewSubscriber(globals.CrawlerFinishedTopic, engine.SubscribeCrawlerFinished)); err != nil {
 		log.Fatal(err)
 	}
 

@@ -14,6 +14,7 @@ import (
 	slack "github.com/kazoup/platform/datasource/srv/filestore/slack"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
+	"github.com/kazoup/platform/structs/globals"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"log"
@@ -28,7 +29,6 @@ const (
 	slackEnpoint       = "slack://"
 	nfsEndpoint        = "nfs://"
 	smbEndpoint        = "smb://"
-	topic              = "go.micro.topic.scan"
 	filesHelperIndex   = "files_helper"
 )
 
@@ -203,7 +203,7 @@ func ScanDataSource(ds *DataSource, ctx context.Context, id string) error {
 	}
 
 	msg := ds.Client.NewPublication(
-		topic,
+		globals.ScanTopic,
 		endpoint,
 	)
 

@@ -9,6 +9,7 @@ import (
 	scan "github.com/kazoup/platform/crawler/srv/scan"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/structs"
+	globals "github.com/kazoup/platform/structs/globals"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"log"
@@ -27,14 +28,6 @@ type Local struct {
 	Config   map[string]string
 	Scanner  scan.Scanner
 }
-
-const (
-	filesTopic           = "go.micro.topic.files"
-	crawlerFinishedTopic = "go.micro.topic.crawlerfinished"
-	indexHelper          = "files_helper"
-	filesAlias           = "files"
-	fileType             = "file"
-)
 
 // NewLocal ...
 func NewLocal(id int64, rootPath string, index string, conf map[string]string) (*Local, error) {
@@ -68,7 +61,7 @@ func (fs *Local) Stop() {
 func (fs *Local) Info() (scan.Info, error) {
 	return scan.Info{
 		Id:          fs.Id,
-		Type:        "filescanner",
+		Type:        globals.Local,
 		Description: "File system scanner",
 		Config:      fs.Config,
 	}, nil
@@ -81,7 +74,7 @@ func (fs *Local) walkDatasourceParents() error {
 	_, err := c.CreateIndexWithSettings(
 		context.Background(),
 		&db_proto.CreateIndexWithSettingsRequest{
-			Index: indexHelper,
+			Index: globals.IndexHelper,
 		},
 	)
 	if err != nil {
@@ -91,8 +84,8 @@ func (fs *Local) walkDatasourceParents() error {
 	_, err = c.PutMappingFromJSON(
 		context.Background(),
 		&db_proto.PutMappingFromJSONRequest{
-			Index: indexHelper,
-			Type:  fileType,
+			Index: globals.IndexHelper,
+			Type:  globals.FileType,
 		},
 	)
 	if err != nil {
@@ -102,8 +95,8 @@ func (fs *Local) walkDatasourceParents() error {
 	_, err = c.AddAlias(
 		context.Background(),
 		&db_proto.AddAliasRequest{
-			Index: indexHelper,
-			Alias: filesAlias,
+			Index: globals.IndexHelper,
+			Alias: globals.FilesAlias,
 		},
 	)
 	if err != nil {
@@ -135,12 +128,12 @@ func (fs *Local) walkDatasourceParents() error {
 
 		msg := &crawler.FileMessage{
 			Id:    f.ID,
-			Index: indexHelper,
+			Index: globals.IndexHelper,
 			Data:  string(b),
 		}
 
 		ctx := context.TODO()
-		if err := client.Publish(ctx, client.NewPublication(filesTopic, msg)); err != nil {
+		if err := client.Publish(ctx, client.NewPublication(globals.FilesTopic, msg)); err != nil {
 			return err
 		}
 	}
@@ -177,7 +170,7 @@ func (fs *Local) walkHandler() filepath.WalkFunc {
 			}
 
 			ctx := context.TODO()
-			if err := client.Publish(ctx, client.NewPublication(filesTopic, msg)); err != nil {
+			if err := client.Publish(ctx, client.NewPublication(globals.FilesTopic, msg)); err != nil {
 				return err
 			}
 
@@ -192,7 +185,7 @@ func (fs *Local) sendCrawlerFinishedMsg() error {
 		DatasourceId: fs.Index,
 	}
 
-	if err := client.Publish(context.Background(), client.NewPublication(crawlerFinishedTopic, msg)); err != nil {
+	if err := client.Publish(context.Background(), client.NewPublication(globals.CrawlerFinishedTopic, msg)); err != nil {
 		return err
 	}
 

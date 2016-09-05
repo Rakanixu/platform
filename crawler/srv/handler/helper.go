@@ -6,7 +6,9 @@ import (
 	scanner "github.com/kazoup/platform/crawler/srv/scan"
 	"github.com/kazoup/platform/crawler/srv/scan/fake"
 	"github.com/kazoup/platform/crawler/srv/scan/local"
+	"github.com/kazoup/platform/crawler/srv/scan/slack"
 	datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/structs/globals"
 	"github.com/micro/go-micro/errors"
 )
 
@@ -18,10 +20,12 @@ func MapScanner(id int64, dataSource *datasource.Endpoint) (scanner.Scanner, err
 	dsUrl := strings.Split(dataSource.Url, ":")
 
 	switch dsUrl[0] {
-	case "fake":
+	case globals.Fake:
 		s = fake.NewFake(id, config)
-	case "local":
+	case globals.Local:
 		s, err = local.NewLocal(id, dsUrl[1], dataSource.Index, config)
+	case globals.Slack:
+		s = slack.NewSlack(id, dataSource)
 	default:
 		err = errors.BadRequest("go.micro.srv.crawler.Crawl.Start", "Error creating scanner")
 	}
