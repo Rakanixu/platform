@@ -76,7 +76,7 @@ func main() {
 
 	// Attach DB indexer subscriber
 	if err := service.Server().Subscribe(
-		service.Server().NewSubscriber(FileTopic, db_engine.Subscribe)); err != nil {
+		service.Server().NewSubscriber(FileTopic, db_engine.SubscribeFiles)); err != nil {
 		log.Fatal(err)
 	}
 
