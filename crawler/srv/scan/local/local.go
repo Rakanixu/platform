@@ -132,8 +132,7 @@ func (fs *Local) walkDatasourceParents() error {
 			Data:  string(b),
 		}
 
-		ctx := context.TODO()
-		if err := client.Publish(ctx, client.NewPublication(globals.FilesTopic, msg)); err != nil {
+		if err := client.Publish(context.Background(), client.NewPublication(globals.FilesTopic, msg)); err != nil {
 			return err
 		}
 	}

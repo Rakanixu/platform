@@ -11,4 +11,6 @@ const (
 	Fake  = "fake"
 	Local = "local"
 	Slack = "slack"
+
+	SlackFilesEndpoint = "https://slack.com/api/files.list"
 )
