@@ -17,3 +17,6 @@ cd $BUILD_DIR/bin/linux/amd64 && wget http://johnvansickle.com/ffmpeg/releases/f
 mkdir -p $BUILD_DIR/bin/windows/amd64
 cd $BUILD_DIR/bin/windows/amd64 && wget https://ffmpeg.zeranoe.com/builds/win64/static/ffmpeg-3.0.1-win64-static.7z && 7z x ffmpeg-3.0.1-win64-static.7z && rm -rf ffmpeg-3.0.1-win64-static.7z
 cd $BUILD_DIR
+go-bindata -pkg ffmpeg -o ffmpeg/ffmpeg_darwin.go -prefix bin/darwin/amd64/ bin/darwin/amd64/ffmpeg
+go-bindata -pkg ffmpeg -o ffmpeg/ffmpeg_windows.go -prefix bin/windows/amd64/ffmpeg-3.0.1-win64-static/bin/ bin/windows/amd64/ffmpeg-3.0.1-win64-static/bin/ffmpeg.exe
+go-bindata -pkg ffmpeg -o ffmpeg/ffmpeg_linux.go -prefix bin/linux/amd64/ffmpeg-3.1.3-32bit-static/ bin/linux/amd64/ffmpeg-3.1.3-32bit-static/ffmpeg
