@@ -65,7 +65,6 @@ func HandleSlackCallback(w http.ResponseWriter, r *http.Request) {
 	}
 	sr := new(SlackTeamInfoResponse)
 	if err := json.Unmarshal(contents, &sr); err != nil {
-
 		fmt.Fprintf(w, err.Error())
 	}
 	if !sr.OK {

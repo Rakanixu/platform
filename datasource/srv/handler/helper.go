@@ -53,6 +53,7 @@ func GetDataSource(ds *DataSource, endpoint *proto.Endpoint) (filestorer.FileSto
 
 	if strings.Contains(endpoint.Url, googledriveEnpoint) {
 		return &googledrive.Googledrive{
+			Endpoint: *endpoint,
 			FileStore: filestorer.FileStore{
 				ElasticServiceName: ds.ElasticServiceName,
 			},

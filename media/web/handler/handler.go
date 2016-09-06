@@ -1,13 +1,13 @@
 package handler
 
 import (
-	"fmt"
-	"log"
+	/*"fmt"
+	"log"*/
 
 	crawl "github.com/kazoup/platform/crawler/srv/proto/crawler"
-	"github.com/micro/go-micro/client"
+	//"github.com/micro/go-micro/client"
 
-	"golang.org/x/net/context"
+	//"golang.org/x/net/context"
 	"golang.org/x/net/websocket"
 )
 
@@ -16,7 +16,7 @@ var (
 )
 
 func CrawlerStatus(ws *websocket.Conn) {
-	req := client.NewRequest("go.micro.srv.crawl", "Crawl.Status", &crawl.StatusRequest{})
+	/*req := client.NewRequest("go.micro.srv.crawl", "Crawl.Status", &crawl.StatusRequest{})
 
 	stream, err := client.Stream(context.Background(), req)
 	if err != nil {
@@ -48,6 +48,6 @@ func CrawlerStatus(ws *websocket.Conn) {
 
 	if err := stream.Close(); err != nil {
 		fmt.Println("stream close err:", err)
-	}
+	}*/
 
 }

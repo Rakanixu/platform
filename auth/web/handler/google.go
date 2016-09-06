@@ -24,18 +24,6 @@ var (
 	oauthStateString = "randomsdsdahfoashfouahsfohasofhoashfaf"
 )
 
-/* {
- "id": "101000145849438728639",
- "email": "radekdymacz@gmail.com",
- "verified_email": true,
- "name": "radek dymacz",
- "given_name": "radek",
- "family_name": "dymacz",
- "link": "https://plus.google.com/101000145849438728639",
- "picture": "https://lh3.googleusercontent.com/-LAOs29oR6RA/AAAAAAAAAAI/AAAAAAAAHCY/iCzIUKZ5mGo/photo.jpg",
- "gender": "male",
- "locale": "en-GB"
-}*/
 type GoogleUserInfo struct {
 	ID            string `json:"id"`
 	Email         string `json:"email"`
@@ -80,10 +68,17 @@ func HandleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Error : %s", err.Error())
 	}
 	url := fmt.Sprintf("googledrive://%s", userInfo.Email)
-	if err := SaveDatasource(url, token); err != nil {
 
+	if err := SaveDatasource(url, token); err != nil {
 		fmt.Fprintf(w, "Error adding data source %s \n", err.Error())
 	}
 
-	fmt.Fprintf(w, "Status: New Google Drive added. You can close the window.\n Info %s Resp: %s \n", userInfo.Email, contents)
+	fmt.Fprintf(w, "%s", `
+		<script>
+		'use stric';
+			(function() {
+				window.close();
+			}());
+		</script>
+	`)
 }
