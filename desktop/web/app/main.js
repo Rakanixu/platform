@@ -225,7 +225,11 @@ ipcMain.on("user-info-message", (event, arg) => {
 });
 
 ipcMain.on("open-file-message", (event, arg) => {
-    shell.openItem(arg.url);
+	if (arg.url.indexOf("http") == -1){
+		shell.openItem(arg.url);
+	} else {
+    		shell.openExternal(arg.url);
+	}
 });
 
 function startService(path, args) {
