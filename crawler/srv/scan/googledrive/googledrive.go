@@ -36,7 +36,7 @@ func NewGoogleDrive(id int64, dataSource *proto_datasource.Endpoint) *GoogleDriv
 // Start google drive crawler
 func (g *GoogleDrive) Start(crawls map[int64]scan.Scanner, ds int64) {
 	go func() {
-		if err := g.getFiles(1); err != nil {
+		if err := g.getFiles(); err != nil {
 			log.Println(err)
 		}
 		// Slack scan finished
@@ -60,7 +60,7 @@ func (g *GoogleDrive) Info() (scan.Info, error) {
 	}, nil
 }
 
-func (s *GoogleDrive) getFiles(page int) error {
+func (s *GoogleDrive) getFiles() error {
 	cfg := globals.NewGoogleOautConfig()
 	c := cfg.Client(context.Background(), &oauth2.Token{
 		AccessToken:  s.Endpoint.Token.AccessToken,
@@ -74,30 +74,34 @@ func (s *GoogleDrive) getFiles(page int) error {
 		return err
 	}
 
-	r, err := srv.Files.List().PageSize(10).Fields("files,kind,nextPageToken").Do()
+	r, err := srv.Files.List().PageSize(100).Fields("files,kind,nextPageToken").Do()
 	if err != nil {
 		return err
 	}
 
 	if len(r.Files) > 0 {
-		for _, v := range r.Files {
-			f := googledrive.NewKazoupFileFromGoogleDriveFile(v)
+		return sendFileMessagesForPage(r.Files, s.Endpoint.Index)
+	}
 
-			b, err := json.Marshal(f)
-			if err != nil {
-				return nil
-			}
+	if len(r.NextPageToken) > 0 {
+		return s.getNextPage(srv, r.NextPageToken)
+	}
 
-			msg := &crawler.FileMessage{
-				Id:    getMD5Hash(v.WebViewLink),
-				Index: s.Endpoint.Index,
-				Data:  string(b),
-			}
+	return nil
+}
 
-			if err := client.Publish(context.Background(), client.NewPublication(globals.FilesTopic, msg)); err != nil {
-				return err
-			}
-		}
+func (s *GoogleDrive) getNextPage(srv *drive.Service, nextPageToken string) error {
+	r, err := srv.Files.List().PageToken(nextPageToken).Fields("files,kind,nextPageToken").Do()
+	if err != nil {
+		return err
+	}
+
+	if len(r.Files) > 0 {
+		return sendFileMessagesForPage(r.Files, s.Endpoint.Index)
+	}
+
+	if len(r.NextPageToken) > 0 {
+		return s.getNextPage(srv, r.NextPageToken)
 	}
 
 	return nil
@@ -110,6 +114,29 @@ func (g *GoogleDrive) sendCrawlerFinishedMsg() error {
 
 	if err := client.Publish(context.Background(), client.NewPublication(globals.CrawlerFinishedTopic, msg)); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func sendFileMessagesForPage(files []*drive.File, index string) error {
+	for _, v := range files {
+		f := googledrive.NewKazoupFileFromGoogleDriveFile(v)
+
+		b, err := json.Marshal(f)
+		if err != nil {
+			return nil
+		}
+
+		msg := &crawler.FileMessage{
+			Id:    getMD5Hash(v.WebViewLink),
+			Index: index,
+			Data:  string(b),
+		}
+
+		if err := client.Publish(context.Background(), client.NewPublication(globals.FilesTopic, msg)); err != nil {
+			return err
+		}
 	}
 
 	return nil
