@@ -13,7 +13,7 @@ import (
 
 var (
 	googleOauthConfig = &oauth2.Config{
-		RedirectURL:  "http://localhost:8082/auth/GoogleCallback",
+		RedirectURL:  "http://localhost:8082/auth/google/callback",
 		ClientID:     "928848534435-kjubrqvl1sp50sfs3icemj2ma6v2an5j.apps.googleusercontent.com",
 		ClientSecret: "zZAQz3zP5xnpLaA1S_q6YNhy",
 		Scopes: []string{"https://www.googleapis.com/auth/userinfo.profile",

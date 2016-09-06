@@ -35,7 +35,6 @@ func NewSlack(id int64, dataSource *proto_datasource.Endpoint) *Slack {
 
 // Start slack crawler
 func (s *Slack) Start(crawls map[int64]scan.Scanner, ds int64) {
-	log.Println("STARTTTTTT", s)
 	go func() {
 		if err := s.getFiles(1); err != nil {
 			log.Println(err)
