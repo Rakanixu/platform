@@ -27,7 +27,7 @@ type Page struct {
 type SlackFile struct {
 	ID                 string        `json:"id"`
 	Created            int           `json:"created"`
-	Timestamp          int           `json:"timestamp"`
+	Timestamp          int64         `json:"timestamp"`
 	Name               string        `json:"name"`
 	Title              string        `json:"title"`
 	Mimetype           string        `json:"mimetype"`
@@ -85,14 +85,13 @@ type SlackFile struct {
 
 // NewKazoupFileFromSlackFile constructor
 func NewKazoupFileFromSlackFile(s *SlackFile) *structs.KazoupFile {
-	t := new(time.Time)
-	t.Add(time.Duration(int64(s.Timestamp)))
+	t := time.Unix(s.Timestamp, 0)
 
 	return &structs.KazoupFile{
 		ID:       getMD5Hash(s.URLPrivate),
 		Name:     s.Name,
 		URL:      s.URLPrivate,
-		Modified: *t,
+		Modified: t,
 		Size:     s.Size,
 		IsDir:    false,
 		Mode:     *new(os.FileMode),

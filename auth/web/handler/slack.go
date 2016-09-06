@@ -3,23 +3,11 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/kazoup/platform/structs/globals"
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/slack"
 	"io/ioutil"
 	"log"
 	"net/http"
-)
-
-var (
-	slackOauthConfig = &oauth2.Config{
-		RedirectURL:  "http://localhost:8082/auth/slack/callback",
-		ClientID:     "2506087186.66729631906",
-		ClientSecret: "53ea1f0afa4560b7e070964fb2b0c5d6",
-		Scopes:       []string{"files:read", "files:write:user", "team:read"},
-		Endpoint:     slack.Endpoint,
-	}
-	// Some random string, random for each request
-	oauthSlackStateString = "randomsdsdahfoashfouahsfohasofhoashfaf"
 )
 
 type SlackTeamInfoResponse struct {
@@ -34,20 +22,20 @@ type SlackTeamInfo struct {
 }
 
 func HandleSlackLogin(w http.ResponseWriter, r *http.Request) {
-	url := slackOauthConfig.AuthCodeURL(oauthSlackStateString, oauth2.AccessTypeOffline)
+	url := globals.NewSlackOauthConfig().AuthCodeURL(globals.OauthStateString, oauth2.AccessTypeOffline)
 	log.Print(url)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
 func HandleSlackCallback(w http.ResponseWriter, r *http.Request) {
 	state := r.FormValue("state")
-	if state != oauthStateString {
-		fmt.Printf("invalid oauth state, expected '%s', got '%s'\n", oauthStateString, state)
+	if state != globals.OauthStateString {
+		fmt.Printf("invalid oauth state, expected '%s', got '%s'\n", globals.OauthStateString, state)
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
 	code := r.FormValue("code")
-	token, err := slackOauthConfig.Exchange(oauth2.NoContext, code)
+	token, err := globals.NewSlackOauthConfig().Exchange(oauth2.NoContext, code)
 	if err != nil {
 		fmt.Println("Code exchange failed with '%s'\n", err)
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/kazoup/platform/structs/globals"
 	"golang.org/x/oauth2"
 )
 
@@ -28,7 +29,7 @@ var (
 )
 
 func HandleMicrosoftLogin(w http.ResponseWriter, r *http.Request) {
-	url := microsoftOauthConfig.AuthCodeURL(oauthStateString)
+	url := microsoftOauthConfig.AuthCodeURL(globals.OauthStateString)
 	log.Print(url)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
@@ -36,7 +37,7 @@ func HandleMicrosoftLogin(w http.ResponseWriter, r *http.Request) {
 func HandleMicrosoftCallback(w http.ResponseWriter, r *http.Request) {
 	state := r.FormValue("state")
 	if state != oauthMStateString {
-		fmt.Printf("invalid oauth state, expected '%s', got '%s'\n", oauthStateString, state)
+		fmt.Printf("invalid oauth state, expected '%s', got '%s'\n", globals.OauthStateString, state)
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}

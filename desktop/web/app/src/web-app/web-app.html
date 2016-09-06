@@ -846,6 +846,7 @@
                 // depth must be 0 for search
                 // When there is no search term and user didn't selected a category, then browse
                 this.$.filterConverter.setValues({
+                    index: 'files',
                     from: 0,
                     size: this.size,
                     category: e.currentTarget.dataset.value,
@@ -879,6 +880,7 @@
                     var depth = url.split('/').length;
 
                     this.$.filterConverter.setValues({
+                        index: 'files',
                         term: '',
                         category: '',
                         from: 0,
@@ -887,7 +889,7 @@
                         depth: depth,
                         url: '/local' + url
                     });
-                } else if (this.getDatasourceType(e.model.__data__.item.url) === 'slack') {
+                } else {
                     this.$.filterConverter.setValues({
                         index: e.model.__data__.item.index,
                         term: '',
@@ -903,6 +905,7 @@
             browse: function(e, detail) {
                 this.clearIronList();
                 this.$.filterConverter.setValues({
+                    index: 'files',
                     from: 0,
                     size: this.size,
                     type: 'file',
@@ -934,6 +937,7 @@
                         this.clearIronList();
 
                         this.$.filterConverter.setValues({
+                            index: 'files',
                             from: 0,
                             size: this.size,
                             term: term,
@@ -945,20 +949,9 @@
                 }
             },
             resetSearch: function(e, detail) {
-                var depth;
-
-                this.set('itemSelected', false);
-                this.clearIronList();
                 this.toggleSearch();
-
-                this.$.filterConverter.setValues({
-                    term: '',
-                    from: 0,
-                    size: this.size,
-                    url: '',
-                    depth: this.$.filterConverter.getFilterAsObj().category ? 0 : 1,
-                    type: '' // By default get files and directories
-                });
+                this.listDatasources();
+                this.set('datasourceListView', true);
             },
             toggleSearch: function(e, detail) {
                 this.$.search.input.value = this.$.filterConverter.getFilterAsObj().term ?
@@ -998,6 +991,7 @@
                     this.set('searching', false);
 
                     this.$.filterConverter.setValues({
+                        index: 'files',
                         from: 0,
                         size: this.size,
                         type: 'file',

@@ -5,6 +5,7 @@ import (
 
 	scanner "github.com/kazoup/platform/crawler/srv/scan"
 	"github.com/kazoup/platform/crawler/srv/scan/fake"
+	"github.com/kazoup/platform/crawler/srv/scan/googledrive"
 	"github.com/kazoup/platform/crawler/srv/scan/local"
 	"github.com/kazoup/platform/crawler/srv/scan/slack"
 	datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
@@ -26,6 +27,8 @@ func MapScanner(id int64, dataSource *datasource.Endpoint) (scanner.Scanner, err
 		s, err = local.NewLocal(id, dsUrl[1], dataSource.Index, config)
 	case globals.Slack:
 		s = slack.NewSlack(id, dataSource)
+	case globals.GoogleDrive:
+		s = googledrive.NewGoogleDrive(id, dataSource)
 	default:
 		err = errors.BadRequest("go.micro.srv.crawler.Crawl.Start", "Error creating scanner")
 	}

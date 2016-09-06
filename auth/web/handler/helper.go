@@ -16,7 +16,7 @@ func SaveDatasource(url string, token *oauth2.Token) error {
 				AccessToken:  token.AccessToken,
 				TokenType:    token.TokenType,
 				RefreshToken: token.RefreshToken,
-				Expiry:       token.Expiry.String(),
+				Expiry:       token.Expiry.Unix(),
 			},
 		},
 	}

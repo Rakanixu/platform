@@ -60,5 +60,5 @@ message Token {
  string access_token = 1;
  string token_type = 2;
  string refresh_token = 3;
- string expiry = 4;
+ int64 expiry = 4;
 }
