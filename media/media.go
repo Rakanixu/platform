@@ -2,7 +2,6 @@ package media
 
 import (
 	"crypto/sha256"
-	"golang.org/x/net/websocket"
 	"github.com/kazoup/platform/media/web/handler"
 	"github.com/micro/cli"
 	microweb "github.com/micro/go-web"
@@ -18,6 +17,7 @@ import (
 	_ "github.com/pierrre/imageserver/image/jpeg"
 	_ "github.com/pierrre/imageserver/image/png"
 	imageserver_file "github.com/pierrre/imageserver/source/file"
+	"golang.org/x/net/websocket"
 
 	"log"
 	"net/http"
@@ -63,7 +63,7 @@ func web(ctx *cli.Context) {
 
 	//TODO move to crawler web service
 	service.Handle("/crawler/status", websocket.Handler(handler.CrawlerStatus))
-	
+
 	service.Run()
 }
 
