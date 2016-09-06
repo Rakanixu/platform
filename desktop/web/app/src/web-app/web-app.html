@@ -558,7 +558,14 @@
                         return {
                             index: 0,
                             label: 'My Files'
-                        }
+                        };
+                    }
+                },
+                selectedDatasource: {
+                    type: Object,
+                    notify: false,
+                    value: function() {
+                        return {};
                     }
                 },
                 item: {
@@ -697,20 +704,41 @@
                     length = 0;
 
                 this.set('breadcrumbs', []);
-                if (url && url.length) {
-                    if (url.charAt(0) === '/') {
-                        url = url.substring(1);
-                    }
-                    length = url.split('/').length;
 
-                    _.forEach(url.split('/'), function(label, i) {
-                        breadcrumbUrl += '/' + label;
+                switch (this.selectedDatasource.type) {
+                    case 'local':
+                        if (url.length) {
+                            if (url.charAt(0) === '/') {
+                                url = url.substring(1);
+                            }
+                            length = url.split('/').length;
+
+                            _.forEach(url.split('/'), function(label, i) {
+                                breadcrumbUrl += '/' + label;
+                                this.push('breadcrumbs', {
+                                    label: label,
+                                    url: breadcrumbUrl,
+                                    depth: i + 1
+                                });
+                            }, this);
+                        }
+                        break;
+                    case 'slack':
                         this.push('breadcrumbs', {
-                            label: label,
-                            url: breadcrumbUrl,
-                            depth: i + 1
+                            label: 'Slack Files',
+                            index: this.selectedDatasource.index,
+                            url: '',
+                            depth: 0
                         });
-                    }, this);
+                        break;
+                    case 'googledrive':
+                        this.push('breadcrumbs', {
+                            label: 'Google Drive Files',
+                            index: this.selectedDatasource.index,
+                            url: '',
+                            depth: 0
+                        });
+                        break;
                 }
 
                 this.$.breadcrumbsSteps.render();
@@ -875,6 +903,11 @@
             browseDatasource: function(e, detail) {
                 this.clearIronList();
 
+                this.set('selectedDatasource', {
+                    type: this.getDatasourceType(e.model.__data__.item.url),
+                    index: e.model.__data__.item.index
+                });
+
                 if (this.getDatasourceType(e.model.__data__.item.url) === 'local') {
                     var url = this.getDatasourceUrl(e.model.__data__.item.url);
                     var depth = url.split('/').length;
@@ -904,14 +937,28 @@
             },
             browse: function(e, detail) {
                 this.clearIronList();
-                this.$.filterConverter.setValues({
-                    index: 'files',
-                    from: 0,
-                    size: this.size,
-                    type: 'file',
-                    url: e.model.__data__.item.url,
-                    depth: this.$.filterConverter.getFilterAsObj().term ? 0 : e.model.__data__.item.depth
-                });
+
+                if  (e.model.__data__.item.index) {
+                    // Browsing non local files
+                    this.$.filterConverter.setValues({
+                        index: e.model.__data__.item.index,
+                        from: 0,
+                        size: this.size,
+                        type: 'file',
+                        url: '',
+                        depth: 0
+                    });
+                } else {
+                    // Browsing local files
+                    this.$.filterConverter.setValues({
+                        index: 'files',
+                        from: 0,
+                        size: this.size,
+                        type: 'file',
+                        url: e.model.__data__.item.url,
+                        depth: this.$.filterConverter.getFilterAsObj().term ? 0 : e.model.__data__.item.depth
+                    });
+                }
             },
             search: function(request) {
                 if (!this.$.rpcElastic.loading) {
