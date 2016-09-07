@@ -18,8 +18,10 @@ const (
 	Local       = "local"
 	Slack       = "slack"
 	GoogleDrive = "googledrive"
+	OneDrive    = "onedrive"
 
 	SlackFilesEndpoint = "https://slack.com/api/files.list"
+	OneDriveEndpoint   = "https://api.onedrive.com/v1.0/"
 
 	OauthStateString = "randomsdsdahfoashfouahsfohasofhoashfaf"
 )
@@ -71,6 +73,7 @@ func NewMicrosoftOauthCongig() *oauth2.Config {
 			"onedrive.readonly",
 			"onedrive.readwrite",
 			"onedrive.appfolder",
+			"offline_access",
 		},
 	}
 }
