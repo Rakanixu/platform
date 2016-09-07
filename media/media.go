@@ -36,11 +36,9 @@ func web(ctx *cli.Context) {
 	contentDir := "/"
 	log.Printf("volume name: %s  path :%s", filepath.VolumeName(wd), wd)
 	service := microweb.NewService(microweb.Name("go.micro.web.media"))
-
-	//service.Handle("/crawler/status", websocket.Handler(handler.CrawlerStatus))
-
-	//http://localhost:8082/desktop/image?source=/Users/radekdymacz/Pictures/city-wallpaper.jpg&width=300&height=300&mode=fit&quality=50
-	service.Handle("/image", &imageserver_http.Handler{
+	//http://localhost:8082/desktop/image?source={file_id}&width=300&height=300&mode=fit&quality=50
+	service.Handle("/image", handler.NewImageHandler())
+	service.Handle("/image/local", &imageserver_http.Handler{
 		Parser: imageserver_http.ListParser([]imageserver_http.Parser{
 			&imageserver_http.SourceParser{},
 			&imageserver_http_gift.ResizeParser{},

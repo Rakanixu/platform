@@ -24,7 +24,6 @@ type KazoupFile struct {
 	Modified time.Time    `json:"modified"`
 	Size     int64        `json:"size"`
 	IsDir    bool         `json:"is_dir"`
-	Mode     os.FileMode  `json:"mode"`
 	Category string       `json:"category"`
 	Depth    int64        `json:"depth"`
 	Original OriginalFile `json:"original,omitempty"`
@@ -71,7 +70,7 @@ func NewDesktopFile(lf *LocalFile) *DesktopFile {
 		IsDir:    lf.Info.IsDir(),
 		Mode:     lf.Info.Mode(),
 		Category: categories.GetDocType(filepath.Ext(lf.Info.Name())),
-		Depth:    urlDepth(lf.Path),
+		Depth:    UrlDepth(lf.Path),
 	}
 }
 
@@ -134,7 +133,7 @@ func pathToIntmap(path string) intmap.Intmap {
 	return results
 }
 
-func urlDepth(str string) int64 {
+func UrlDepth(str string) int64 {
 	return int64(len(strings.Split(str, "/")) - 1)
 }
 

@@ -6,7 +6,6 @@ import (
 	"github.com/kazoup/platform/structs"
 	"github.com/kazoup/platform/structs/categories"
 	googledrive "google.golang.org/api/drive/v3"
-	"os"
 	"time"
 )
 
@@ -21,7 +20,6 @@ func NewKazoupFileFromGoogleDriveFile(g *googledrive.File) *structs.KazoupFile {
 		Modified: t,
 		Size:     g.Size,
 		IsDir:    false,
-		Mode:     *new(os.FileMode),
 		Category: categories.GetDocType("." + g.FullFileExtension),
 		Depth:    0,
 		Original: g,
