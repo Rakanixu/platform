@@ -887,7 +887,12 @@
             listDatasources: function(e, detail) {
                 this.clearIronList();
                 this.set('itemSelected', false);
-                this.$.filterConverter.setValue('category', '');
+                this.$.filterConverter.setValues({
+                    index: 'files',
+                    category: '',
+                    url: '',
+                    depth: 0
+                });
                 this.$.navDrawerPanel.closeDrawer();
                 this.set('doScan', false);
                 this.set('breadcrumbs', []);
@@ -984,7 +989,6 @@
                         this.clearIronList();
 
                         this.$.filterConverter.setValues({
-                            index: 'files',
                             from: 0,
                             size: this.size,
                             term: term,
