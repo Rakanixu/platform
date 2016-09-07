@@ -61,6 +61,7 @@ func GetDataSource(ds *DataSource, endpoint *proto.Endpoint) (filestorer.FileSto
 	}
 	if strings.Contains(endpoint.Url, onedriveEndpoint) {
 		return &onedrive.Onedrive{
+			Endpoint: *endpoint,
 			FileStore: filestorer.FileStore{
 				ElasticServiceName: ds.ElasticServiceName,
 			},

@@ -51,7 +51,7 @@ function createAuthWindow(event, arg) {
         height: 590,
         frame: true,
         webPreferences: {
-          nodeIntegration: true
+          nodeIntegration: false
         }
     });
 

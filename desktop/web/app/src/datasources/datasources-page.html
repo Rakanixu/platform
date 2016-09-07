@@ -210,6 +210,7 @@
                 if (e.currentTarget.getAttribute('data-url') == 'local://' ) {
                   ipcRenderer.send('open-folder');
                 }else {
+                  console.log(e.currentTarget.getAttribute('data-url'))
                   ipcRenderer.send('auth-message',e.currentTarget.getAttribute('data-url'));
                 }
           } else {

@@ -49,7 +49,28 @@ func NewSlackOauthConfig() *oauth2.Config {
 		RedirectURL:  "http://localhost:8082/auth/slack/callback",
 		ClientID:     "2506087186.66729631906",
 		ClientSecret: "53ea1f0afa4560b7e070964fb2b0c5d6",
-		Scopes:       []string{"files:read", "files:write:user", "team:read"},
-		Endpoint:     slack.Endpoint,
+		Scopes: []string{
+			"files:read",
+			"files:write:user",
+			"team:read",
+		},
+		Endpoint: slack.Endpoint,
+	}
+}
+
+func NewMicrosoftOauthCongig() *oauth2.Config {
+	return &oauth2.Config{
+		RedirectURL:  "http://localhost:8082/auth/microsoft/callback",
+		ClientID:     "60f54c2b-6631-4bf4-ae45-01b5715cb881",
+		ClientSecret: "COC67cMupbGdSCx1Omc3Z5g",
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  "https://login.live.com/oauth20_authorize.srf",
+			TokenURL: "https://login.live.com/oauth20_token.srf",
+		},
+		Scopes: []string{
+			"onedrive.readonly",
+			"onedrive.readwrite",
+			"onedrive.appfolder",
+		},
 	}
 }
