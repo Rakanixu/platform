@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"github.com/kazoup/platform/structs"
 	"github.com/kazoup/platform/structs/categories"
-	"os"
 	"time"
 )
 
@@ -94,7 +93,6 @@ func NewKazoupFileFromSlackFile(s *SlackFile) *structs.KazoupFile {
 		Modified: t,
 		Size:     s.Size,
 		IsDir:    false,
-		Mode:     *new(os.FileMode),
 		Category: categories.GetDocType("." + s.Filetype),
 		Depth:    0,
 		Original: s,

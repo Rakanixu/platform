@@ -8,8 +8,8 @@ import (
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	scan "github.com/kazoup/platform/crawler/srv/scan"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
-	"github.com/kazoup/platform/structs"
 	globals "github.com/kazoup/platform/structs/globals"
+	"github.com/kazoup/platform/structs/local"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"log"
@@ -114,11 +114,9 @@ func (fs *Local) walkDatasourceParents() error {
 			return err
 		}
 
-		f := structs.NewDesktopFile(&structs.LocalFile{
-			Type: "LocalFile",
+		f := local.NewKazoupFileFromLocal(&local.LocalFile{
 			Path: path,
 			Info: info,
-			Id:   getMD5Hash(path),
 		})
 
 		b, err := json.Marshal(f)
@@ -151,8 +149,7 @@ func (fs *Local) walkHandler() filepath.WalkFunc {
 			log.Print("Scanner stopped")
 			return errors.New("Scanner stopped")
 		default:
-			f := structs.NewDesktopFile(&structs.LocalFile{
-				Type: "LocalFile",
+			f := local.NewKazoupFileFromLocal(&local.LocalFile{
 				Path: path,
 				Info: info,
 			})
