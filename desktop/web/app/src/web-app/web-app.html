@@ -294,6 +294,7 @@
                     <iron-list id="searchList" items="[[searchResults]]" on-scroll="_handleScroll" hidden$="[[datasourceListView]]">
                         <template>
                             <div class$="[[bigVideoClass]] [[getPrepopulatedClass(item.unknown)]]">
+                            <div class="">
                                 <template is="dom-if" if="{{!view.isGrid}}" restamp="true">
                                     <template is="dom-if" if="{{isVideo(item.category)}}">
                                         <mat-item on-tap="mainAction"
@@ -355,6 +356,7 @@
                                         </div>
                                     </div>
                                 </template>
+                            </div>
                             </div>
                         </template>
                     </iron-list>
@@ -920,6 +922,7 @@
             },
             browseDatasource: function(e, detail) {
                 this.clearIronList();
+                this.clearSelectedItemStyling();
 
                 this.set('selectedDatasource', {
                     type: this.getDatasourceType(e.model.__data__.item.url),
@@ -955,6 +958,7 @@
             },
             browse: function(e, detail) {
                 this.clearIronList();
+                this.clearSelectedItemStyling();
 
                 if  (e.model.__data__.item.index) {
                     // Browsing non local files
@@ -1049,6 +1053,8 @@
                 this.$.rpcGetDatasources.generateRequest();
             },
             mainAction: function(e, detail) {
+                this.clearSelectedItemStyling();
+
                 if (e.model.__data__.item.is_dir) {
                     // Browse one level deeper
                     this.clearIronList();
@@ -1068,6 +1074,8 @@
                     this.set('item', e.model.__data__.item);
                     this.set('itemSelected', true);
                     this.$.mainDrawerPanel.openDrawer();
+
+                    e.currentTarget.classList.add('selected-item');
 
                     if (document.querySelector('video')) {
                         document.querySelector('video').load();
@@ -1089,6 +1097,7 @@
             },
             closeDetails: function(e, detail) {
                 this.set('itemSelected', false);
+                this.clearSelectedItemStyling();
                 this.$.mainDrawerPanel.closeDrawer();
             },
             refreshView: function() {
@@ -1142,6 +1151,13 @@
                         this.checkBreadcrumbsView(count);
                     }
                 }, 10);
+            },
+            clearSelectedItemStyling: function() {
+                if (document.querySelectorAll('.selected-item')) {
+                    _.forEach(document.querySelectorAll('.selected-item'), function(el) {
+                        el.classList.remove('selected-item');
+                    });
+                }
             },
             handleSearchHeader: function(selected) {
                 return (selected !== 0);
