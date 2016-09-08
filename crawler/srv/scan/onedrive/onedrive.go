@@ -11,8 +11,10 @@ import (
 	"github.com/kazoup/platform/structs/onedrive"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	"golang.org/x/oauth2"
 	"log"
 	"net/http"
+	"time"
 )
 
 const (
@@ -20,6 +22,7 @@ const (
 	Drives = "drives/"
 )
 
+// OneDrive crawler
 type OneDrive struct {
 	Id           int64
 	Running      chan bool
@@ -29,6 +32,7 @@ type OneDrive struct {
 	scan.Scanner
 }
 
+// NewOneDrive constructor
 func NewOneDrive(id int64, dataSource *proto_datasource.Endpoint) *OneDrive {
 	return &OneDrive{
 		Id:           id,
@@ -39,22 +43,25 @@ func NewOneDrive(id int64, dataSource *proto_datasource.Endpoint) *OneDrive {
 	}
 }
 
+// Start scan
 func (o *OneDrive) Start(crawls map[int64]scan.Scanner, ds int64) {
 	go func() {
 		if err := o.getFiles(); err != nil {
 			log.Println(err)
 		}
-		// Slack scan finished
+		// One drive scan finished
 		o.Stop()
 		delete(crawls, ds)
 		o.sendCrawlerFinishedMsg()
 	}()
 }
 
+// Stop scan
 func (o *OneDrive) Stop() {
 	o.Running <- false
 }
 
+// Info about scan
 func (o *OneDrive) Info() (scan.Info, error) {
 	return scan.Info{
 		Id:          o.Id,
@@ -63,15 +70,24 @@ func (o *OneDrive) Info() (scan.Info, error) {
 	}, nil
 }
 
+// getFiles retrieves drives, directories and files
 func (o *OneDrive) getFiles() error {
-	o.listenForDirs()
+	if err := o.refreshToken(); err != nil {
+		log.Println(err)
+	}
 
-	o.getDrives()
-	o.getDrivesChildren()
+	o.listenForDirs()
+	if err := o.getDrives(); err != nil {
+		return err
+	}
+	if err := o.getDrivesChildren(); err != nil {
+		return err
+	}
 
 	return nil
 }
 
+// getDrives retrieve user drives
 func (o *OneDrive) getDrives() error {
 	c := &http.Client{}
 	url := globals.OneDriveEndpoint + Drives
@@ -98,6 +114,7 @@ func (o *OneDrive) getDrives() error {
 	return nil
 }
 
+// getDrivesChildren gets first level element from every found  drive
 func (o *OneDrive) getDrivesChildren() error {
 	var url string
 	c := &http.Client{}
@@ -128,10 +145,9 @@ func (o *OneDrive) getDrivesChildren() error {
 			if err != nil {
 				return err
 			}
-			log.Println("??????", v.File.MimeType, len(v.File.MimeType))
+
 			// Is directory
 			if len(v.File.MimeType) == 0 {
-				log.Println("IS DIR", v)
 				o.Direcotories <- v.ID
 			}
 		}
@@ -140,13 +156,16 @@ func (o *OneDrive) getDrivesChildren() error {
 	return nil
 }
 
+// listenForDirs listen for directories id to retrieve its contents
 func (o *OneDrive) listenForDirs() error {
 	go func() {
 		for {
 			select {
 			case v := <-o.Direcotories:
-				log.Println("listenForDirs", v)
-				o.getDirChildren(v)
+				err := o.getDirChildren(v)
+				if err != nil {
+					log.Println(err)
+				}
 			}
 
 		}
@@ -155,6 +174,7 @@ func (o *OneDrive) listenForDirs() error {
 	return nil
 }
 
+// getDirChildren get children from directory
 func (o *OneDrive) getDirChildren(id string) error {
 	// https://api.onedrive.com/v1.0/drive/items/F5A34C5D0F17415A!114/children
 	c := &http.Client{}
@@ -190,6 +210,7 @@ func (o *OneDrive) getDirChildren(id string) error {
 	return nil
 }
 
+// sendFileMsg publishes file messages
 func (o *OneDrive) sendFileMsg(f interface{}, url string) error {
 	b, err := json.Marshal(f)
 	if err != nil {
@@ -208,12 +229,43 @@ func (o *OneDrive) sendFileMsg(f interface{}, url string) error {
 	return nil
 }
 
+// sendCrawlerFinishedMsg
 func (o *OneDrive) sendCrawlerFinishedMsg() error {
 	msg := &crawler.CrawlerFinishedMessage{
 		DatasourceId: o.Endpoint.Index,
 	}
 
 	if err := client.Publish(context.Background(), client.NewPublication(globals.CrawlerFinishedTopic, msg)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// refreshToken gets a new token from custom one and saves it
+func (o *OneDrive) refreshToken() error {
+	tokenSource := globals.NewMicrosoftOauthConfig().TokenSource(oauth2.NoContext, &oauth2.Token{
+		AccessToken:  o.Endpoint.Token.AccessToken,
+		TokenType:    o.Endpoint.Token.TokenType,
+		RefreshToken: o.Endpoint.Token.RefreshToken,
+		Expiry:       time.Unix(o.Endpoint.Token.Expiry, 0),
+	})
+
+	t, err := tokenSource.Token()
+	if err != nil {
+		return err
+	}
+	o.Endpoint.Token.AccessToken = t.AccessToken
+	o.Endpoint.Token.TokenType = t.TokenType
+	o.Endpoint.Token.RefreshToken = t.RefreshToken
+	o.Endpoint.Token.Expiry = t.Expiry.Unix()
+
+	client := proto_datasource.NewDataSourceClient("", nil)
+
+	_, err = client.Create(context.Background(), &proto_datasource.CreateRequest{
+		Endpoint: o.Endpoint,
+	})
+	if err != nil {
 		return err
 	}
 

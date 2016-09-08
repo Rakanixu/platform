@@ -60,7 +60,7 @@ func NewSlackOauthConfig() *oauth2.Config {
 	}
 }
 
-func NewMicrosoftOauthCongig() *oauth2.Config {
+func NewMicrosoftOauthConfig() *oauth2.Config {
 	return &oauth2.Config{
 		RedirectURL:  "http://localhost:8082/auth/microsoft/callback",
 		ClientID:     "60f54c2b-6631-4bf4-ae45-01b5715cb881",

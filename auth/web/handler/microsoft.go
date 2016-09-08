@@ -9,7 +9,7 @@ import (
 )
 
 func HandleMicrosoftLogin(w http.ResponseWriter, r *http.Request) {
-	url := globals.NewMicrosoftOauthCongig().AuthCodeURL(globals.OauthStateString, oauth2.AccessTypeOffline)
+	url := globals.NewMicrosoftOauthConfig().AuthCodeURL(globals.OauthStateString, oauth2.AccessTypeOffline)
 
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
@@ -17,7 +17,7 @@ func HandleMicrosoftLogin(w http.ResponseWriter, r *http.Request) {
 func HandleMicrosoftCallback(w http.ResponseWriter, r *http.Request) {
 	code := r.FormValue("code")
 
-	token, err := globals.NewMicrosoftOauthCongig().Exchange(oauth2.NoContext, code)
+	token, err := globals.NewMicrosoftOauthConfig().Exchange(oauth2.NoContext, code)
 	if err != nil {
 		log.Printf("Code exchange failed with '%s'\n", err)
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
