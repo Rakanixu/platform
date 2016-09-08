@@ -90,6 +90,7 @@ func (o *OneDrive) getFiles() error {
 // getDrives retrieve user drives
 func (o *OneDrive) getDrives() error {
 	c := &http.Client{}
+	//https://api.onedrive.com/v1.0/drives
 	url := globals.OneDriveEndpoint + Drives
 	req, err := http.NewRequest("GET", url, nil)
 	req.Header.Set("Authorization", o.Endpoint.Token.TokenType+" "+o.Endpoint.Token.AccessToken)
@@ -140,15 +141,17 @@ func (o *OneDrive) getDrivesChildren() error {
 		}
 
 		for _, v := range filesRsp.Value {
-			f := onedrive.NewKazoupFileFromOneDriveFile(&v)
-			err := o.sendFileMsg(*f, v.WebURL)
-			if err != nil {
-				return err
-			}
-
 			// Is directory
 			if len(v.File.MimeType) == 0 {
 				o.Direcotories <- v.ID
+				// Is file
+			} else {
+				f := onedrive.NewKazoupFileFromOneDriveFile(&v)
+				err := o.sendFileMsg(*f, v.WebURL)
+				if err != nil {
+					return err
+				}
+
 			}
 		}
 	}
@@ -196,14 +199,14 @@ func (o *OneDrive) getDirChildren(id string) error {
 	}
 
 	for _, v := range filesRsp.Value {
-		f := onedrive.NewKazoupFileFromOneDriveFile(&v)
-		err := o.sendFileMsg(*f, v.WebURL)
-		if err != nil {
-			return err
-		}
-
 		if len(v.File.MimeType) == 0 {
 			o.Direcotories <- v.ID
+		} else {
+			f := onedrive.NewKazoupFileFromOneDriveFile(&v)
+			err := o.sendFileMsg(*f, v.WebURL)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -229,7 +232,7 @@ func (o *OneDrive) sendFileMsg(f interface{}, url string) error {
 	return nil
 }
 
-// sendCrawlerFinishedMsg
+// sendCrawlerFinishedMsg publishes crawler finished messages
 func (o *OneDrive) sendCrawlerFinishedMsg() error {
 	msg := &crawler.CrawlerFinishedMessage{
 		DatasourceId: o.Endpoint.Index,
