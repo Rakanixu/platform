@@ -112,6 +112,22 @@
       getDatasourceType: function(datasource) {
         return datasource.split('://')[0];
       },
+      getDatasourcePrettyType: function(datasource) {
+        switch (this.getDatasourceType(datasource)) {
+          case 'local':
+            return 'Local';
+            break;
+          case 'slack':
+            return 'Slack';
+            break;
+          case 'googledrive':
+            return 'Google Drive';
+            break;
+          case 'onedrive':
+            return 'One Drive';
+            break;
+        }
+      },
       getDatasourceUrl: function(datasource) {
         return datasource.split('://')[1];
       },

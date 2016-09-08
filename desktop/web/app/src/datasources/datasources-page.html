@@ -43,7 +43,7 @@
     </style>
 
     <template is="dom-repeat" items="[[datasourcesResults]]">
-      <mat-item label="[[getDatasourceType(item.url)]]"
+      <mat-item label="[[getDatasourcePrettyType(item.url)]]"
                 description="[[getDatasourceUrl(item.url)]]">
         <mat-avatar class="primary"
                     icon$="[[getDatasourceIcon(item.url)]]">
