@@ -18,8 +18,10 @@ const (
 	Local       = "local"
 	Slack       = "slack"
 	GoogleDrive = "googledrive"
+	OneDrive    = "onedrive"
 
 	SlackFilesEndpoint = "https://slack.com/api/files.list"
+	OneDriveEndpoint   = "https://api.onedrive.com/v1.0/"
 
 	OauthStateString = "randomsdsdahfoashfouahsfohasofhoashfaf"
 )
@@ -58,7 +60,7 @@ func NewSlackOauthConfig() *oauth2.Config {
 	}
 }
 
-func NewMicrosoftOauthCongig() *oauth2.Config {
+func NewMicrosoftOauthConfig() *oauth2.Config {
 	return &oauth2.Config{
 		RedirectURL:  "http://localhost:8082/auth/microsoft/callback",
 		ClientID:     "60f54c2b-6631-4bf4-ae45-01b5715cb881",
@@ -71,6 +73,7 @@ func NewMicrosoftOauthCongig() *oauth2.Config {
 			"onedrive.readonly",
 			"onedrive.readwrite",
 			"onedrive.appfolder",
+			"offline_access",
 		},
 	}
 }

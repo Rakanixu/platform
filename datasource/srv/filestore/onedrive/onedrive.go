@@ -17,7 +17,9 @@ type Onedrive struct {
 
 // Validate fake, always fine
 func (o *Onedrive) Validate(datasources string) (*datasource_proto.Endpoint, error) {
-	o.Endpoint.Index = "index" + strconv.Itoa(int(time.Now().UnixNano()))
+	if len(o.Endpoint.Index) == 0 {
+		o.Endpoint.Index = "index" + strconv.Itoa(int(time.Now().UnixNano()))
+	}
 	o.Endpoint.Id = getMD5Hash(o.Endpoint.Url)
 
 	return &o.Endpoint, nil
