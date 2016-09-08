@@ -739,6 +739,14 @@
                             depth: 0
                         });
                         break;
+                    case 'onedrive':
+                        this.push('breadcrumbs', {
+                            label: 'One Drive Files',
+                            index: this.selectedDatasource.index,
+                            url: '',
+                            depth: 0
+                        });
+                        break;
                 }
 
                 this.$.breadcrumbsSteps.render();
