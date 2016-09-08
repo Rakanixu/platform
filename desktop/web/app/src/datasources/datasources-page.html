@@ -43,12 +43,14 @@
     </style>
 
     <template is="dom-repeat" items="[[datasourcesResults]]">
-      <mat-item label="[[getDatasourceUrl(item.url)]]"
-                description="">
+      <mat-item label="[[getDatasourceType(item.url)]]"
+                description="[[getDatasourceUrl(item.url)]]">
         <mat-avatar class="primary"
                     icon$="[[getDatasourceIcon(item.url)]]">
 	      </mat-avatar>
-	
+
+        <span> Last scan: [[timeSince(item.last_scan)]]</span>
+
         <mat-icon-button class="secondary"
                          behavior="toggle"
                          icon="mat:more-vert"
