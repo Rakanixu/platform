@@ -1,4 +1,5 @@
 package local
+
 import (
 	"os"
 	"path/filepath"
@@ -13,14 +14,13 @@ type LocalFile struct {
 	Info os.FileInfo
 }
 
+func NewKazoupFileFromLocal(lf *LocalFile) *structs.KazoupFile {
 
-func NewKazoupFileFromLocal(lf *LocalFile ) *structs.KazoupFile {
-
-	original:= struct{
+	original := struct {
 		Mode os.FileMode `json:"mode"`
-		}{
-			Mode:lf.Info.Mode(),
-		}
+	}{
+		Mode: lf.Info.Mode(),
+	}
 	return &structs.KazoupFile{
 		ID:       structs.GetMD5Hash(lf.Path),
 		Name:     lf.Info.Name(),
@@ -30,7 +30,6 @@ func NewKazoupFileFromLocal(lf *LocalFile ) *structs.KazoupFile {
 		IsDir:    lf.Info.IsDir(),
 		Category: categories.GetDocType(filepath.Ext(lf.Info.Name())),
 		Depth:    structs.UrlDepth(lf.Path),
-		Original : original,
+		Original: original,
 	}
 }
-

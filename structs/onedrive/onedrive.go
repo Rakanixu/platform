@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"github.com/kazoup/platform/structs"
 	"github.com/kazoup/platform/structs/categories"
-	"os"
 	"strings"
 	"time"
 )
@@ -112,7 +111,6 @@ func NewKazoupFileFromOneDriveFile(o *OneDriveFile) *structs.KazoupFile {
 		Modified: o.LastModifiedDateTime,
 		Size:     o.Size,
 		IsDir:    isDir,
-		Mode:     *new(os.FileMode),
 		Category: categories.GetDocType("." + name[len(name)-1]),
 		Depth:    0,
 		Original: o,
