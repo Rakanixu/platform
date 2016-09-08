@@ -1,10 +1,15 @@
 package handler
 
 import (
+	"encoding/json"
+	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
+	"log"
+	"time"
 )
 
 // DataSource struct
@@ -87,6 +92,42 @@ func (ds *DataSource) Scan(ctx context.Context, req *proto.ScanRequest, rsp *pro
 
 	if err := ScanDataSource(ds, ctx, req.Id); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
+	}
+
+	return nil
+}
+
+// SubscribeCrawlerFinished sets last scan timestamp for the datasource after being scanned
+func SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedMessage) error {
+	var ds *proto.Endpoint
+
+	c := db_proto.NewDBClient("", nil)
+	rsp, err := c.Read(ctx, &db_proto.ReadRequest{
+		Index: "datasources",
+		Type:  "datasource",
+		Id:    msg.DatasourceId,
+	})
+	if err != nil {
+		log.Println(err)
+	}
+
+	if err := json.Unmarshal([]byte(rsp.Result), &ds); err != nil {
+		log.Println(err)
+	}
+
+	ds.LastScan = time.Now().Unix()
+	b, err := json.Marshal(ds)
+	if err != nil {
+		log.Println(err)
+	}
+	_, err = c.Update(ctx, &db_proto.UpdateRequest{
+		Index: "datasources",
+		Type:  "datasource",
+		Id:    msg.DatasourceId,
+		Data:  string(b),
+	})
+	if err != nil {
+		log.Println(err)
 	}
 
 	return nil

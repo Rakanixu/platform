@@ -31,7 +31,6 @@ func enricher(e *elastic) error {
 			select {
 			case v := <-e.crawlerFinished:
 				log.Println(v)
-
 			}
 		}
 	}()

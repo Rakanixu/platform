@@ -109,7 +109,7 @@ func (s *GoogleDrive) getNextPage(srv *drive.Service, nextPageToken string) erro
 
 func (g *GoogleDrive) sendCrawlerFinishedMsg() error {
 	msg := &crawler.CrawlerFinishedMessage{
-		DatasourceId: g.Endpoint.Index,
+		DatasourceId: g.Endpoint.Id,
 	}
 
 	if err := client.Publish(context.Background(), client.NewPublication(globals.CrawlerFinishedTopic, msg)); err != nil {

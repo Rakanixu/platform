@@ -107,7 +107,7 @@ func (s *Slack) getFiles(page int) error {
 
 func (s *Slack) sendCrawlerFinishedMsg() error {
 	msg := &crawler.CrawlerFinishedMessage{
-		DatasourceId: s.Endpoint.Index,
+		DatasourceId: s.Endpoint.Id,
 	}
 
 	if err := client.Publish(context.Background(), client.NewPublication(globals.CrawlerFinishedTopic, msg)); err != nil {

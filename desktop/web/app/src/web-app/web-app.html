@@ -280,7 +280,7 @@
                             <div>
                                 <mat-item on-tap="browseDatasource"
                                           label="[[getDatasourceUrl(item.url)]]"
-                                          description="">
+                                          description="Last scan: [[timeSince(item.last_scan)]]">
                                     <mat-avatar class="primary"
                                                 icon$="[[getDatasourceIcon(item.url)]]">
                                     </mat-avatar>
