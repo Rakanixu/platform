@@ -5,18 +5,20 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"github.com/kazoup/platform/crawler/srv/proto/crawler"
-	scan "github.com/kazoup/platform/crawler/srv/scan"
-	db_proto "github.com/kazoup/platform/db/srv/proto/db"
-	globals "github.com/kazoup/platform/structs/globals"
-	"github.com/kazoup/platform/structs/local"
-	"github.com/micro/go-micro/client"
-	"golang.org/x/net/context"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/kazoup/platform/crawler/srv/proto/crawler"
+	scan "github.com/kazoup/platform/crawler/srv/scan"
+	db_proto "github.com/kazoup/platform/db/srv/proto/db"
+	"github.com/kazoup/platform/structs/file"
+	globals "github.com/kazoup/platform/structs/globals"
+	"github.com/kazoup/platform/structs/local"
+	"github.com/micro/go-micro/client"
+	"golang.org/x/net/context"
 )
 
 // Local ...
@@ -114,11 +116,10 @@ func (fs *Local) walkDatasourceParents() error {
 			return err
 		}
 
-		f := local.NewKazoupFileFromLocal(&local.LocalFile{
+		f := file.NewKazoupFileFromLocal(&local.LocalFile{
 			Path: path,
 			Info: info,
 		})
-
 		b, err := json.Marshal(f)
 		if err != nil {
 			return err
@@ -149,7 +150,7 @@ func (fs *Local) walkHandler() filepath.WalkFunc {
 			log.Print("Scanner stopped")
 			return errors.New("Scanner stopped")
 		default:
-			f := local.NewKazoupFileFromLocal(&local.LocalFile{
+			f := file.NewKazoupFileFromLocal(&local.LocalFile{
 				Path: path,
 				Info: info,
 			})

@@ -1,13 +1,6 @@
 package onedrive
 
-import (
-	"crypto/md5"
-	"encoding/hex"
-	"github.com/kazoup/platform/structs"
-	"github.com/kazoup/platform/structs/categories"
-	"strings"
-	"time"
-)
+import "time"
 
 type DrivesListResponse struct {
 	OdataContext string `json:"@odata.context"`
@@ -93,31 +86,4 @@ type OneDriveFile struct {
 		} `json:"hashes"`
 		MimeType string `json:"mimeType"`
 	} `json:"file"`
-}
-
-// NewKazoupFileFromOneDriveFile constructor
-func NewKazoupFileFromOneDriveFile(o *OneDriveFile) *structs.KazoupFile {
-	isDir := true
-	name := strings.Split(o.Name, ".")
-
-	if len(o.File.MimeType) > 0 {
-		isDir = false
-	}
-
-	return &structs.KazoupFile{
-		ID:       getMD5Hash(o.WebURL),
-		Name:     o.Name,
-		URL:      o.WebURL,
-		Modified: o.LastModifiedDateTime,
-		Size:     o.Size,
-		IsDir:    isDir,
-		Category: categories.GetDocType("." + name[len(name)-1]),
-		Depth:    0,
-		Original: o,
-	}
-}
-
-func getMD5Hash(text string) string {
-	hash := md5.Sum([]byte(text))
-	return hex.EncodeToString(hash[:])
 }

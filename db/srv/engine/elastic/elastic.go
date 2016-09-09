@@ -3,6 +3,8 @@ package elastic
 import (
 	"encoding/json"
 	"errors"
+	"log"
+
 	"github.com/kazoup/gabs"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/kazoup/platform/db/srv/engine"
@@ -10,7 +12,6 @@ import (
 	db "github.com/kazoup/platform/db/srv/proto/db"
 	lib "github.com/mattbaird/elastigo/lib"
 	"golang.org/x/net/context"
-	"log"
 )
 
 type elastic struct {
@@ -139,12 +140,15 @@ func (e *elastic) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 	}
 
 	for _, v := range out.Hits.Hits {
-		s := engine.TypeFactory(req.Type)
 		data, err := v.Source.MarshalJSON()
 		if err != nil {
 			return &db.SearchResponse{}, err
 		}
+		s, err := engine.TypeFactory(req.Type, string(data))
+		if err != nil {
 
+			return &db.SearchResponse{}, err
+		}
 		if err := json.Unmarshal(data, &s); err != nil {
 			return &db.SearchResponse{}, err
 		}

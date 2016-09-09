@@ -5,7 +5,7 @@ import (
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db "github.com/kazoup/platform/db/srv/proto/db"
 	flag_proto "github.com/kazoup/platform/flag/srv/proto/flag"
-	"github.com/kazoup/platform/structs"
+	"github.com/kazoup/platform/structs/file"
 	"golang.org/x/net/context"
 )
 
@@ -101,15 +101,19 @@ func RenameAlias(req *db.RenameAliasRequest) (*db.RenameAliasResponse, error) {
 	return engine.RenameAlias(req)
 }
 
-func TypeFactory(typ string) interface{} {
+func TypeFactory(typ string, data string) (interface{}, error) {
 	switch typ {
 	case File:
-		return &structs.DesktopFile{}
+		file, err := file.NewFileFromString(data)
+		if err != nil {
+			return nil, err
+		}
+		return file, nil
 	case Datasource:
-		return &datasource_proto.Endpoint{}
+		return &datasource_proto.Endpoint{}, nil
 	case Flag:
-		return &flag_proto.ReadResponse{}
+		return &flag_proto.ReadResponse{}, nil
 	}
 
-	return nil
+	return nil, nil
 }

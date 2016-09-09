@@ -1,12 +1,11 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 
 	db "github.com/kazoup/platform/db/srv/proto/db"
+	"github.com/kazoup/platform/structs/file"
 	"github.com/micro/go-micro/client"
-	context "golang.org/x/net/context"
 )
 
 type ImageHandler struct {
@@ -45,20 +44,13 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if quality == "" {
 		quality = "50"
 	}
+	f, err := file.GetFileByID(file_id)
 
-	// get file URL from DB
-	dbreq := db.ReadRequest{
-		Index: "files",
-		Type:  "file",
-		Id:    file_id,
-	}
-	_, err := ih.dbclient.Read(context.TODO(), &dbreq)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-	source := file_id
 
-	options := fmt.Sprintf("?source=%s&width=%s&height=%s&mode=%s&quality=%s", source, width, height, mode, quality)
-	fmt.Print(options)
+	r.Form.Add("source", f.PreviewURL())
+	http.Redirect(w, r, "image/preview", http.StatusSeeOther)
 
 }

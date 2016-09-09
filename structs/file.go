@@ -3,13 +3,19 @@ package structs
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"github.com/Pallinder/go-randomdata"
-	"github.com/kazoup/platform/structs/categories"
-	"github.com/kazoup/platform/structs/intmap"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/Pallinder/go-randomdata"
+	"github.com/kazoup/platform/structs/categories"
+	"github.com/kazoup/platform/structs/intmap"
+)
+
+const (
+	DEFAULT_IMAGE_URL string = "http://placehold.it/350x150"
 )
 
 // OriginalFile interface
@@ -26,7 +32,20 @@ type KazoupFile struct {
 	IsDir    bool         `json:"is_dir"`
 	Category string       `json:"category"`
 	Depth    int64        `json:"depth"`
+	FileType string       `json:"file_type"`
 	Original OriginalFile `json:"original,omitempty"`
+}
+
+func NewKazoupFileFromString(s string) (*KazoupFile, error) {
+	f := &KazoupFile{}
+	b, err := json.Marshal(s)
+	if err != nil {
+		return nil, err
+	}
+	if err := json.Unmarshal(b, f); err != nil {
+		return nil, err
+	}
+	return f, nil
 }
 
 // DesktopFile ...

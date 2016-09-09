@@ -4,17 +4,19 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
+	"log"
+	"net/http"
+	"time"
+
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/kazoup/platform/crawler/srv/scan"
 	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/structs/file"
 	"github.com/kazoup/platform/structs/globals"
 	"github.com/kazoup/platform/structs/onedrive"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
-	"log"
-	"net/http"
-	"time"
 )
 
 const (
@@ -146,7 +148,7 @@ func (o *OneDrive) getDrivesChildren() error {
 				o.Direcotories <- v.ID
 				// Is file
 			} else {
-				f := onedrive.NewKazoupFileFromOneDriveFile(&v)
+				f := file.NewKazoupFileFromOneDriveFile(&v)
 				err := o.sendFileMsg(*f, v.WebURL)
 				if err != nil {
 					return err
@@ -202,7 +204,7 @@ func (o *OneDrive) getDirChildren(id string) error {
 		if len(v.File.MimeType) == 0 {
 			o.Direcotories <- v.ID
 		} else {
-			f := onedrive.NewKazoupFileFromOneDriveFile(&v)
+			f := file.NewKazoupFileFromOneDriveFile(&v)
 			err := o.sendFileMsg(*f, v.WebURL)
 			if err != nil {
 				return err

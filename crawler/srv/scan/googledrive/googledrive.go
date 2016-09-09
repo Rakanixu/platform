@@ -4,17 +4,18 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
+	"log"
+	"time"
+
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/kazoup/platform/crawler/srv/scan"
 	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/structs/file"
 	"github.com/kazoup/platform/structs/globals"
-	googledrive "github.com/kazoup/platform/structs/googledrive"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"google.golang.org/api/drive/v3"
-	"log"
-	"time"
 )
 
 // Google crawler
@@ -121,13 +122,13 @@ func (g *GoogleDrive) sendCrawlerFinishedMsg() error {
 
 func sendFileMessagesForPage(files []*drive.File, index string) error {
 	for _, v := range files {
-		f := googledrive.NewKazoupFileFromGoogleDriveFile(v)
+		//Conflicts with ES and size in  google is parse as string
+		f := file.NewKazoupFileFromGoogleDriveFile(v)
 
 		b, err := json.Marshal(f)
 		if err != nil {
 			return nil
 		}
-
 		msg := &crawler.FileMessage{
 			Id:    getMD5Hash(v.WebViewLink),
 			Index: index,

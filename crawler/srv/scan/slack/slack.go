@@ -4,17 +4,19 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
-	"github.com/kazoup/platform/crawler/srv/proto/crawler"
-	"github.com/kazoup/platform/crawler/srv/scan"
-	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	"github.com/kazoup/platform/structs/globals"
-	"github.com/kazoup/platform/structs/slack"
-	"github.com/micro/go-micro/client"
-	"golang.org/x/net/context"
 	"log"
 	"net/http"
 	"net/url"
 	"strconv"
+
+	"github.com/kazoup/platform/crawler/srv/proto/crawler"
+	"github.com/kazoup/platform/crawler/srv/scan"
+	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/structs/file"
+	"github.com/kazoup/platform/structs/globals"
+	"github.com/kazoup/platform/structs/slack"
+	"github.com/micro/go-micro/client"
+	"golang.org/x/net/context"
 )
 
 // Slack crawler
@@ -80,7 +82,7 @@ func (s *Slack) getFiles(page int) error {
 	}
 
 	for _, v := range filesRsp.Files {
-		f := slack.NewKazoupFileFromSlackFile(&v)
+		f := file.NewKazoupFileFromSlackFile(&v)
 
 		b, err := json.Marshal(f)
 		if err != nil {

@@ -3,9 +3,6 @@ package slack
 import (
 	"crypto/md5"
 	"encoding/hex"
-	"github.com/kazoup/platform/structs"
-	"github.com/kazoup/platform/structs/categories"
-	"time"
 )
 
 // FilesListResponse represents https://slack.com/api/files.list response
@@ -80,23 +77,6 @@ type SlackFile struct {
 		Comment   string `json:"comment"`
 		Channel   string `json:"channel"`
 	} `json:"initial_comment"`
-}
-
-// NewKazoupFileFromSlackFile constructor
-func NewKazoupFileFromSlackFile(s *SlackFile) *structs.KazoupFile {
-	t := time.Unix(s.Timestamp, 0)
-
-	return &structs.KazoupFile{
-		ID:       getMD5Hash(s.URLPrivate),
-		Name:     s.Name,
-		URL:      s.URLPrivate,
-		Modified: t,
-		Size:     s.Size,
-		IsDir:    false,
-		Category: categories.GetDocType("." + s.Filetype),
-		Depth:    0,
-		Original: s,
-	}
 }
 
 func getMD5Hash(text string) string {
