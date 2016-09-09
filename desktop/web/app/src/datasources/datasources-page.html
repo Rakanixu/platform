@@ -20,6 +20,8 @@
 <link rel="import" href="../../bower_components/mat-icon-button/mat-icon-button.html">
 <link rel="import" href="../../bower_components/mat-menu/mat-menu.html">
 
+<link rel="import" href="../../src/empty-state/empty-state.html">
+
 <link rel="import" href="../../src/behaviors/util-behavior.html">
 <link rel="import" href="../../src/behaviors/nav-behavior.html">
 <link rel="import" href="../../src/behaviors/categories-map-behavior.html">
@@ -42,7 +44,7 @@
       }
     </style>
 
-    <template is="dom-repeat" items="[[datasourcesResults]]">
+    <template is="dom-repeat" items="[[datasourcesResults]]" hidden$="[[emptyState.visible]]">
       <mat-item label="[[getDatasourcePrettyType(item.url)]]"
                 description="[[getDatasourceUrl(item.url)]]">
         <mat-avatar class="primary"
@@ -61,6 +63,12 @@
         </mat-menu>
       </mat-item>
     </template>
+
+    <empty-state id="emptyState"
+                 class="fit"
+                 hidden$="[[!emptyState.visible]]"
+                 icon="[[emptyState.icon]]"
+                 header="[[emptyState.header]]"></empty-state>
 
     <mat-dialog id="addDatasourceDialog" label="">
       <div>
@@ -196,6 +204,17 @@
             value: function() {
               return {};
             }
+          },
+          emptyState: {
+            type: Object,
+            notify: true,
+            value: function() {
+              return {
+                visible: false,
+                icon: "icons:build",
+                header: "No datasources."
+              };
+            }
           }
         },
         ready: function() {
@@ -276,6 +295,13 @@
           if (e.detail.response && e.detail.response.result) {
             this.set('datasourcesResults', JSON.parse(e.detail.response.result));
             this.set('lastDatasourceCreated', {});
+
+            // this.datasourcesResults can be nil
+            if (this.datasourcesResults && this.datasourcesResults.length) {
+              this.set('emptyState.visible', false);
+            } else {
+              this.set('emptyState.visible', true);
+            }
           }
         },
         _handleAddDatasource: function(e) {

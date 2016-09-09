@@ -123,7 +123,9 @@ wave-player paper-material#container:not(.waveActive) {
     margin-top: 56px;
 }
 
-empty-state {
+empty-state,
+neon-animated-pages,
+datasources-page {
     height: 100%;
 }
 
