@@ -237,7 +237,7 @@ func (o *OneDrive) sendFileMsg(f interface{}, url string) error {
 // sendCrawlerFinishedMsg publishes crawler finished messages
 func (o *OneDrive) sendCrawlerFinishedMsg() error {
 	msg := &crawler.CrawlerFinishedMessage{
-		DatasourceId: o.Endpoint.Index,
+		DatasourceId: o.Endpoint.Id,
 	}
 
 	if err := client.Publish(context.Background(), client.NewPublication(globals.CrawlerFinishedTopic, msg)); err != nil {

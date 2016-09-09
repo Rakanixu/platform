@@ -10,11 +10,12 @@ const (
 	FilesTopic           = "go.micro.topic.files"
 	ScanTopic            = "go.micro.topic.scan"
 	CrawlerFinishedTopic = "go.micro.topic.crawlerfinished"
-	IndexHelper          = "files_helper"
-	FilesAlias           = "files"
-	FileType             = "file"
+	NotificationTopic    = "go.micro.topic.notification"
 
-	Fake        = "fake"
+	IndexHelper = "files_helper"
+	FilesAlias  = "files"
+	FileType    = "file"
+
 	Local       = "local"
 	Slack       = "slack"
 	GoogleDrive = "googledrive"

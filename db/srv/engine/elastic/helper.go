@@ -31,7 +31,6 @@ func enricher(e *elastic) error {
 			select {
 			case v := <-e.crawlerFinished:
 				log.Println(v)
-
 			}
 		}
 	}()
@@ -119,7 +118,7 @@ func (e *ElasticQuery) defaultSorting() string {
 	var buffer bytes.Buffer
 
 	if (e.From != 0 || e.Size != 0) && e.Type == "file" {
-		buffer.WriteString(`{"is_dir": "desc"},{"size": "desc"}`)
+		buffer.WriteString(`{"is_dir": "desc"},{"modified":"desc"},{"size": "desc"}`)
 	}
 
 	return buffer.String()

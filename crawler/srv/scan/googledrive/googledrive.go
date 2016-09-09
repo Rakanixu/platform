@@ -81,11 +81,15 @@ func (s *GoogleDrive) getFiles() error {
 	}
 
 	if len(r.Files) > 0 {
-		return sendFileMessagesForPage(r.Files, s.Endpoint.Index)
+		if err := sendFileMessagesForPage(r.Files, s.Endpoint.Index); err != nil {
+			return err
+		}
 	}
 
 	if len(r.NextPageToken) > 0 {
-		return s.getNextPage(srv, r.NextPageToken)
+		if err := s.getNextPage(srv, r.NextPageToken); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -98,11 +102,15 @@ func (s *GoogleDrive) getNextPage(srv *drive.Service, nextPageToken string) erro
 	}
 
 	if len(r.Files) > 0 {
-		return sendFileMessagesForPage(r.Files, s.Endpoint.Index)
+		if err := sendFileMessagesForPage(r.Files, s.Endpoint.Index); err != nil {
+			return err
+		}
 	}
 
 	if len(r.NextPageToken) > 0 {
-		return s.getNextPage(srv, r.NextPageToken)
+		if err := s.getNextPage(srv, r.NextPageToken); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -110,7 +118,7 @@ func (s *GoogleDrive) getNextPage(srv *drive.Service, nextPageToken string) erro
 
 func (g *GoogleDrive) sendCrawlerFinishedMsg() error {
 	msg := &crawler.CrawlerFinishedMessage{
-		DatasourceId: g.Endpoint.Index,
+		DatasourceId: g.Endpoint.Id,
 	}
 
 	if err := client.Publish(context.Background(), client.NewPublication(globals.CrawlerFinishedTopic, msg)); err != nil {
