@@ -7,6 +7,7 @@ import (
 	"errors"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	scan "github.com/kazoup/platform/crawler/srv/scan"
+	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	globals "github.com/kazoup/platform/structs/globals"
 	"github.com/kazoup/platform/structs/local"
@@ -14,7 +15,6 @@ import (
 	"golang.org/x/net/context"
 	"log"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 )
@@ -23,20 +23,20 @@ import (
 type Local struct {
 	Id       int64
 	RootPath string
-	Index    string
 	Running  chan bool
-	Config   map[string]string
+	Endpoint *datasource_proto.Endpoint
 	Scanner  scan.Scanner
 }
 
 // NewLocal ...
-func NewLocal(id int64, rootPath string, index string, conf map[string]string) (*Local, error) {
+func NewLocal(id int64, endpoint *datasource_proto.Endpoint) (*Local, error) {
+	url := strings.Split(endpoint.Url, ":")
+
 	return &Local{
 		Id:       id,
-		RootPath: path.Clean(rootPath),
-		Index:    index,
+		RootPath: url[1],
 		Running:  make(chan bool, 1),
-		Config:   conf,
+		Endpoint: endpoint,
 	}, nil
 }
 
@@ -63,7 +63,6 @@ func (fs *Local) Info() (scan.Info, error) {
 		Id:          fs.Id,
 		Type:        globals.Local,
 		Description: "File system scanner",
-		Config:      fs.Config,
 	}, nil
 }
 
@@ -161,7 +160,7 @@ func (fs *Local) walkHandler() filepath.WalkFunc {
 
 			msg := &crawler.FileMessage{
 				Id:    getMD5Hash(f.URL),
-				Index: fs.Index,
+				Index: fs.Endpoint.Index,
 				Data:  string(b),
 			}
 
@@ -178,7 +177,7 @@ func (fs *Local) walkHandler() filepath.WalkFunc {
 
 func (fs *Local) sendCrawlerFinishedMsg() error {
 	msg := &crawler.CrawlerFinishedMessage{
-		DatasourceId: fs.Index,
+		DatasourceId: fs.Endpoint.Id,
 	}
 
 	if err := client.Publish(context.Background(), client.NewPublication(globals.CrawlerFinishedTopic, msg)); err != nil {

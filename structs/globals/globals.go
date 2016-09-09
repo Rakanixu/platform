@@ -14,7 +14,6 @@ const (
 	FilesAlias           = "files"
 	FileType             = "file"
 
-	Fake        = "fake"
 	Local       = "local"
 	Slack       = "slack"
 	GoogleDrive = "googledrive"
