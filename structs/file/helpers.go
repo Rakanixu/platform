@@ -5,11 +5,10 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"golang.org/x/net/context"
 	"path/filepath"
 	"strings"
 	"time"
-
-	"golang.org/x/net/context"
 
 	"github.com/kazoup/platform/structs/categories"
 	"github.com/kazoup/platform/structs/local"
@@ -18,6 +17,7 @@ import (
 	"github.com/micro/go-micro/client"
 
 	db "github.com/kazoup/platform/db/srv/proto/db"
+	"github.com/kazoup/platform/structs/globals"
 	googledrive "google.golang.org/api/drive/v3"
 )
 
@@ -41,11 +41,13 @@ func GetFileByID(id string) (File, error) {
 	return f, err
 
 }
+
 func NewFileFromString(s string) (File, error) {
 	kf := &KazoupFile{}
 	if err := json.Unmarshal([]byte(s), kf); err != nil {
 		return nil, err
 	}
+
 	switch kf.FileType {
 	case "local":
 
@@ -75,7 +77,7 @@ func NewFileFromString(s string) (File, error) {
 		return &KazoupOneDriveFile{*kf, *of}, nil
 
 	default:
-		return nil, errors.New("Hmmm crap that should not happen")
+		return nil, errors.New("Error constructing file type")
 	}
 }
 
@@ -92,7 +94,7 @@ func NewKazoupFileFromGoogleDriveFile(g *googledrive.File) *KazoupGoogleFile {
 		IsDir:    false,
 		Category: categories.GetDocType("." + g.FullFileExtension),
 		Depth:    0,
-		FileType: "googledrive",
+		FileType: globals.GoogleDrive,
 	}
 	return &KazoupGoogleFile{*kf}
 
@@ -111,10 +113,11 @@ func NewKazoupFileFromSlackFile(s *slack.SlackFile) *KazoupSlackFile {
 		IsDir:    false,
 		Category: categories.GetDocType("." + s.Filetype),
 		Depth:    0,
-		FileType: "slack",
+		FileType: globals.Slack,
 	}
 	return &KazoupSlackFile{*kf, *s}
 }
+
 func NewKazoupFileFromLocal(lf *local.LocalFile) *KazoupLocalFile {
 	// don;t save all LocalFile as mmost of data is same as KazoupFile just pass file mode
 	kf := &KazoupFile{
@@ -126,7 +129,7 @@ func NewKazoupFileFromLocal(lf *local.LocalFile) *KazoupLocalFile {
 		IsDir:    lf.Info.IsDir(),
 		Category: categories.GetDocType(filepath.Ext(lf.Info.Name())),
 		Depth:    UrlDepth(lf.Path),
-		FileType: "local",
+		FileType: globals.Local,
 	}
 	return &KazoupLocalFile{*kf}
 
@@ -150,6 +153,7 @@ func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile) *KazoupOneDriveFile
 		IsDir:    isDir,
 		Category: categories.GetDocType("." + name[len(name)-1]),
 		Depth:    0,
+		FileType: globals.OneDrive,
 	}
 	return &KazoupOneDriveFile{*kf, *o}
 }

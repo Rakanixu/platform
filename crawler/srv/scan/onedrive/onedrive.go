@@ -11,6 +11,7 @@ import (
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/kazoup/platform/crawler/srv/scan"
 	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	proto_db "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/structs/file"
 	"github.com/kazoup/platform/structs/globals"
 	"github.com/kazoup/platform/structs/onedrive"
@@ -265,10 +266,17 @@ func (o *OneDrive) refreshToken() error {
 	o.Endpoint.Token.RefreshToken = t.RefreshToken
 	o.Endpoint.Token.Expiry = t.Expiry.Unix()
 
-	client := proto_datasource.NewDataSourceClient("", nil)
+	b, err := json.Marshal(o.Endpoint)
+	if err != nil {
+		return err
+	}
 
-	_, err = client.Create(context.Background(), &proto_datasource.CreateRequest{
-		Endpoint: o.Endpoint,
+	c := proto_db.NewDBClient("", nil)
+	_, err = c.Update(context.Background(), &proto_db.UpdateRequest{
+		Index: "datasources",
+		Type:  "datasource",
+		Id:    o.Endpoint.Id,
+		Data:  string(b),
 	})
 	if err != nil {
 		return err
