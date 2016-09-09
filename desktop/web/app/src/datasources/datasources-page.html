@@ -189,6 +189,13 @@
             value: function() {
               return [];
             }
+          },
+          lastDatasourceCreated: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {};
+            }
           }
         },
         ready: function() {
@@ -197,7 +204,7 @@
           window.addEventListener('datasources-page-activated', this.init.bind(this));
 
           if (window && window.process && window.process.type){
-            ipcRenderer.on('add-folder', this._addFolder.bind(this));
+            ipcRenderer.on('add-folder', this._addDatasource.bind(this));
             ipcRenderer.on('auth-callback-message', this._authSuccessful.bind(this));
           }
         },
@@ -212,7 +219,6 @@
                 if (e.currentTarget.getAttribute('data-url') == 'local://' ) {
                   ipcRenderer.send('open-folder');
                 }else {
-                  console.log(e.currentTarget.getAttribute('data-url'))
                   ipcRenderer.send('auth-message',e.currentTarget.getAttribute('data-url'));
                 }
           } else {
@@ -220,19 +226,6 @@
           }
 
           this.closeDatasourceDialog();
-        },
-        addDatasource: function(e) {
-          this.set('loading', true);
-          this.$.rpcAddDatasource.body = {
-            service: 'go.micro.srv.datasource',
-            method: 'DataSource.Create',
-            request: {
-              endpoint: {
-                url: 'local://' + this.$.datasourceInput.input.value
-              }
-            }
-          };
-          this.$.rpcAddDatasource.generateRequest();
         },
         startScan: function(e) {
           this.set('loading', true);
@@ -246,23 +239,26 @@
           this.$.rpcDeleteDatasource.body = this.rpcDeleteDatasourceParams;
           this.$.rpcDeleteDatasource.generateRequest();
         },
-        _addFolder : function (e, folder) {
-          if (folder.length > 0) {
-            this.$.rpcAddDatasource.body = {
-              service: 'go.micro.srv.datasource',
-              method: 'DataSource.Create',
-              request: {
-                endpoint: {
-                  url: 'local://' + folder[0]
-                }
-              }
-            };
+        _addDatasource: function(e, folder) {
+          this.set('loading', true);
 
-            this.$.rpcAddDatasource.generateRequest();
+          if (folder.length > 0) {
+            this.set('lastDatasourceCreated', {
+              endpoint: {
+                url: 'local://' + folder[0]
+              }
+            });
           }
+
+          this.$.rpcAddDatasource.body = {
+            service: 'go.micro.srv.datasource',
+            method: 'DataSource.Create',
+            request: this.lastDatasourceCreated
+          };
+          this.$.rpcAddDatasource.generateRequest();
         },
         _authSuccessful: function(e, detail) {
-          this.init()
+          this.init();
         },
         _handleStartScan: function(e) {
           this.set('loading', false);
@@ -279,6 +275,7 @@
           this.set('loading', false);
           if (e.detail.response && e.detail.response.result) {
             this.set('datasourcesResults', JSON.parse(e.detail.response.result));
+            this.set('lastDatasourceCreated', {});
           }
         },
         _handleAddDatasource: function(e) {

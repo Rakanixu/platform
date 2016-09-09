@@ -198,6 +198,7 @@ func ScanDataSource(ds *DataSource, ctx context.Context, id string) error {
 		return err
 	}
 
+	// Publish scan topic, crawlers should pick up message and start scanning
 	var endpoint *proto.Endpoint
 	dec := json.NewDecoder(bytes.NewBufferString(dbSrvRes.Result))
 	if err := dec.Decode(&endpoint); err != nil {

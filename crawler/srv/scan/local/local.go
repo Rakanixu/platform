@@ -30,7 +30,7 @@ type Local struct {
 
 // NewLocal ...
 func NewLocal(id int64, endpoint *datasource_proto.Endpoint) (*Local, error) {
-	url := strings.Split(endpoint.Url, ":")
+	url := strings.Split(endpoint.Url, "://")
 
 	return &Local{
 		Id:       id,

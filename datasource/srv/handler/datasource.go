@@ -55,6 +55,11 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 
+	// Scan created datasource
+	if err := ScanDataSource(ds, ctx, endpoint.Id); err != nil {
+		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
+	}
+
 	return nil
 }
 
