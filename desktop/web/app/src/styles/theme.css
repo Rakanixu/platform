@@ -123,6 +123,10 @@ wave-player paper-material#container:not(.waveActive) {
     margin-top: 56px;
 }
 
+empty-state {
+    height: 100%;
+}
+
 .title {
     margin-top: auto;
     margin-bottom: auto;
