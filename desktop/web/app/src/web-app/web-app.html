@@ -320,7 +320,7 @@
                                                       description="[[item.url]]">
                                                 <mat-avatar background="[[documentType(item.name)]]"
                                                             class="primary"
-                                                            icon="[[getIcon(item.is_dir, item.category)]]"></mat-avatar>
+                                                            icon="[[getIcon(item.is_dir, item.category, item.file_type)]]"></mat-avatar>
                                                 <iron-icon class="secondary info"
                                                            icon="icons:info"></iron-icon>
                                                 <span>[[timestampToHumanTime(item.modified)]], [[bytesToSize(item.size)]]</span>
@@ -344,7 +344,7 @@
                                                 <template is="dom-if" if="[[isNoVisualMedia(item.category)]]">
                                                     <mat-avatar background="[[documentType(item.name)]]"
                                                                 class="primary"
-                                                                icon="[[getIcon(item.is_dir, item.category)]]"></mat-avatar>
+                                                                icon="[[getIcon(item.is_dir, item.category, item.file_type)]]"></mat-avatar>
                                                 </template>
 
                                                 <div class="detail">
