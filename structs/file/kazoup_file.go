@@ -16,5 +16,5 @@ type KazoupFile struct {
 }
 
 func (kf *KazoupFile) PreviewURL() string {
-	return kf.URL
+	return DEFAULT_IMAGE_PREVIEW_URL
 }

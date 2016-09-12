@@ -101,22 +101,79 @@ func (e *elastic) SubscribeCrawlerFinished(ctx context.Context, msg *crawler.Cra
 	return nil
 }
 
-// Read record
+// Read record from ES
+// Since we can't get the record bye id from aliases we need to use search request
+// This should return single ID as all files should have unique ID's as we seting them up based on unique path MD5
+// Method will worl on any index and alias as long ID's are unique
+// ES query
+//{
+//  "query": {
+//    "term": {
+//      "id":"7041aef7f8e9fbd5a0379d04e21d3ecf"
+//    }
+//  }
+//}
+type SearchRequestByID struct {
+	Query *Query `json:"query"`
+}
+type Query struct {
+	Term *Term `json:"term"`
+}
+type Term struct {
+	ID string `json:"id"`
+}
+
 func (e *elastic) Read(req *db.ReadRequest) (*db.ReadResponse, error) {
-	r, err := e.conn.Get(req.Index, req.Type, req.Id, nil)
+
+	// build query
+	t := &Term{
+		ID: req.Id,
+	}
+	q := &Query{
+		Term: t,
+	}
+	sr := &SearchRequestByID{
+		Query: q,
+	}
+	//Marshal query
+	bq, err := json.Marshal(sr)
 	if err != nil {
 		return &db.ReadResponse{}, err
 	}
-
-	data, err := r.Source.MarshalJSON()
+	//Query string
+	query := string(bq)
+	//Search request
+	out, err := e.conn.Search(req.Index, req.Type, nil, query)
 	if err != nil {
+		return &db.ReadResponse{}, err
+	}
+	v := out.Hits.Hits
+	// hmmm hacky FIXME
+	if out.Hits.Total == 0 {
+		return &db.ReadResponse{}, errors.New("Got 0 results")
+
+	}
+	if out.Hits.Total != 1 {
+		return &db.ReadResponse{}, errors.New("Got more then one results")
+
+	}
+	// Now we should have only one result
+	data, err := v[0].Source.MarshalJSON()
+
+	if err != nil {
+		return &db.ReadResponse{}, err
+	}
+	s, err := engine.TypeFactory(req.Type, string(data))
+	if err != nil {
+		return &db.ReadResponse{}, err
+	}
+	if err := json.Unmarshal(data, &s); err != nil {
 		return &db.ReadResponse{}, err
 	}
 
 	response := &db.ReadResponse{
 		Result: string(data),
 	}
-
 	return response, nil
 }
 

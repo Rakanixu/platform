@@ -103,6 +103,9 @@
       getLocalAsset: function(path) {
         return stripDataOrigin(path);
       },
+      getPreview: function(id){
+	return "http://localhost:8082/media/image?file_id=" + id;
+      },
       getAsset: function(path) {
 	      return "http://localhost:8082/media/raw/" + removeSlashesFromBegining(stripDataOrigin(path));
       },

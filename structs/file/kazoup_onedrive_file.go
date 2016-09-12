@@ -8,5 +8,5 @@ type KazoupOneDriveFile struct {
 }
 
 func (kf *KazoupOneDriveFile) PreviewURL() string {
-	return kf.Original.WebURL
+	return DEFAULT_IMAGE_PREVIEW_URL
 }

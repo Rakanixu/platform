@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"golang.org/x/net/context"
+	"log"
 	"path/filepath"
 	"strings"
 	"time"
@@ -24,7 +25,8 @@ import (
 func GetFileByID(id string) (File, error) {
 	//get it form db
 
-	dbclient := db.NewDBClient("", client.NewClient())
+	log.Print("Getting file from db %s ", id)
+	dbclient := db.NewDBClient("go.micro.srv.db", client.NewClient())
 
 	// get file URL from DB
 	dbreq := db.ReadRequest{
@@ -37,7 +39,6 @@ func GetFileByID(id string) (File, error) {
 		return nil, err
 	}
 	f, err := NewFileFromString(dbres.Result)
-
 	return f, err
 
 }
@@ -57,11 +58,11 @@ func NewFileFromString(s string) (File, error) {
 		}
 		return klf, nil
 	case "slack":
-		sf := &slack.SlackFile{}
-		if err := json.Unmarshal([]byte(s), sf); err != nil {
+		ksf := &KazoupSlackFile{}
+		if err := json.Unmarshal([]byte(s), ksf); err != nil {
 			return nil, err
 		}
-		return &KazoupSlackFile{*kf, *sf}, nil
+		return ksf, nil
 	case "googledrive":
 		//gf := &googledrive.File{}
 

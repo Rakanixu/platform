@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"encoding/json"
+	"log"
 	"net/http"
 
 	db "github.com/kazoup/platform/db/srv/proto/db"
@@ -45,12 +47,19 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		quality = "50"
 	}
 	f, err := file.GetFileByID(file_id)
-
+	b, _ := json.Marshal(f)
+	log.Print(string(b))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+	if f == nil {
+		http.Error(w, "Couldn't get the file", http.StatusInternalServerError)
+	}
+	if f != nil {
+		log.Printf("ID : %s \n", f.PreviewURL())
+		http.Redirect(w, r, f.PreviewURL(), http.StatusSeeOther)
+	}
 
-	r.Form.Add("source", f.PreviewURL())
-	http.Redirect(w, r, "image/preview", http.StatusSeeOther)
+	//r.Form.Add("source", f.PreviewURL())
 
 }

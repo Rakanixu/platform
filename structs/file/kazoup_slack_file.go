@@ -8,5 +8,5 @@ type KazoupSlackFile struct {
 }
 
 func (kf *KazoupSlackFile) PreviewURL() string {
-	return kf.Original.Permalink
+	return kf.Original.PermalinkPublic
 }
