@@ -35,9 +35,21 @@ func srv(ctx *cli.Context) {
 		service.Server().NewHandler(new(handler.DB)),
 	)
 
-	// Attach indexer subscriber
+	// Attach file indexer subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(globals.FilesTopic, engine.SubscribeFiles)); err != nil {
+		log.Fatal(err)
+	}
+
+	// Attach slack user indexer subscriber
+	if err := service.Server().Subscribe(
+		service.Server().NewSubscriber(globals.SlackUsersTopic, engine.SubscribeSlackUsers)); err != nil {
+		log.Fatal(err)
+	}
+
+	// Attach slack channel indexer subscriber
+	if err := service.Server().Subscribe(
+		service.Server().NewSubscriber(globals.SlackChannelsTopic, engine.SubscribeSlackChannels)); err != nil {
 		log.Fatal(err)
 	}
 

@@ -59,6 +59,18 @@ message FileMessage {
   string data = 3;
 }
 
+message SlackUserMessage {
+  string id = 1;
+  string index = 2;
+  string data = 3;
+}
+
+message SlackChannelMessage {
+  string id = 1;
+  string index = 2;
+  string data = 3;
+}
+
 message CrawlerFinishedMessage {
   string datasource_id = 1;
 }

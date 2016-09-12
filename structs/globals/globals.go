@@ -8,6 +8,8 @@ import (
 
 const (
 	FilesTopic           = "go.micro.topic.files"
+	SlackChannelsTopic   = "go.micro.topic.slackchannels"
+	SlackUsersTopic      = "go.micro.topic.slackusers"
 	ScanTopic            = "go.micro.topic.scan"
 	CrawlerFinishedTopic = "go.micro.topic.crawlerfinished"
 	NotificationTopic    = "go.micro.topic.notification"
@@ -21,8 +23,11 @@ const (
 	GoogleDrive = "googledrive"
 	OneDrive    = "onedrive"
 
-	SlackFilesEndpoint = "https://slack.com/api/files.list"
-	OneDriveEndpoint   = "https://api.onedrive.com/v1.0/"
+	SlackFilesEndpoint    = "https://slack.com/api/files.list"
+	SlackUsersEndpoint    = "https://slack.com/api/users.list"
+	SlackChannelsEndpoint = "https://slack.com/api/channels.list"
+
+	OneDriveEndpoint = "https://api.onedrive.com/v1.0/"
 
 	OauthStateString = "randomsdsdahfoashfouahsfohasofhoashfaf"
 )
@@ -56,6 +61,8 @@ func NewSlackOauthConfig() *oauth2.Config {
 			"files:read",
 			"files:write:user",
 			"team:read",
+			"users:read",
+			"channels:read",
 		},
 		Endpoint: slack.Endpoint,
 	}

@@ -15,12 +15,14 @@ import (
 )
 
 type elastic struct {
-	conn            *lib.Conn
-	bulk            *lib.BulkIndexer
-	filesChannel    chan *crawler.FileMessage
-	crawlerFinished chan *crawler.CrawlerFinishedMessage
-	esMapping       *[]byte // For files
-	esSettings      *[]byte // For files index
+	conn                 *lib.Conn
+	bulk                 *lib.BulkIndexer
+	filesChannel         chan *crawler.FileMessage
+	slackUsersChannel    chan *crawler.SlackUserMessage
+	slackChannelsChannel chan *crawler.SlackChannelMessage
+	crawlerFinished      chan *crawler.CrawlerFinishedMessage
+	esMapping            *[]byte // For files
+	esSettings           *[]byte // For files index
 }
 
 func init() {
@@ -36,10 +38,12 @@ func init() {
 	}
 
 	engine.Register(&elastic{
-		filesChannel:    make(chan *crawler.FileMessage),
-		crawlerFinished: make(chan *crawler.CrawlerFinishedMessage),
-		esMapping:       &es_mapping,
-		esSettings:      &es_settings,
+		filesChannel:         make(chan *crawler.FileMessage),
+		slackUsersChannel:    make(chan *crawler.SlackUserMessage),
+		slackChannelsChannel: make(chan *crawler.SlackChannelMessage),
+		crawlerFinished:      make(chan *crawler.CrawlerFinishedMessage),
+		esMapping:            &es_mapping,
+		esSettings:           &es_settings,
 	})
 }
 
@@ -72,6 +76,20 @@ func (e *elastic) Create(req *db.CreateRequest) (*db.CreateResponse, error) {
 // Subscribe to crawler file messages
 func (e *elastic) SubscribeFiles(ctx context.Context, msg *crawler.FileMessage) error {
 	e.filesChannel <- msg
+
+	return nil
+}
+
+// Subscribe to crawler file messages
+func (e *elastic) SubscribeSlackUsers(ctx context.Context, msg *crawler.SlackUserMessage) error {
+	e.slackUsersChannel <- msg
+
+	return nil
+}
+
+// Subscribe to crawler file messages
+func (e *elastic) SubscribeSlackChannels(ctx context.Context, msg *crawler.SlackChannelMessage) error {
+	e.slackChannelsChannel <- msg
 
 	return nil
 }

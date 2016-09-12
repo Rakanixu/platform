@@ -38,6 +38,14 @@ func NewSlack(id int64, dataSource *proto_datasource.Endpoint) *Slack {
 // Start slack crawler
 func (s *Slack) Start(crawls map[int64]scan.Scanner, ds int64) {
 	go func() {
+		if err := s.getUsers(); err != nil {
+			log.Println(err)
+		}
+
+		if err := s.getChannels(); err != nil {
+			log.Println(err)
+		}
+
 		if err := s.getFiles(1); err != nil {
 			log.Println(err)
 		}
@@ -60,6 +68,83 @@ func (s *Slack) Info() (scan.Info, error) {
 		Type:        globals.Slack,
 		Description: "Slack scanner",
 	}, nil
+}
+
+func (s *Slack) getUsers() error {
+	data := make(url.Values)
+	data.Add("token", s.Endpoint.Token.AccessToken)
+
+	c := &http.Client{}
+
+	rsp, err := c.PostForm(globals.SlackUsersEndpoint, data)
+
+	if err != nil {
+
+		return err
+	}
+	defer rsp.Body.Close()
+
+	var usersRsp *slack.UserListResponse
+	if err := json.NewDecoder(rsp.Body).Decode(&usersRsp); err != nil {
+		return err
+	}
+
+	for _, v := range usersRsp.Members {
+		log.Println(v)
+		b, err := json.Marshal(v)
+		if err != nil {
+			return nil
+		}
+
+		msg := &crawler.SlackUserMessage{
+			Id:    v.ID,
+			Index: s.Endpoint.Index,
+			Data:  string(b),
+		}
+
+		if err := client.Publish(context.Background(), client.NewPublication(globals.SlackUsersTopic, msg)); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (s *Slack) getChannels() error {
+	data := make(url.Values)
+	data.Add("token", s.Endpoint.Token.AccessToken)
+
+	c := &http.Client{}
+
+	rsp, err := c.PostForm(globals.SlackChannelsEndpoint, data)
+	if err != nil {
+		return err
+	}
+	defer rsp.Body.Close()
+
+	var channelsRsp *slack.ChannelListResponse
+	if err := json.NewDecoder(rsp.Body).Decode(&channelsRsp); err != nil {
+		return err
+	}
+
+	for _, v := range channelsRsp.Channels {
+		b, err := json.Marshal(v)
+		if err != nil {
+			return nil
+		}
+
+		msg := &crawler.SlackChannelMessage{
+			Id:    v.ID,
+			Index: s.Endpoint.Index,
+			Data:  string(b),
+		}
+
+		if err := client.Publish(context.Background(), client.NewPublication(globals.SlackChannelsTopic, msg)); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s *Slack) getFiles(page int) error {

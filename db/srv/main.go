@@ -41,6 +41,18 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Attach slack user indexer subscriber
+	if err := service.Server().Subscribe(
+		service.Server().NewSubscriber(globals.SlackUsersTopic, engine.SubscribeSlackUsers)); err != nil {
+		log.Fatal(err)
+	}
+
+	// Attach slack channel indexer subscriber
+	if err := service.Server().Subscribe(
+		service.Server().NewSubscriber(globals.SlackChannelsTopic, engine.SubscribeSlackChannels)); err != nil {
+		log.Fatal(err)
+	}
+
 	// Attach crawler finished subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(globals.CrawlerFinishedTopic, engine.SubscribeCrawlerFinished)); err != nil {

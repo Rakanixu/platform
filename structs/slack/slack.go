@@ -79,6 +79,73 @@ type SlackFile struct {
 	} `json:"initial_comment"`
 }
 
+type ChannelListResponse struct {
+	Ok       bool `json:"ok"`
+	Channels []SlackChannel
+}
+
+type SlackChannel struct {
+	ID         string `json:"id"`
+	Name       string `json:"name"`
+	Created    int    `json:"created"`
+	Creator    string `json:"creator"`
+	IsArchived bool   `json:"is_archived"`
+	IsMember   bool   `json:"is_member"`
+	NumMembers int    `json:"num_members"`
+	Topic      struct {
+		Value   string `json:"value"`
+		Creator string `json:"creator"`
+		LastSet int    `json:"last_set"`
+	} `json:"topic"`
+	Purpose struct {
+		Value   string `json:"value"`
+		Creator string `json:"creator"`
+		LastSet int    `json:"last_set"`
+	} `json:"purpose"`
+}
+
+type UserListResponse struct {
+	Ok      bool        `json:"ok"`
+	Members []SlackUser `json:"members"`
+}
+
+type SlackUser struct {
+	ID       string      `json:"id"`
+	TeamID   string      `json:"team_id"`
+	Name     string      `json:"name"`
+	Deleted  bool        `json:"deleted"`
+	Status   interface{} `json:"status,omitempty"`
+	Color    string      `json:"color,omitempty"`
+	RealName string      `json:"real_name,omitempty"`
+	Tz       interface{} `json:"tz,omitempty"`
+	TzLabel  string      `json:"tz_label,omitempty"`
+	TzOffset int         `json:"tz_offset,omitempty"`
+	Profile  struct {
+		BotID              string `json:"bot_id"`
+		APIAppID           string `json:"api_app_id"`
+		FirstName          string `json:"first_name"`
+		AvatarHash         string `json:"avatar_hash"`
+		Image24            string `json:"image_24"`
+		Image32            string `json:"image_32"`
+		Image48            string `json:"image_48"`
+		Image72            string `json:"image_72"`
+		Image192           string `json:"image_192"`
+		Image512           string `json:"image_512"`
+		Image1024          string `json:"image_1024"`
+		ImageOriginal      string `json:"image_original"`
+		RealName           string `json:"real_name"`
+		RealNameNormalized string `json:"real_name_normalized"`
+	} `json:"profile"`
+	IsAdmin           bool   `json:"is_admin,omitempty"`
+	IsOwner           bool   `json:"is_owner,omitempty"`
+	IsPrimaryOwner    bool   `json:"is_primary_owner,omitempty"`
+	IsRestricted      bool   `json:"is_restricted,omitempty"`
+	IsUltraRestricted bool   `json:"is_ultra_restricted,omitempty"`
+	IsBot             bool   `json:"is_bot,omitempty"`
+	Has2Fa            bool   `json:"has_2fa,omitempty"`
+	TwoFactorType     string `json:"two_factor_type,omitempty"`
+}
+
 func getMD5Hash(text string) string {
 	hash := md5.Sum([]byte(text))
 	return hex.EncodeToString(hash[:])

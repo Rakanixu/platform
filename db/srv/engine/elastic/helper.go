@@ -10,11 +10,38 @@ import (
 )
 
 func indexer(e *elastic) error {
+	// Files
 	go func() {
 		for {
 			select {
 			case v := <-e.filesChannel:
 				if err := e.bulk.Index(v.Index, "file", v.Id, "", "", nil, v.Data); err != nil {
+					log.Print("Bulk Indexer error %s", err)
+				}
+			}
+
+		}
+	}()
+
+	// Slack users
+	go func() {
+		for {
+			select {
+			case v := <-e.slackUsersChannel:
+				if err := e.bulk.Index(v.Index, "user", v.Id, "", "", nil, v.Data); err != nil {
+					log.Print("Bulk Indexer error %s", err)
+				}
+			}
+
+		}
+	}()
+
+	// Slack channels
+	go func() {
+		for {
+			select {
+			case v := <-e.slackChannelsChannel:
+				if err := e.bulk.Index(v.Index, "channel", v.Id, "", "", nil, v.Data); err != nil {
 					log.Print("Bulk Indexer error %s", err)
 				}
 			}

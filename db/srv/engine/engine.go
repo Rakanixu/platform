@@ -18,6 +18,8 @@ const (
 type Engine interface {
 	Init() error
 	SubscribeFiles(ctx context.Context, msg *crawler.FileMessage) error
+	SubscribeSlackUsers(ctx context.Context, msg *crawler.SlackUserMessage) error
+	SubscribeSlackChannels(ctx context.Context, msg *crawler.SlackChannelMessage) error
 	SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedMessage) error
 	Create(req *db.CreateRequest) (*db.CreateResponse, error)
 	Read(req *db.ReadRequest) (*db.ReadResponse, error)
@@ -47,6 +49,14 @@ func Init() error {
 
 func SubscribeFiles(ctx context.Context, msg *crawler.FileMessage) error {
 	return engine.SubscribeFiles(ctx, msg)
+}
+
+func SubscribeSlackUsers(ctx context.Context, msg *crawler.SlackUserMessage) error {
+	return engine.SubscribeSlackUsers(ctx, msg)
+}
+
+func SubscribeSlackChannels(ctx context.Context, msg *crawler.SlackChannelMessage) error {
+	return engine.SubscribeSlackChannels(ctx, msg)
 }
 
 func SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedMessage) error {
