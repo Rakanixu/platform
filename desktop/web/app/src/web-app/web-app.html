@@ -51,6 +51,7 @@
 <link rel="import" href="../../src/behaviors/common-behavior.html">
 
 <link rel="import" href="../../src/filter-converter/filter-converter.html">
+<link rel="import" href="../../src/detail-view/detail-view.html">
 <link rel="import" href="../../src/empty-state/empty-state.html">
 <link rel="import" href="../../src/kazoup-icons/kazoup-icons.html">
 
@@ -382,38 +383,7 @@
 
                     <!-- Right Content -->
                     <div class="content">
-                        <template is="dom-if" if="[[isImage(item.category)]]">
-                            <iron-image style="width:100%"
-                                        src="http://localhost:8082/media/image?source=[[getLocalAsset(item.url)]]&width=600&mode=fit&quality=100"
-                                        preload
-                                        fade></iron-image>
-                        </template>
-
-                        <template is="dom-if" if="[[isVideo(item.category)]]" restamp="true">
-                            <video id="video" controls preload="auto" width="100%">
-                                <source src="[[getAsset(item.url)]]">
-                            </video>
-                        </template>
-
-                        <template is="dom-if" if="[[isAudio(item.category)]]" restamp="true">
-                            <wave-player id="wavePlayer"
-                                         wavecolor="#21a9f5"
-                                         progresscolor="#b1b1b1"
-                                         src="[[getAsset(item.url)]]"/>
-                        </template>
-
-                        <mat-item label="Location"
-                                  description="[[item.url]]"
-                                  tabindex="-1"></mat-item>
-
-                        <mat-item label="Last modified"
-                                  description="[[timestampToHumanTime(item.modified)]]"
-                                  tabindex="-1"></mat-item>
-
-                        <mat-item label="Size"
-                                  description="[[bytesToSize(item.size)]]"
-                                  tabindex="-1"></mat-item>
-
+                        <detail-view item="{{item}}"></detail-view>
                     </div>
                 </paper-header-panel>
 

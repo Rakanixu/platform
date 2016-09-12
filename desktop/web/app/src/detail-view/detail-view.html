@@ -1,0 +1,188 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../../bower_components/mat-avatar/mat-avatar.html">
+<link rel="import" href="../../bower_components/mat-item/mat-item.html">
+
+<link rel="import" href="../../src/behaviors/util-behavior.html">
+<link rel="import" href="../../src/behaviors/categories-map-behavior.html">
+
+<dom-module id="detail-view">
+  <style is="custom-style" include="iron-flex iron-positioning iron-flex-alignment"></style>
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+
+    <template is="dom-if" if="[[isImage(item.category)]]">
+      <iron-image style="width:100%"
+                  src="http://localhost:8082/media/image?source=[[getLocalAsset(item.url)]]&width=600&mode=fit&quality=100"
+                  preload
+                  fade></iron-image>
+    </template>
+
+    <template is="dom-if" if="[[isVideo(item.category)]]" restamp="true">
+      <video id="video" controls preload="auto" width="100%">
+        <source src="[[getAsset(item.url)]]">
+      </video>
+    </template>
+
+    <template is="dom-if" if="[[isAudio(item.category)]]" restamp="true">
+      <wave-player id="wavePlayer"
+                   wavecolor="#21a9f5"
+                   progresscolor="#b1b1b1"
+                   src="[[getAsset(item.url)]]"/>
+    </template>
+
+    <template is="dom-if" if="[[hasSlackComments(item.original)]]" restamp="true">
+      <mat-item label="Description"
+                description="[[item.original.initial_comment.comment]]"
+                tabindex="-1">
+
+      </mat-item>
+    </template>
+
+    <template is="dom-if" if="[[isSlack(item.file_type)]]" restamp="true">
+      <mat-item label="Owner"
+                description="[[slackUser.profile.real_name]]"
+                href="slack://user?team=[[slackUser.team_id]]&id=[[slackUser.id]]"
+                tabindex="-1">
+        <mat-avatar background="light"
+                    class="primary"
+                    icon-src="[[slackUser.profile.image_48]]"></mat-avatar>
+      </mat-item>
+
+      <mat-item label="#[[slackChannel.name]]"
+                description="[[slackChannel.purpose.value]]"
+                href="slack://channel?team=[[slackUser.team_id]]&id=[[slackChannel.id]]"
+                tabindex="-1">
+      </mat-item>
+    </template>
+
+    <mat-item label="Location"
+              description="[[item.url]]"
+              tabindex="-1"></mat-item>
+
+    <mat-item label="Last modified"
+              description="[[timestampToHumanTime(item.modified)]]"
+              tabindex="-1"></mat-item>
+
+    <mat-item label="Size"
+              description="[[bytesToSize(item.size)]]"
+              tabindex="-1"></mat-item>
+
+    <paper-toast id="toast" text=""></paper-toast>
+
+    <iron-ajax id="rpcSearchSlackUsers"
+               method="POST"
+               content-type="application/json"
+               url="http://localhost:8082/rpc"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleSlackUsers"></iron-ajax>
+
+    <iron-ajax id="rpcSearchSlackChannels"
+               method="POST"
+               content-type="application/json"
+               url="http://localhost:8082/rpc"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleSlackChannels"></iron-ajax>
+
+  </template>
+
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'detail-view',
+        behaviors: [
+          Polymer.UtilBehaviorImp,
+          Polymer.CategoriesMapBehaviorImp
+        ],
+        properties: {
+          item: {
+            type: Object,
+            notify: true,
+            observer: 'itemChanged'
+          },
+          slackUser: {
+            type: Object,
+            notify: true
+          },
+          slackChannel: {
+            type: Object,
+            notify: true
+          },
+          rpcSearchSlackUsersParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: 'go.micro.srv.db',
+                method: 'DB.Read',
+                request: {
+                  index: 'index1473679006438445059',//'files',
+                  type: 'user',
+                  id: ''
+                }
+              };
+            }
+          },
+          rpcSearchSlackChannelsParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: 'go.micro.srv.db',
+                method: 'DB.Read',
+                request: {
+                  index: 'index1473679006438445059',//'files',
+                  type: 'channel',
+                  id: ''
+                }
+              };
+            }
+          }
+        },
+        itemChanged: function(newVal, oldVal) {
+          switch(this.item.file_type) {
+            case 'slack':
+              this.getMoreInfoFromSlack();
+              break;
+          }
+        },
+        getMoreInfoFromSlack: function() {
+          this.rpcSearchSlackUsersParams.request.id = 'U02EW2K5L' // this.item.original.user;
+          this.rpcSearchSlackChannelsParams.request.id = 'C02F49QAS'//this.item.original.channels;
+
+
+          this.$.rpcSearchSlackUsers.body = this.rpcSearchSlackUsersParams;
+          this.$.rpcSearchSlackChannels.body = this.rpcSearchSlackChannelsParams;
+          this.$.rpcSearchSlackUsers.generateRequest();
+          this.$.rpcSearchSlackChannels.generateRequest();
+        },
+        _handleSlackUsers: function(e) {
+          if (e.detail.response && e.detail.response.result) {
+            this.set('slackUser', JSON.parse(e.detail.response.result));
+          }
+        },
+        _handleSlackChannels: function(e) {
+          if (e.detail.response && e.detail.response.result) {
+            this.set('slackChannel', JSON.parse(e.detail.response.result));
+          }
+        },
+        _handleError: function(e) {
+          if (e.detail.request && e.detail.request.response) {
+            this.$.toast.text = e.detail.request.response.detail;
+            this.$.toast.show();
+          }
+        }
+      });
+    }());
+  </script>
+</dom-module>

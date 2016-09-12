@@ -173,6 +173,14 @@
             return '';
         }
       },
+      isSlack: function(fileType) {
+        return (fileType === 'slack');
+      },
+      hasSlackComments: function(original) {
+        if (!_.isEmpty(original)) {
+          return (original.comments_count > 0);
+        }
+      },
       replaceAll: function(str, search, replacement) {
         return  str.replace(new RegExp(search, 'g'), replacement);
       }
