@@ -76,19 +76,13 @@
                 margin-top: 16px;
             }
 
-            .scan-container {
-                position: absolute;
-                bottom: 15px;
-            }
-
-            .scan-container mat-raised-button {
-                background-color: var(--dark-primary);
-                color: #fff;
-                margin-left: 70px;
-            }
-
             .lists-container {
                 height: 100%;
+            }
+
+            .info {
+                height:78px;
+                opacity: 0.65;
             }
 
             .prepopulated mat-item div.body{
@@ -196,12 +190,6 @@
                             <iron-icon icon="icons:feedback" item-icon></iron-icon>Feedback
                         </paper-icon-item>
                     </paper-menu>
-
-                    <div class="scan-container">
-                        <mat-raised-button id="scan"
-                                           on-tap="scanAll"
-                                           label="Start scan"></mat-raised-button>
-                    </div>
                 </div>
             </div>
 
@@ -224,7 +212,7 @@
                              on-tap="toggleSearch"
                              hidden$="[[searching]]">
                             <div class="title flex">[[title]]</div>
-                            <mat-icon-button icon="mat:search" color="white"></mat-icon-button>
+                            <mat-icon-button icon="mat:search" color="white" on-tap="closeDetails"></mat-icon-button>
                         </div>
 
                         <mat-text-field id="search"
@@ -237,11 +225,7 @@
                                          on-xp-activate="resetSearch"
                                          color="white"
                                          hidden$="[[!searching]]"></mat-icon-button>
-                        <!--
-                        <paper-icon-button id="searchViewIcon"
-                                           icon="[[view.icon]]"
-                                           on-tap="toggleView"></paper-icon-button>
-                        -->
+
                         <div class="middle breadcrumbs">
                             <!-- Breadcrumbs while browsing. Breadcrumbs fits into screen -->
                             <mat-breadcrumb id="fitBreadcrumbs"
@@ -309,6 +293,8 @@
                                                 <mat-avatar background="[[documentType(item.name)]]"
                                                             class="primary image"
                                                             icon-src="[[getVideoFrame(item.url)]]"></mat-avatar>
+                                                <iron-icon class="secondary info"
+                                                           icon="icons:info"></iron-icon>
                                                 <span>[[timestampToHumanTime(item.modified)]], [[bytesToSize(item.size)]]</span>
                                             </mat-item>
                                         </template>
@@ -320,6 +306,8 @@
                                                 <mat-avatar background="[[documentType(item.name)]]"
                                                             class="primary image"
                                                             icon-src="http://localhost:8082/media/image?source=[[getLocalAsset(item.url)]]&width=128&height=128&mode=fit&quality=100"></mat-avatar>
+                                                <iron-icon class="secondary info"
+                                                           icon="icons:info"></iron-icon>
                                                 <span>[[timestampToHumanTime(item.modified)]], [[bytesToSize(item.size)]]</span>
                                             </mat-item>
                                         </template>
@@ -331,6 +319,8 @@
                                                 <mat-avatar background="[[documentType(item.name)]]"
                                                             class="primary"
                                                             icon="[[getIcon(item.is_dir, item.category)]]"></mat-avatar>
+                                                <iron-icon class="secondary info"
+                                                           icon="icons:info"></iron-icon>
                                                 <span>[[timestampToHumanTime(item.modified)]], [[bytesToSize(item.size)]]</span>
                                             </mat-item>
                                         </template>
@@ -385,10 +375,6 @@
 
                         <div class="flex"></div>
 
-                        <paper-icon-button icon="icons:create"
-                                           on-tap="openFile"
-                                           tabindex="-1"></paper-icon-button>
-
                         <div class="bottom">
                             <mat-item label="[[item.name]]" class="light" focused="false"></mat-item>
                         </div>
@@ -419,6 +405,15 @@
                         <mat-item label="Location"
                                   description="[[item.url]]"
                                   tabindex="-1"></mat-item>
+
+                        <mat-item label="Last modified"
+                                  description="[[timestampToHumanTime(item.modified)]]"
+                                  tabindex="-1"></mat-item>
+
+                        <mat-item label="Size"
+                                  description="[[bytesToSize(item.size)]]"
+                                  tabindex="-1"></mat-item>
+
                     </div>
                 </paper-header-panel>
 
@@ -475,7 +470,7 @@
                    method="POST"
                    content-type="application/json"
                    url="http://localhost:8082/rpc"
-                    handle-as="json"
+                   handle-as="json"
                    on-error="_handleError"
                    on-response="_handleElastic"
                    params="[[rpcElasticParams]]"></iron-ajax>
@@ -1094,10 +1089,6 @@
                 };
                 this.$.rpcAddDatasource.generateRequest();
             },
-            scanAll: function() {
-                this.set('doScan', true);
-                this.$.rpcGetDatasources.generateRequest();
-            },
             mainAction: function(e, detail) {
                 this.clearSelectedItemStyling();
 
@@ -1116,29 +1107,35 @@
                         depth: e.model.__data__.item.depth + 1
                     });
                 } else {
-                    // Detail view
-                    this.set('item', e.model.__data__.item);
-                    this.set('itemSelected', true);
-                    this.$.mainDrawerPanel.openDrawer();
+                    // Primary action, open file
+                    if (!e.target.classList.contains("info")) {
+                        this.openFile(e.model.__data__.item);
+                        this.closeDetails();
+                    // Secondary action, show details
+                    } else {
+                        this.set('item', e.model.__data__.item);
+                        this.set('itemSelected', true);
+                        this.$.mainDrawerPanel.openDrawer();
 
-                    e.currentTarget.classList.add('selected-item');
+                        e.currentTarget.classList.add('selected-item');
 
-                    if (document.querySelector('video')) {
-                        document.querySelector('video').load();
-                    }
-                    if (document.querySelector('wave-player')){
-                        try {
-                            document.querySelector('wave-player').wavesurfer.stop();
-                        } catch(e) {}
-                        document.querySelector('wave-player').deactivateAnimation();
-                        document.querySelector('wave-player').updateWavesurfer();
-                        document.querySelector('wave-player wave').remove();
+                        if (document.querySelector('video')) {
+                            document.querySelector('video').load();
+                        }
+                        if (document.querySelector('wave-player')){
+                            try {
+                                document.querySelector('wave-player').wavesurfer.stop();
+                            } catch(e) {}
+                            document.querySelector('wave-player').deactivateAnimation();
+                            document.querySelector('wave-player').updateWavesurfer();
+                            document.querySelector('wave-player wave').remove();
+                        }
                     }
                 }
             },
-            openFile: function(e) {
+            openFile: function(item) {
                 ipcRenderer.send('open-file-message', {
-                    url: this.getLocalAsset(this.item.url)
+                    url: this.getLocalAsset(item.url)
                 });
             },
             closeDetails: function(e, detail) {
