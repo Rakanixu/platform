@@ -1064,19 +1064,26 @@
                 this.clearSelectedItemStyling();
 
                 if (e.model.__data__.item.is_dir) {
-                    // Browse one level deeper
-                    this.clearIronList();
-                    this.set('searching', false);
+                    // Primary action, browse one level deeper
+                    if (!e.target.classList.contains("info")) {
+                        this.clearIronList();
+                        this.set('itemSelected', false);
+                        this.set('searching', false);
 
-                    this.$.filterConverter.setValues({
-                        index: 'files',
-                        from: 0,
-                        size: this.size,
-                        type: 'file',
-                        term: '',
-                        url: e.model.__data__.item.url,
-                        depth: e.model.__data__.item.depth + 1
-                    });
+                        this.$.filterConverter.setValues({
+                            index: 'files',
+                            from: 0,
+                            size: this.size,
+                            type: 'file',
+                            term: '',
+                            url: e.model.__data__.item.url,
+                            depth: e.model.__data__.item.depth + 1
+                        });
+                    // Secondary action, show folder details
+                    } else {
+                        this.set('item', e.model.__data__.item);
+                        this.set('itemSelected', true);
+                    }
                 } else {
                     // Primary action, open file
                     if (!e.target.classList.contains("info")) {
