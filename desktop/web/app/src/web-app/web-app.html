@@ -297,7 +297,7 @@
                                                             icon-src="http://localhost:8082/media/preview?file_id=[[item.id]]&width=256&height=128&mode=fit&quality=100"></mat-avatar>
                                                 <iron-icon class="secondary info"
                                                            icon="icons:info"></iron-icon>
-                                                <span>[[timestampToHumanTime(item.modified)]], [[bytesToSize(item.size)]]</span>
+                                                <span>[[timestampToHumanTime(item.modified)]], [[bytesToSize(item.file_size)]]</span>
                                             </mat-item>
                                         </template>
 
@@ -310,7 +310,7 @@
                                                             icon-src="http://localhost:8082/media/preview?file_id=[[item.id]]&width=128&height=128&mode=fit&quality=50"></mat-avatar>
                                                 <iron-icon class="secondary info"
                                                            icon="icons:info"></iron-icon>
-                                                <span>[[timestampToHumanTime(item.modified)]], [[bytesToSize(item.size)]]</span>
+                                                <span>[[timestampToHumanTime(item.modified)]], [[bytesToSize(item.file_size)]]</span>
                                             </mat-item>
                                         </template>
 
@@ -323,7 +323,7 @@
                                                             icon="[[getIcon(item.is_dir, item.category, item.file_type)]]"></mat-avatar>
                                                 <iron-icon class="secondary info"
                                                            icon="icons:info"></iron-icon>
-                                                <span>[[timestampToHumanTime(item.modified)]], [[bytesToSize(item.size)]]</span>
+                                                <span>[[timestampToHumanTime(item.modified)]], [[bytesToSize(item.file_size)]]</span>
                                             </mat-item>
                                         </template>
                                     </template>
