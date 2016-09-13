@@ -74,7 +74,12 @@
 
         return monthNames[date.getMonth()] + ' ' + date.getUTCDate() + ', ' + date.getUTCFullYear();
       },
-      getIcon: function(isDir, category) {
+      getIcon: function(isDir, category, fileType) {
+        // This is a fallback to some sort of icon
+        if (fileType && fileType !== 'local') {
+          return this.getDatasourceIcon(fileType);
+        }
+
         if (category === this.categoriesMap.audios) {
           return 'image:music-note'
         }
@@ -172,6 +177,9 @@
           default:
             return '';
         }
+      },
+      isOneDrive: function(fileType) {
+        return (fileType === 'onedrive');
       },
       isSlack: function(fileType) {
         return (fileType === 'slack');

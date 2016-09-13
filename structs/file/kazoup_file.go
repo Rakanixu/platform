@@ -8,7 +8,7 @@ type KazoupFile struct {
 	Name     string    `json:"name"`
 	URL      string    `json:"url"`
 	Modified time.Time `json:"modified"`
-	Size     int64     `json:"size"`
+	FileSize int64     `json:"file_size"`
 	IsDir    bool      `json:"is_dir"`
 	Category string    `json:"category"`
 	Depth    int64     `json:"depth"`

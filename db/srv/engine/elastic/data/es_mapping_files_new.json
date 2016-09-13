@@ -47,7 +47,11 @@
     "is_dir": {
       "type": "boolean"
     },
-    "size": {
+    "modified": {
+      "type": "date",
+      "format": "date_optional_time"
+    },
+    "file_size": {
       "type": "long"
     }
   }

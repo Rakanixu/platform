@@ -55,6 +55,21 @@
       </mat-item>
     </template>
 
+    <template is="dom-if" if="[[isOneDrive(item.file_type)]]" restamp="true">
+      <mat-item label="Owner"
+                description="[[oneDriveInfo.createdBy]]"
+                tabindex="-1">
+        <mat-avatar background="light"
+                    class="primary"
+                    icon-src="[[slackUser.profile.image_48]]"></mat-avatar>
+      </mat-item>
+
+      <mat-item label="Created on"
+                description="[[oneDriveInfo.createdDateTime]]"
+                tabindex="-1">
+      </mat-item>
+    </template>
+
     <mat-item label="Location"
               description="[[item.url]]"
               tabindex="-1"></mat-item>
@@ -70,6 +85,14 @@
     <mat-item label="Last modified"
               description="[[timestampToHumanTime(item.modified)]]"
               tabindex="-1"></mat-item>
+
+    <template is="dom-if" if="[[isOneDrive(item.file_type)]]" restamp="true">
+      <mat-item label="Last modified by"
+                description="[[oneDriveInfo.lastModifiedBy]]"
+                tabindex="-1">
+
+      </mat-item>
+    </template>
 
     <mat-item label="Size"
               description="[[bytesToSize(item.size)]]"
@@ -119,6 +142,10 @@
             type: Object,
             notify: true
           },
+          oneDriveInfo: {
+            type: Object,
+            notify: true
+          },
           rpcSearchSlackUsersParams: {
             type: Object,
             notify: false,
@@ -155,7 +182,17 @@
             case 'slack':
               this.getMoreInfoFromSlack();
               break;
+            case 'onedrive':
+              this.getMoreInfoFromOneDrive();
           }
+        },
+        getMoreInfoFromOneDrive: function() {
+          this.set('oneDriveInfo', {
+            createdBy: this.item.original.createdBy.user.displayName,
+            createdDateTime: this.timestampToHumanTime(this.item.original.createdDateTime),
+            lastModifiedBy: this.item.original.lastModifiedBy.user.displayName,
+            lastModifiedDateTime: this.timestampToHumanTime(this.item.original.lastModifiedDateTime)
+          });
         },
         getMoreInfoFromSlack: function() {
           var slackInfoEl = document.querySelector('#slackChannelInfo');
