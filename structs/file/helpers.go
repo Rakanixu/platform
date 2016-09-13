@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"golang.org/x/net/context"
+	"log"
 	"path/filepath"
 	"strings"
 	"time"
@@ -59,12 +60,12 @@ func NewFileFromString(s string) (File, error) {
 		}
 		return ksf, nil
 	case "googledrive":
-		gf := &googledrive.File{}
-
-		if err := json.Unmarshal([]byte(s), gf); err != nil {
+		kgf := &KazoupGoogleFile{}
+		log.Printf("Googledrive string : %s \n", s)
+		if err := json.Unmarshal([]byte(s), kgf); err != nil {
 			return nil, errors.New("Error unmarsahling NewFileFromString case googledrive")
 		}
-		return &KazoupGoogleFile{*kf, *gf}, nil
+		return kgf, nil
 	case "onedrive":
 		of := &onedrive.OneDriveFile{}
 		if err := json.Unmarshal([]byte(s), of); err != nil {
