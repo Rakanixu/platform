@@ -61,7 +61,6 @@ func NewFileFromString(s string) (File, error) {
 		return ksf, nil
 	case "googledrive":
 		kgf := &KazoupGoogleFile{}
-		log.Printf("Googledrive string : %s \n", s)
 		if err := json.Unmarshal([]byte(s), kgf); err != nil {
 			return nil, errors.New("Error unmarsahling NewFileFromString case googledrive")
 		}

@@ -2,6 +2,8 @@
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
+<link rel="import" href="../../bower_components/paper-tooltip/paper-tooltip.html">
+
 <link rel="import" href="../../bower_components/mat-avatar/mat-avatar.html">
 <link rel="import" href="../../bower_components/mat-item/mat-item.html">
 
@@ -17,7 +19,7 @@
       }
     </style>
 
-    <template is="dom-if" if="[[isImage(item.category)]]">
+    <template is="dom-if" if="[[isNotVideoOrAudio(item.category)]]">
       <iron-image style="width:100%;"
                   src="http://localhost:8082/media/preview?file_id=[[item.id]]&width=600&mode=fit&quality=100"
                   preload
@@ -39,13 +41,13 @@
 
     <template is="dom-if" if="[[isSlack(item.file_type)]]" restamp="true">
       <mat-item label="Owner"
-                description="[[slackUser.profile.real_name]]"
                 href="slack://user?team=[[slackUser.team_id]]&id=[[slackUser.id]]"
-                tabindex="-1">
-        <mat-avatar background="light"
-                    class="primary"
+                tabindex="-1">`
+        <mat-avatar id="slackFileOwner"
+                    background="light"
                     icon-src="[[slackUser.profile.image_48]]"></mat-avatar>
       </mat-item>
+      <paper-tooltip for="slackFileOwner">[[slackUser.profile.real_name]]</paper-tooltip>
 
       <mat-item id="slackChannelInfo"
                 label="#[[slackChannel.name]]"
@@ -55,13 +57,28 @@
       </mat-item>
     </template>
 
+    <template is="dom-if" if="[[isGoogleDrive(item.file_type)]]" restamp="true">
+      <mat-item label="People"
+                class="overflow-visible"
+                tabindex="-1">
+        <template is="dom-repeat" items="[[googleDriveInfo.people]]">
+          <mat-avatar id$="avatar_[[item.id]]"
+                      background="light"
+                      icon-src="[[profilePicture(item.photoLink)]]"></mat-avatar>
+          <paper-tooltip for$="avatar_[[item.id]]">[[item.displayName]]</paper-tooltip>
+        </template>
+      </mat-item>
+
+      <mat-item label="Created on"
+                description="[[googleDriveInfo.createdDateTime]]"
+                tabindex="-1">
+      </mat-item>
+    </template>
+
     <template is="dom-if" if="[[isOneDrive(item.file_type)]]" restamp="true">
       <mat-item label="Owner"
                 description="[[oneDriveInfo.createdBy]]"
                 tabindex="-1">
-        <mat-avatar background="light"
-                    class="primary"
-                    icon-src="[[slackUser.profile.image_48]]"></mat-avatar>
       </mat-item>
 
       <mat-item label="Created on"
@@ -85,6 +102,14 @@
     <mat-item label="Last modified"
               description="[[timestampToHumanTime(item.modified)]]"
               tabindex="-1"></mat-item>
+
+    <template is="dom-if" if="[[isGoogleDrive(item.file_type)]]" restamp="true">
+      <mat-item label="Last modified by"
+                description="[[googleDriveInfo.lastModifiedBy]]"
+                tabindex="-1">
+
+      </mat-item>
+    </template>
 
     <template is="dom-if" if="[[isOneDrive(item.file_type)]]" restamp="true">
       <mat-item label="Last modified by"
@@ -146,6 +171,10 @@
             type: Object,
             notify: true
           },
+          googleDriveInfo: {
+            type: Object,
+            notify: true
+          },
           rpcSearchSlackUsersParams: {
             type: Object,
             notify: false,
@@ -184,7 +213,23 @@
               break;
             case 'onedrive':
               this.getMoreInfoFromOneDrive();
+              break;
+            case 'googledrive':
+              this.getMoreInfoFromGoogleDrive();
+              break;
           }
+        },
+        getMoreInfoFromGoogleDrive: function() {
+          var people = (this.item.original.permissions && this.item.original.permissions.length) ?
+            this.item.original.permissions :
+            this.item.original.owners;
+
+          this.set('googleDriveInfo', {
+            people: people,
+            createdDateTime: this.timestampToHumanTime(this.item.original.createdTime),
+            lastModifiedBy: this.item.original.lastModifyingUser.displayName,
+            lastModifiedDateTime: this.timestampToHumanTime(this.item.original.modifiedTime)
+          });
         },
         getMoreInfoFromOneDrive: function() {
           this.set('oneDriveInfo', {

@@ -76,6 +76,12 @@ mat-item.flag.mat-item-0 .ripple-waves.mat-item {
     display: none !important;
 }
 
+mat-item.overflow-visible a,
+mat-item.overflow-visible a div,
+mat-item.overflow-visible a div div {
+    overflow: visible !important;
+}
+
 mat-avatar.image {
     border-radius: 0;
 }

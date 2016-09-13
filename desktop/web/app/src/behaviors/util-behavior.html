@@ -102,6 +102,9 @@
       isAudio: function(category) {
         return (category === this.categoriesMap.audios);
       },
+      isNotVideoOrAudio: function(category) {
+        return !(category === this.categoriesMap.audios || category === this.categoriesMap.videos);
+      },
       isDirectory: function(isDir) {
         return isDir ? 'directory' : 'file';
       },
@@ -178,6 +181,9 @@
             return '';
         }
       },
+      isGoogleDrive: function(fileType) {
+        return (fileType === 'googledrive');
+      },
       isOneDrive: function(fileType) {
         return (fileType === 'onedrive');
       },
@@ -188,6 +194,9 @@
         if (!_.isEmpty(original)) {
           return (original.comments_count > 0);
         }
+      },
+      profilePicture: function(url) {
+        return (url && url.length) ? url : '../app/src/static/unknown-pic-profile.gif';
       },
       replaceAll: function(str, search, replacement) {
         return  str.replace(new RegExp(search, 'g'), replacement);
