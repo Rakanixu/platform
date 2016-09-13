@@ -17,6 +17,7 @@ import (
 	_ "github.com/pierrre/imageserver/image/jpeg"
 	_ "github.com/pierrre/imageserver/image/png"
 	imageserver_file "github.com/pierrre/imageserver/source/file"
+	imageserver_source_http "github.com/pierrre/imageserver/source/http"
 	"golang.org/x/net/websocket"
 
 	"log"
@@ -38,6 +39,8 @@ func web(ctx *cli.Context) {
 	service := microweb.NewService(microweb.Name("go.micro.web.media"))
 	//http://localhost:8082/desktop/image?source={file_id}&width=300&height=300&mode=fit&quality=50
 	service.Handle("/image", handler.NewImageHandler())
+	service.Handle("/preview", handler.NewImageHandler())
+
 	service.Handle("/image/local", &imageserver_http.Handler{
 		Parser: imageserver_http.ListParser([]imageserver_http.Parser{
 			&imageserver_http.SourceParser{},
@@ -47,6 +50,20 @@ func web(ctx *cli.Context) {
 		}),
 		Server: &imageserver.HandlerServer{
 			Server: newServerMemory(&imageserver_file.Server{}),
+			Handler: &imageserver_image.Handler{
+				Processor: &imageserver_image_gift.ResizeProcessor{},
+			},
+		},
+	})
+	service.Handle("/image/http", &imageserver_http.Handler{
+		Parser: imageserver_http.ListParser([]imageserver_http.Parser{
+			&imageserver_http.SourceParser{},
+			&imageserver_http_gift.ResizeParser{},
+			&imageserver_http_image.FormatParser{},
+			&imageserver_http_image.QualityParser{},
+		}),
+		Server: &imageserver.HandlerServer{
+			Server: newServerMemory(&imageserver_source_http.Server{}),
 			Handler: &imageserver_image.Handler{
 				Processor: &imageserver_image_gift.ResizeProcessor{},
 			},

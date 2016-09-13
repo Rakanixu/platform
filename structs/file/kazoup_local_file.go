@@ -1,9 +1,15 @@
 package file
 
+import (
+	"fmt"
+	"strings"
+)
+
 type KazoupLocalFile struct {
 	KazoupFile
 }
 
 func (kf *KazoupLocalFile) PreviewURL() string {
-	return DEFAULT_IMAGE_PREVIEW_URL
+	url := fmt.Sprintf("%s/image/local?source=/%s", BASE_URL_FILE_PREVIEW, strings.TrimLeft(kf.URL, "/local"))
+	return url
 }

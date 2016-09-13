@@ -307,7 +307,7 @@
                                                       description="[[item.url]]">
                                                 <mat-avatar background="[[documentType(item.name)]]"
                                                             class="primary image"
-                                                            icon-src="http://localhost:8082/media/preview?file_id=[[item.id]]&width=128&height=128&mode=fit&quality=100"></mat-avatar>
+                                                            icon-src="http://localhost:8082/media/preview?file_id=[[item.id]]&width=128&height=128&mode=fit&quality=50"></mat-avatar>
                                                 <iron-icon class="secondary info"
                                                            icon="icons:info"></iron-icon>
                                                 <span>[[timestampToHumanTime(item.modified)]], [[bytesToSize(item.size)]]</span>
@@ -333,7 +333,7 @@
                                             <div class="photoContent" tabindex$="[[tabIndex]]">
                                                 <template is="dom-if" if="[[isImage(item.category)]]">
                                                     <iron-image sizing="contain"
-                                                                src=http://localhost:8082/media/preview?file_id=[[item.id]]&width=356&height=356&mode=fit&quality=100"></iron-image>
+                                                                src="http://localhost:8082/media/preview?file_id=[[item.id]]&width=356&height=356&mode=fit&quality=70"></iron-image>
                                                 </template>
 
                                                 <template is="dom-if" if="[[isVideo(item.category)]]">

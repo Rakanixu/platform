@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -57,7 +58,8 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if f != nil {
 		log.Printf("ID : %s \n", f.PreviewURL())
-		http.Redirect(w, r, f.PreviewURL(), http.StatusSeeOther)
+		url := fmt.Sprintf("%s&width=%s&height=%s&mode=%s&quality=%s", f.PreviewURL(), width, height, mode, quality)
+		http.Redirect(w, r, url, http.StatusSeeOther)
 	}
 
 	//r.Form.Add("source", f.PreviewURL())
