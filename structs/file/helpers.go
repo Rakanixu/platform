@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"golang.org/x/net/context"
-	"log"
 	"path/filepath"
 	"strings"
 	"time"
@@ -23,9 +22,6 @@ import (
 )
 
 func GetFileByID(id string) (File, error) {
-	//get it form db
-
-	log.Print("Getting file from db %s ", id)
 	dbclient := db.NewDBClient("go.micro.srv.db", client.NewClient())
 
 	// get file URL from DB
@@ -46,37 +42,35 @@ func GetFileByID(id string) (File, error) {
 func NewFileFromString(s string) (File, error) {
 	kf := &KazoupFile{}
 	if err := json.Unmarshal([]byte(s), kf); err != nil {
-		return nil, err
+		return nil, errors.New("Error unmarsahling NewFileFromString")
 	}
 
 	switch kf.FileType {
 	case "local":
-
 		klf := &KazoupLocalFile{}
 		if err := json.Unmarshal([]byte(s), klf); err != nil {
-			return nil, err
+			return nil, errors.New("Error unmarsahling NewFileFromString case local")
 		}
 		return klf, nil
 	case "slack":
 		ksf := &KazoupSlackFile{}
 		if err := json.Unmarshal([]byte(s), ksf); err != nil {
-			return nil, err
+			return nil, errors.New("Error unmarsahling NewFileFromString case slack")
 		}
 		return ksf, nil
 	case "googledrive":
-		//gf := &googledrive.File{}
+		gf := &googledrive.File{}
 
-		//if err := json.Unmarshal([]byte(s), gf); err != nil {
-		//	return nil, err
-		//}
-		return &KazoupGoogleFile{*kf}, nil
+		if err := json.Unmarshal([]byte(s), gf); err != nil {
+			return nil, errors.New("Error unmarsahling NewFileFromString case googledrive")
+		}
+		return &KazoupGoogleFile{*kf, *gf}, nil
 	case "onedrive":
 		of := &onedrive.OneDriveFile{}
 		if err := json.Unmarshal([]byte(s), of); err != nil {
-			return nil, err
+			return nil, errors.New("Error unmarsahling NewFileFromString case onedrive")
 		}
 		return &KazoupOneDriveFile{*kf, *of}, nil
-
 	default:
 		return nil, errors.New("Error constructing file type")
 	}
@@ -91,14 +85,13 @@ func NewKazoupFileFromGoogleDriveFile(g *googledrive.File) *KazoupGoogleFile {
 		Name:     g.Name,
 		URL:      g.WebViewLink,
 		Modified: t,
-		Size:     g.Size,
+		FileSize: g.Size,
 		IsDir:    false,
 		Category: categories.GetDocType("." + g.FullFileExtension),
 		Depth:    0,
 		FileType: globals.GoogleDrive,
 	}
-	return &KazoupGoogleFile{*kf}
-
+	return &KazoupGoogleFile{*kf, *g}
 }
 
 // NewKazoupFileFromSlackFile constructor
@@ -110,7 +103,7 @@ func NewKazoupFileFromSlackFile(s *slack.SlackFile) *KazoupSlackFile {
 		Name:     s.Name,
 		URL:      s.URLPrivate,
 		Modified: t,
-		Size:     s.Size,
+		FileSize: s.Size,
 		IsDir:    false,
 		Category: categories.GetDocType("." + s.Filetype),
 		Depth:    0,
@@ -126,7 +119,7 @@ func NewKazoupFileFromLocal(lf *local.LocalFile) *KazoupLocalFile {
 		Name:     lf.Info.Name(),
 		URL:      "/local" + lf.Path,
 		Modified: lf.Info.ModTime(),
-		Size:     lf.Info.Size(),
+		FileSize: lf.Info.Size(),
 		IsDir:    lf.Info.IsDir(),
 		Category: categories.GetDocType(filepath.Ext(lf.Info.Name())),
 		Depth:    UrlDepth(lf.Path),
@@ -150,7 +143,7 @@ func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile) *KazoupOneDriveFile
 		Name:     o.Name,
 		URL:      o.WebURL,
 		Modified: o.LastModifiedDateTime,
-		Size:     o.Size,
+		FileSize: o.Size,
 		IsDir:    isDir,
 		Category: categories.GetDocType("." + name[len(name)-1]),
 		Depth:    0,

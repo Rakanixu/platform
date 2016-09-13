@@ -3,87 +3,87 @@ package onedrive
 import "time"
 
 type DrivesListResponse struct {
-	OdataContext string `json:"@odata.context"`
+	OdataContext string `json:"@odata.context,omitempty"`
 	Value        []struct {
-		ID        string `json:"id"`
-		DriveType string `json:"driveType"`
+		ID        string `json:"id,omitempty"`
+		DriveType string `json:"driveType,omitempty"`
 		Owner     struct {
 			User struct {
-				DisplayName string `json:"displayName"`
-				ID          string `json:"id"`
-			} `json:"user"`
-		} `json:"owner"`
+				DisplayName string `json:"displayName,omitempty"`
+				ID          string `json:"id,omitempty"`
+			} `json:"user,omitempty"`
+		} `json:"owner,omitempty"`
 		Quota struct {
-			Deleted      int    `json:"deleted"`
-			Remaining    int64  `json:"remaining"`
-			State        string `json:"state"`
-			Total        int64  `json:"total"`
-			Used         int    `json:"used"`
+			Deleted      int    `json:"deleted,omitempty"`
+			Remaining    int64  `json:"remaining,omitempty"`
+			State        string `json:"state,omitempty"`
+			Total        int64  `json:"total,omitempty"`
+			Used         int    `json:"used,omitempty"`
 			StoragePlans struct {
-				UpgradeAvailable bool `json:"upgradeAvailable"`
-			} `json:"storagePlans"`
-		} `json:"quota"`
+				UpgradeAvailable bool `json:"upgradeAvailable,omitempty"`
+			} `json:"storagePlans,omitempty"`
+		} `json:"quota,omitempty"`
 		Status struct {
-			State string `json:"state"`
-		} `json:"status"`
-	} `json:"value"`
+			State string `json:"state,omitempty"`
+		} `json:"status,omitempty"`
+	} `json:"value,omitempty"`
 }
 
 type FilesListResponse struct {
-	OdataContext string `json:"@odata.context"`
+	OdataContext string `json:"@odata.context,omitempty"`
 	Value        []OneDriveFile
 }
 
 type OneDriveFile struct {
-	ContentDownloadURL string `json:"contentDdownloadUrl"`
+	ContentDownloadURL string `json:"contentDdownloadUrl,omitempty"`
 	CreatedBy          struct {
 		Application struct {
-			DisplayName string `json:"displayName"`
-			ID          string `json:"id"`
-		} `json:"application"`
+			DisplayName string `json:"displayName,omitempty"`
+			ID          string `json:"id,omitempty"`
+		} `json:"application,omitempty"`
 		User struct {
-			DisplayName string `json:"displayName"`
-			ID          string `json:"id"`
-		} `json:"user"`
-	} `json:"createdBy"`
-	CreatedDateTime time.Time `json:"createdDateTime"`
-	CTag            string    `json:"cTag"`
-	ETag            string    `json:"eTag"`
-	ID              string    `json:"id"`
+			DisplayName string `json:"displayName,omitempty"`
+			ID          string `json:"id,omitempty"`
+		} `json:"user,omitempty"`
+	} `json:"createdBy,omitempty"`
+	CreatedDateTime time.Time `json:"createdDateTime,omitempty"`
+	CTag            string    `json:"cTag,omitempty"`
+	ETag            string    `json:"eTag,omitempty"`
+	ID              string    `json:"id,omitempty"`
 	LastModifiedBy  struct {
 		Application struct {
-			DisplayName string `json:"displayName"`
-			ID          string `json:"id"`
-		} `json:"application"`
+			DisplayName string `json:"displayName,omitempty"`
+			ID          string `json:"id,omitempty"`
+		} `json:"application,omitempty"`
 		User struct {
-			DisplayName string `json:"displayName"`
-			ID          string `json:"id"`
-		} `json:"user"`
-	} `json:"lastModifiedBy"`
-	LastModifiedDateTime time.Time `json:"lastModifiedDateTime"`
-	Name                 string    `json:"name"`
+			DisplayName string `json:"displayName,omitempty"`
+			ID          string `json:"id,omitempty"`
+		} `json:"user,omitempty"`
+	} `json:"lastModifiedBy,omitempty"`
+	LastModifiedDateTime time.Time `json:"lastModifiedDateTime,omitempty"`
+	Name                 string    `json:"name,omitempty"`
 	ParentReference      struct {
-		DriveID string `json:"driveId"`
-		ID      string `json:"id"`
-		Path    string `json:"path"`
-	} `json:"parentReference"`
-	Size           int64  `json:"size"`
-	WebURL         string `json:"webUrl"`
+		DriveID string `json:"driveId,omitempty"`
+		ID      string `json:"id,omitempty"`
+		Path    string `json:"path,omitempty"`
+	} `json:"parentReference,omitempty"`
+	Size           int64  `json:"size,omitempty"`
+	WebURL         string `json:"webUrl,omitempty"`
 	FileSystemInfo struct {
-		CreatedDateTime      time.Time `json:"createdDateTime"`
-		LastModifiedDateTime time.Time `json:"lastModifiedDateTime"`
-	} `json:"fileSystemInfo"`
+		CreatedDateTime      time.Time `json:"createdDateTime,omitempty"`
+		LastModifiedDateTime time.Time `json:"lastModifiedDateTime,omitempty"`
+	} `json:"fileSystemInfo,omitempty"`
 	Folder struct {
-		ChildCount int `json:"childCount"`
-	} `json:"folder"`
+		ChildCount int `json:"childCount,omitempty"`
+	} `json:"folder,omitempty"`
 	SpecialFolder struct {
-		Name string `json:"name"`
-	} `json:"specialFolder"`
+		Name string `json:"name,omitempty"`
+	} `json:"specialFolder,omitempty"`
 	File struct {
 		Hashes struct {
-			Crc32Hash string `json:"crc32Hash"`
-			Sha1Hash  string `json:"sha1Hash"`
-		} `json:"hashes"`
-		MimeType string `json:"mimeType"`
-	} `json:"file"`
+			Crc32Hash string `json:"crc32Hash,omitempty"`
+			Sha1Hash  string `json:"sha1Hash,omitempty"`
+		} `json:"hashes,omitempty"`
+		MimeType string `json:"mimeType,omitempty"`
+	} `json:"file,omitempty"`
 }

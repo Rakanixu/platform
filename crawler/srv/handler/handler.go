@@ -26,7 +26,6 @@ func (c *Crawl) Start(ctx context.Context, req *crawler.StartRequest, rsp *crawl
 		Url: req.Url,
 	})
 	if err != nil {
-		log.Print("got error")
 		return errors.InternalServerError("go.micro.srv.crawler.Crawl.Start", err.Error())
 	}
 

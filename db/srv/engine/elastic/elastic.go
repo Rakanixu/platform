@@ -206,7 +206,7 @@ func (e *elastic) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 	}
 	query, err := eQuery.Query()
 	if err != nil {
-		return &db.SearchResponse{}, nil
+		return &db.SearchResponse{}, err
 	}
 
 	out, err := e.conn.Search(req.Index, req.Type, nil, query)

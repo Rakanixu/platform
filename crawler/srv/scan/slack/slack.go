@@ -90,7 +90,6 @@ func (s *Slack) getUsers() error {
 	}
 
 	for _, v := range usersRsp.Members {
-		log.Println(v)
 		b, err := json.Marshal(v)
 		if err != nil {
 			return nil
@@ -171,7 +170,7 @@ func (s *Slack) getFiles(page int) error {
 
 		b, err := json.Marshal(f)
 		if err != nil {
-			return nil
+			log.Println(err)
 		}
 
 		msg := &crawler.FileMessage{
