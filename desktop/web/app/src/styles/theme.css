@@ -135,6 +135,10 @@ datasources-page {
     height: 100%;
 }
 
+.photoContent div.detail .mat-item-0 .label.mat-item {
+    font-size: 13px;
+}
+
 .title {
     margin-top: auto;
     margin-bottom: auto;

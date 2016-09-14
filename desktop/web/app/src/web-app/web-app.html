@@ -134,7 +134,6 @@
                 background:rgba(0,0,0,0.6);
             }
 
-
             .photoContent > iron-image {
                 @apply(--layout-flex);
             }
@@ -298,7 +297,7 @@
                                                 <mat-avatar background="[[documentType(item.name)]]"
                                                             class="primary image"
                                                             icon-src="http://localhost:8082/media/preview?file_id=[[item.id]]&width=256&height=128&mode=fit&quality=100"></mat-avatar>
-                                                <iron-icon class="secondary info"
+                                                <iron-icon class="secondary info info-icon"
                                                            icon="icons:info"></iron-icon>
                                                 <span>[[timestampToHumanTime(item.modified)]], [[bytesToSize(item.file_size)]]</span>
                                             </mat-item>
@@ -311,7 +310,7 @@
                                                 <mat-avatar background="[[documentType(item.name)]]"
                                                             class="primary image"
                                                             icon-src="http://localhost:8082/media/preview?file_id=[[item.id]]&width=128&height=128&mode=fit&quality=50"></mat-avatar>
-                                                <iron-icon class="secondary info"
+                                                <iron-icon class="secondary info info-icon"
                                                            icon="icons:info"></iron-icon>
                                                 <span>[[timestampToHumanTime(item.modified)]], [[bytesToSize(item.file_size)]]</span>
                                             </mat-item>
@@ -324,7 +323,7 @@
                                                 <mat-avatar background="[[documentType(item.name)]]"
                                                             class="primary"
                                                             icon="[[getIcon(item.is_dir, item.category, item.file_type)]]"></mat-avatar>
-                                                <iron-icon class="secondary info"
+                                                <iron-icon class="secondary info info-icon"
                                                            icon="icons:info"></iron-icon>
                                                 <template is="dom-if" if="[[item.is_dir]]">
                                                      <span>[[timestampToHumanTime(item.modified)]]</span>
@@ -337,28 +336,19 @@
                                     </template>
 
                                     <template is="dom-if" if="[[view.isGrid]]" restamp="true">
-                                        <div class="photoContainer grid" on-tap="mainAction">
-                                            <div class="photoContent" tabindex$="[[tabIndex]]">
-                                                <template is="dom-if" if="[[isImage(item.category)]]">
-                                                    <iron-image sizing="contain"
-                                                                src="http://localhost:8082/media/preview?file_id=[[item.id]]&width=356&height=356&mode=fit&quality=70"></iron-image>
-                                                </template>
-
-                                                <template is="dom-if" if="[[isVideo(item.category)]]">
-                                                    <iron-image sizing="contain"
-                                                                src="http://localhost:8082/media/preview?file_id=[[item.id]]&width=356&height=356&mode=fit&quality=100"></iron-image>
-                                                </template>
-
-                                                <template is="dom-if" if="[[isNoVisualMedia(item.category)]]">
-                                                    <mat-avatar background="[[documentType(item.name)]]"
-                                                                class="primary"
-                                                                icon="[[getIcon(item.is_dir, item.category, item.file_type)]]"></mat-avatar>
-                                                </template>
+                                        <div class="photoContainer grid">
+                                            <div class="photoContent" tabindex$="[[tabIndex]]" on-tap="mainAction">
+                                                <iron-image sizing="contain"
+                                                            src="http://localhost:8082/media/preview?file_id=[[item.id]]&width=356&height=356&mode=fit&quality=70">
+                                                    <mat-ripple></mat-ripple>
+                                                </iron-image>
 
                                                 <div class="detail">
-                                                    <mat-item class="light" label="[[item.name]]"></mat-item>
+                                                    <mat-item class="light" label="[[item.name]]">
+                                                        <iron-icon class="secondary info-icon"
+                                                                   icon="icons:info"></iron-icon>
+                                                    </mat-item>
                                                 </div>
-                                                <mat-ripple></mat-ripple>
                                             </div>
                                         </div>
                                     </template>
@@ -1103,7 +1093,7 @@
 
                 if (e.model.__data__.item.is_dir) {
                     // Primary action, browse one level deeper
-                    if (!e.target.classList.contains("info")) {
+                    if (!e.target.classList.contains('info-icon')) {
                         this.clearIronList();
                         this.set('itemSelected', false);
                         this.set('searching', false);
@@ -1122,10 +1112,11 @@
                         this.set('item', e.model.__data__.item);
                         this.set('itemSelected', true);
                         this.$.mainDrawerPanel.openDrawer();
+                        e.currentTarget.classList.add('selected-item');
                     }
                 } else {
                     // Primary action, open file
-                    if (!e.target.classList.contains("info")) {
+                    if (!e.target.classList.contains('info-icon')) {
                         this.openFile(e.model.__data__.item);
                         this.closeDetails();
                     // Secondary action, show details
@@ -1133,7 +1124,6 @@
                         this.set('item', e.model.__data__.item);
                         this.set('itemSelected', true);
                         this.$.mainDrawerPanel.openDrawer();
-
                         e.currentTarget.classList.add('selected-item');
 
                         if (document.querySelector('video')) {
