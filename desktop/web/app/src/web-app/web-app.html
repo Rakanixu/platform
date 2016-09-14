@@ -326,7 +326,12 @@
                                                             icon="[[getIcon(item.is_dir, item.category, item.file_type)]]"></mat-avatar>
                                                 <iron-icon class="secondary info"
                                                            icon="icons:info"></iron-icon>
-                                                <span>[[timestampToHumanTime(item.modified)]], [[bytesToSize(item.file_size)]]</span>
+                                                <template is="dom-if" if="[[item.is_dir]]">
+                                                     <span>[[timestampToHumanTime(item.modified)]]</span>
+                                                </template>
+                                                <template is="dom-if" if="[[!item.is_dir]]">
+                                                    <span>[[timestampToHumanTime(item.modified)]], [[bytesToSize(item.file_size)]]</span>
+                                                </template>
                                             </mat-item>
                                         </template>
                                     </template>
@@ -995,6 +1000,7 @@
             },
             browse: function(e, detail) {
                 this.clearIronList();
+                this.set('itemSelected', false);
                 this.clearSelectedItemStyling();
 
                 if  (e.model.__data__.item.index) {
@@ -1115,6 +1121,7 @@
                     } else {
                         this.set('item', e.model.__data__.item);
                         this.set('itemSelected', true);
+                        this.$.mainDrawerPanel.openDrawer();
                     }
                 } else {
                     // Primary action, open file
