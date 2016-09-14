@@ -198,6 +198,7 @@ func (e *elastic) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 	var results []interface{}
 
 	eQuery := ElasticQuery{
+		Index:    req.Index,
 		Term:     req.Term,
 		From:     req.From,
 		Size:     req.Size,
@@ -207,6 +208,7 @@ func (e *elastic) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 		Type:     req.FileType,
 	}
 	query, err := eQuery.Query()
+
 	if err != nil {
 		return &db.SearchResponse{}, err
 	}

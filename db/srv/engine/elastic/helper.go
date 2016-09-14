@@ -113,6 +113,7 @@ func (e *elastic) RemoveAlias(index string, alias string) (lib.BaseResponse, err
 // TODO: use gabs (handle JSON in go)
 // ElasticQuery to generate DSL query from params
 type ElasticQuery struct {
+	Index    string
 	Term     string
 	From     int64
 	Size     int64
@@ -163,7 +164,7 @@ func (e *ElasticQuery) AggsQuery() (string, error) {
 func (e *ElasticQuery) defaultSorting() string {
 	var buffer bytes.Buffer
 
-	if (e.From != 0 || e.Size != 0) && e.Type == "file" {
+	if (e.From != 0 || e.Size != 0) && e.Index == globals.FilesAlias {
 		buffer.WriteString(`{"is_dir": "desc"},{"modified":"desc"},{"file_size": "desc"}`)
 	}
 
