@@ -22,5 +22,6 @@ func (s *Search) Search(ctx context.Context, req *proto.SearchRequest, rsp *prot
 
 	rsp.Result = response.Result
 	rsp.Info = response.Info
+
 	return nil
 }

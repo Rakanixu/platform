@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/kazoup/platform/structs/globals"
 	lib "github.com/mattbaird/elastigo/lib"
 	"log"
 	"strconv"
@@ -155,9 +156,9 @@ func (e *ElasticQuery) filterType() string {
 	var buffer bytes.Buffer
 
 	switch e.Type {
-	case "files":
+	case globals.FileTypeFile:
 		buffer.WriteString(`{"term": {"is_dir": false}}`)
-	case "directories":
+	case globals.FileTypeDirectory:
 		buffer.WriteString(`{"term": {"is_dir": true}}`)
 	default:
 		buffer.WriteString(`{}`)

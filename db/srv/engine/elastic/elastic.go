@@ -202,7 +202,7 @@ func (e *elastic) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 		Category: req.Category,
 		Url:      req.Url,
 		Depth:    req.Depth,
-		Type:     req.Type,
+		Type:     req.FileType,
 	}
 	query, err := eQuery.Query()
 	if err != nil {

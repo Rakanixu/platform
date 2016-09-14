@@ -31,6 +31,7 @@ func (d *dbSearch) Search(ctx context.Context, req *search.SearchRequest, client
 			Url:      req.Url,
 			Depth:    req.Depth,
 			Type:     req.Type,
+			FileType: req.FileType,
 		},
 	)
 	srvRes := &db_proto.SearchResponse{}
