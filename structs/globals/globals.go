@@ -18,6 +18,9 @@ const (
 	FilesAlias  = "files"
 	FileType    = "file"
 
+	FileTypeFile      = "files"
+	FileTypeDirectory = "directories"
+
 	Local       = "local"
 	Slack       = "slack"
 	GoogleDrive = "googledrive"

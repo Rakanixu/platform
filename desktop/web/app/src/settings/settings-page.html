@@ -98,8 +98,8 @@
 
         <div class="content">
           <paper-menu selected="-1">
-            <paper-icon-item on-tap="showAllSearch">
-              <iron-icon icon="icons:home" item-icon></iron-icon>All
+            <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.all]]" data-index="0">
+              <iron-icon icon="icons:home" item-icon></iron-icon>My Files
             </paper-icon-item>
             <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.documents]]" data-index="1">
               <iron-icon icon="editor:insert-drive-file" item-icon></iron-icon>Documents
@@ -112,6 +112,9 @@
             </paper-icon-item>
             <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.audios]]" data-index="4">
               <iron-icon icon="image:audiotrack" item-icon></iron-icon>Audio
+            </paper-icon-item>
+            <paper-icon-item on-tap="showAllSearch">
+              <iron-icon icon="icons:folder" item-icon></iron-icon>Locations
             </paper-icon-item>
           </paper-menu>
 

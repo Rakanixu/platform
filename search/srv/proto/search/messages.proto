@@ -11,9 +11,25 @@ message SearchRequest {
   string url = 6;
   int64 depth = 7;
   string type = 8;
+  string file_type = 9;
 }
 
 message SearchResponse {
+  string result = 1;
+  string info = 2;
+}
+
+message Aggregation {
+  string aggregation_type = 1;
+  string field = 2;
+}
+
+message AggregateRequest {
+  SearchRequest filters = 1;
+  repeated Aggregation agg = 2;
+}
+
+message AggregateResponse {
   string result = 1;
   string info = 2;
 }

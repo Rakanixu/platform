@@ -31,6 +31,7 @@ func (d *dbSearch) Search(ctx context.Context, req *search.SearchRequest, client
 			Url:      req.Url,
 			Depth:    req.Depth,
 			Type:     req.Type,
+			FileType: req.FileType,
 		},
 	)
 	srvRes := &db_proto.SearchResponse{}
@@ -43,4 +44,19 @@ func (d *dbSearch) Search(ctx context.Context, req *search.SearchRequest, client
 		Result: srvRes.Result,
 		Info:   srvRes.Info,
 	}, nil
+}
+
+func (d *dbSearch) Aggregate(ctx context.Context, req *search.AggregateRequest, client client.Client, serviceName string) (*search.AggregateResponse, error) {
+	srvReq := client.NewRequest(
+		serviceName,
+		"DB.Aggregate",
+		req,
+	)
+	srvRes := &search.AggregateResponse{}
+
+	if err := client.Call(ctx, srvReq, srvRes); err != nil {
+		return nil, err
+	}
+
+	return srvRes, nil
 }

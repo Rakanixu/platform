@@ -13,7 +13,7 @@ type Search struct {
 	ElasticServiceName string
 }
 
-// Create srv handler
+// Search srv handler
 func (s *Search) Search(ctx context.Context, req *proto.SearchRequest, rsp *proto.SearchResponse) error {
 	response, err := engine.Search(ctx, req, s.Client, s.ElasticServiceName)
 	if err != nil {
@@ -22,5 +22,19 @@ func (s *Search) Search(ctx context.Context, req *proto.SearchRequest, rsp *prot
 
 	rsp.Result = response.Result
 	rsp.Info = response.Info
+
+	return nil
+}
+
+// Aggregate srv handler
+func (s *Search) Aggregate(ctx context.Context, req *proto.AggregateRequest, rsp *proto.AggregateResponse) error {
+	response, err := engine.Aggregate(ctx, req, s.Client, s.ElasticServiceName)
+	if err != nil {
+		return err
+	}
+
+	rsp.Result = response.Result
+	rsp.Info = response.Info
+
 	return nil
 }

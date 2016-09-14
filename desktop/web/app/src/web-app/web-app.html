@@ -165,8 +165,8 @@
 
                 <div class="content">
                     <paper-menu selected="{{selectedCategory.index}}">
-                        <paper-icon-item on-tap="listDatasources">
-                            <iron-icon icon="icons:home" item-icon></iron-icon>All
+                        <paper-icon-item on-tap="setCategory" data-value$="[[categoriesMap.all]]">
+                            <iron-icon icon="icons:home" item-icon></iron-icon>My Files
                         </paper-icon-item>
                         <paper-icon-item on-tap="setCategory" data-value$="[[categoriesMap.documents]]">
                             <iron-icon icon="editor:insert-drive-file" item-icon></iron-icon>Documents
@@ -179,6 +179,9 @@
                         </paper-icon-item>
                         <paper-icon-item on-tap="setCategory" data-value$="[[categoriesMap.audios]]">
                             <iron-icon icon="image:audiotrack" item-icon></iron-icon>Audio
+                        </paper-icon-item>
+                        <paper-icon-item on-tap="listDatasources">
+                            <iron-icon icon="icons:folder" item-icon></iron-icon>Locations
                         </paper-icon-item>
                     </paper-menu>
 
@@ -234,7 +237,7 @@
                                             class="browse"
                                             hidden$="[[handleSearchHeader(selectedCategory.index)]]"
                                             shift="true">
-                                <mat-breadcrumb-step label="My Files" on-tap="listDatasources"></mat-breadcrumb-step>
+                                <mat-breadcrumb-step label="Locations" on-tap="listDatasources"></mat-breadcrumb-step>
                                 <template id="breadcrumbsSteps" is="dom-repeat" items="[[breadcrumbs]]">
                                     <mat-breadcrumb-step label="[[item.label]]" on-tap="browse"></mat-breadcrumb-step>
                                 </template>
@@ -252,7 +255,7 @@
                             </mat-item>
 
                             <mat-menu id="breadcrumbsMenu" position="baseline">
-                                <mat-option label="My Files" on-tap="listDatasources"></mat-option>
+                                <mat-option label="Locations" on-tap="listDatasources"></mat-option>
                                 <template id="breadcrumbsStepsMenu" is="dom-repeat" items="[[breadcrumbs]]">
                                     <mat-option label="[[item.label]]" on-tap="browse"></mat-option>
                                 </template>
@@ -538,7 +541,7 @@
                     value: function() {
                         return {
                             index: 0,
-                            label: 'My Files'
+                            label: 'Locations'
                         };
                     }
                 },
@@ -688,7 +691,13 @@
                         this.set('selectedCategory', e.data.e.selectedCategory);
                     }
                 } else {
-                    this.listDatasources();
+                    this.setCategory({
+                       currentTarget: {
+                           dataset: {
+                               value: this.categoriesMap.all
+                           }
+                       }
+                    });
                     this.checkBreadcrumbsView(0);
                 }
             },
@@ -874,6 +883,8 @@
                 this.$.searchList.fire('iron-resize');
             },
             setCategory: function(e, detail) {
+                var category, url, depth, fileType, term;
+
                 this.clearIronList();
                 this.set('itemSelected', false);
                 this.$.navDrawerPanel.closeDrawer();
@@ -891,7 +902,19 @@
 
                 this.refreshView();
                 this.set('title', e.currentTarget.dataset.value + ' Search');
-                this.set('searching', false);
+
+                category = e.currentTarget.dataset.value;
+                term = this.$.filterConverter.getFilterAsObj().term;
+                url = (e.currentTarget.dataset.value || term) ? '' : '/';
+                depth = (e.currentTarget.dataset.value || term) ? 0 : 1;
+                fileType = '';
+
+                if (e.currentTarget.dataset.value === this.categoriesMap.all) {
+                    category = '';
+                    url = '';
+                    depth = 0;
+                    fileType = 'files'; // Exclude directories
+                }
 
                 // depth must be 0 for search
                 // When there is no search term and user didn't selected a category, then browse
@@ -899,11 +922,12 @@
                     index: 'files',
                     from: 0,
                     size: this.size,
-                    category: e.currentTarget.dataset.value,
-                    term: '',
+                    category: category,
+                    term: term,
                     type: 'file',
-                    url: (e.currentTarget.dataset.value || this.$.filterConverter.getFilterAsObj().term) ? '' : '/',
-                    depth: (e.currentTarget.dataset.value || this.$.filterConverter.getFilterAsObj().term) ? 0 : 1
+                    url: url,
+                    depth: depth,
+                    file_type: fileType
                 });
             },
             listDatasources: function(e, detail) {
@@ -915,6 +939,7 @@
                 });
                 this.$.filterConverter.setValues({
                     index: 'files',
+                    file_type: '',
                     category: '',
                     url: '',
                     depth: 0
@@ -922,7 +947,7 @@
                 this.$.navDrawerPanel.closeDrawer();
                 this.set('doScan', false);
                 this.set('breadcrumbs', []);
-                if (this.$.search.input.value) {
+                if (this.$.filterConverter.getFilterAsObj().term) {
                     this.set('datasourceListView', false);
                 } else {
                     this.set('datasourceListView', true);
@@ -1030,8 +1055,15 @@
             },
             resetSearch: function(e, detail) {
                 this.toggleSearch();
-                this.listDatasources();
-                this.set('datasourceListView', true);
+                this.$.filterConverter.setValue('term', '');
+
+                // Locations
+                if (this.selectedCategory.index == 5) {
+                    this.listDatasources();
+                    this.set('datasourceListView', true);
+                } else {
+                    this.set('datasourceListView', false);
+                }
             },
             toggleSearch: function(e, detail) {
                 this.$.search.input.value = this.$.filterConverter.getFilterAsObj().term ?
@@ -1181,7 +1213,7 @@
                 }
             },
             handleSearchHeader: function(selected) {
-                return (selected !== 0);
+                return (selected !== 5);
             }
         });
     }()); 
