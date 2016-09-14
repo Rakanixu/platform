@@ -5,6 +5,7 @@ import (
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db "github.com/kazoup/platform/db/srv/proto/db"
 	flag_proto "github.com/kazoup/platform/flag/srv/proto/flag"
+	search_proto "github.com/kazoup/platform/search/srv/proto/search"
 	"github.com/kazoup/platform/structs/file"
 	"golang.org/x/net/context"
 )
@@ -33,6 +34,7 @@ type Engine interface {
 	DeleteIndex(req *db.DeleteIndexRequest) (*db.DeleteIndexResponse, error)
 	DeleteAlias(req *db.DeleteAliasRequest) (*db.DeleteAliasResponse, error)
 	RenameAlias(req *db.RenameAliasRequest) (*db.RenameAliasResponse, error)
+	Aggregate(req *search_proto.AggregateRequest) (*search_proto.AggregateResponse, error)
 }
 
 var (
@@ -109,6 +111,10 @@ func DeleteAlias(req *db.DeleteAliasRequest) (*db.DeleteAliasResponse, error) {
 
 func RenameAlias(req *db.RenameAliasRequest) (*db.RenameAliasResponse, error) {
 	return engine.RenameAlias(req)
+}
+
+func Aggregate(req *search_proto.AggregateRequest) (*search_proto.AggregateResponse, error) {
+	return engine.Aggregate(req)
 }
 
 func TypeFactory(typ string, data string) (interface{}, error) {

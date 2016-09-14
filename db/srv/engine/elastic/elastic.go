@@ -10,6 +10,8 @@ import (
 	"github.com/kazoup/platform/db/srv/engine"
 	data "github.com/kazoup/platform/db/srv/engine/elastic/data"
 	db "github.com/kazoup/platform/db/srv/proto/db"
+	search_proto "github.com/kazoup/platform/search/srv/proto/search"
+	"github.com/kazoup/platform/structs/globals"
 	lib "github.com/mattbaird/elastigo/lib"
 	"golang.org/x/net/context"
 )
@@ -374,4 +376,33 @@ func (e *elastic) RenameAlias(req *db.RenameAliasRequest) (*db.RenameAliasRespon
 	}
 
 	return &db.RenameAliasResponse{}, nil
+}
+
+// Aggregate allow us to query for aggs in ES
+func (e *elastic) Aggregate(req *search_proto.AggregateRequest) (*search_proto.AggregateResponse, error) {
+	eQuery := ElasticQuery{
+		Term:     req.Filters.Term,
+		Category: req.Filters.Category,
+		Url:      req.Filters.Url,
+		Type:     globals.FileTypeFile, // We always want to agg on just files (data), no directories
+		Aggs:     req.Agg,
+	}
+	query, err := eQuery.AggsQuery()
+	if err != nil {
+		return nil, err
+	}
+
+	out, err := e.conn.Search(req.Filters.Index, req.Filters.Type, nil, query)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := out.Aggregations.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+
+	return &search_proto.AggregateResponse{
+		Result: string(b),
+	}, nil
 }

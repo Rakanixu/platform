@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	search_proto "github.com/kazoup/platform/search/srv/proto/search"
 	"github.com/kazoup/platform/structs/globals"
 	lib "github.com/mattbaird/elastigo/lib"
 	"log"
@@ -66,18 +67,6 @@ func enricher(e *elastic) error {
 	return nil
 }
 
-// TODO: use gabs (handle JSON in go)
-// ElasticQuery to generate DSL query from params
-type ElasticQuery struct {
-	Term     string
-	From     int64
-	Size     int64
-	Category string
-	Url      string
-	Depth    int64
-	Type     string
-}
-
 type JsonRemoveAliases struct {
 	Actions []JsonAliasRemove `json:"actions"`
 }
@@ -121,6 +110,19 @@ func (e *elastic) RemoveAlias(index string, alias string) (lib.BaseResponse, err
 	return retval, err
 }
 
+// TODO: use gabs (handle JSON in go)
+// ElasticQuery to generate DSL query from params
+type ElasticQuery struct {
+	Term     string
+	From     int64
+	Size     int64
+	Category string
+	Url      string
+	Depth    int64
+	Type     string
+	Aggs     []*search_proto.Aggregation
+}
+
 // Query generates a Elasticsearch DSL query
 func (e *ElasticQuery) Query() (string, error) {
 	var buffer bytes.Buffer
@@ -138,6 +140,22 @@ func (e *ElasticQuery) Query() (string, error) {
 	buffer.WriteString(`]}}, "sort":[`)
 	buffer.WriteString(e.defaultSorting())
 	buffer.WriteString(`]}`)
+
+	return buffer.String(), nil
+}
+
+// Query generates a Elasticsearch DSL query
+func (e *ElasticQuery) AggsQuery() (string, error) {
+	var buffer bytes.Buffer
+
+	buffer.WriteString(`{"size":0,"query":{"filtered":{"filter":{"bool":{"must":[`)
+	buffer.WriteString(e.filterType() + ",")
+	buffer.WriteString(e.queryTerm() + ",")
+	buffer.WriteString(e.filterCategory() + ",")
+	buffer.WriteString(e.filterUrl())
+	buffer.WriteString(`]}}}}, "aggs":{`)
+	buffer.WriteString(e.aggs())
+	buffer.WriteString(`}}`)
 
 	return buffer.String(), nil
 }
@@ -237,6 +255,26 @@ func (e *ElasticQuery) filterFrom() string {
 
 	buffer.WriteString(`"from": `)
 	buffer.WriteString(strconv.FormatInt(e.From, 10))
+
+	return buffer.String()
+}
+
+func (e *ElasticQuery) aggs() string {
+	var buffer bytes.Buffer
+
+	for k, v := range e.Aggs {
+		buffer.WriteString(`"`)
+		buffer.WriteString(strconv.Itoa(k))
+		buffer.WriteString(`":{"`)
+		buffer.WriteString(v.AggregationType)
+		buffer.WriteString(`":{"field":"`)
+		buffer.WriteString(v.Field)
+		buffer.WriteString(`"}}`)
+
+		if len(e.Aggs) > k+1 {
+			buffer.WriteString(`,`)
+		}
+	}
 
 	return buffer.String()
 }
