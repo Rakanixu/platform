@@ -8,7 +8,6 @@ type KazoupOneDriveFile struct {
 }
 
 func (kf *KazoupOneDriveFile) PreviewURL() string {
-
 	//url := fmt.Sprintf("%s/image/http?source=https://docs.google.com/uc?id=%s", BASE_URL_FILE_PREVIEW, kf.Original.ContentDownloadURL)
 	return DEFAULT_IMAGE_PREVIEW_URL
 }

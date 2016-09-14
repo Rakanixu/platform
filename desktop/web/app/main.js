@@ -87,7 +87,9 @@ function createWindow() {
 
     //win.loadURL("http://google.com");
     // Open the DevTools.
+    if (isDevelopment){
     win.webContents.openDevTools();
+    }
 
     // Don"t use auto-updater if we are in development
     if (!isDevelopment) {

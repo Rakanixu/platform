@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"golang.org/x/net/context"
-	"log"
 	"path/filepath"
 	"strings"
 	"time"
@@ -66,11 +65,11 @@ func NewFileFromString(s string) (File, error) {
 		}
 		return kgf, nil
 	case "onedrive":
-		of := &onedrive.OneDriveFile{}
-		if err := json.Unmarshal([]byte(s), of); err != nil {
+		kof := &KazoupOneDriveFile{}
+		if err := json.Unmarshal([]byte(s), kof); err != nil {
 			return nil, errors.New("Error unmarsahling NewFileFromString case onedrive")
 		}
-		return &KazoupOneDriveFile{*kf, *of}, nil
+		return kof, nil
 	default:
 		return nil, errors.New("Error constructing file type")
 	}
@@ -131,6 +130,7 @@ func NewKazoupFileFromLocal(lf *local.LocalFile) *KazoupLocalFile {
 
 // NewKazoupFileFromOneDriveFile constructor
 func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile) *KazoupOneDriveFile {
+
 	isDir := true
 	name := strings.Split(o.Name, ".")
 
