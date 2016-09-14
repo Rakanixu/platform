@@ -115,19 +115,19 @@ function createWindow() {
             }
         });
         autoUpdater.addListener("error", function(error) {
-            console.log(error);
+   	//         console.log(error);
             if (win) {
                 win.webContents.send("update-message", "update-error");
             }
         });
         autoUpdater.addListener("checking-for-update", function(event) {
-            console.log("Checking for update");
+        //    console.log("Checking for update");
             if (win) {
                 win.webContents.send("update-message", "checking-for-update");
             }
         });
         autoUpdater.addListener("update-not-available", function() {
-            console.log("Update not available");
+          //  console.log("Update not available");
             if (win) {
                 win.webContents.send("update-message", "update-not-available");
             }
