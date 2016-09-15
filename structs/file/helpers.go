@@ -25,12 +25,12 @@ func GetFileByID(id string) (File, error) {
 	dbclient := db.NewDBClient("go.micro.srv.db", client.NewClient())
 
 	// get file URL from DB
-	dbreq := db.ReadRequest{
+	dbreq := db.SearchByIdRequest{
 		Index: "files",
 		Type:  "file",
 		Id:    id,
 	}
-	dbres, err := dbclient.Read(context.TODO(), &dbreq)
+	dbres, err := dbclient.SearchById(context.TODO(), &dbreq)
 	if err != nil {
 		return nil, err
 	}
