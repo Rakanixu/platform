@@ -98,6 +98,18 @@ func (db *DB) Search(ctx context.Context, req *proto.SearchRequest, rsp *proto.S
 	return nil
 }
 
+// Search db srv handler
+func (db *DB) SearchById(ctx context.Context, req *proto.SearchByIdRequest, rsp *proto.SearchByIdResponse) error {
+	response, err := engine.SearchById(req)
+	if err != nil {
+		return errors.InternalServerError("go.micro.srv.db", err.Error())
+	}
+
+	rsp.Result = response.Result
+
+	return nil
+}
+
 // RenameIndexAlias db srv handler
 func (db *DB) AddAlias(ctx context.Context, req *proto.AddAliasRequest, rsp *proto.AddAliasResponse) error {
 	_, err := engine.AddAlias(req)

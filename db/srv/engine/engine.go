@@ -30,6 +30,7 @@ type Engine interface {
 	PutMappingFromJSON(req *db.PutMappingFromJSONRequest) (*db.PutMappingFromJSONResponse, error)
 	Status(req *db.StatusRequest) (*db.StatusResponse, error)
 	Search(req *db.SearchRequest) (*db.SearchResponse, error)
+	SearchById(req *db.SearchByIdRequest) (*db.SearchByIdResponse, error)
 	AddAlias(req *db.AddAliasRequest) (*db.AddAliasResponse, error)
 	DeleteIndex(req *db.DeleteIndexRequest) (*db.DeleteIndexResponse, error)
 	DeleteAlias(req *db.DeleteAliasRequest) (*db.DeleteAliasResponse, error)
@@ -95,6 +96,10 @@ func Status(req *db.StatusRequest) (*db.StatusResponse, error) {
 
 func Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 	return engine.Search(req)
+}
+
+func SearchById(req *db.SearchByIdRequest) (*db.SearchByIdResponse, error) {
+	return engine.SearchById(req)
 }
 
 func AddAlias(req *db.AddAliasRequest) (*db.AddAliasResponse, error) {

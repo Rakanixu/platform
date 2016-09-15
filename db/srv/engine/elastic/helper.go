@@ -114,6 +114,7 @@ func (e *elastic) RemoveAlias(index string, alias string) (lib.BaseResponse, err
 // ElasticQuery to generate DSL query from params
 type ElasticQuery struct {
 	Index    string
+	Id       string
 	Term     string
 	From     int64
 	Size     int64
@@ -157,6 +158,17 @@ func (e *ElasticQuery) AggsQuery() (string, error) {
 	buffer.WriteString(`]}}}}, "aggs":{`)
 	buffer.WriteString(e.aggs())
 	buffer.WriteString(`}}`)
+
+	return buffer.String(), nil
+}
+
+// QueryById generates a Elasticsearch DSL query for searching aliases by id
+func (e *ElasticQuery) QueryById() (string, error) {
+	var buffer bytes.Buffer
+
+	buffer.WriteString(`{"query":{"term":{"id":"`)
+	buffer.WriteString(e.Id)
+	buffer.WriteString(`"}}}`)
 
 	return buffer.String(), nil
 }
