@@ -102,7 +102,7 @@ func (ds *DataSource) Scan(ctx context.Context, req *proto.ScanRequest, rsp *pro
 	return nil
 }
 
-// SubscribeCrawlerFinished sets last scan timestamp for the datasource after being scanned
+// SubscribeCrawlerFinished sets last scan timestamp for the datasource after being scanned and updates crawler state
 func SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedMessage) error {
 	var ds *proto.Endpoint
 
@@ -120,6 +120,7 @@ func SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedM
 		log.Println(err)
 	}
 
+	ds.CrawlerRunning = false
 	ds.LastScan = time.Now().Unix()
 	b, err := json.Marshal(ds)
 	if err != nil {

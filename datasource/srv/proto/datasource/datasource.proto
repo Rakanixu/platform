@@ -15,7 +15,8 @@ message Endpoint {
   string index = 3;
   int64 last_scan = 4;
   int64 last_scan_started = 5;
-  Token token = 6;
+  bool crawler_running = 6;
+  Token token = 7;
 }
 
 message CreateRequest {

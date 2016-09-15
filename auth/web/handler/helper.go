@@ -11,7 +11,10 @@ func SaveDatasource(url string, token *oauth2.Token) error {
 
 	req := &proto_datasource.CreateRequest{
 		Endpoint: &proto_datasource.Endpoint{
-			Url: url,
+			Url:             url,
+			LastScan:        0,
+			LastScanStarted: 0,
+			CrawlerRunning:  false,
 			Token: &proto_datasource.Token{
 				AccessToken:  token.AccessToken,
 				TokenType:    token.TokenType,

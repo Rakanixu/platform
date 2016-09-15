@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/kazoup/platform/datasource/srv/filestore"
-	fake "github.com/kazoup/platform/datasource/srv/filestore/fake"
 	googledrive "github.com/kazoup/platform/datasource/srv/filestore/googledrive"
 	local "github.com/kazoup/platform/datasource/srv/filestore/local"
 	onedrive "github.com/kazoup/platform/datasource/srv/filestore/onedrive"
@@ -23,7 +22,6 @@ import (
 )
 
 const (
-	fakeEndpoint       = "fake"
 	localEndpoint      = "local://"
 	googledriveEnpoint = "googledrive://"
 	onedriveEndpoint   = "onedrive://"
@@ -35,14 +33,6 @@ const (
 
 // GetDataSource returns a FileStorer interface
 func GetDataSource(ds *DataSource, endpoint *proto.Endpoint) (filestorer.FileStorer, error) {
-	if strings.Contains(endpoint.Url, fakeEndpoint) {
-		return &fake.Fake{
-			FileStore: filestorer.FileStore{
-				ElasticServiceName: ds.ElasticServiceName,
-			},
-		}, nil
-	}
-
 	if strings.Contains(endpoint.Url, localEndpoint) {
 		return &local.Local{
 			Endpoint: *endpoint,
@@ -201,7 +191,8 @@ func ScanDataSource(ds *DataSource, ctx context.Context, id string) error {
 		return err
 	}
 
-	// Set time for starting scan and update datasource
+	// Set time for starting scan, crawler running  and update datasource
+	endpoint.CrawlerRunning = true
 	endpoint.LastScanStarted = time.Now().Unix()
 	b, err := json.Marshal(endpoint)
 	if err != nil {
