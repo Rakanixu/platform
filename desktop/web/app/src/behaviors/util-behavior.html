@@ -32,6 +32,10 @@
       return str
     }
 
+    function getPluralInNaturalLanguage(i) {
+      return (i > 1) ? 's ' : ' ';
+    }
+
     Polymer.UtilBehaviorImp = {
       openMenu: function() {
         this.$.navDrawerPanel.openDrawer()
@@ -42,32 +46,42 @@
         }
       },
       timeSince: function(date) {
+        var timeSince = '';
+
         if (date) {
           var seconds = Math.floor((new Date() - new Date(date * 1000)) / 1000);
           var interval = Math.floor(seconds / 31536000);
-          if (interval > 1) {
-            return interval + ' years ago';
+          if (interval > 0) {
+            timeSince += interval + ' year' + getPluralInNaturalLanguage(interval);
+            seconds -= 31536000 * interval;
           }
           interval = Math.floor(seconds / 2592000);
-          if (interval > 1) {
-            return interval + ' months ago';
+          if (interval > 0) {
+            timeSince += interval + ' month' + getPluralInNaturalLanguage(interval);
+            seconds -= 2592000 * interval;
           }
           interval = Math.floor(seconds / 86400);
-          if (interval > 1) {
-            return interval + ' days ago';
+          if (interval > 0) {
+            timeSince += interval + ' day' + getPluralInNaturalLanguage(interval);
+            seconds -= 86400 * interval;
           }
           interval = Math.floor(seconds / 3600);
-          if (interval > 1) {
-            return interval + ' hours ago';
+          if (interval > 0) {
+            timeSince += interval + ' hour' + getPluralInNaturalLanguage(interval);
+            seconds -= 3600 * interval;
           }
           interval = Math.floor(seconds / 60);
-          if (interval > 1) {
-            return interval + ' minutes ago';
+          if (interval > 0) {
+            timeSince += interval + ' minute' + getPluralInNaturalLanguage(interval);
+            seconds -= 60 * interval;
+          } else {
+            timeSince += Math.floor(seconds) + ' second' + getPluralInNaturalLanguage(interval);
           }
-          return Math.floor(seconds) + ' seconds ago';
+          timeSince += 'ago';
         } else {
-          return ' never';
+          timeSince = ' never';
         }
+        return timeSince
       },
       timestampToHumanTime: function(timestamp) {
         var date = new Date(timestamp);
