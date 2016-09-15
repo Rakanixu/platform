@@ -122,6 +122,7 @@ type ElasticQuery struct {
 	Url      string
 	Depth    int64
 	Type     string
+	LastSeen int64
 	Aggs     []*search_proto.Aggregation
 }
 
@@ -162,6 +163,17 @@ func (e *ElasticQuery) AggsQuery() (string, error) {
 	return buffer.String(), nil
 }
 
+// Query generates a Elasticsearch DSL query
+func (e *ElasticQuery) DeleteQuery() (string, error) {
+	var buffer bytes.Buffer
+
+	buffer.WriteString(`{"query":`)
+	buffer.WriteString(e.filterLastSeen())
+	buffer.WriteString(`}`)
+
+	return buffer.String(), nil
+}
+
 // QueryById generates a Elasticsearch DSL query for searching aliases by id
 func (e *ElasticQuery) QueryById() (string, error) {
 	var buffer bytes.Buffer
@@ -178,6 +190,20 @@ func (e *ElasticQuery) defaultSorting() string {
 
 	if (e.From != 0 || e.Size != 0) && e.Index == globals.FilesAlias {
 		buffer.WriteString(`{"is_dir": "desc"},{"modified":"desc"},{"file_size": "desc"}`)
+	}
+
+	return buffer.String()
+}
+
+func (e *ElasticQuery) filterLastSeen() string {
+	var buffer bytes.Buffer
+
+	if e.LastSeen > 0 {
+		buffer.WriteString(`{"range":{"last_seen":{"lte":`)
+		buffer.WriteString(strconv.Itoa(int(e.LastSeen)))
+		buffer.WriteString(`}}}`)
+	} else {
+		buffer.WriteString(`{}`)
 	}
 
 	return buffer.String()

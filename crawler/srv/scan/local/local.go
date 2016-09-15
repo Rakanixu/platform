@@ -19,6 +19,7 @@ import (
 	"github.com/kazoup/platform/structs/local"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	"time"
 )
 
 // Local ...
@@ -47,6 +48,10 @@ func (fs *Local) Start(crawls map[int64]scan.Scanner, ds int64) {
 	go func() {
 		fs.walkDatasourceParents()
 		filepath.Walk(fs.RootPath, fs.walkHandler())
+		time.Sleep(time.Second * 5)
+		if err := fs.clearIndex(); err != nil {
+			log.Println("Error cleaning index after scan", err)
+		}
 		// Local scan finished
 		fs.Stop()
 		delete(crawls, ds)
@@ -66,6 +71,23 @@ func (fs *Local) Info() (scan.Info, error) {
 		Type:        globals.Local,
 		Description: "File system scanner",
 	}, nil
+}
+
+// Compares LastSeen with the time the crawler started
+// so all records with a LastSeen before will be removed from index
+// file does not exists any more on datasource
+func (fs *Local) clearIndex() error {
+	c := db_proto.NewDBClient("", nil)
+	_, err := c.DeleteByQuery(context.Background(), &db_proto.DeleteByQueryRequest{
+		Indexes:  []string{fs.Endpoint.Index},
+		Types:    []string{"file"},
+		LastSeen: fs.Endpoint.LastScanStarted,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (fs *Local) walkDatasourceParents() error {

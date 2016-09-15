@@ -52,6 +52,11 @@ func (o *OneDrive) Start(crawls map[int64]scan.Scanner, ds int64) {
 		if err := o.getFiles(); err != nil {
 			log.Println(err)
 		}
+		time.Sleep(time.Second * 5)
+		if err := o.clearIndex(); err != nil {
+			log.Println(err)
+		}
+
 		// One drive scan finished
 		o.Stop()
 		delete(crawls, ds)
@@ -71,6 +76,23 @@ func (o *OneDrive) Info() (scan.Info, error) {
 		Type:        globals.OneDrive,
 		Description: "One drive crawler",
 	}, nil
+}
+
+// Compares LastSeen with the time the crawler started
+// so all records with a LastSeen before will be removed from index
+// file does not exists any more on datasource
+func (o *OneDrive) clearIndex() error {
+	c := proto_db.NewDBClient("", nil)
+	_, err := c.DeleteByQuery(context.Background(), &proto_db.DeleteByQueryRequest{
+		Indexes:  []string{o.Endpoint.Index},
+		Types:    []string{"file"},
+		LastSeen: o.Endpoint.LastScanStarted,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // getFiles retrieves drives, directories and files

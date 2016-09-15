@@ -53,6 +53,16 @@ func (db *DB) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *proto.D
 	return nil
 }
 
+// DeleteByQuery db srv handler
+func (db *DB) DeleteByQuery(ctx context.Context, req *proto.DeleteByQueryRequest, rsp *proto.DeleteByQueryResponse) error {
+	_, err := engine.DeleteByQuery(req)
+	if err != nil {
+		return errors.InternalServerError("go.micro.srv.db", err.Error())
+	}
+
+	return nil
+}
+
 // CreateIndexWithSettings db srv handler
 func (db *DB) CreateIndexWithSettings(ctx context.Context, req *proto.CreateIndexWithSettingsRequest, rsp *proto.CreateIndexWithSettingsResponse) error {
 	_, err := engine.CreateIndexWithSettings(req)

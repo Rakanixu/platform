@@ -26,6 +26,7 @@ type Engine interface {
 	Read(req *db.ReadRequest) (*db.ReadResponse, error)
 	Update(req *db.UpdateRequest) (*db.UpdateResponse, error)
 	Delete(req *db.DeleteRequest) (*db.DeleteResponse, error)
+	DeleteByQuery(req *db.DeleteByQueryRequest) (*db.DeleteByQueryResponse, error)
 	CreateIndexWithSettings(req *db.CreateIndexWithSettingsRequest) (*db.CreateIndexWithSettingsResponse, error)
 	PutMappingFromJSON(req *db.PutMappingFromJSONRequest) (*db.PutMappingFromJSONResponse, error)
 	Status(req *db.StatusRequest) (*db.StatusResponse, error)
@@ -80,6 +81,10 @@ func Update(req *db.UpdateRequest) (*db.UpdateResponse, error) {
 
 func Delete(req *db.DeleteRequest) (*db.DeleteResponse, error) {
 	return engine.Delete(req)
+}
+
+func DeleteByQuery(req *db.DeleteByQueryRequest) (*db.DeleteByQueryResponse, error) {
+	return engine.DeleteByQuery(req)
 }
 
 func CreateIndexWithSettings(req *db.CreateIndexWithSettingsRequest) (*db.CreateIndexWithSettingsResponse, error) {

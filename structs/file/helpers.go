@@ -89,6 +89,7 @@ func NewKazoupFileFromGoogleDriveFile(g *googledrive.File) *KazoupGoogleFile {
 		Category: categories.GetDocType("." + g.FullFileExtension),
 		Depth:    0,
 		FileType: globals.GoogleDrive,
+		LastSeen: time.Now().Unix(),
 	}
 	return &KazoupGoogleFile{*kf, *g}
 }
@@ -107,6 +108,7 @@ func NewKazoupFileFromSlackFile(s *slack.SlackFile) *KazoupSlackFile {
 		Category: categories.GetDocType("." + s.Filetype),
 		Depth:    0,
 		FileType: globals.Slack,
+		LastSeen: time.Now().Unix(),
 	}
 	return &KazoupSlackFile{*kf, *s}
 }
@@ -123,6 +125,7 @@ func NewKazoupFileFromLocal(lf *local.LocalFile) *KazoupLocalFile {
 		Category: categories.GetDocType(filepath.Ext(lf.Info.Name())),
 		Depth:    UrlDepth(lf.Path),
 		FileType: globals.Local,
+		LastSeen: time.Now().Unix(),
 	}
 	return &KazoupLocalFile{*kf}
 
@@ -148,6 +151,7 @@ func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile) *KazoupOneDriveFile
 		Category: categories.GetDocType("." + name[len(name)-1]),
 		Depth:    0,
 		FileType: globals.OneDrive,
+		LastSeen: time.Now().Unix(),
 	}
 	return &KazoupOneDriveFile{*kf, *o}
 }

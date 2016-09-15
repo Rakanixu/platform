@@ -19,6 +19,7 @@ import (
 	"golang.org/x/net/context"
 	"log"
 	"strings"
+	"time"
 )
 
 const (
@@ -183,28 +184,40 @@ func SearchDataSources(ds *DataSource, req *proto.SearchRequest) (*proto.SearchR
 }
 
 func ScanDataSource(ds *DataSource, ctx context.Context, id string) error {
-	dbSrvReq := client.NewRequest(
-		ds.ElasticServiceName,
-		"DB.Read",
-		&db_proto.ReadRequest{
-			Index: "datasources",
-			Type:  "datasource",
-			Id:    id,
-		},
-	)
-	dbSrvRes := &db_proto.ReadResponse{}
+	c := db_proto.NewDBClient("", nil)
 
-	if err := client.Call(ctx, dbSrvReq, dbSrvRes); err != nil {
-		return err
+	dbSrvRes, err := c.Read(ctx, &db_proto.ReadRequest{
+		Index: "datasources",
+		Type:  "datasource",
+		Id:    id,
+	})
+	if err != nil {
+		log.Println(err)
 	}
 
-	// Publish scan topic, crawlers should pick up message and start scanning
 	var endpoint *proto.Endpoint
 	dec := json.NewDecoder(bytes.NewBufferString(dbSrvRes.Result))
 	if err := dec.Decode(&endpoint); err != nil {
 		return err
 	}
 
+	// Set time for starting scan and update datasource
+	endpoint.LastScanStarted = time.Now().Unix()
+	b, err := json.Marshal(endpoint)
+	if err != nil {
+		log.Println(err)
+	}
+	_, err = c.Update(ctx, &db_proto.UpdateRequest{
+		Index: "datasources",
+		Type:  "datasource",
+		Id:    endpoint.Id,
+		Data:  string(b),
+	})
+	if err != nil {
+		log.Println(err)
+	}
+
+	// Publish scan topic, crawlers should pick up message and start scanning
 	msg := ds.Client.NewPublication(
 		globals.ScanTopic,
 		endpoint,

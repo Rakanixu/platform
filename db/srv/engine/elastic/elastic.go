@@ -135,6 +135,30 @@ func (e *elastic) Delete(req *db.DeleteRequest) (*db.DeleteResponse, error) {
 	return &db.DeleteResponse{}, err
 }
 
+// DeleteByQuery allows to delete all records that match a DSL query
+func (e *elastic) DeleteByQuery(req *db.DeleteByQueryRequest) (*db.DeleteByQueryResponse, error) {
+	eQuery := ElasticQuery{
+		Term:     req.Term,
+		Category: req.Category,
+		Url:      req.Url,
+		Depth:    req.Depth,
+		Type:     req.FileType,
+		LastSeen: req.LastSeen,
+	}
+
+	query, err := eQuery.DeleteQuery()
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = e.conn.DeleteByQuery(req.Indexes, req.Types, nil, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return &db.DeleteByQueryResponse{}, err
+}
+
 // Search ES index
 func (e *elastic) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 	var results []interface{}

@@ -9,7 +9,8 @@ import (
 
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/kazoup/platform/crawler/srv/scan"
-	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/structs/file"
 	"github.com/kazoup/platform/structs/globals"
 	"github.com/micro/go-micro/client"
@@ -22,11 +23,11 @@ import (
 type GoogleDrive struct {
 	Id       int64
 	Running  chan bool
-	Endpoint *proto_datasource.Endpoint
+	Endpoint *datasource_proto.Endpoint
 	Scanner  scan.Scanner
 }
 
-func NewGoogleDrive(id int64, dataSource *proto_datasource.Endpoint) *GoogleDrive {
+func NewGoogleDrive(id int64, dataSource *datasource_proto.Endpoint) *GoogleDrive {
 	return &GoogleDrive{
 		Id:       id,
 		Running:  make(chan bool, 1),
@@ -38,6 +39,10 @@ func NewGoogleDrive(id int64, dataSource *proto_datasource.Endpoint) *GoogleDriv
 func (g *GoogleDrive) Start(crawls map[int64]scan.Scanner, ds int64) {
 	go func() {
 		if err := g.getFiles(); err != nil {
+			log.Println(err)
+		}
+		time.Sleep(time.Second * 5)
+		if err := g.clearIndex(); err != nil {
 			log.Println(err)
 		}
 		// Slack scan finished
@@ -59,6 +64,23 @@ func (g *GoogleDrive) Info() (scan.Info, error) {
 		Type:        globals.GoogleDrive,
 		Description: "Google drive crawler",
 	}, nil
+}
+
+// Compares LastSeen with the time the crawler started
+// so all records with a LastSeen before will be removed from index
+// file does not exists any more on datasource
+func (g *GoogleDrive) clearIndex() error {
+	c := db_proto.NewDBClient("", nil)
+	_, err := c.DeleteByQuery(context.Background(), &db_proto.DeleteByQueryRequest{
+		Indexes:  []string{g.Endpoint.Index},
+		Types:    []string{"file"},
+		LastSeen: g.Endpoint.LastScanStarted,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *GoogleDrive) getFiles() error {

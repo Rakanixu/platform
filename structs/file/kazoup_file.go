@@ -13,6 +13,7 @@ type KazoupFile struct {
 	Category string    `json:"category"`
 	Depth    int64     `json:"depth"`
 	FileType string    `json:"file_type"`
+	LastSeen int64     `json:"last_seen"`
 }
 
 func (kf *KazoupFile) PreviewURL() string {
