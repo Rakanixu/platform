@@ -470,9 +470,10 @@
                 Polymer.EndpointsBehaviorImp
             ],
             properties: {
-                disks: {
-                    type: Array,
-                    value: [],
+                loading: {
+                    type: Boolean,
+                    notify: true,
+                    value: false
                 },
                 rpcAddDatasourceParams: {
                     type: Object,

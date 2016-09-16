@@ -14,7 +14,6 @@ import (
 
 //"github.com/jasonlvhit/gocron" It is not good enought. We can not remove a single instance task
 //  As is implemented, if we remove the registerScanTask, we would remove all of them
-
 func (s *Scheduler) createTask(ctx context.Context, req *proto.CreateScheduledTaskRequest) (*proto.CreateScheduledTaskResponse, error) {
 	taskRecognise := false
 
