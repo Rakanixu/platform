@@ -33,6 +33,8 @@ const (
 	OneDriveEndpoint = "https://api.onedrive.com/v1.0/"
 
 	OauthStateString = "randomsdsdahfoashfouahsfohasofhoashfaf"
+
+	StartScanTask = "start_scan"
 )
 
 func NewGoogleOautConfig() *oauth2.Config {

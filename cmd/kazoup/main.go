@@ -10,7 +10,7 @@ import (
 	ui "github.com/kazoup/platform/desktop"
 	flag "github.com/kazoup/platform/flag"
 	media "github.com/kazoup/platform/media"
-	sheduler "github.com/kazoup/platform/scheduler"
+	scheduler "github.com/kazoup/platform/scheduler"
 	search "github.com/kazoup/platform/search"
 	"github.com/micro/cli"
 	ccli "github.com/micro/cli"
@@ -33,7 +33,7 @@ func main() {
 	app.Commands = append(app.Commands, flag.Commands()...)
 	app.Commands = append(app.Commands, media.Commands()...)
 	app.Commands = append(app.Commands, search.Commands()...)
-	app.Commands = append(app.Commands, sheduler.Commands()...)
+	app.Commands = append(app.Commands, scheduler.Commands()...)
 	app.Commands = append(app.Commands, web.Commands()...)
 	app.Commands = append(app.Commands, desktopCommands()...)
 	app.Action = func(context *cli.Context) { cli.ShowAppHelp(context) }
