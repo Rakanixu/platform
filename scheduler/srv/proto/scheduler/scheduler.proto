@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package go.micro.srv.scheduler;
+
+service Scheduler {
+  rpc CreateScheduledTask(CreateScheduledTaskRequest) returns (CreateScheduledTaskResponse) {}
+}
+
+message CreateScheduledTaskRequest {
+
+}
+
+message CreateScheduledTaskResponse {
+
+}
