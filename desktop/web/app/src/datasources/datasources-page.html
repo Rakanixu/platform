@@ -51,15 +51,16 @@
                     icon$="[[getDatasourceIcon(item.url)]]">
 	      </mat-avatar>
 
-        <span> Last scan: [[timeSince(item.last_scan)]]</span>
+        <span>[[crawlerRunningMsg(item)]]</span>
 
         <mat-icon-button class="secondary"
                          behavior="toggle"
                          icon="mat:more-vert"
+                         disabled$="[[item.crawler_running]]"
                          target="id[[item.id]]"></mat-icon-button>
         <mat-menu id="id[[item.id]]">
-          <mat-option label="Start scan" on-tap="startScan"></mat-option>
-          <mat-option label="Delete" on-tap="deleteDatasource"></mat-option>
+          <mat-option label="Start scan" on-tap="startScan" disabled$="[[item.crawler_running]]"></mat-option>
+          <mat-option label="Delete" on-tap="deleteDatasource" disabled$="[[item.crawler_running]]"></mat-option>
         </mat-menu>
       </mat-item>
     </template>

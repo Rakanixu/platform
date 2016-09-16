@@ -169,6 +169,13 @@
             break;
         }
       },
+      crawlerRunningMsg: function(datasource) {
+        if (datasource.crawler_running) {
+          return 'Crawler running ' + this.timeSince(datasource.last_scan_started) + '. Data will populate in a while.';
+        } else {
+          return 'Last scan finished ' + this.timeSince(datasource.last_scan);
+        }
+      },
       getPrepopulatedClass: function(record) {
         return record ? 'prepopulated' : '';
       },
