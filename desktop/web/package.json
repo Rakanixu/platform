@@ -1,7 +1,11 @@
 {
   "name": "kazoup",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "main": "main.js",
+  "repository" :
+  { "type" : "git",
+     "url" : "https://github.com/kazoup/npm.git"
+  },
   "devDependencies": {
     "copyfiles": "^1.0.0",
     "electron-builder": "^5.12.1",
@@ -27,18 +31,18 @@
     "win": {
       "iconUrl": "https://s3-eu-west-1.amazonaws.com/www.kazoup.com/img/favicon.ico",
       "extraResources": [
-        "bin/windows"
+        "bin/windows","java/windows/amd64"
       ]
     },
     "mac": {
       "extraResources": [
-        "bin/darwin"
+        "bin/darwin","java/darwin/amd64"
       ]
     },
     "linux": {
       "target": "deb",
       "extraResources": [
-        "bin/linux"
+        "bin/linux","java/linux/amd64"
       ]
     }
   },

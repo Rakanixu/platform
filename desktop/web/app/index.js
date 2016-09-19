@@ -29,7 +29,7 @@ function boot() {
 
 
 ipcRenderer.on('update-message', function(event, method) {
-    alert(method);
+//    alert(method);
 });
 /*ipcRenderer.on('disks-message', function(event, disks) {
     console.log("Got disks", disks);

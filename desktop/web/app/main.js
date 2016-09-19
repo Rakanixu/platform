@@ -103,7 +103,7 @@ function createWindow() {
         }
 
         autoUpdater.addListener("update-available", function(event) {
-            console.log("A new update is available");
+            //console.log("A new update is available");
             if (win) {
                 win.webContents.send("update-message", "update-available");
             }
@@ -235,10 +235,28 @@ ipcMain.on("open-file-message", (event, arg) => {
 });
 
 function startService(path, args) {
-    es = spawn(path, args, {
-        wd: path,
-        stdio: 'ignore'
-    });
+	// Fuck me I hate JS FIXME
+	if (path.includes("elastic")) {
+    		var productionEnv = Object.create(process.env);
+		if (process.platform.includes("win")){
+
+		productionEnv.JAVA_HOME = process.resourcesPath + "/java/windows/" + archConvert(process.arch) 
+		}else {
+
+		productionEnv.JAVA_HOME = process.resourcesPath + "/java/" + process.platform + "/" + archConvert(process.arch) 
+		}
+    		es = spawn(path, args, {
+        	wd: path,
+       		 stdio: 'ignore',
+		env: productionEnv
+    		});
+	} else {
+
+    		es = spawn(path, args, {
+        	wd: path,
+        	stdio: 'ignore'
+    		});
+	}
     //es.stdout.on("data", function(data) {
     //    console.log("stdout: " + data);
     //});
@@ -304,7 +322,7 @@ function startServices(){
     } else {
         //TODO: stupid hack fixme should we point to desktop folder ?
         resourcesPath = __dirname + "/..";
-
+	
     }
 
 }
