@@ -76,63 +76,66 @@ func NewFileFromString(s string) (File, error) {
 }
 
 // NewKazoupFileFromGoogleDriveFile constructor
-func NewKazoupFileFromGoogleDriveFile(g *googledrive.File) *KazoupGoogleFile {
+func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId string) *KazoupGoogleFile {
 	t, _ := time.Parse("2006-01-02T15:04:05.000Z", g.ModifiedTime)
 
 	kf := &KazoupFile{
-		ID:       getMD5Hash(g.WebViewLink),
-		Name:     g.Name,
-		URL:      g.WebViewLink,
-		Modified: t,
-		FileSize: g.Size,
-		IsDir:    false,
-		Category: categories.GetDocType("." + g.FullFileExtension),
-		Depth:    0,
-		FileType: globals.GoogleDrive,
-		LastSeen: time.Now().Unix(),
+		ID:           getMD5Hash(g.WebViewLink),
+		Name:         g.Name,
+		URL:          g.WebViewLink,
+		Modified:     t,
+		FileSize:     g.Size,
+		IsDir:        false,
+		Category:     categories.GetDocType("." + g.FullFileExtension),
+		Depth:        0,
+		FileType:     globals.GoogleDrive,
+		LastSeen:     time.Now().Unix(),
+		DatasourceId: dsId,
 	}
 	return &KazoupGoogleFile{*kf, *g}
 }
 
 // NewKazoupFileFromSlackFile constructor
-func NewKazoupFileFromSlackFile(s *slack.SlackFile) *KazoupSlackFile {
+func NewKazoupFileFromSlackFile(s *slack.SlackFile, dsId string) *KazoupSlackFile {
 	t := time.Unix(s.Timestamp, 0)
 
 	kf := &KazoupFile{
-		ID:       getMD5Hash(s.URLPrivate),
-		Name:     s.Name,
-		URL:      s.URLPrivate,
-		Modified: t,
-		FileSize: s.Size,
-		IsDir:    false,
-		Category: categories.GetDocType("." + s.Filetype),
-		Depth:    0,
-		FileType: globals.Slack,
-		LastSeen: time.Now().Unix(),
+		ID:           getMD5Hash(s.URLPrivate),
+		Name:         s.Name,
+		URL:          s.URLPrivate,
+		Modified:     t,
+		FileSize:     s.Size,
+		IsDir:        false,
+		Category:     categories.GetDocType("." + s.Filetype),
+		Depth:        0,
+		FileType:     globals.Slack,
+		LastSeen:     time.Now().Unix(),
+		DatasourceId: dsId,
 	}
 	return &KazoupSlackFile{*kf, *s}
 }
 
-func NewKazoupFileFromLocal(lf *local.LocalFile) *KazoupLocalFile {
+func NewKazoupFileFromLocal(lf *local.LocalFile, dsId string) *KazoupLocalFile {
 	// don;t save all LocalFile as mmost of data is same as KazoupFile just pass file mode
 	kf := &KazoupFile{
-		ID:       getMD5Hash(lf.Path),
-		Name:     lf.Info.Name(),
-		URL:      "/local" + lf.Path,
-		Modified: lf.Info.ModTime(),
-		FileSize: lf.Info.Size(),
-		IsDir:    lf.Info.IsDir(),
-		Category: categories.GetDocType(filepath.Ext(lf.Info.Name())),
-		Depth:    UrlDepth(lf.Path),
-		FileType: globals.Local,
-		LastSeen: time.Now().Unix(),
+		ID:           getMD5Hash(lf.Path),
+		Name:         lf.Info.Name(),
+		URL:          "/local" + lf.Path,
+		Modified:     lf.Info.ModTime(),
+		FileSize:     lf.Info.Size(),
+		IsDir:        lf.Info.IsDir(),
+		Category:     categories.GetDocType(filepath.Ext(lf.Info.Name())),
+		Depth:        UrlDepth(lf.Path),
+		FileType:     globals.Local,
+		LastSeen:     time.Now().Unix(),
+		DatasourceId: dsId,
 	}
 	return &KazoupLocalFile{*kf}
 
 }
 
 // NewKazoupFileFromOneDriveFile constructor
-func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile) *KazoupOneDriveFile {
+func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile, dsId string) *KazoupOneDriveFile {
 
 	isDir := true
 	name := strings.Split(o.Name, ".")
@@ -142,16 +145,17 @@ func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile) *KazoupOneDriveFile
 	}
 
 	kf := &KazoupFile{
-		ID:       getMD5Hash(o.WebURL),
-		Name:     o.Name,
-		URL:      o.WebURL,
-		Modified: o.LastModifiedDateTime,
-		FileSize: o.Size,
-		IsDir:    isDir,
-		Category: categories.GetDocType("." + name[len(name)-1]),
-		Depth:    0,
-		FileType: globals.OneDrive,
-		LastSeen: time.Now().Unix(),
+		ID:           getMD5Hash(o.WebURL),
+		Name:         o.Name,
+		URL:          o.WebURL,
+		Modified:     o.LastModifiedDateTime,
+		FileSize:     o.Size,
+		IsDir:        isDir,
+		Category:     categories.GetDocType("." + name[len(name)-1]),
+		Depth:        0,
+		FileType:     globals.OneDrive,
+		LastSeen:     time.Now().Unix(),
+		DatasourceId: dsId,
 	}
 	return &KazoupOneDriveFile{*kf, *o}
 }

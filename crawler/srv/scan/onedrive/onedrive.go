@@ -171,7 +171,7 @@ func (o *OneDrive) getDrivesChildren() error {
 				o.Direcotories <- v.ID
 				// Is file
 			} else {
-				f := file.NewKazoupFileFromOneDriveFile(&v)
+				f := file.NewKazoupFileFromOneDriveFile(&v, o.Endpoint.Id)
 				err := o.sendFileMsg(*f, v.WebURL)
 				if err != nil {
 					return err
@@ -227,7 +227,7 @@ func (o *OneDrive) getDirChildren(id string) error {
 		if len(v.File.MimeType) == 0 {
 			o.Direcotories <- v.ID
 		} else {
-			f := file.NewKazoupFileFromOneDriveFile(&v)
+			f := file.NewKazoupFileFromOneDriveFile(&v, o.Endpoint.Id)
 			err := o.sendFileMsg(*f, v.WebURL)
 			if err != nil {
 				return err

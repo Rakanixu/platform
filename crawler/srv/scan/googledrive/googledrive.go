@@ -103,7 +103,7 @@ func (s *GoogleDrive) getFiles() error {
 	}
 
 	if len(r.Files) > 0 {
-		if err := sendFileMessagesForPage(r.Files, s.Endpoint.Index); err != nil {
+		if err := sendFileMessagesForPage(r.Files, s.Endpoint); err != nil {
 			return err
 		}
 	}
@@ -124,7 +124,7 @@ func (s *GoogleDrive) getNextPage(srv *drive.Service, nextPageToken string) erro
 	}
 
 	if len(r.Files) > 0 {
-		if err := sendFileMessagesForPage(r.Files, s.Endpoint.Index); err != nil {
+		if err := sendFileMessagesForPage(r.Files, s.Endpoint); err != nil {
 			return err
 		}
 	}
@@ -150,10 +150,10 @@ func (g *GoogleDrive) sendCrawlerFinishedMsg() error {
 	return nil
 }
 
-func sendFileMessagesForPage(files []*drive.File, index string) error {
+func sendFileMessagesForPage(files []*drive.File, ds *datasource_proto.Endpoint) error {
 	for _, v := range files {
 		//Conflicts with ES and size in  google is parse as string
-		f := file.NewKazoupFileFromGoogleDriveFile(v)
+		f := file.NewKazoupFileFromGoogleDriveFile(v, ds.Id)
 
 		b, err := json.Marshal(f)
 		if err != nil {
@@ -161,7 +161,7 @@ func sendFileMessagesForPage(files []*drive.File, index string) error {
 		}
 		msg := &crawler.FileMessage{
 			Id:    getMD5Hash(v.WebViewLink),
-			Index: index,
+			Index: ds.Index,
 			Data:  string(b),
 		}
 

@@ -166,7 +166,7 @@ func (s *Slack) getFiles(page int) error {
 	}
 
 	for _, v := range filesRsp.Files {
-		f := file.NewKazoupFileFromSlackFile(&v)
+		f := file.NewKazoupFileFromSlackFile(&v, s.Endpoint.Id)
 
 		b, err := json.Marshal(f)
 		if err != nil {

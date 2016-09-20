@@ -140,7 +140,7 @@ func (fs *Local) walkDatasourceParents() error {
 		f := file.NewKazoupFileFromLocal(&local.LocalFile{
 			Path: path,
 			Info: info,
-		})
+		}, fs.Endpoint.Id)
 		b, err := json.Marshal(f)
 		if err != nil {
 			return err
@@ -174,7 +174,7 @@ func (fs *Local) walkHandler() filepath.WalkFunc {
 			f := file.NewKazoupFileFromLocal(&local.LocalFile{
 				Path: path,
 				Info: info,
-			})
+			}, fs.Endpoint.Id)
 
 			b, err := json.Marshal(f)
 			if err != nil {
