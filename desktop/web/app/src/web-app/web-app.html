@@ -167,6 +167,12 @@
                         <paper-icon-item on-tap="setCategory" data-value$="[[categoriesMap.all]]">
                             <iron-icon icon="icons:home" item-icon></iron-icon>My Files
                         </paper-icon-item>
+                        <template is="dom-repeat" items="[[datasourceResults]]">
+                            <mat-item class="sub-item"
+                                      on-tap="browseDatasource"
+                                      label="[[getDatasourcePrettyType(item.url)]]">
+                            </mat-item>
+                        </template>
                         <paper-icon-item on-tap="setCategory" data-value$="[[categoriesMap.documents]]">
                             <iron-icon icon="editor:insert-drive-file" item-icon></iron-icon>Documents
                         </paper-icon-item>
@@ -178,9 +184,6 @@
                         </paper-icon-item>
                         <paper-icon-item on-tap="setCategory" data-value$="[[categoriesMap.audios]]">
                             <iron-icon icon="image:audiotrack" item-icon></iron-icon>Audio
-                        </paper-icon-item>
-                        <paper-icon-item on-tap="listDatasources">
-                            <iron-icon icon="icons:folder" item-icon></iron-icon>Locations
                         </paper-icon-item>
                     </paper-menu>
 
@@ -234,9 +237,9 @@
                             <!-- Breadcrumbs while browsing. Breadcrumbs fits into screen -->
                             <mat-breadcrumb id="fitBreadcrumbs"
                                             class="browse"
-                                            hidden$="[[handleSearchHeader(selectedCategory.index)]]"
+                                            hidden$="[[!breadcrumbsVisible]]"
                                             shift="true">
-                                <mat-breadcrumb-step label="Locations" on-tap="listDatasources"></mat-breadcrumb-step>
+                                <mat-breadcrumb-step label="My Files" on-tap="setCategory" data-value$="[[categoriesMap.all]]"></mat-breadcrumb-step>
                                 <template id="breadcrumbsSteps" is="dom-repeat" items="[[breadcrumbs]]">
                                     <mat-breadcrumb-step label="[[item.label]]" on-tap="browse"></mat-breadcrumb-step>
                                 </template>
@@ -254,7 +257,7 @@
                             </mat-item>
 
                             <mat-menu id="breadcrumbsMenu" position="baseline">
-                                <mat-option label="Locations" on-tap="listDatasources"></mat-option>
+                                <mat-option label="My Files" on-tap="setCategory" data-value$="[[categoriesMap.all]]"></mat-option>
                                 <template id="breadcrumbsStepsMenu" is="dom-repeat" items="[[breadcrumbs]]">
                                     <mat-option label="[[item.label]]" on-tap="browse"></mat-option>
                                 </template>
@@ -268,24 +271,8 @@
                     </paper-toolbar>
 
                     <div class="lists-container" hidden$="[[emptyState.visible]]">
-                        <!-- Datasource listing -->
-                        <iron-list id="datasourcesList" items="[[datasourceResults]]" hidden$="[[!datasourceListView]]">
-                            <template>
-                                <div>
-                                    <mat-item on-tap="browseDatasource"
-                                              label="[[getDatasourcePrettyType(item.url)]]"
-                                              description="[[getDatasourceUrl(item.url)]]">
-                                        <mat-avatar class="primary"
-                                                    icon$="[[getDatasourceIcon(item.url)]]">
-                                        </mat-avatar>
-
-                                    </mat-item>
-                                </div>
-                            </template>
-                        </iron-list>
-
                         <!-- Search results -->
-                        <iron-list id="searchList" items="[[searchResults]]" on-scroll="_handleScroll" hidden$="[[datasourceListView]]">
+                        <iron-list id="searchList" items="[[searchResults]]" on-scroll="_handleScroll">
                             <template>
                                 <div class$="[[bigVideoClass]] [[getPrepopulatedClass(item.unknown)]]">
                                 <div class="">
@@ -537,7 +524,7 @@
                     value: function() {
                         return {
                             index: 0,
-                            label: 'Locations'
+                            label: 'My Files'
                         };
                     }
                 },
@@ -600,17 +587,17 @@
                     notify: true,
                     value: false
                 },
-                datasourceListView: {
-                    type: Boolean,
-                    notify: true,
-                    value: true
-                },
                 breadcrumbs: {
                     type: Array,
                     notify: true,
                     value: function() {
                         return [];
                     }
+                },
+                breadcrumbsVisible: {
+                    type: Boolean,
+                    notify: true,
+                    value: false
                 },
                 lastBreadcrumb: {
                     type: Object,
@@ -630,8 +617,8 @@
                     value: function() {
                         return {
                             visible: false,
-                            icon: "icons:build",
-                            header: "No datasources."
+                            icon: 'icons:search',
+                            header:  'Nope, nothing, nada. Try another search.'
                         };
                     }
                 }
@@ -675,7 +662,8 @@
                 }
             },
             init: function(e, detail) {
-                this.clearIronList();
+                //this.clearIronList();
+                this.listDatasources();
 
                 if (e.data && e.data.first_scan) {
                     this.showScanSnack();
@@ -751,7 +739,6 @@
                 this.$.breadcrumbsSteps.render();
                 this.$.breadcrumbsStepsMenu.render();
                 this.checkBreadcrumbsView(0);
-                this.set('datasourceListView', false);
 
                 this.search();
             },
@@ -789,14 +776,10 @@
                     }, this);
                     this.$.searchList.fire('iron-resize');
 
-                    if (!this.datasourceListView) {
-                        if (this.searchResults.length) {
-                            this.set('emptyState.visible', false);
-                        } else {
-                            this.set('emptyState.visible', true);
-                            this.set('emptyState.icon', 'icons:search');
-                            this.set('emptyState.header', 'Nope, nothing, nada. Try another search.');
-                        }
+                    if (this.searchResults.length) {
+                        this.set('emptyState.visible', false);
+                    } else {
+                        this.set('emptyState.visible', true);
                     }
                 }
                 this.set('loading', false);
@@ -860,17 +843,6 @@
                     } else {
                         // List datasources
                         this.set('datasourceResults', results ? results : []);
-                        this.$.datasourcesList.fire('iron-resize');
-
-                        if (this.datasourceListView) {
-                            if (this.datasourceResults.length) {
-                                this.set('emptyState.visible', false);
-                            } else {
-                                this.set('emptyState.visible', true);
-                                this.set('emptyState.icon', 'icons:build');
-                                this.set('emptyState.header', 'No Datasources.');
-                            }
-                        }
                     }
                 }
             },
@@ -882,8 +854,10 @@
                 var category, url, depth, fileType, term;
 
                 this.clearIronList();
-                this.set('itemSelected', false);
                 this.$.navDrawerPanel.closeDrawer();
+                this.set('itemSelected', false);
+                this.set('breadcrumbsVisible', (e.currentTarget.dataset.value === this.categoriesMap.all));
+
                 if (e.currentTarget.dataset.value === this.categoriesMap.images) {
                     this.setGridView();
                 } else {
@@ -897,7 +871,10 @@
                 }
 
                 this.refreshView();
-                this.set('title', e.currentTarget.dataset.value + ' Search');
+                this.set(
+                  'title',
+                  (e.currentTarget.dataset.value !== this.categoriesMap.all) ? e.currentTarget.dataset.value : '' + ' Search'
+                );
 
                 category = e.currentTarget.dataset.value;
                 term = this.$.filterConverter.getFilterAsObj().term;
@@ -910,6 +887,11 @@
                     url = '';
                     depth = 0;
                     fileType = 'files'; // Exclude directories
+
+                    this.set('selectedDatasource', {
+                        type: 'local',
+                        index: 'files'
+                    });
                 }
 
                 // depth must be 0 for search
@@ -927,35 +909,19 @@
                 });
             },
             listDatasources: function(e, detail) {
-                this.clearIronList();
-                this.set('itemSelected', false);
-                this.set('selectedDatasource', {
-                    type: 'local',
-                    index: 'files'
-                });
-                this.$.filterConverter.setValues({
-                    index: 'files',
-                    file_type: '',
-                    category: '',
-                    url: '',
-                    depth: 0
-                });
                 this.$.navDrawerPanel.closeDrawer();
                 this.set('doScan', false);
                 this.set('breadcrumbs', []);
-                if (this.$.filterConverter.getFilterAsObj().term) {
-                    this.set('datasourceListView', false);
-                } else {
-                    this.set('datasourceListView', true);
-                }
                 this.setListView();
                 this.set('bigVideoClass', '');
-                this.set('title', 'Kazoup Search');
                 this.$.rpcGetDatasources.generateRequest();
             },
             browseDatasource: function(e, detail) {
                 this.clearIronList();
                 this.clearSelectedItemStyling();
+                this.setListView();
+                this.$.navDrawerPanel.closeDrawer();
+                this.set('breadcrumbsVisible', true);
 
                 this.set('selectedDatasource', {
                     type: this.getDatasourceType(e.model.__data__.item.url),
@@ -968,7 +934,7 @@
 
                     this.$.filterConverter.setValues({
                         index: 'files',
-                        term: '',
+                     //   term: '',
                         category: '',
                         from: 0,
                         size: this.size,
@@ -979,7 +945,7 @@
                 } else {
                     this.$.filterConverter.setValues({
                         index: e.model.__data__.item.index,
-                        term: '',
+                     ///   term: '',
                         category: '',
                         from: 0,
                         size: this.size,
@@ -1000,6 +966,7 @@
                         index: e.model.__data__.item.index,
                         from: 0,
                         size: this.size,
+                        file_type: 'files',
                         type: 'file',
                         url: '',
                         depth: 0
@@ -1010,6 +977,7 @@
                         index: 'files',
                         from: 0,
                         size: this.size,
+                        file_type: '',
                         type: 'file',
                         url: e.model.__data__.item.url,
                         depth: this.$.filterConverter.getFilterAsObj().term ? 0 : e.model.__data__.item.depth
@@ -1036,7 +1004,6 @@
                     clearTimeout(this.searchAsYouTypeTimeout);
                     this.searchAsYouTypeTimeout = setTimeout(function() {
                         this.set('itemSelected', false);
-                        this.set('datasourceListView', false);
                         this.clearIronList();
 
                         this.$.filterConverter.setValues({
@@ -1052,15 +1019,8 @@
             },
             resetSearch: function(e, detail) {
                 this.toggleSearch();
+                this.clearIronList();
                 this.$.filterConverter.setValue('term', '');
-
-                // Locations
-                if (this.selectedCategory.index == 5) {
-                    this.listDatasources();
-                    this.set('datasourceListView', true);
-                } else {
-                    this.set('datasourceListView', false);
-                }
             },
             toggleSearch: function(e, detail) {
                 this.$.search.input.value = this.$.filterConverter.getFilterAsObj().term ?
@@ -1209,9 +1169,6 @@
                         el.classList.remove('selected-item');
                     });
                 }
-            },
-            handleSearchHeader: function(selected) {
-                return (selected !== 5);
             }
         });
     }()); 
