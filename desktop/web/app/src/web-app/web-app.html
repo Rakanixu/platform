@@ -167,12 +167,15 @@
                         <paper-icon-item on-tap="setCategory" data-value$="[[categoriesMap.all]]">
                             <iron-icon icon="icons:home" item-icon></iron-icon>My Files
                         </paper-icon-item>
+
                         <template is="dom-repeat" items="[[datasourceResults]]">
-                            <mat-item class="sub-item"
-                                      on-tap="browseDatasource"
-                                      label="[[getDatasourcePrettyType(item.url)]]">
-                            </mat-item>
+                            <paper-icon-item id="datasource[[item.id]]" on-tap="browseDatasource">
+                                <iron-icon icon="[[getDatasourceIcon(item.url)]]" item-icon></iron-icon>[[getDatasourcePrettyType(item.url)]]
+                            </paper-icon-item>
+                            <paper-tooltip for="datasource[[item.id]]">[[getDatasourceUrl(item.url)]]</paper-tooltip>
                         </template>
+                        <mat-divider></mat-divider>
+
                         <paper-icon-item on-tap="setCategory" data-value$="[[categoriesMap.documents]]">
                             <iron-icon icon="editor:insert-drive-file" item-icon></iron-icon>Documents
                         </paper-icon-item>
@@ -619,6 +622,15 @@
                             visible: false,
                             icon: 'icons:search',
                             header:  'Nope, nothing, nada. Try another search.'
+                        };
+                    }
+                },
+                datasourceMenu: {
+                    type: Object,
+                    notify: true,
+                    value: function() {
+                        return {
+                            visible: false
                         };
                     }
                 }

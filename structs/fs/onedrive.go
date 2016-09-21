@@ -11,7 +11,6 @@ import (
 	"golang.org/x/oauth2"
 	"log"
 	"net/http"
-	"sync"
 	"time"
 )
 
@@ -27,7 +26,6 @@ type OneDriveFs struct {
 	DrivesId    []string
 	Directories chan string
 	LastDirTime int64
-	sync.Mutex
 }
 
 func NewOneDriveFsFromEndpoint(e *datasource_proto.Endpoint) Fs {

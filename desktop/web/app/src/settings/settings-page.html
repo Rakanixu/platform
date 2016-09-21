@@ -76,17 +76,6 @@
       paper-tabs {
         --paper-tabs-selection-bar-color: var(--accent);
       }
-
-      .scan-container {
-        position: absolute;
-        bottom: 15px;
-      }
-
-      .scan-container mat-raised-button {
-        background-color: var(--dark-primary);
-        color: #fff;
-        margin-left: 70px;
-      }
     </style>
 
     <paper-drawer-panel id="navDrawerPanel" responsive-width="1280px">
@@ -101,12 +90,15 @@
             <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.all]]" data-index="0">
               <iron-icon icon="icons:home" item-icon></iron-icon>My Files
             </paper-icon-item>
+
             <template is="dom-repeat" items="[[datasourceResults]]">
-              <mat-item class="sub-item"
-                        on-tap="showDatasourceSearch"
-                        label="[[getDatasourcePrettyType(item.url)]]">
-              </mat-item>
+              <paper-icon-item on-tap="showDatasourceSearch" id="datasource[[item.id]]">
+                <iron-icon icon="[[getDatasourceIcon(item.url)]]" item-icon></iron-icon>[[getDatasourcePrettyType(item.url)]]
+              </paper-icon-item>
+              <paper-tooltip for="datasource[[item.id]]">[[getDatasourceUrl(item.url)]]</paper-tooltip>
             </template>
+            <mat-divider></mat-divider>
+
             <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.documents]]" data-index="1">
               <iron-icon icon="editor:insert-drive-file" item-icon></iron-icon>Documents
             </paper-icon-item>
@@ -131,12 +123,6 @@
               <iron-icon icon="icons:feedback" item-icon></iron-icon>Feedback
             </paper-icon-item>
           </paper-menu>
-
-          <div class="scan-container">
-            <mat-raised-button id="scan"
-                               on-tap="scanAll"
-                               label="Start scan"></mat-raised-button>
-          </div>
         </div>
       </div>
 
@@ -266,9 +252,6 @@
             callback: 'setCategory' // Internal method to be call
           });
           document.querySelector('#ironPages').selected = 1;
-        },
-        scanAll: function() {
-          document.querySelector('web-app').scanAll();
         },
         ready: function() {
           window.addEventListener('settings-page-activated', this.init.bind(this));
