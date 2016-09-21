@@ -10,3 +10,7 @@ type KazoupSlackFile struct {
 func (kf *KazoupSlackFile) PreviewURL() string {
 	return kf.Original.PermalinkPublic
 }
+
+func (kf *KazoupSlackFile) GetID() string {
+	return kf.ID
+}

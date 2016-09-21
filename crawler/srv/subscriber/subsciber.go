@@ -1,24 +1,29 @@
 package subscriber
 
 import (
-	"github.com/kazoup/platform/crawler/srv/handler"
+	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
+	"github.com/kazoup/platform/structs/file"
+	"github.com/kazoup/platform/structs/fs"
 	"github.com/kazoup/platform/structs/globals"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	"log"
+	"time"
 )
 
 func Scans(ctx context.Context, endpoint *datasource.Endpoint) error {
-	l := int64(len(handler.Crawls)) + 1
-
-	s, err := handler.MapScanner(l, endpoint)
+	fs, err := fs.NewFsFromEndpoint(endpoint)
 	if err != nil {
 		return err
 	}
 
-	handler.Crawls[l] = s
-	s.Start(handler.Crawls, l)
+	c, r, err := fs.List()
+	if err != nil {
+		return err
+
+	}
 
 	// Publish notification
 	msg := &notification_proto.NotificationMessage{
@@ -27,6 +32,33 @@ func Scans(ctx context.Context, endpoint *datasource.Endpoint) error {
 
 	if err := client.Publish(ctx, client.NewPublication(globals.NotificationTopic, msg)); err != nil {
 		return err
+	}
+
+	for {
+		select {
+		case <-r:
+			time.Sleep(time.Second * 5)
+
+			if err := globals.ClearIndex(endpoint); err != nil {
+				log.Println("ERROR clearing index after scan")
+			}
+
+			msg := &crawler.CrawlerFinishedMessage{
+				DatasourceId: endpoint.Id,
+			}
+
+			if err := client.Publish(context.Background(), client.NewPublication(globals.CrawlerFinishedTopic, msg)); err != nil {
+				return err
+			}
+			close(c)
+			close(r)
+
+			return nil
+		case f := <-c:
+			if err := file.IndexAsync(f, globals.FilesTopic, endpoint.Index); err != nil {
+				log.Println("Error indexing async file")
+			}
+		}
 	}
 
 	return nil

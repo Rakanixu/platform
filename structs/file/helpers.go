@@ -1,8 +1,6 @@
 package file
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"golang.org/x/net/context"
@@ -80,7 +78,7 @@ func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId string) *KazoupG
 	t, _ := time.Parse("2006-01-02T15:04:05.000Z", g.ModifiedTime)
 
 	kf := &KazoupFile{
-		ID:           getMD5Hash(g.WebViewLink),
+		ID:           globals.GetMD5Hash(g.WebViewLink),
 		Name:         g.Name,
 		URL:          g.WebViewLink,
 		Modified:     t,
@@ -100,7 +98,7 @@ func NewKazoupFileFromSlackFile(s *slack.SlackFile, dsId string) *KazoupSlackFil
 	t := time.Unix(s.Timestamp, 0)
 
 	kf := &KazoupFile{
-		ID:           getMD5Hash(s.URLPrivate),
+		ID:           globals.GetMD5Hash(s.URLPrivate),
 		Name:         s.Name,
 		URL:          s.URLPrivate,
 		Modified:     t,
@@ -118,7 +116,7 @@ func NewKazoupFileFromSlackFile(s *slack.SlackFile, dsId string) *KazoupSlackFil
 func NewKazoupFileFromLocal(lf *local.LocalFile, dsId string) *KazoupLocalFile {
 	// don;t save all LocalFile as mmost of data is same as KazoupFile just pass file mode
 	kf := &KazoupFile{
-		ID:           getMD5Hash(lf.Path),
+		ID:           globals.GetMD5Hash(lf.Path),
 		Name:         lf.Info.Name(),
 		URL:          "/local" + lf.Path,
 		Modified:     lf.Info.ModTime(),
@@ -145,7 +143,7 @@ func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile, dsId string) *Kazou
 	}
 
 	kf := &KazoupFile{
-		ID:           getMD5Hash(o.WebURL),
+		ID:           globals.GetMD5Hash(o.WebURL),
 		Name:         o.Name,
 		URL:          o.WebURL,
 		Modified:     o.LastModifiedDateTime,
@@ -158,11 +156,6 @@ func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile, dsId string) *Kazou
 		DatasourceId: dsId,
 	}
 	return &KazoupOneDriveFile{*kf, *o}
-}
-
-func getMD5Hash(text string) string {
-	hash := md5.Sum([]byte(text))
-	return hex.EncodeToString(hash[:])
 }
 
 func UrlDepth(str string) int64 {

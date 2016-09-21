@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"github.com/kazoup/platform/crawler/srv/handler"
 	"github.com/kazoup/platform/crawler/srv/subscriber"
 	"github.com/kazoup/platform/structs/categories"
 	"github.com/kazoup/platform/structs/globals"
@@ -13,15 +12,10 @@ import (
 )
 
 func srv(ctx *cli.Context) {
-
 	service := micro.NewService(
 		micro.Name("go.micro.srv.crawler"),
 		micro.RegisterTTL(time.Minute),
 		micro.RegisterInterval(time.Second*30),
-	)
-
-	service.Server().Handle(
-		service.Server().NewHandler(new(handler.Crawl)),
 	)
 
 	if err := categories.SetMap(); err != nil {

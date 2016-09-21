@@ -1,8 +1,6 @@
 package main
 
 import (
-	"github.com/kazoup/platform/crawler/srv/handler"
-	proto "github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/kazoup/platform/crawler/srv/subscriber"
 	"github.com/kazoup/platform/structs/categories"
 	"github.com/kazoup/platform/structs/globals"
@@ -24,9 +22,6 @@ func main() {
 
 	// Init srv
 	service.Init()
-
-	// Attach handler
-	proto.RegisterCrawlHandler(service.Server(), new(handler.Crawl))
 
 	// Attach subscriber
 	if err := service.Server().Subscribe(

@@ -1,6 +1,11 @@
 package globals
 
 import (
+	"crypto/md5"
+	"encoding/hex"
+	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	db_proto "github.com/kazoup/platform/db/srv/proto/db"
+	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"golang.org/x/oauth2/slack"
@@ -89,4 +94,27 @@ func NewMicrosoftOauthConfig() *oauth2.Config {
 			"offline_access",
 		},
 	}
+}
+
+// Remove records (Files) from db that not longer belong to a datasource
+// Compares LastSeen with the time the crawler started
+// so all records with a LastSeen before will be removed from index
+// file does not exists any more on datasource
+func ClearIndex(e *datasource_proto.Endpoint) error {
+	c := db_proto.NewDBClient("", nil)
+	_, err := c.DeleteByQuery(context.Background(), &db_proto.DeleteByQueryRequest{
+		Indexes:  []string{e.Index},
+		Types:    []string{"file"},
+		LastSeen: e.LastScanStarted,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func GetMD5Hash(text string) string {
+	hash := md5.Sum([]byte(text))
+	return hex.EncodeToString(hash[:])
 }
