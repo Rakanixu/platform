@@ -12,29 +12,27 @@ import (
 	"github.com/kazoup/platform/structs/local"
 	"github.com/kazoup/platform/structs/onedrive"
 	"github.com/kazoup/platform/structs/slack"
-	"github.com/micro/go-micro/client"
 
 	db "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/structs/globals"
 	googledrive "google.golang.org/api/drive/v3"
 )
 
-func GetFileByID(id string) (File, error) {
-	dbclient := db.NewDBClient("go.micro.srv.db", client.NewClient())
-
-	// get file URL from DB
-	dbreq := db.SearchByIdRequest{
+func GetFileByID(id string, c db.DBClient) (File, error) {
+	dbres, err := c.SearchById(context.TODO(), &db.SearchByIdRequest{
 		Index: "files",
 		Type:  "file",
 		Id:    id,
-	}
-	dbres, err := dbclient.SearchById(context.TODO(), &dbreq)
+	})
 	if err != nil {
 		return nil, err
 	}
 	f, err := NewFileFromString(dbres.Result)
-	return f, err
+	if err != nil {
+		return nil, err
+	}
 
+	return f, err
 }
 
 func NewFileFromString(s string) (File, error) {

@@ -1,13 +1,12 @@
 package handler
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	db "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/structs/file"
+	"github.com/kazoup/platform/structs/globals"
 	"github.com/micro/go-micro/client"
 )
 
@@ -17,7 +16,7 @@ type ImageHandler struct {
 
 func NewImageHandler() *ImageHandler {
 	return &ImageHandler{
-		dbclient: db.NewDBClient("", client.NewClient()),
+		dbclient: db.NewDBClient(globals.DB_SERVICE_NAME, client.NewClient()),
 	}
 }
 
@@ -47,21 +46,13 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if quality == "" {
 		quality = "50"
 	}
-	f, err := file.GetFileByID(file_id)
-	b, _ := json.Marshal(f)
-	log.Print(string(b))
+
+	f, err := file.GetFileByID(file_id, ih.dbclient)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-	if f == nil {
-		http.Error(w, "Couldn't get the file", http.StatusInternalServerError)
-	}
-	if f != nil {
-		log.Printf("ID : %s \n", f.PreviewURL())
-		url := fmt.Sprintf("%s&width=%s&height=%s&mode=%s&quality=%s", f.PreviewURL(), width, height, mode, quality)
-		http.Redirect(w, r, url, http.StatusSeeOther)
+		return
 	}
 
-	//r.Form.Add("source", f.PreviewURL())
-
+	url := fmt.Sprintf("%s&width=%s&height=%s&mode=%s&quality=%s", f.PreviewURL(), width, height, mode, quality)
+	http.Redirect(w, r, url, http.StatusSeeOther)
 }
