@@ -2,12 +2,13 @@ package handler
 
 import (
 	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/structs/globals"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 )
 
 func SaveDatasource(url string, token *oauth2.Token) error {
-	c := proto_datasource.NewDataSourceClient("", nil)
+	c := proto_datasource.NewDataSourceClient(globals.DATASOURCE_SERVICE_NAME, nil)
 
 	req := &proto_datasource.CreateRequest{
 		Endpoint: &proto_datasource.Endpoint{

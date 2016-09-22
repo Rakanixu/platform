@@ -32,6 +32,7 @@ func main() {
 	contentDir := "/"
 	log.Printf("volume name: %s  path :%s", filepath.VolumeName(wd), wd)
 	service := web.NewService(web.Name("go.micro.web.media"))
+
 	//http://localhost:8082/desktop/image?source=/Users/radekdymacz/Pictures/city-wallpaper.jpg&width=300&height=300&mode=fit&quality=50
 	service.Handle("/image", &imageserver_http.Handler{
 		Parser: imageserver_http.ListParser([]imageserver_http.Parser{

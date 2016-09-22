@@ -50,7 +50,6 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 
-	log.Print("Goot hereee -----")
 	if err := CreateIndexWithAlias(ds, ctx, endpoint); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}

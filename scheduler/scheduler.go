@@ -2,17 +2,14 @@ package scheduler
 
 import (
 	"github.com/kazoup/platform/scheduler/srv/handler"
+	"github.com/kazoup/platform/structs/wrappers"
 	"github.com/micro/cli"
-	"github.com/micro/go-micro"
 	"log"
 )
 
 func srv(ctx *cli.Context) {
 	// New Service
-	service := micro.NewService(
-		micro.Name("go.micro.srv.scheduler"),
-		micro.Version("latest"),
-	)
+	service := wrappers.NewKazoupService("scheduler")
 
 	// Register Handler
 	service.Server().Handle(

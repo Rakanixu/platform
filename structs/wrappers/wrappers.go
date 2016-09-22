@@ -3,7 +3,9 @@ package wrappers
 import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
+
 	"github.com/kazoup/platform/structs/globals"
+	"github.com/micro/cli"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/metadata"
@@ -40,6 +42,29 @@ func NewKazoupClient() client.Client {
 }
 
 func NewKazoupService(name string) micro.Service {
+	//FIXME hacked we should just pass micro.Flags
+	if name == "db" {
+
+		sn := fmt.Sprintf("%s.srv.%s", globals.NAMESPACE, name)
+		service := micro.NewService(
+			micro.Name(sn),
+			micro.Version("latest"),
+			micro.Client(NewKazoupClient()),
+			micro.Flags(
+				cli.StringFlag{
+					Name:   "elasticsearch_hosts",
+					EnvVar: "ELASTICSEARCH_HOSTS",
+					Usage:  "Comma separated list of elasticsearch hosts",
+					Value:  "localhost:9200",
+				},
+			),
+			micro.Action(func(c *cli.Context) {
+				//parts := strings.Split(c.String("elasticsearch_hosts"), ",")
+				//elastic.Hosts = parts
+			}),
+		)
+		return service
+	}
 	sn := fmt.Sprintf("%s.srv.%s", globals.NAMESPACE, name)
 
 	service := micro.NewService(

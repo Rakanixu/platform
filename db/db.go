@@ -5,30 +5,15 @@ import (
 	_ "github.com/kazoup/platform/db/srv/engine/elastic"
 	"github.com/kazoup/platform/db/srv/handler"
 	"github.com/kazoup/platform/structs/globals"
+	"github.com/kazoup/platform/structs/wrappers"
 	"github.com/micro/cli"
-	"github.com/micro/go-micro"
 	"log"
 )
 
 func srv(ctx *cli.Context) {
 
 	// New Service
-	service := micro.NewService(
-		micro.Name("go.micro.srv.db"),
-		micro.Version("latest"),
-		micro.Flags(
-			cli.StringFlag{
-				Name:   "elasticsearch_hosts",
-				EnvVar: "ELASTICSEARCH_HOSTS",
-				Usage:  "Comma separated list of elasticsearch hosts",
-				Value:  "localhost:9200",
-			},
-		),
-		micro.Action(func(c *cli.Context) {
-			//parts := strings.Split(c.String("elasticsearch_hosts"), ",")
-			//elastic.Hosts = parts
-		}),
-	)
+	service := wrappers.NewKazoupService("db")
 
 	// Register Handler
 	service.Server().Handle(

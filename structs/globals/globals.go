@@ -12,15 +12,16 @@ import (
 )
 
 const (
-	NAMESPACE            string = "go.micro"
-	FLAG_SERVICE_NAME    string = NAMESPACE + ".srv.flag"
-	DB_SERVICE_NAME      string = NAMESPACE + ".srv.db"
-	FilesTopic                  = "go.micro.topic.files"
-	SlackChannelsTopic          = "go.micro.topic.slackchannels"
-	SlackUsersTopic             = "go.micro.topic.slackusers"
-	ScanTopic                   = "go.micro.topic.scan"
-	CrawlerFinishedTopic        = "go.micro.topic.crawlerfinished"
-	NotificationTopic           = "go.micro.topic.notification"
+	NAMESPACE               string = "go.micro"
+	FLAG_SERVICE_NAME       string = NAMESPACE + ".srv.flag"
+	DB_SERVICE_NAME         string = NAMESPACE + ".srv.db"
+	DATASOURCE_SERVICE_NAME string = NAMESPACE + ".srv.datasource"
+	FilesTopic              string = NAMESPACE + ".topic.files"
+	SlackChannelsTopic      string = NAMESPACE + ".topic.slackchannels"
+	SlackUsersTopic         string = NAMESPACE + ".topic.slackusers"
+	ScanTopic               string = NAMESPACE + ".topic.scan"
+	CrawlerFinishedTopic    string = NAMESPACE + ".topic.crawlerfinished"
+	NotificationTopic       string = NAMESPACE + ".topic.notification"
 
 	IndexHelper = "files_helper"
 	FilesAlias  = "files"
