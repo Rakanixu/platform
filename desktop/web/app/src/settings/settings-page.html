@@ -85,44 +85,46 @@
           <label is="mat-label" class="bottom">[[user.user.username]]@[[user.hostname]]</label>
         </paper-toolbar>
 
-        <div class="content">
-          <paper-menu selected="-1">
-            <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.all]]" data-index="0">
-              <iron-icon icon="icons:home" item-icon></iron-icon>My Files
-            </paper-icon-item>
-
-            <template is="dom-repeat" items="[[datasourceResults]]">
-              <paper-icon-item on-tap="showDatasourceSearch" id="datasource[[item.id]]">
-                <iron-icon icon="[[getDatasourceIcon(item.url)]]" item-icon></iron-icon>[[getDatasourcePrettyType(item.url)]]
+        <div style="height:100%; overflow-y:auto;">
+          <div class="content">
+            <paper-menu selected="-1">
+              <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.all]]" data-index="0">
+                <iron-icon icon="icons:home" item-icon></iron-icon>My Files
               </paper-icon-item>
-              <paper-tooltip for="datasource[[item.id]]">[[getDatasourceUrl(item.url)]]</paper-tooltip>
-            </template>
+
+              <template is="dom-repeat" items="[[datasourceResults]]">
+                <paper-icon-item on-tap="showDatasourceSearch" id="datasource[[item.id]]">
+                  <iron-icon icon="[[getDatasourceIcon(item.url)]]" item-icon></iron-icon>[[getDatasourcePrettyType(item.url)]]
+                </paper-icon-item>
+                <paper-tooltip for="datasource[[item.id]]">[[getDatasourceUrl(item.url)]]</paper-tooltip>
+              </template>
+              <mat-divider></mat-divider>
+
+              <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.documents]]" data-index="1">
+                <iron-icon icon="editor:insert-drive-file" item-icon></iron-icon>Documents
+              </paper-icon-item>
+              <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.videos]]" data-index="2">
+                <iron-icon icon="av:movie" item-icon></iron-icon>Movies
+              </paper-icon-item>
+              <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.images]]" data-index="3">
+                <iron-icon icon="image:camera-alt" item-icon></iron-icon>Pictures
+              </paper-icon-item>
+              <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.audios]]" data-index="4">
+                <iron-icon icon="image:audiotrack" item-icon></iron-icon>Audio
+              </paper-icon-item>
+            </paper-menu>
+
             <mat-divider></mat-divider>
 
-            <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.documents]]" data-index="1">
-              <iron-icon icon="editor:insert-drive-file" item-icon></iron-icon>Documents
-            </paper-icon-item>
-            <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.videos]]" data-index="2">
-              <iron-icon icon="av:movie" item-icon></iron-icon>Movies
-            </paper-icon-item>
-            <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.images]]" data-index="3">
-              <iron-icon icon="image:camera-alt" item-icon></iron-icon>Pictures
-            </paper-icon-item>
-            <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.audios]]" data-index="4">
-              <iron-icon icon="image:audiotrack" item-icon></iron-icon>Audio
-            </paper-icon-item>
-          </paper-menu>
-
-          <mat-divider></mat-divider>
-
-          <paper-menu>
-            <paper-icon-item id="settings" on-tap="showSettingsPage">
-              <iron-icon icon="icons:settings" item-icon></iron-icon>Settings
-            </paper-icon-item>
-            <paper-icon-item id="intercom_launch">
-              <iron-icon icon="icons:feedback" item-icon></iron-icon>Feedback
-            </paper-icon-item>
-          </paper-menu>
+            <paper-menu selected="-1">
+              <paper-icon-item id="settings" on-tap="showSettingsPage">
+                <iron-icon icon="icons:settings" item-icon></iron-icon>Settings
+              </paper-icon-item>
+              <paper-icon-item id="intercom_launch">
+                <iron-icon icon="icons:feedback" item-icon></iron-icon>Feedback
+              </paper-icon-item>
+            </paper-menu>
+          </div>
         </div>
       </div>
 

@@ -119,6 +119,9 @@
       isNotVideoOrAudio: function(category) {
         return !(category === this.categoriesMap.audios || category === this.categoriesMap.videos);
       },
+      isVideoPreview: function(category, videoClass) {
+        return (this.isVideo(category) && videoClass);
+      },
       isDirectory: function(isDir) {
         return isDir ? 'directory' : 'file';
       },
