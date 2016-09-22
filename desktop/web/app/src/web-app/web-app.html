@@ -943,12 +943,6 @@
                     index: e.model.__data__.item.index
                 });
 
-               // debugger;
-                /*if (!_.isEmpty(e.selectedCategory)) {
-                    this.set('selectedCategory', e.selectedCategory);
-                }*/
-
-
                 if (this.getDatasourceType(e.model.__data__.item.url) === 'local') {
                     var url = this.getDatasourceUrl(e.model.__data__.item.url);
                     var depth = url.split('/').length;
@@ -1003,18 +997,20 @@
                     });
                 }
             },
-            search: function(request) {
-                if (!this.$.rpcElastic.loading) {
-                    this.set('loading', true);
-                    this.set('rpcElasticParams', {
-                        service: 'go.micro.srv.search',
-                        method: 'Search.Search',
-                        request: this.$.filterConverter
-                          .getFilterAsObj()
-                    });
-                    this.$.rpcElastic.body = this.rpcElasticParams;
-                    this.$.rpcElastic.generateRequest();
+            search: function() {
+                this.set('loading', true);
+                this.set('rpcElasticParams', {
+                    service: 'go.micro.srv.search',
+                    method: 'Search.Search',
+                    request: this.$.filterConverter.getFilterAsObj()
+                });
+                this.$.rpcElastic.body = this.rpcElasticParams;
+
+                if(this.$.rpcElastic.lastRequest) {
+                    // Abort previous requests, if already finished is all right, and if not, we cancel to generate the next one
+                    this.$.rpcElastic.lastRequest.abort();
                 }
+                this.$.rpcElastic.generateRequest();
             },
             searchAsYouType: function(e, detail) {
                 var term = this.$.search.input.value;
