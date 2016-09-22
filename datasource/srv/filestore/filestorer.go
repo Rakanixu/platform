@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
+	"github.com/kazoup/platform/structs/globals"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 )
@@ -14,8 +15,7 @@ type FileStorer interface {
 }
 
 type FileStore struct {
-	FileStorer         FileStorer
-	ElasticServiceName string
+	FileStorer FileStorer
 }
 
 // Save FileStore configuration
@@ -26,7 +26,7 @@ func (fs *FileStore) Save(data interface{}, id string) error {
 	}
 
 	srvReq := client.NewRequest(
-		fs.ElasticServiceName,
+		globals.DB_SERVICE_NAME,
 		"DB.Create",
 		&db_proto.CreateRequest{
 			Index: "datasources",

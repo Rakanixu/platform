@@ -166,8 +166,9 @@ func SearchDataSources(ds *DataSource, req *proto.SearchRequest) (*proto.SearchR
 }
 
 func ScanDataSource(ds *DataSource, ctx context.Context, id string) error {
-	c := db_proto.NewDBClient("", nil)
+	c := db_proto.NewDBClient(globals.DB_SERVICE_NAME, nil)
 
+	log.Println(globals.DB_SERVICE_NAME)
 	dbSrvRes, err := c.Read(ctx, &db_proto.ReadRequest{
 		Index: "datasources",
 		Type:  "datasource",

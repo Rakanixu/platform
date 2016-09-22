@@ -23,7 +23,6 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 	if len(req.Endpoint.Url) <= 0 {
 		return errors.BadRequest("go.micro.srv.datasource", "url required")
 	}
-
 	dataSource, err := GetDataSource(ds, req.Endpoint)
 	if err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource GetDataSource", err.Error())
@@ -51,6 +50,7 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 
+	log.Print("Goot hereee -----")
 	if err := CreateIndexWithAlias(ds, ctx, endpoint); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
