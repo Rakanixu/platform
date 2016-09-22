@@ -8,8 +8,8 @@ import (
 
 type Engine interface {
 	Init() error
-	Search(ctx context.Context, req *search.SearchRequest, client client.Client, serviceName string) (*search.SearchResponse, error)
-	Aggregate(ctx context.Context, req *search.AggregateRequest, client client.Client, serviceName string) (*search.AggregateResponse, error)
+	Search(ctx context.Context, req *search.SearchRequest, client client.Client) (*search.SearchResponse, error)
+	Aggregate(ctx context.Context, req *search.AggregateRequest, client client.Client) (*search.AggregateResponse, error)
 }
 
 var (
@@ -24,10 +24,10 @@ func Init() error {
 	return engine.Init()
 }
 
-func Search(ctx context.Context, req *search.SearchRequest, client client.Client, serviceName string) (*search.SearchResponse, error) {
-	return engine.Search(ctx, req, client, serviceName)
+func Search(ctx context.Context, req *search.SearchRequest, client client.Client) (*search.SearchResponse, error) {
+	return engine.Search(ctx, req, client)
 }
 
-func Aggregate(ctx context.Context, req *search.AggregateRequest, client client.Client, serviceName string) (*search.AggregateResponse, error) {
-	return engine.Aggregate(ctx, req, client, serviceName)
+func Aggregate(ctx context.Context, req *search.AggregateRequest, client client.Client) (*search.AggregateResponse, error) {
+	return engine.Aggregate(ctx, req, client)
 }

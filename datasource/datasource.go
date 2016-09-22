@@ -2,20 +2,15 @@ package datasource
 
 import (
 	"log"
-	"time"
 
 	"github.com/kazoup/platform/datasource/srv/handler"
 	"github.com/kazoup/platform/structs/globals"
+	"github.com/kazoup/platform/structs/wrappers"
 	"github.com/micro/cli"
-	"github.com/micro/go-micro"
 )
 
 func srv(ctx *cli.Context) {
-	service := micro.NewService(
-		micro.Name("go.micro.srv.datasource"),
-		micro.RegisterTTL(time.Minute),
-		micro.RegisterInterval(time.Second*30),
-	)
+	service := wrappers.NewKazoupService("datasource")
 
 	// Attach crawler finished subscriber
 	if err := service.Server().Subscribe(
@@ -26,8 +21,7 @@ func srv(ctx *cli.Context) {
 	// New service handler
 	service.Server().Handle(
 		service.Server().NewHandler(&handler.DataSource{
-			Client:             service.Client(),
-			ElasticServiceName: "go.micro.srv.db",
+			Client: service.Client(),
 		}),
 	)
 	if err := service.Run(); err != nil {

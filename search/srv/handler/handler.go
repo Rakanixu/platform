@@ -9,13 +9,12 @@ import (
 
 // Search struct
 type Search struct {
-	Client             client.Client
-	ElasticServiceName string
+	Client client.Client
 }
 
 // Search srv handler
 func (s *Search) Search(ctx context.Context, req *proto.SearchRequest, rsp *proto.SearchResponse) error {
-	response, err := engine.Search(ctx, req, s.Client, s.ElasticServiceName)
+	response, err := engine.Search(ctx, req, s.Client)
 	if err != nil {
 		return err
 	}
@@ -28,7 +27,7 @@ func (s *Search) Search(ctx context.Context, req *proto.SearchRequest, rsp *prot
 
 // Aggregate srv handler
 func (s *Search) Aggregate(ctx context.Context, req *proto.AggregateRequest, rsp *proto.AggregateResponse) error {
-	response, err := engine.Aggregate(ctx, req, s.Client, s.ElasticServiceName)
+	response, err := engine.Aggregate(ctx, req, s.Client)
 	if err != nil {
 		return err
 	}

@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/kazoup/platform/config/srv/handler"
-	"github.com/micro/go-micro"
+	"github.com/kazoup/platform/structs/wrappers"
 	"github.com/micro/go-micro/cmd"
 	"log"
 )
@@ -12,16 +12,13 @@ func main() {
 	cmd.Init()
 
 	// New service
-	service := micro.NewService(
-		micro.Name("go.micro.srv.config"),
-		micro.Version("latest"),
-	)
+
+	service := wrappers.NewKazoupService("config")
 
 	// Attach handler
 	service.Server().Handle(
 		service.Server().NewHandler(&handler.Config{
-			Client:        service.Client(),
-			DbServiceName: "go.micro.srv.flag",
+			Client: service.Client(),
 		}),
 	)
 

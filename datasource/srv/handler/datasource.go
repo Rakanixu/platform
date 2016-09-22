@@ -5,6 +5,7 @@ import (
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
+	"github.com/kazoup/platform/structs/globals"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
@@ -14,8 +15,7 @@ import (
 
 // DataSource struct
 type DataSource struct {
-	Client             client.Client
-	ElasticServiceName string
+	Client client.Client
 }
 
 // Create datasource handler
@@ -106,7 +106,7 @@ func (ds *DataSource) Scan(ctx context.Context, req *proto.ScanRequest, rsp *pro
 func SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedMessage) error {
 	var ds *proto.Endpoint
 
-	c := db_proto.NewDBClient("", nil)
+	c := db_proto.NewDBClient(globals.DB_SERVICE_NAME, nil)
 	rsp, err := c.Read(ctx, &db_proto.ReadRequest{
 		Index: "datasources",
 		Type:  "datasource",

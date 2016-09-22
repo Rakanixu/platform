@@ -35,35 +35,27 @@ const (
 func GetDataSource(ds *DataSource, endpoint *proto.Endpoint) (filestorer.FileStorer, error) {
 	if strings.Contains(endpoint.Url, localEndpoint) {
 		return &local.Local{
-			Endpoint: *endpoint,
-			FileStore: filestorer.FileStore{
-				ElasticServiceName: ds.ElasticServiceName,
-			},
+			Endpoint:  *endpoint,
+			FileStore: filestorer.FileStore{},
 		}, nil
 	}
 
 	if strings.Contains(endpoint.Url, googledriveEnpoint) {
 		return &googledrive.Googledrive{
-			Endpoint: *endpoint,
-			FileStore: filestorer.FileStore{
-				ElasticServiceName: ds.ElasticServiceName,
-			},
+			Endpoint:  *endpoint,
+			FileStore: filestorer.FileStore{},
 		}, nil
 	}
 	if strings.Contains(endpoint.Url, onedriveEndpoint) {
 		return &onedrive.Onedrive{
-			Endpoint: *endpoint,
-			FileStore: filestorer.FileStore{
-				ElasticServiceName: ds.ElasticServiceName,
-			},
+			Endpoint:  *endpoint,
+			FileStore: filestorer.FileStore{},
 		}, nil
 	}
 	if strings.Contains(endpoint.Url, slackEnpoint) {
 		return &slack.Slack{
-			Endpoint: *endpoint,
-			FileStore: filestorer.FileStore{
-				ElasticServiceName: ds.ElasticServiceName,
-			},
+			Endpoint:  *endpoint,
+			FileStore: filestorer.FileStore{},
 		}, nil
 	}
 
@@ -82,7 +74,7 @@ func DeleteDataSource(ds *DataSource, id string) error {
 
 	// Get datasource
 	readReq := client.NewRequest(
-		ds.ElasticServiceName,
+		globals.DB_SERVICE_NAME,
 		"DB.Read",
 		&db_proto.ReadRequest{
 			Index: "datasources",
@@ -111,7 +103,7 @@ func DeleteDataSource(ds *DataSource, id string) error {
 
 		// Delete record from datasources index
 		srvReq := client.NewRequest(
-			ds.ElasticServiceName,
+			globals.DB_SERVICE_NAME,
 			"DB.Delete",
 			&db_proto.DeleteRequest{
 				Index: "datasources",
@@ -127,7 +119,7 @@ func DeleteDataSource(ds *DataSource, id string) error {
 
 		// Remove index for datasource associated with it
 		deleteIndexReq := client.NewRequest(
-			ds.ElasticServiceName,
+			globals.DB_SERVICE_NAME,
 			"DB.DeleteIndex",
 			&db_proto.DeleteIndexRequest{
 				Index: endpoint.Index,
@@ -146,7 +138,7 @@ func DeleteDataSource(ds *DataSource, id string) error {
 // SearchDataSources queries for datasources stored in ES
 func SearchDataSources(ds *DataSource, req *proto.SearchRequest) (*proto.SearchResponse, error) {
 	srvReq := client.NewRequest(
-		ds.ElasticServiceName,
+		globals.DB_SERVICE_NAME,
 		"DB.Search",
 		&db_proto.SearchRequest{
 			Index:    "datasources",
@@ -224,7 +216,7 @@ func ScanDataSource(ds *DataSource, ctx context.Context, id string) error {
 func CreateIndexWithAlias(ds *DataSource, ctx context.Context, endpoint *proto.Endpoint) error {
 	// Create index
 	createIndexSrvReq := client.NewRequest(
-		ds.ElasticServiceName,
+		globals.DB_SERVICE_NAME,
 		"DB.CreateIndexWithSettings",
 		&db_proto.CreateIndexWithSettingsRequest{
 			Index: endpoint.Index,
@@ -238,7 +230,7 @@ func CreateIndexWithAlias(ds *DataSource, ctx context.Context, endpoint *proto.E
 
 	// Put mapping
 	mappingSrvReq := client.NewRequest(
-		ds.ElasticServiceName,
+		globals.DB_SERVICE_NAME,
 		"DB.PutMappingFromJSON",
 		&db_proto.PutMappingFromJSONRequest{
 			Index: endpoint.Index,
@@ -253,7 +245,7 @@ func CreateIndexWithAlias(ds *DataSource, ctx context.Context, endpoint *proto.E
 
 	// Create DS alias
 	addAliasReq := client.NewRequest(
-		ds.ElasticServiceName,
+		globals.DB_SERVICE_NAME,
 		"DB.AddAlias",
 		&db_proto.AddAliasRequest{
 			Index: endpoint.Index,
@@ -268,7 +260,7 @@ func CreateIndexWithAlias(ds *DataSource, ctx context.Context, endpoint *proto.E
 
 	// Create specific "files" alias
 	addAliasReq = client.NewRequest(
-		ds.ElasticServiceName,
+		globals.DB_SERVICE_NAME,
 		"DB.AddAlias",
 		&db_proto.AddAliasRequest{
 			Index: endpoint.Index,
@@ -320,7 +312,7 @@ func deleteZombieRecords(ds *DataSource, datasources []*proto.Endpoint, urlToDel
 
 	if delete >= len(datasources)-1 {
 		deleteReq := client.NewRequest(
-			ds.ElasticServiceName,
+			globals.DB_SERVICE_NAME,
 			"DB.Delete",
 			&db_proto.DeleteRequest{
 				Index: filesHelperIndex,

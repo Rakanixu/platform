@@ -5,6 +5,7 @@ import (
 	"fmt"
 	db "github.com/kazoup/platform/db/srv/proto/db"
 	proto "github.com/kazoup/platform/flag/srv/proto/flag"
+	"github.com/kazoup/platform/structs/globals"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
@@ -13,8 +14,7 @@ import (
 
 // Flag struct
 type Flag struct {
-	Client        client.Client
-	DbServiceName string
+	Client client.Client
 }
 
 // Create srv handler
@@ -29,7 +29,7 @@ func (f *Flag) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.
 	}
 
 	srvReq := f.Client.NewRequest(
-		f.DbServiceName,
+		globals.DB_SERVICE_NAME,
 		"DB.Create",
 		&db.CreateRequest{
 			Index: "flags", // Hardcoded index for flags
@@ -53,7 +53,7 @@ func (f *Flag) Read(ctx context.Context, req *proto.ReadRequest, rsp *proto.Read
 	}
 
 	srvReq := f.Client.NewRequest(
-		f.DbServiceName,
+		globals.DB_SERVICE_NAME,
 		"DB.Read",
 		&db.ReadRequest{
 			Index: "flags", // Hardcoded index for flags
@@ -86,7 +86,7 @@ func (f *Flag) Flip(ctx context.Context, req *proto.FlipRequest, rsp *proto.Flip
 
 	// Read the record to flip
 	srvReadReq := f.Client.NewRequest(
-		f.DbServiceName,
+		globals.DB_SERVICE_NAME,
 		"DB.Read",
 		&db.ReadRequest{
 			Index: "flags", // Hardcoded index for flags
@@ -109,7 +109,7 @@ func (f *Flag) Flip(ctx context.Context, req *proto.FlipRequest, rsp *proto.Flip
 
 	// Update the record
 	srvUpdateReq := f.Client.NewRequest(
-		f.DbServiceName,
+		globals.DB_SERVICE_NAME,
 		"DB.Update",
 		&db.UpdateRequest{
 			Index: "flags", // Hardcoded index for flags
@@ -133,7 +133,7 @@ func (f *Flag) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *proto.
 	}
 
 	srvReq := f.Client.NewRequest(
-		f.DbServiceName,
+		globals.DB_SERVICE_NAME,
 		"DB.Delete",
 		&db.DeleteRequest{
 			Index: "flags", // Hardcoded index for flags
@@ -153,7 +153,7 @@ func (f *Flag) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *proto.
 func (f *Flag) List(ctx context.Context, req *proto.ListRequest, rsp *proto.ListResponse) error {
 	// Search in flags index
 	srvReq := f.Client.NewRequest(
-		f.DbServiceName,
+		globals.DB_SERVICE_NAME,
 		"DB.Search",
 		&db.SearchRequest{
 			Index: "flags",

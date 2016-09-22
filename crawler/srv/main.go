@@ -4,7 +4,7 @@ import (
 	"github.com/kazoup/platform/crawler/srv/subscriber"
 	"github.com/kazoup/platform/structs/categories"
 	"github.com/kazoup/platform/structs/globals"
-	"github.com/micro/go-micro"
+	"github.com/kazoup/platform/structs/wrappers"
 	"github.com/micro/go-micro/server"
 	_ "github.com/micro/go-plugins/broker/nats"
 	"log"
@@ -15,10 +15,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	service := micro.NewService(
-		micro.Name("go.micro.srv.crawler"),
-		micro.Version("latest"),
-	)
+	service := wrappers.NewKazoupService("crawler")
 
 	// Init srv
 	service.Init()

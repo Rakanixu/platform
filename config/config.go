@@ -2,26 +2,20 @@ package config
 
 import (
 	"log"
-	"time"
 
 	srv_handler "github.com/kazoup/platform/config/srv/handler"
+	"github.com/kazoup/platform/structs/wrappers"
 	"github.com/micro/cli"
-	"github.com/micro/go-micro"
 )
 
 func srv(ctx *cli.Context) {
-
-	service := micro.NewService(
-		micro.Name("go.micro.srv.config"),
-		micro.RegisterTTL(time.Minute),
-		micro.RegisterInterval(time.Second*30),
-	)
+	service := wrappers.NewKazoupService("config")
 
 	// Attach handler
+
 	service.Server().Handle(
 		service.Server().NewHandler(&srv_handler.Config{
-			Client:        service.Client(),
-			DbServiceName: "go.micro.srv.flag",
+			Client: service.Client(),
 		}),
 	)
 	if err := service.Run(); err != nil {
