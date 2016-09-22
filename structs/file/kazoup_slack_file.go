@@ -14,3 +14,7 @@ func (kf *KazoupSlackFile) PreviewURL() string {
 func (kf *KazoupSlackFile) GetID() string {
 	return kf.ID
 }
+
+func (kf *KazoupSlackFile) GetIndex() string {
+	return kf.Index
+}

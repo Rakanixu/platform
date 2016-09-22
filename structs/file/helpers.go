@@ -74,7 +74,7 @@ func NewFileFromString(s string) (File, error) {
 }
 
 // NewKazoupFileFromGoogleDriveFile constructor
-func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId string) *KazoupGoogleFile {
+func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId, index string) *KazoupGoogleFile {
 	t, _ := time.Parse("2006-01-02T15:04:05.000Z", g.ModifiedTime)
 
 	kf := &KazoupFile{
@@ -89,12 +89,13 @@ func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId string) *KazoupG
 		FileType:     globals.GoogleDrive,
 		LastSeen:     time.Now().Unix(),
 		DatasourceId: dsId,
+		Index:        index,
 	}
 	return &KazoupGoogleFile{*kf, *g}
 }
 
 // NewKazoupFileFromSlackFile constructor
-func NewKazoupFileFromSlackFile(s *slack.SlackFile, dsId string) *KazoupSlackFile {
+func NewKazoupFileFromSlackFile(s *slack.SlackFile, dsId, index string) *KazoupSlackFile {
 	t := time.Unix(s.Timestamp, 0)
 
 	kf := &KazoupFile{
@@ -109,11 +110,12 @@ func NewKazoupFileFromSlackFile(s *slack.SlackFile, dsId string) *KazoupSlackFil
 		FileType:     globals.Slack,
 		LastSeen:     time.Now().Unix(),
 		DatasourceId: dsId,
+		Index:        index,
 	}
 	return &KazoupSlackFile{*kf, *s}
 }
 
-func NewKazoupFileFromLocal(lf *local.LocalFile, dsId string) *KazoupLocalFile {
+func NewKazoupFileFromLocal(lf *local.LocalFile, dsId, index string) *KazoupLocalFile {
 	// don;t save all LocalFile as mmost of data is same as KazoupFile just pass file mode
 	kf := &KazoupFile{
 		ID:           globals.GetMD5Hash(lf.Path),
@@ -127,13 +129,14 @@ func NewKazoupFileFromLocal(lf *local.LocalFile, dsId string) *KazoupLocalFile {
 		FileType:     globals.Local,
 		LastSeen:     time.Now().Unix(),
 		DatasourceId: dsId,
+		Index:        index,
 	}
 	return &KazoupLocalFile{*kf}
 
 }
 
 // NewKazoupFileFromOneDriveFile constructor
-func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile, dsId string) *KazoupOneDriveFile {
+func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile, dsId, index string) *KazoupOneDriveFile {
 
 	isDir := true
 	name := strings.Split(o.Name, ".")
@@ -154,6 +157,7 @@ func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile, dsId string) *Kazou
 		FileType:     globals.OneDrive,
 		LastSeen:     time.Now().Unix(),
 		DatasourceId: dsId,
+		Index:        index,
 	}
 	return &KazoupOneDriveFile{*kf, *o}
 }

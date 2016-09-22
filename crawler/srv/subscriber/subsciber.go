@@ -55,7 +55,7 @@ func Scans(ctx context.Context, endpoint *datasource.Endpoint) error {
 
 			return nil
 		case f := <-c:
-			if err := file.IndexAsync(f, globals.FilesTopic, endpoint.Index); err != nil {
+			if err := file.IndexAsync(f, globals.FilesTopic, f.GetIndex()); err != nil {
 				log.Println("Error indexing async file")
 			}
 		}

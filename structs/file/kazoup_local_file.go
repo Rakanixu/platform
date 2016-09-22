@@ -17,3 +17,7 @@ func (kf *KazoupLocalFile) PreviewURL() string {
 func (kf *KazoupLocalFile) GetID() string {
 	return kf.ID
 }
+
+func (kf *KazoupLocalFile) GetIndex() string {
+	return kf.Index
+}

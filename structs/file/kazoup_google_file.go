@@ -21,3 +21,7 @@ func (kf *KazoupGoogleFile) PreviewURL() string {
 func (kf *KazoupGoogleFile) GetID() string {
 	return globals.GetMD5Hash(kf.Original.WebViewLink)
 }
+
+func (kf *KazoupGoogleFile) GetIndex() string {
+	return kf.Index
+}
