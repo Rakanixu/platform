@@ -473,7 +473,7 @@
                     notify: false,
                     value: function() {
                         return {
-                            service: 'go.micro.srv.datasource',
+                            service: 'com.kazoup.srv.datasource',
                             method: 'DataSource.Search',
                             request: {
                                 index: 'datasources',
@@ -489,7 +489,7 @@
                     notify: true,
                     value: function() {
                         return {
-                            service: 'go.micro.srv.datasource',
+                            service: 'com.kazoup.srv.datasource',
                             method: 'DataSource.Scan',
                             request: {
                                 id: ''
@@ -1000,7 +1000,7 @@
             search: function() {
                 this.set('loading', true);
                 this.set('rpcElasticParams', {
-                    service: 'go.micro.srv.search',
+                    service: 'com.kazoup.srv.search',
                     method: 'Search.Search',
                     request: this.$.filterConverter.getFilterAsObj()
                 });
@@ -1054,7 +1054,7 @@
             addDatasourceAndScan: function(e, detail) {
                 this.set('doScan', true);
                 this.$.rpcAddDatasource.body = {
-                    service: 'go.micro.srv.datasource',
+                    service: 'com.kazoup.srv.datasource',
                     method: 'DataSource.Create',
                     request: {
                         endpoint: {

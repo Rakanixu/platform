@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	NAMESPACE               string = "go.micro"
+	NAMESPACE               string = "com.kazoup"
 	FLAG_SERVICE_NAME       string = NAMESPACE + ".srv.flag"
 	DB_SERVICE_NAME         string = NAMESPACE + ".srv.db"
 	DATASOURCE_SERVICE_NAME string = NAMESPACE + ".srv.datasource"

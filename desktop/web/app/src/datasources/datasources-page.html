@@ -155,7 +155,7 @@
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.datasource',
+                service: 'com.kazoup.srv.datasource',
                 method: 'DataSource.Search',
                 request: {
                   from: 0,
@@ -171,7 +171,7 @@
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.datasource',
+                service: 'com.kazoup.srv.datasource',
                 method: 'DataSource.Scan',
                 request: {
                   id: ''
@@ -184,7 +184,7 @@
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.datasource',
+                service: 'com.kazoup.srv.datasource',
                 method: 'DataSource.Delete',
                 request: {
                   id: ''
@@ -271,7 +271,7 @@
           }
 
           this.$.rpcAddDatasource.body = {
-            service: 'go.micro.srv.datasource',
+            service: 'com.kazoup.srv.datasource',
             method: 'DataSource.Create',
             request: this.lastDatasourceCreated
           };

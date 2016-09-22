@@ -113,7 +113,7 @@
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.db',
+                service: 'com.kazoup.srv.db',
                 method: 'DB.Status',
               };
             }
@@ -123,7 +123,7 @@
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.db',
+                service: 'com.kazoup.srv.db',
                 method: 'DB.CreateIndexWithSettings',
                 request: {
                   index: 'datasources',
@@ -137,7 +137,7 @@
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.config',
+                service: 'com.kazoup.srv.config',
                 method: 'Config.SetFlags',
                 request: {
                   type: 'desktop'
@@ -150,7 +150,7 @@
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.datasource',
+                service: 'com.kazoup.srv.datasource',
                 method: 'DataSource.Search',
                 request: {
                   from: 0,
