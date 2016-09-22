@@ -87,7 +87,7 @@
 
         <div style="height:100%; overflow-y:auto;">
           <div class="content">
-            <paper-menu selected="-1">
+            <paper-menu id="mainMenu" selected="-1">
               <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.all]]" data-index="0">
                 <iron-icon icon="icons:home" item-icon></iron-icon>My Files
               </paper-icon-item>
@@ -116,7 +116,7 @@
 
             <mat-divider></mat-divider>
 
-            <paper-menu selected="-1">
+            <paper-menu id="secondaryMenu" selected="0">
               <paper-icon-item id="settings" on-tap="showSettingsPage">
                 <iron-icon icon="icons:settings" item-icon></iron-icon>Settings
               </paper-icon-item>
@@ -179,6 +179,9 @@
 
     <paper-toast id="toast" text=""></paper-toast>
 
+    <iron-media-query query="(min-width: 1281px)"
+                      query-matches="{{mediaQueryLarge}}"></iron-media-query>
+
   </template>
 
   <script>
@@ -214,6 +217,8 @@
         },
         activatePage: function() {
           this.set('addDatasourceIconVisible', false);
+          this.$.mainMenu.selected = "-1";
+          this.$.secondaryMenu.selected = "0";
 
           switch (this.selectedTab) {
             case 0:
@@ -232,6 +237,10 @@
                 __data__: {
                   item: e.model.__data__.item
                 }
+              },
+              selectedCategory: {
+                index: e.model.__data__.index + 1,
+                label: 'Search'
               }
             },
             callback: 'browseDatasource' // Internal method to be call
@@ -239,6 +248,12 @@
           document.querySelector('#ironPages').selected = 1;
         },
         showCategorySearch: function(e) {
+          var index = parseInt(e.currentTarget.dataset.index, 10);
+
+          if (this.datasourceResults && this.datasourceResults.length > 0) {
+            index += this.datasourceResults.length;
+          }
+
           this.fireEvent('web-app-activated', {
             e: {
               currentTarget: {
@@ -247,7 +262,7 @@
                 }
               },
               selectedCategory: {
-                index: e.currentTarget.dataset.index,
+                index: index,
                 label: (e.currentTarget.dataset.index == 0) ? 'My Files' : ''
               }
             },
