@@ -26,10 +26,18 @@ func (kf *KazoupLocalFile) GetID() string {
 	return kf.ID
 }
 
+func (kf *KazoupLocalFile) GetIDFromOriginal() string {
+	return ""
+}
+
 func (kf *KazoupLocalFile) GetIndex() string {
 	return kf.Index
 }
 
 func (kf *KazoupLocalFile) GetDatasourceID() string {
 	return kf.DatasourceId
+}
+
+func (kf *KazoupLocalFile) GetFileType() string {
+	return kf.FileType
 }

@@ -18,10 +18,18 @@ func (kf *KazoupOneDriveFile) GetID() string {
 	return globals.GetMD5Hash(kf.Original.WebURL)
 }
 
+func (kf *KazoupOneDriveFile) GetIDFromOriginal() string {
+	return kf.Original.ID
+}
+
 func (kf *KazoupOneDriveFile) GetIndex() string {
 	return kf.Index
 }
 
 func (kf *KazoupOneDriveFile) GetDatasourceID() string {
 	return kf.DatasourceId
+}
+
+func (kf *KazoupOneDriveFile) GetFileType() string {
+	return kf.FileType
 }

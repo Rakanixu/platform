@@ -50,11 +50,15 @@ func (sfs *SlackFs) List() (chan file.File, chan bool, error) {
 }
 
 func (sfs *SlackFs) Token() string {
-	return sfs.Endpoint.Token.AccessToken
+	return "Bearer " + sfs.Endpoint.Token.AccessToken
 }
 
 func (sfs *SlackFs) GetDatasourceId() string {
 	return sfs.Endpoint.Id
+}
+
+func (sfs *SlackFs) GetThumbnail(id string) (string, error) {
+	return "", nil
 }
 
 func (sfs *SlackFs) getUsers() error {

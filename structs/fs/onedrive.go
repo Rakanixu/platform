@@ -79,6 +79,10 @@ func (ofs *OneDriveFs) GetDatasourceId() string {
 	return ofs.Endpoint.Id
 }
 
+func (ofs *OneDriveFs) GetThumbnail(id string) (string, error) {
+	return "", nil
+}
+
 // getFiles retrieves drives, directories and files
 func (ofs *OneDriveFs) getFiles() error {
 	if err := ofs.refreshToken(); err != nil {

@@ -10,6 +10,7 @@ import (
 
 type Fs interface {
 	List() (chan file.File, chan bool, error)
+	GetThumbnail(string) (string, error)
 	GetDatasourceId() string
 	Token() string
 }

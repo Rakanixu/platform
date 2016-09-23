@@ -9,7 +9,9 @@ import (
 	"github.com/kazoup/platform/structs/fs"
 	"github.com/kazoup/platform/structs/globals"
 	"github.com/micro/go-micro/client"
+
 	"golang.org/x/net/context"
+	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -63,18 +65,51 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var token string
-	token = ih.getDatasourceToken(f)
+	var fSys fs.Fs
+	fSys = ih.getFs(f)
 	// Datasource is not on memory yet, (was created after the srv started to run)
 	// Lets reload the datasources in memory
-	if token == "" {
+	if fSys.Token() == "" {
 		ih.loadDatasources()
-		token = ih.getDatasourceToken(f)
+		fSys = ih.getFs(f)
 	}
 
 	url := fmt.Sprintf("%s", f.PreviewURL(width, height, mode, quality))
-	w.Header().Add("token", token)
-	http.Redirect(w, r, url, http.StatusSeeOther)
+
+	switch f.GetFileType() {
+	case globals.Local:
+		http.Redirect(w, r, url, http.StatusSeeOther)
+	case globals.Slack:
+		// There is an issue when setting headers on a redirect request, the headers are dropped
+		// We query for the image directly and attach response to the first request response
+		c := &http.Client{}
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			log.Println("ERROR", err.Error())
+		}
+		req.Header.Set("Authorization", fSys.Token())
+		rsp, err := c.Do(req)
+		if err != nil {
+			log.Println("ERROR", err.Error())
+		}
+		defer rsp.Body.Close()
+		b, err := ioutil.ReadAll(rsp.Body)
+		if err != nil {
+			log.Println("ERROR", err.Error())
+		}
+		_, err = w.Write(b)
+		if err != nil {
+			log.Println("ERROR", err.Error())
+		}
+	case globals.GoogleDrive:
+		_, err := fSys.GetThumbnail(f.GetIDFromOriginal())
+		if err != nil {
+			log.Println("ERROR", err.Error())
+		}
+		http.Redirect(w, r, url, http.StatusSeeOther)
+	case globals.OneDrive:
+
+	}
 
 	return
 }
@@ -105,14 +140,12 @@ func (ih *ImageHandler) loadDatasources() {
 	}
 }
 
-func (ih *ImageHandler) getDatasourceToken(f file.File) string {
-	var token string
+func (ih *ImageHandler) getFs(f file.File) fs.Fs {
 	for _, v := range ih.fs {
 		if v.GetDatasourceId() == f.GetDatasourceID() {
-			token = v.Token()
-			break
+			return v
 		}
 	}
 
-	return token
+	return nil
 }

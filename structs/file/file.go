@@ -15,8 +15,10 @@ const (
 type File interface {
 	PreviewURL(width, height, mode, quality string) string
 	GetID() string
+	GetIDFromOriginal() string
 	GetIndex() string
 	GetDatasourceID() string
+	GetFileType() string
 }
 
 func IndexAsync(file File, topic, index string) error {
