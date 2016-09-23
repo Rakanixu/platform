@@ -17,7 +17,3 @@ type KazoupFile struct {
 	DatasourceId string    `json:"datasource_id"`
 	Index        string    `json:"index,omitempty"` //Index the file will be pushed to
 }
-
-func (kf *KazoupFile) PreviewURL() string {
-	return DEFAULT_IMAGE_PREVIEW_URL
-}

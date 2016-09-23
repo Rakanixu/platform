@@ -10,6 +10,8 @@ import (
 
 type Fs interface {
 	List() (chan file.File, chan bool, error)
+	GetDatasourceId() string
+	Token() string
 }
 
 func NewFsFromEndpoint(e *datasource_proto.Endpoint) (Fs, error) {

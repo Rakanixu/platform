@@ -11,7 +11,7 @@ type KazoupGoogleFile struct {
 	Original googledrive.File `json:"original"`
 }
 
-func (kf *KazoupGoogleFile) PreviewURL() string {
+func (kf *KazoupGoogleFile) PreviewURL(width, height, mode, quality string) string {
 	size := "s600"
 	link := fmt.Sprintf("%s%s", kf.Original.ThumbnailLink[:len(kf.Original.ThumbnailLink)-4], size)
 	url := fmt.Sprintf("%s/image/http?source=%s", BASE_URL_FILE_PREVIEW, link)
@@ -24,4 +24,8 @@ func (kf *KazoupGoogleFile) GetID() string {
 
 func (kf *KazoupGoogleFile) GetIndex() string {
 	return kf.Index
+}
+
+func (kf *KazoupGoogleFile) GetDatasourceID() string {
+	return kf.DatasourceId
 }

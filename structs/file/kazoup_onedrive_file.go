@@ -10,7 +10,7 @@ type KazoupOneDriveFile struct {
 	Original onedrive.OneDriveFile `json:"original"`
 }
 
-func (kf *KazoupOneDriveFile) PreviewURL() string {
+func (kf *KazoupOneDriveFile) PreviewURL(width, height, mode, quality string) string {
 	return DEFAULT_IMAGE_PREVIEW_URL
 }
 
@@ -20,4 +20,8 @@ func (kf *KazoupOneDriveFile) GetID() string {
 
 func (kf *KazoupOneDriveFile) GetIndex() string {
 	return kf.Index
+}
+
+func (kf *KazoupOneDriveFile) GetDatasourceID() string {
+	return kf.DatasourceId
 }

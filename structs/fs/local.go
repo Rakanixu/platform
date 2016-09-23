@@ -47,6 +47,15 @@ func (lfs *LocalFs) List() (chan file.File, chan bool, error) {
 	return lfs.FilesChan, lfs.Running, nil
 }
 
+func (lfs *LocalFs) Token() string {
+	// LocalFs cannot have Token, cause represents a Local datasource which does not required oauth
+	return ""
+}
+
+func (lfs *LocalFs) GetDatasourceId() string {
+	return lfs.Endpoint.Id
+}
+
 func (lfs *LocalFs) walkDatasourceParents() error {
 	// Create index and put mapping if does not exist
 	c := db_proto.NewDBClient("", nil)

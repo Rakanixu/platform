@@ -49,6 +49,14 @@ func (sfs *SlackFs) List() (chan file.File, chan bool, error) {
 	return sfs.FilesChan, sfs.Running, nil
 }
 
+func (sfs *SlackFs) Token() string {
+	return sfs.Endpoint.Token.AccessToken
+}
+
+func (sfs *SlackFs) GetDatasourceId() string {
+	return sfs.Endpoint.Id
+}
+
 func (sfs *SlackFs) getUsers() error {
 	data := make(url.Values)
 	data.Add("token", sfs.Endpoint.Token.AccessToken)
@@ -58,7 +66,6 @@ func (sfs *SlackFs) getUsers() error {
 	rsp, err := c.PostForm(globals.SlackUsersEndpoint, data)
 
 	if err != nil {
-
 		return err
 	}
 	defer rsp.Body.Close()

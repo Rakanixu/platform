@@ -7,8 +7,8 @@ type KazoupSlackFile struct {
 	Original slack.SlackFile `json:"original"`
 }
 
-func (kf *KazoupSlackFile) PreviewURL() string {
-	return kf.Original.PermalinkPublic
+func (kf *KazoupSlackFile) PreviewURL(width, height, mode, quality string) string {
+	return kf.Original.Thumb480
 }
 
 func (kf *KazoupSlackFile) GetID() string {
@@ -17,4 +17,8 @@ func (kf *KazoupSlackFile) GetID() string {
 
 func (kf *KazoupSlackFile) GetIndex() string {
 	return kf.Index
+}
+
+func (kf *KazoupSlackFile) GetDatasourceID() string {
+	return kf.DatasourceId
 }
