@@ -1,7 +1,6 @@
 package file
 
 import (
-	"fmt"
 	"github.com/kazoup/platform/structs/globals"
 	googledrive "google.golang.org/api/drive/v3"
 )
@@ -12,21 +11,7 @@ type KazoupGoogleFile struct {
 }
 
 func (kf *KazoupGoogleFile) PreviewURL(width, height, mode, quality string) string {
-	sz := "w240"
-
-	// Prioritize width over height if both defined
-	if len(height) > 0 {
-		sz = "h" + height
-	}
-	if len(width) > 0 {
-		sz = "w" + width
-	}
-
-	url := fmt.Sprintf("%s&sz=%s&id=%s", GOOGLE_DRIVE_THUMBNAIL, sz, kf.Original.Id)
-
-	//https: //drive.google.com/thumbnail?authuser=0&sz=w320&id=ee8366992d921d448d297e926638ecea
-
-	return url
+	return ""
 }
 
 func (kf *KazoupGoogleFile) GetID() string {

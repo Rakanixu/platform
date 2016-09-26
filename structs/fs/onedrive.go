@@ -2,6 +2,7 @@ package fs
 
 import (
 	"encoding/json"
+	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/structs/file"
@@ -77,6 +78,35 @@ func (ofs *OneDriveFs) Token() string {
 
 func (ofs *OneDriveFs) GetDatasourceId() string {
 	return ofs.Endpoint.Id
+}
+
+func (ofs *OneDriveFs) GetThumbnail(id string) (string, error) {
+	if err := ofs.refreshToken(); err != nil {
+		log.Println(err)
+	}
+
+	c := &http.Client{}
+	//https://api.onedrive.com/v1.0/drives
+	url := fmt.Sprintf("%sitems/%s/thumbnails/0/medium", globals.OneDriveEndpoint+Drive, id)
+	log.Println("----------------")
+	log.Println(url)
+	req, err := http.NewRequest("GET", url, nil)
+	req.Header.Set("Authorization", ofs.Endpoint.Token.TokenType+" "+ofs.Endpoint.Token.AccessToken)
+	if err != nil {
+		return "", err
+	}
+	res, err := c.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+
+	var thumbRsp *onedrive.FileThumbnailResponse
+	if err := json.NewDecoder(res.Body).Decode(&thumbRsp); err != nil {
+		return "", err
+	}
+	log.Println(thumbRsp)
+	return thumbRsp.URL, nil
 }
 
 // getFiles retrieves drives, directories and files

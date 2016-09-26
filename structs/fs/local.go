@@ -56,6 +56,10 @@ func (lfs *LocalFs) GetDatasourceId() string {
 	return lfs.Endpoint.Id
 }
 
+func (lfs *LocalFs) GetThumbnail(id string) (string, error) {
+	return "", nil
+}
+
 func (lfs *LocalFs) walkDatasourceParents() error {
 	// Create index and put mapping if does not exist
 	c := db_proto.NewDBClient("", nil)

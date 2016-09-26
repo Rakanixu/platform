@@ -41,6 +41,8 @@ const (
 
 	OneDriveEndpoint = "https://api.onedrive.com/v1.0/"
 
+	GoogleDriveThumbnail = "https://www.googleapis.com/drive/v3/files/"
+
 	OauthStateString = "randomsdsdahfoashfouahsfohasofhoashfaf"
 
 	StartScanTask = "start_scan"
