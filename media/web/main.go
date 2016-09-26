@@ -42,7 +42,7 @@ func main() {
 			&imageserver_http_image.QualityParser{},
 		}),
 		Server: &imageserver.HandlerServer{
-			Server: newServerMemory(&imageserver_file.Server{}),
+			Server:/*newServerMemory(*/ &imageserver_file.Server{}, /*)*/
 			Handler: &imageserver_image.Handler{
 				Processor: &imageserver_image_gift.ResizeProcessor{},
 			},

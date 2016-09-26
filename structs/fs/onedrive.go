@@ -71,6 +71,14 @@ func (ofs *OneDriveFs) List() (chan file.File, chan bool, error) {
 	return ofs.FilesChan, ofs.Running, nil
 }
 
+func (ofs *OneDriveFs) Token() string {
+	return ofs.Endpoint.Token.AccessToken
+}
+
+func (ofs *OneDriveFs) GetDatasourceId() string {
+	return ofs.Endpoint.Id
+}
+
 // getFiles retrieves drives, directories and files
 func (ofs *OneDriveFs) getFiles() error {
 	if err := ofs.refreshToken(); err != nil {

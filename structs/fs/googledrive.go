@@ -37,6 +37,14 @@ func (gfs *GoogleDriveFs) List() (chan file.File, chan bool, error) {
 	return gfs.FilesChan, gfs.Running, nil
 }
 
+func (gfs *GoogleDriveFs) Token() string {
+	return gfs.Endpoint.Token.AccessToken
+}
+
+func (gfs *GoogleDriveFs) GetDatasourceId() string {
+	return gfs.Endpoint.Id
+}
+
 func (gfs *GoogleDriveFs) getFiles() error {
 	cfg := globals.NewGoogleOautConfig()
 	c := cfg.Client(context.Background(), &oauth2.Token{
