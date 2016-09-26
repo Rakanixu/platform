@@ -12,6 +12,7 @@ type Fs interface {
 	List() (chan file.File, chan bool, error)
 	GetDatasourceId() string
 	Token() string
+	GetThumbnail(id string) (string, error)
 }
 
 func NewFsFromEndpoint(e *datasource_proto.Endpoint) (Fs, error) {

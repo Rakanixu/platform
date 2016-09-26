@@ -101,10 +101,12 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Println("ERROR", err.Error())
 		}
-	case globals.GoogleDrive:
+	case globals.GoogleDrive, globals.OneDrive:
+		url, err = fSys.GetThumbnail(f.GetIDFromOriginal())
+		if err != nil {
+			log.Println("ERROR", err.Error())
+		}
 		http.Redirect(w, r, url, http.StatusSeeOther)
-	case globals.OneDrive:
-
 	}
 
 	return

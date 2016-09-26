@@ -45,6 +45,27 @@ func (gfs *GoogleDriveFs) GetDatasourceId() string {
 	return gfs.Endpoint.Id
 }
 
+func (gfs *GoogleDriveFs) GetThumbnail(id string) (string, error) {
+	cfg := globals.NewGoogleOautConfig()
+	c := cfg.Client(context.Background(), &oauth2.Token{
+		AccessToken:  gfs.Endpoint.Token.AccessToken,
+		TokenType:    gfs.Endpoint.Token.TokenType,
+		RefreshToken: gfs.Endpoint.Token.RefreshToken,
+		Expiry:       time.Unix(gfs.Endpoint.Token.Expiry, 0),
+	})
+
+	srv, err := drive.New(c)
+	if err != nil {
+		return "", err
+	}
+	r, err := srv.Files.Get(id).Fields("thumbnailLink").Do()
+	if err != nil {
+		return "", err
+	}
+
+	return r.ThumbnailLink, nil
+}
+
 func (gfs *GoogleDriveFs) getFiles() error {
 	cfg := globals.NewGoogleOautConfig()
 	c := cfg.Client(context.Background(), &oauth2.Token{

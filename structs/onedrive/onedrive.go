@@ -87,3 +87,9 @@ type OneDriveFile struct {
 		MimeType string `json:"mimeType,omitempty"`
 	} `json:"file,omitempty"`
 }
+
+type FileThumbnailResponse struct {
+	Width  int    `json:"width"`
+	Height int    `json:"height"`
+	URL    string `json:"url"`
+}
