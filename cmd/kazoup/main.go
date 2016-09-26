@@ -12,6 +12,8 @@ import (
 	media "github.com/kazoup/platform/media"
 	scheduler "github.com/kazoup/platform/scheduler"
 	search "github.com/kazoup/platform/search"
+	"github.com/kazoup/platform/structs/globals"
+	proxy "github.com/kazoup/platform/web"
 	"github.com/micro/cli"
 	ccli "github.com/micro/cli"
 	"github.com/micro/go-micro/cmd"
@@ -34,6 +36,7 @@ func main() {
 	app.Commands = append(app.Commands, media.Commands()...)
 	app.Commands = append(app.Commands, search.Commands()...)
 	app.Commands = append(app.Commands, scheduler.Commands()...)
+	app.Commands = append(app.Commands, proxy.Commands()...)
 	app.Commands = append(app.Commands, web.Commands()...)
 	app.Commands = append(app.Commands, desktopCommands()...)
 	app.Action = func(context *cli.Context) { cli.ShowAppHelp(context) }
@@ -67,6 +70,10 @@ func setup(app *ccli.App) {
 			Name:   "elasticsearch_hosts",
 			EnvVar: "ELASTICSEARCH_HOSTS",
 			Usage:  "ELasticsearch hosts ie: localhost:9200",
+		},
+		ccli.StringFlag{
+			Name:  "web_namespace",
+			Value: globals.NAMESPACE,
 		},
 	)
 }

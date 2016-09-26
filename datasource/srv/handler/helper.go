@@ -14,7 +14,6 @@ import (
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/structs/globals"
-	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"log"
 	"strings"
@@ -73,7 +72,7 @@ func DeleteDataSource(ds *DataSource, id string) error {
 	var endpoint *proto.Endpoint
 
 	// Get datasource
-	readReq := client.NewRequest(
+	readReq := ds.Client.NewRequest(
 		globals.DB_SERVICE_NAME,
 		"DB.Read",
 		&db_proto.ReadRequest{
@@ -84,7 +83,7 @@ func DeleteDataSource(ds *DataSource, id string) error {
 	)
 	readRes := &db_proto.ReadResponse{}
 
-	if err := client.Call(context.Background(), readReq, readRes); err != nil {
+	if err := ds.Client.Call(context.Background(), readReq, readRes); err != nil {
 		return err
 	}
 
@@ -102,7 +101,7 @@ func DeleteDataSource(ds *DataSource, id string) error {
 		}
 
 		// Delete record from datasources index
-		srvReq := client.NewRequest(
+		srvReq := ds.Client.NewRequest(
 			globals.DB_SERVICE_NAME,
 			"DB.Delete",
 			&db_proto.DeleteRequest{
@@ -113,12 +112,12 @@ func DeleteDataSource(ds *DataSource, id string) error {
 		)
 		srvRes := &db_proto.DeleteResponse{}
 
-		if err := client.Call(context.Background(), srvReq, srvRes); err != nil {
+		if err := ds.Client.Call(context.Background(), srvReq, srvRes); err != nil {
 			return err
 		}
 
 		// Remove index for datasource associated with it
-		deleteIndexReq := client.NewRequest(
+		deleteIndexReq := ds.Client.NewRequest(
 			globals.DB_SERVICE_NAME,
 			"DB.DeleteIndex",
 			&db_proto.DeleteIndexRequest{
@@ -127,7 +126,7 @@ func DeleteDataSource(ds *DataSource, id string) error {
 		)
 		deleteIndexRes := &db_proto.DeleteResponse{}
 
-		if err := client.Call(context.Background(), deleteIndexReq, deleteIndexRes); err != nil {
+		if err := ds.Client.Call(context.Background(), deleteIndexReq, deleteIndexRes); err != nil {
 			return err
 		}
 	}
@@ -137,7 +136,7 @@ func DeleteDataSource(ds *DataSource, id string) error {
 
 // SearchDataSources queries for datasources stored in ES
 func SearchDataSources(ds *DataSource, req *proto.SearchRequest) (*proto.SearchResponse, error) {
-	srvReq := client.NewRequest(
+	srvReq := ds.Client.NewRequest(
 		globals.DB_SERVICE_NAME,
 		"DB.Search",
 		&db_proto.SearchRequest{
@@ -153,7 +152,7 @@ func SearchDataSources(ds *DataSource, req *proto.SearchRequest) (*proto.SearchR
 	)
 	srvRes := &db_proto.SearchResponse{}
 
-	if err := client.Call(context.Background(), srvReq, srvRes); err != nil {
+	if err := ds.Client.Call(context.Background(), srvReq, srvRes); err != nil {
 		return nil, err
 	}
 
@@ -166,6 +165,7 @@ func SearchDataSources(ds *DataSource, req *proto.SearchRequest) (*proto.SearchR
 }
 
 func ScanDataSource(ds *DataSource, ctx context.Context, id string) error {
+	//FIXME use ds.Client
 	c := db_proto.NewDBClient(globals.DB_SERVICE_NAME, nil)
 
 	log.Println(globals.DB_SERVICE_NAME)
@@ -216,7 +216,7 @@ func ScanDataSource(ds *DataSource, ctx context.Context, id string) error {
 
 func CreateIndexWithAlias(ds *DataSource, ctx context.Context, endpoint *proto.Endpoint) error {
 	// Create index
-	createIndexSrvReq := client.NewRequest(
+	createIndexSrvReq := ds.Client.NewRequest(
 		globals.DB_SERVICE_NAME,
 		"DB.CreateIndexWithSettings",
 		&db_proto.CreateIndexWithSettingsRequest{
@@ -225,12 +225,12 @@ func CreateIndexWithAlias(ds *DataSource, ctx context.Context, endpoint *proto.E
 	)
 	createIndexSrvRes := &db_proto.CreateIndexWithSettingsResponse{}
 
-	if err := client.Call(ctx, createIndexSrvReq, createIndexSrvRes); err != nil {
+	if err := ds.Client.Call(ctx, createIndexSrvReq, createIndexSrvRes); err != nil {
 		return err
 	}
 
 	// Put mapping
-	mappingSrvReq := client.NewRequest(
+	mappingSrvReq := ds.Client.NewRequest(
 		globals.DB_SERVICE_NAME,
 		"DB.PutMappingFromJSON",
 		&db_proto.PutMappingFromJSONRequest{
@@ -240,12 +240,12 @@ func CreateIndexWithAlias(ds *DataSource, ctx context.Context, endpoint *proto.E
 	)
 	mappingSrvRes := &db_proto.PutMappingFromJSONResponse{}
 
-	if err := client.Call(ctx, mappingSrvReq, mappingSrvRes); err != nil {
+	if err := ds.Client.Call(ctx, mappingSrvReq, mappingSrvRes); err != nil {
 		return err
 	}
 
 	// Create DS alias
-	addAliasReq := client.NewRequest(
+	addAliasReq := ds.Client.NewRequest(
 		globals.DB_SERVICE_NAME,
 		"DB.AddAlias",
 		&db_proto.AddAliasRequest{
@@ -255,12 +255,12 @@ func CreateIndexWithAlias(ds *DataSource, ctx context.Context, endpoint *proto.E
 	)
 	addAliasRes := &db_proto.AddAliasResponse{}
 
-	if err := client.Call(ctx, addAliasReq, addAliasRes); err != nil {
+	if err := ds.Client.Call(ctx, addAliasReq, addAliasRes); err != nil {
 		return err
 	}
 
 	// Create specific "files" alias
-	addAliasReq = client.NewRequest(
+	addAliasReq = ds.Client.NewRequest(
 		globals.DB_SERVICE_NAME,
 		"DB.AddAlias",
 		&db_proto.AddAliasRequest{
@@ -269,7 +269,7 @@ func CreateIndexWithAlias(ds *DataSource, ctx context.Context, endpoint *proto.E
 		},
 	)
 
-	if err := client.Call(ctx, addAliasReq, addAliasRes); err != nil {
+	if err := ds.Client.Call(ctx, addAliasReq, addAliasRes); err != nil {
 		return err
 	}
 
@@ -312,7 +312,7 @@ func deleteZombieRecords(ds *DataSource, datasources []*proto.Endpoint, urlToDel
 	}
 
 	if delete >= len(datasources)-1 {
-		deleteReq := client.NewRequest(
+		deleteReq := ds.Client.NewRequest(
 			globals.DB_SERVICE_NAME,
 			"DB.Delete",
 			&db_proto.DeleteRequest{
@@ -323,7 +323,7 @@ func deleteZombieRecords(ds *DataSource, datasources []*proto.Endpoint, urlToDel
 		)
 		deleteRes := &db_proto.DeleteResponse{}
 
-		if err := client.Call(context.Background(), deleteReq, deleteRes); err != nil {
+		if err := ds.Client.Call(context.Background(), deleteReq, deleteRes); err != nil {
 			log.Println("ERROR", err)
 		}
 		idx := strings.LastIndex(urlToDelete, "/")
