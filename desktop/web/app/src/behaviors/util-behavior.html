@@ -110,11 +110,21 @@
       isVideo: function(category){
 	      return (category === this.categoriesMap.videos);
 	    },
+      isLocalMP4Video: function(category, name, fileType) {
+        var ext = name.split(".")
+
+        return ((category === this.categoriesMap.videos) &&
+          (ext[ext.length - 1].toLowerCase() === 'mp4') &&
+          (fileType === 'local'));
+      },
       isNoVisualMedia: function(category) {
         return (category !== this.categoriesMap.images && category !== this.categoriesMap.videos);
       },
       isAudio: function(category) {
         return (category === this.categoriesMap.audios);
+      },
+      isLocalAudio: function(category, fileType) {
+        return this.isAudio(category) && fileType === 'local';
       },
       isNotVideoOrAudio: function(category) {
         return !(category === this.categoriesMap.audios || category === this.categoriesMap.videos);
