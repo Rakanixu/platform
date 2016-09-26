@@ -8,7 +8,7 @@ import (
 
 func ui(ctx *cli.Context) {
 	service := web.NewService(web.Name("go.micro.web.ui"))
-	service.Handle("/", http.FileServer(http.Dir("app")))
+	service.Handle("/", http.FileServer(http.Dir("../../desktop/web/app")))
 
 	service.Run()
 }
