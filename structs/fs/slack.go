@@ -57,10 +57,6 @@ func (sfs *SlackFs) GetDatasourceId() string {
 	return sfs.Endpoint.Id
 }
 
-func (sfs *SlackFs) GetThumbnail(id string) (string, error) {
-	return "", nil
-}
-
 func (sfs *SlackFs) getUsers() error {
 	data := make(url.Values)
 	data.Add("token", sfs.Endpoint.Token.AccessToken)
