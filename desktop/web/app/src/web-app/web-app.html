@@ -962,6 +962,7 @@
                         category: '',
                         from: 0,
                         size: this.size,
+                        file_type: 'files',
                         type: 'file',
                         depth: 0,
                         url: ''
@@ -973,7 +974,7 @@
                 this.set('itemSelected', false);
                 this.clearSelectedItemStyling();
 
-                if  (e.model.__data__.item.index) {
+                if (e.model.__data__.item.index) {
                     // Browsing non local files
                     this.$.filterConverter.setValues({
                         index: e.model.__data__.item.index,
