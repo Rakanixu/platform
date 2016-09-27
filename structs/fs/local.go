@@ -62,8 +62,7 @@ func (lfs *LocalFs) GetThumbnail(id string) (string, error) {
 
 func (lfs *LocalFs) walkDatasourceParents() error {
 	// Create index and put mapping if does not exist
-	c := db_proto.NewDBClient("", nil)
-
+	c := db_proto.NewDBClient(globals.DB_SERVICE_NAME, nil)
 	_, err := c.CreateIndexWithSettings(
 		context.Background(),
 		&db_proto.CreateIndexWithSettingsRequest{
