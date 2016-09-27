@@ -2,7 +2,7 @@
   "name": "kazoup-desktop",
   "version": "0.0.7",
   "description": "Kazoup Desktop distributed application",
-  "author": "Kazoup Team <info@kazooup.com>",
+  "author": "Kazoup Team <info@kazoup.com>",
   "homepage": "www.kazoup.com",
   "license": "UNLICENSED",
   "main": "main.js",
