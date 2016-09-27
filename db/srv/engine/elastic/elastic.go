@@ -106,6 +106,13 @@ func (e *elastic) SubscribeCrawlerFinished(ctx context.Context, msg *crawler.Cra
 func (e *elastic) Read(req *db.ReadRequest) (*db.ReadResponse, error) {
 	r, err := e.conn.Get(req.Index, req.Type, req.Id, nil)
 	if err != nil {
+		// elastigo returns error when does not exists
+		if err.Error() == "record not found" {
+			return &db.ReadResponse{
+				Result: `{}`,
+			}, nil
+		}
+
 		return &db.ReadResponse{}, err
 	}
 
@@ -162,6 +169,7 @@ func (e *elastic) DeleteByQuery(req *db.DeleteByQueryRequest) (*db.DeleteByQuery
 // Search ES index
 func (e *elastic) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 	var results []interface{}
+	var rstr string
 
 	eQuery := ElasticQuery{
 		Index:    req.Index,
@@ -203,13 +211,18 @@ func (e *elastic) Search(req *db.SearchRequest) (*db.SearchResponse, error) {
 	info := gabs.New()
 	info.Set(out.Hits.Total, "total")
 
-	b, err := json.Marshal(results)
-	if err != nil {
-		return &db.SearchResponse{}, err
+	if len(results) == 0 {
+		rstr = `[]`
+	} else {
+		b, err := json.Marshal(results)
+		if err != nil {
+			return &db.SearchResponse{}, err
+		}
+		rstr = string(b)
 	}
 
 	return &db.SearchResponse{
-		Result: string(b),
+		Result: rstr,
 		Info:   info.String(),
 	}, nil
 }
@@ -235,17 +248,14 @@ func (e *elastic) SearchById(req *db.SearchByIdRequest) (*db.SearchByIdResponse,
 	}
 	v := out.Hits.Hits
 	// hmmm hacky FIXME
-	if out.Hits.Total == 0 {
-		return &db.SearchByIdResponse{}, nil
-
+	if out.Hits.Total == 0 || out.Hits.Total != 1 {
+		return &db.SearchByIdResponse{
+			Result: `{}`,
+		}, nil
 	}
-	if out.Hits.Total != 1 {
-		return &db.SearchByIdResponse{}, nil
 
-	}
 	// Now we should have only one result
 	data, err := v[0].Source.MarshalJSON()
-
 	if err != nil {
 		return &db.SearchByIdResponse{}, err
 	}
@@ -257,12 +267,9 @@ func (e *elastic) SearchById(req *db.SearchByIdRequest) (*db.SearchByIdResponse,
 		return &db.SearchByIdResponse{}, err
 	}
 
-	response := &db.SearchByIdResponse{
+	return &db.SearchByIdResponse{
 		Result: string(data),
-	}
-	return response, nil
-
-	return &db.SearchByIdResponse{}, nil
+	}, nil
 }
 
 // CreateIndexWithSettings creates an ES index with settings
