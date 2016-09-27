@@ -136,6 +136,10 @@
 
             .photoContent > iron-image {
                 @apply(--layout-flex);
+                background: transparent;
+                --iron-image-placeholder: {
+                    background: transparent;
+                };
             }
 
             .photoContent > .detail {
@@ -327,8 +331,10 @@
                                     <template is="dom-if" if="[[view.isGrid]]" restamp="true">
                                         <div class="photoContainer grid">
                                             <div class="photoContent" tabindex$="[[tabIndex]]" on-tap="mainAction">
-                                                <iron-image sizing="contain"
-                                                            src="http://localhost:8082/media/preview?file_id=[[item.id]]&width=356&height=356&mode=fit&quality=70">
+                                                <iron-image sizing="cover"
+                                                            src="http://localhost:8082/media/preview?file_id=[[item.id]]&width=600&mode=fit&quality=100"
+                                                            preload
+                                                            fade><!--placeholder="src/static/spinner_small.gif"-->
                                                     <mat-ripple></mat-ripple>
                                                 </iron-image>
 

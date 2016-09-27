@@ -1,6 +1,7 @@
 package fs
 
 import (
+	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/structs/file"
 	"github.com/kazoup/platform/structs/globals"
@@ -63,7 +64,7 @@ func (gfs *GoogleDriveFs) GetThumbnail(id string) (string, error) {
 		return "", err
 	}
 
-	return r.ThumbnailLink, nil
+	return fmt.Sprintf("%ss700", r.ThumbnailLink[:len(r.ThumbnailLink)-4]), nil
 }
 
 func (gfs *GoogleDriveFs) getFiles() error {
