@@ -67,6 +67,15 @@
                on-response="_handleDbDatasourcesIndex"
                params="{{rpcDbDatasorucesIndexParams}}"></iron-ajax>
 
+    <iron-ajax id="rpcSanitizeDatasources"
+               method="POST"
+               content-type="application/json"
+               url="http://localhost:8082/rpc"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleSanitizeDatasources"
+               params="{{rpcSanitizeDatasourcesParams}}"></iron-ajax>
+
     <iron-ajax id="rpcSetFlags"
                method="POST"
                content-type="application/json"
@@ -132,6 +141,22 @@
               };
             }
           },
+          rpcSanitizeDatasourcesParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: 'com.kazoup.srv.db',
+                method: 'DB.Update',
+                request: {
+                  index: 'datasources',
+                  type: 'datasource',
+                  id: '',
+                  data:''
+                }
+              };
+            }
+          },
           rpcSetFlagsParams : {
             type: Object,
             notify: false,
@@ -154,7 +179,7 @@
                 method: 'DataSource.Search',
                 request: {
                   from: 0,
-                  size: 0
+                  size: 999
                 }
               };
             }
@@ -203,14 +228,35 @@
         _handleSetFlags: function(e) {
 
         },
+        _handleSanitizeDatasources: function(e) {
+
+        },
         _handleSearch: function(e) {
-          var info;
+          var datasources, info, firstScan;
 
           if (e.detail.response) {
-            info = JSON.parse(e.detail.response.info)
+            info = JSON.parse(e.detail.response.info);
+            datasources = JSON.parse(e.detail.response.result);
+
+            if (info.total) {
+              firstScan = true;
+
+              _.forEach(datasources, function(ds) {
+                if (ds.crawler_running) {
+                  ds.crawler_running = false;
+                  this.rpcSanitizeDatasourcesParams.request.id = ds.id;
+                  this.rpcSanitizeDatasourcesParams.request.data = JSON.stringify(ds);
+                  this.$.rpcSanitizeDatasources.body = this.rpcSanitizeDatasourcesParams;
+                  
+                  this.$.rpcSanitizeDatasources.generateRequest();
+                }
+              }.bind(this));
+            } else {
+              firstScan = false;
+            }
 
             this._loadPage(1, 'web-app-activated', {
-              first_scan: (info.total) ? false : true
+              first_scan: firstScan
             });
           }
         },
