@@ -107,7 +107,7 @@ func NewMicrosoftOauthConfig() *oauth2.Config {
 // so all records with a LastSeen before will be removed from index
 // file does not exists any more on datasource
 func ClearIndex(e *datasource_proto.Endpoint) error {
-	c := db_proto.NewDBClient("", nil)
+	c := db_proto.NewDBClient(DB_SERVICE_NAME, nil)
 	_, err := c.DeleteByQuery(context.Background(), &db_proto.DeleteByQueryRequest{
 		Indexes:  []string{e.Index},
 		Types:    []string{"file"},

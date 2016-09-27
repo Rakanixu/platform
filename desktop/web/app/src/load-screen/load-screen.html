@@ -239,7 +239,7 @@
             datasources = JSON.parse(e.detail.response.result);
 
             if (info.total) {
-              firstScan = true;
+              firstScan = false;
 
               _.forEach(datasources, function(ds) {
                 if (ds.crawler_running) {
@@ -247,12 +247,12 @@
                   this.rpcSanitizeDatasourcesParams.request.id = ds.id;
                   this.rpcSanitizeDatasourcesParams.request.data = JSON.stringify(ds);
                   this.$.rpcSanitizeDatasources.body = this.rpcSanitizeDatasourcesParams;
-                  
+
                   this.$.rpcSanitizeDatasources.generateRequest();
                 }
               }.bind(this));
             } else {
-              firstScan = false;
+              firstScan = true;
             }
 
             this._loadPage(1, 'web-app-activated', {

@@ -10,6 +10,7 @@ import (
 // Scheduler struct
 type Scheduler struct {
 	Client client.Client
+	Crons  []*CronWrapper
 }
 
 // CreateScheduledTask srv handler

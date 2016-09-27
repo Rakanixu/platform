@@ -40,7 +40,7 @@ func Scans(ctx context.Context, endpoint *datasource.Endpoint) error {
 			time.Sleep(time.Second * 5)
 
 			if err := globals.ClearIndex(endpoint); err != nil {
-				log.Println("ERROR clearing index after scan")
+				log.Println("ERROR clearing index after scan", err)
 			}
 
 			msg := &crawler.CrawlerFinishedMessage{

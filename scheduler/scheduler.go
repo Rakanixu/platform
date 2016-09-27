@@ -15,6 +15,7 @@ func srv(ctx *cli.Context) {
 	service.Server().Handle(
 		service.Server().NewHandler(&handler.Scheduler{
 			Client: service.Client(),
+			Crons:  make([]*handler.CronWrapper, 0),
 		}),
 	)
 
