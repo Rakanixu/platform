@@ -26,6 +26,7 @@ func NewImageHandler() *ImageHandler {
 	ih := &ImageHandler{
 		dbclient:         db.NewDBClient(globals.DB_SERVICE_NAME, client.NewClient()),
 		datasourceClient: datasource.NewDataSourceClient(globals.DATASOURCE_SERVICE_NAME, client.NewClient()),
+		fs:               make([]fs.Fs, 0),
 	}
 
 	ih.loadDatasources()
@@ -69,7 +70,7 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fSys = ih.getFs(f)
 	// Datasource is not on memory yet, (was created after the srv started to run)
 	// Lets reload the datasources in memory
-	if fSys.Token() == "" {
+	if fSys == nil {
 		ih.loadDatasources()
 		fSys = ih.getFs(f)
 	}
@@ -121,6 +122,7 @@ func (ih *ImageHandler) loadDatasources() {
 	})
 	if err != nil {
 		log.Println("ERROR retrieveing datasources for image server")
+		return
 	}
 
 	var endpoints []*datasource.Endpoint
