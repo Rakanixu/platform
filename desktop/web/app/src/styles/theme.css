@@ -82,6 +82,12 @@ mat-item.overflow-visible a div div {
     overflow: visible !important;
 }
 
+mat-item.username {
+    position: absolute;
+    left: 0;
+    width: 256px;
+}
+
 mat-avatar.image {
     border-radius: 0;
 }
