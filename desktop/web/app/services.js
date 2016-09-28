@@ -1,9 +1,12 @@
 const spawn = require("child_process").spawn;
 
-let isDevelopment = process.env.NODE_ENV === "development";
-
 // To manage kazoup platform microservices
 module.exports = (function() {
+  let isDevelopment = process.env.NODE_ENV === "development";
+  var running = [];
+
+
+
   function archConvert(arch) {
     switch (arch) {
       case "x64":
@@ -17,37 +20,31 @@ module.exports = (function() {
     return arch;
   }
 
-  var _startServices = function() {
-    running = [];
-    resourcesPath = "";
+  var _getServices = function() {
+    return running;
+  };
 
-    //Set resources path depending if we running in development - needs to do it better
+  var _startServices = function() {
+    let resourcesPath = process.env.PWD;
+
+    // Set resources path depending if we running in development
     if (!isDevelopment) {
-      resourcesPath = process.resourcesPath;// Starting all required services FIXME:
+      //resourcesPath = process.resourcesPath;
       if (process.platform == "win32") {
         elastic = _startService(resourcesPath + "/elasticsearch/bin/elasticsearch.bat", []);
         kazoup = _startService(resourcesPath 		+ "/bin/windows/" + archConvert(process.arch) + "/kazoup.exe", ["desktop"])
       } else {
         elastic = _startService(resourcesPath + "/elasticsearch/bin/elasticsearch", []);
-        kazoup = _startService(resourcesPath 		+ "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup", ["desktop"])
+        kazoup = _startService(resourcesPath 		+ "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup", ["desktop"]);
       }
+
+      console.log(resourcesPath 		+ "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup")
       running.push(elastic)
       running.push(kazoup)
 
     } else {
       //TODO: stupid hack fixme should we point to desktop folder ?
       resourcesPath = __dirname + "/..";
-      /*console.log(resourcesPath)
-
-       if (process.platform == "win32") {
-       elastic = startService(resourcesPath + "/elasticsearch/bin/elasticsearch.bat", []);
-       kazoup = startService(resourcesPath 		+ "/bin/windows/" + archConvert(process.arch) + "/kazoup.exe", ["desktop"])
-       } else {
-       elastic = startService(resourcesPath + "/elasticsearch/bin/elasticsearch", []);
-       kazoup = startService(resourcesPath 		+ "/bin/" + process.platform + "/" + archConvert(process.arch) + "/kazoup", ["desktop"])
-       }
-       running.push(elastic)
-       running.push(kazoup)*/
     }
   };
 
@@ -63,8 +60,6 @@ module.exports = (function() {
       } else {
         productionEnv.JAVA_HOME = process.resourcesPath + "/java/" + process.platform + "/" + archConvert(process.arch);
       }
-
-      console.log("PRODUCTION ENV", productionEnv);
 
       es = spawn(path, args, {
         wd: path,
@@ -86,6 +81,7 @@ module.exports = (function() {
   };
 
   return {
+    getServices: _getServices,
     startServices: _startServices,
     startService: _startService
   }

@@ -1,5 +1,7 @@
+const electron = require("electron");
 const {ipcMain} = require("electron");
 const os = require("os");
+const dialog = electron.dialog;
 const windows = require('./windows.js');
 
 // Messages to communicate between node.js and IPC render process

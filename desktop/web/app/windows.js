@@ -3,14 +3,17 @@ const electron = require("electron");
 const os = require("os");
 const {BrowserWindow} = electron;
 const {autoUpdater} = electron;
-const services = require('./services.js');
 
+// Keep a global reference of the window object, if you don"t, the window will
+// be closed automatically when the JavaScript object is garbage collected.
+let win;
 
 module.exports = (function() {
   let updateFeed = "";
+  let feedURL = "https://protected-reaches-10740.herokuapp.com";
   let isDevelopment = process.env.NODE_ENV === "development";
 
-  var _createWindow = function() {
+  var _createMainWindow = function() {
     // Create the browser window.
     win = new BrowserWindow({
       width: 1024,
@@ -20,8 +23,6 @@ module.exports = (function() {
       }
     });
 
-    //Start micro services
-    services.startServices();
     // and load the index.html of the app.
     win.loadURL(`file://${__dirname}/index-electron.html`);
 
@@ -118,7 +119,7 @@ module.exports = (function() {
   }
 
   return {
-    createMainWindow: _createWindow,
+    createMainWindow: _createMainWindow,
     createAuthWindow: _createAuthWindow
   }
 }());
