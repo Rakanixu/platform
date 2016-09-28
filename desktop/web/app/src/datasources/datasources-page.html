@@ -74,22 +74,22 @@
 
     <mat-dialog id="addDatasourceDialog" label="">
       <div>
-        <paper-button on-tap="doAuth" data-url="local://">
+        <paper-button on-tap="doAuth" data-url$="local://">
           <iron-icon class="big" icon="kazoup:local"></iron-icon>
           <mat-item label="Local"/>
         </paper-button>
 
-        <paper-button on-tap="doAuth" data-url="[[endpoints.web]]/auth/slack/login">
+        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/slack/login">
           <iron-icon class="big" icon="kazoup:slack"></iron-icon>
           <mat-item label="Slack"/>
         </paper-button>
 
-        <paper-button on-tap="doAuth" data-url="[[endpoints.web]]/auth/google/login">
+        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/google/login">
           <iron-icon class="big" icon="kazoup:googledrive"></iron-icon>
           <mat-item label="Google Drive"/>
         </paper-button>
 
-        <paper-button on-tap="doAuth" data-url="[[endpoints.web]]/auth/microsoft/login">
+        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/microsoft/login">
           <iron-icon class="big" icon="kazoup:onedrive"></iron-icon>
           <mat-item label="One Drive"/>
         </paper-button>
@@ -238,11 +238,11 @@
         },
         doAuth: function(e) {
           if (window && window.process && window.process.type){
-                if (e.currentTarget.getAttribute('data-url') == 'local://' ) {
-                  ipcRenderer.send('open-folder');
-                }else {
-                  ipcRenderer.send('auth-message',e.currentTarget.getAttribute('data-url'));
-                }
+            if (e.currentTarget.getAttribute('data-url') == 'local://' ) {
+              ipcRenderer.send('open-folder');
+            }else {
+              ipcRenderer.send('auth-message',e.currentTarget.getAttribute('data-url'));
+            }
           } else {
            //TODO handle this in normal browser
           }
