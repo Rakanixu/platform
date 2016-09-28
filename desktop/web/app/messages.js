@@ -1,5 +1,6 @@
 const electron = require("electron");
 const {ipcMain} = require("electron");
+const {shell} = electron;
 const os = require("os");
 const dialog = electron.dialog;
 const windows = require('./windows.js');

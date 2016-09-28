@@ -8,6 +8,7 @@
 <link rel="import" href="../../bower_components/mat-item/mat-item.html">
 
 <link rel="import" href="../../src/behaviors/util-behavior.html">
+<link rel="import" href="../../src/behaviors/endpoints-behavior.html">
 <link rel="import" href="../../src/behaviors/categories-map-behavior.html">
 
 <dom-module id="detail-view">
@@ -30,7 +31,7 @@
 
     <template is="dom-if" if="[[!item.is_dir]]">
       <template is="dom-if" if="[[isImage(item.category)]]">
-        <iron-image src="http://localhost:8082/media/preview?file_id=[[item.id]]&width=600&mode=fit&quality=100"
+        <iron-image src="[[endpoints.web]]/media/preview?file_id=[[item.id]]&width=600&mode=fit&quality=100"
                     sizing="contain"
                     preload
                     fade></iron-image><!--placeholder="src/static/spinner_256.gif"-->
@@ -154,7 +155,7 @@
     <iron-ajax id="rpcSearchSlackUsers"
                method="POST"
                content-type="application/json"
-               url="http://localhost:8082/rpc"
+               url="[[endpoints.endpoint]]"
                handle-as="json"
                on-error="_handleError"
                on-response="_handleSlackUsers"></iron-ajax>
@@ -162,7 +163,7 @@
     <iron-ajax id="rpcSearchSlackChannels"
                method="POST"
                content-type="application/json"
-               url="http://localhost:8082/rpc"
+               url="[[endpoints.endpoint]]"
                handle-as="json"
                on-error="_handleError"
                on-response="_handleSlackChannels"></iron-ajax>
@@ -170,7 +171,7 @@
     <iron-ajax id="rpcAggregate"
                method="POST"
                content-type="application/json"
-               url="http://localhost:8082/rpc"
+               url="[[endpoints.endpoint]]"
                handle-as="json"
                on-error="_handleError"
                on-response="_handleAggregate"></iron-ajax>
@@ -185,7 +186,8 @@
         is: 'detail-view',
         behaviors: [
           Polymer.UtilBehaviorImp,
-          Polymer.CategoriesMapBehaviorImp
+          Polymer.CategoriesMapBehaviorImp,
+          Polymer.EndpointsBehaviorImp
         ],
         properties: {
           item: {

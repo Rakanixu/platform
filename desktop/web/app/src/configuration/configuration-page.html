@@ -8,6 +8,7 @@
 <link rel="import" href="../../bower_components/mat-item/mat-item.html">
 
 <link rel="import" href="../../src/behaviors/util-behavior.html">
+<link rel="import" href="../../src/behaviors/endpoints-behavior.html">
 <link rel="import" href="../../src/behaviors/nav-behavior.html">
 <link rel="import" href="../../src/behaviors/categories-map-behavior.html">
 
@@ -33,7 +34,7 @@
     <iron-ajax id="rpcGetFlags"
                method="POST"
                content-type="application/json"
-               url="http://localhost:8082/rpc"
+               url="[[endpoints.endpoint]]"
                handle-as="json"
                on-error="_handleError"
                on-response="_handleGetFlags"
@@ -52,7 +53,8 @@
           Polymer.NavBehaviorImp,
           Polymer.CategoriesMapBehaviorImp,
           Polymer.AsyncBehaviorImp,
-          Polymer.CommonBehaviorImp
+          Polymer.CommonBehaviorImp,
+          Polymer.EndpointsBehaviorImp
         ],
         properties: {
           rpcGetFlagsParams: {

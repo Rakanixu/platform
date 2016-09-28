@@ -3,13 +3,14 @@ package file
 import (
 	"encoding/json"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
+	"github.com/kazoup/platform/structs/globals"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 )
 
 const (
-	DEFAULT_IMAGE_PREVIEW_URL string = "http://localhost:8082/media/image/http?source=http://www.scaleautomag.com/sitefiles/images/no-preview-available.png"
-	BASE_URL_FILE_PREVIEW     string = "http://localhost:8082/media"
+	DEFAULT_IMAGE_PREVIEW_URL string = globals.SERVER_ADDRESS + "/media/image/http?source=http://www.scaleautomag.com/sitefiles/images/no-preview-available.png"
+	BASE_URL_FILE_PREVIEW     string = globals.SERVER_ADDRESS + "/media"
 )
 
 type File interface {

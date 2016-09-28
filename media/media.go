@@ -37,7 +37,7 @@ func web(ctx *cli.Context) {
 	contentDir := "/"
 	log.Printf("volume name: %s  path :%s", filepath.VolumeName(wd), wd)
 	service := microweb.NewService(microweb.Name("go.micro.web.media"))
-	//http://localhost:8082/desktop/image?source={file_id}&width=300&height=300&mode=fit&quality=50
+	//http://ADDRESS:8082/desktop/image?source={file_id}&width=300&height=300&mode=fit&quality=50
 	//service.Handle("/image", handler.NewImageHandler())
 	service.Handle("/preview", handler.NewImageHandler())
 

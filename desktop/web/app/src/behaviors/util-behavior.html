@@ -139,10 +139,10 @@
         return stripDataOrigin(path);
       },
       getPreview: function(id){
-	      return "http://localhost:8082/media/image?file_id=" + id;
+	      return this.endpoints.web + "/media/image?file_id=" + id;
       },
       getAsset: function(path) {
-	      return "http://localhost:8082/media/raw/" + removeSlashesFromBegining(stripDataOrigin(path));
+	      return this.endpoints.web + "/media/raw/" + removeSlashesFromBegining(stripDataOrigin(path));
       },
       getDatasourceType: function(datasource) {
         return datasource.split('://')[0];

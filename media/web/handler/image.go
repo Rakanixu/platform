@@ -35,7 +35,7 @@ func NewImageHandler() *ImageHandler {
 }
 
 //ServeHTTP handles requests depending on file type
-//http://localhost:8082/desktop/image?file_id={file_id}&width=300&height=300&mode=fit&quality=50
+//http://ADDRESS:8082/desktop/image?file_id={file_id}&width=300&height=300&mode=fit&quality=50
 func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//Extract values from URL
 	file_id := r.FormValue("file_id")
