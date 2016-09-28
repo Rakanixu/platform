@@ -31,7 +31,7 @@ const (
 )
 
 // GetDataSource returns a FileStorer interface
-func GetDataSource(ds *DataSource, endpoint *proto.Endpoint) (filestorer.FileStorer, error) {
+func GetDataSource(ctx context.Context, ds *DataSource, endpoint *proto.Endpoint) (filestorer.FileStorer, error) {
 	if strings.Contains(endpoint.Url, localEndpoint) {
 		return &local.Local{
 			Endpoint:  *endpoint,
@@ -68,7 +68,7 @@ func GetDataSource(ds *DataSource, endpoint *proto.Endpoint) (filestorer.FileSto
 }
 
 // DeleteDataSource deletes a datasource previously stored and index associated with it
-func DeleteDataSource(ds *DataSource, id string) error {
+func DeleteDataSource(ctx context.Context, ds *DataSource, id string) error {
 	var endpoint *proto.Endpoint
 
 	// Get datasource
@@ -83,7 +83,7 @@ func DeleteDataSource(ds *DataSource, id string) error {
 	)
 	readRes := &db_proto.ReadResponse{}
 
-	if err := ds.Client.Call(context.Background(), readReq, readRes); err != nil {
+	if err := ds.Client.Call(ctx, readReq, readRes); err != nil {
 		return err
 	}
 
@@ -95,7 +95,7 @@ func DeleteDataSource(ds *DataSource, id string) error {
 		// Specific clean up for local datasources
 		if strings.Contains(endpoint.Url, localEndpoint) {
 			// Remove records from helper index that only belongs to the datasource
-			if err := cleanFilesHelperIndex(ds, endpoint); err != nil {
+			if err := cleanFilesHelperIndex(ctx, ds, endpoint); err != nil {
 				return err
 			}
 		}
@@ -112,7 +112,7 @@ func DeleteDataSource(ds *DataSource, id string) error {
 		)
 		srvRes := &db_proto.DeleteResponse{}
 
-		if err := ds.Client.Call(context.Background(), srvReq, srvRes); err != nil {
+		if err := ds.Client.Call(ctx, srvReq, srvRes); err != nil {
 			return err
 		}
 
@@ -126,7 +126,7 @@ func DeleteDataSource(ds *DataSource, id string) error {
 		)
 		deleteIndexRes := &db_proto.DeleteResponse{}
 
-		if err := ds.Client.Call(context.Background(), deleteIndexReq, deleteIndexRes); err != nil {
+		if err := ds.Client.Call(ctx, deleteIndexReq, deleteIndexRes); err != nil {
 			return err
 		}
 	}
@@ -135,7 +135,7 @@ func DeleteDataSource(ds *DataSource, id string) error {
 }
 
 // SearchDataSources queries for datasources stored in ES
-func SearchDataSources(ds *DataSource, req *proto.SearchRequest) (*proto.SearchResponse, error) {
+func SearchDataSources(ctx context.Context, ds *DataSource, req *proto.SearchRequest) (*proto.SearchResponse, error) {
 	srvReq := ds.Client.NewRequest(
 		globals.DB_SERVICE_NAME,
 		"DB.Search",
@@ -152,7 +152,7 @@ func SearchDataSources(ds *DataSource, req *proto.SearchRequest) (*proto.SearchR
 	)
 	srvRes := &db_proto.SearchResponse{}
 
-	if err := ds.Client.Call(context.Background(), srvReq, srvRes); err != nil {
+	if err := ds.Client.Call(ctx, srvReq, srvRes); err != nil {
 		return nil, err
 	}
 
@@ -276,10 +276,10 @@ func CreateIndexWithAlias(ds *DataSource, ctx context.Context, endpoint *proto.E
 	return nil
 }
 
-func cleanFilesHelperIndex(ds *DataSource, endpoint *proto.Endpoint) error {
+func cleanFilesHelperIndex(ctx context.Context, ds *DataSource, endpoint *proto.Endpoint) error {
 	var datasources []*proto.Endpoint
 
-	rsp, err := SearchDataSources(ds, &proto.SearchRequest{
+	rsp, err := SearchDataSources(ctx, ds, &proto.SearchRequest{
 		Index: "datasources",
 		Type:  "datasource",
 		From:  0,
@@ -295,13 +295,13 @@ func cleanFilesHelperIndex(ds *DataSource, endpoint *proto.Endpoint) error {
 
 	idx := strings.LastIndex(endpoint.Url, "/")
 	if idx > 0 {
-		deleteZombieRecords(ds, datasources, endpoint.Url[:idx])
+		deleteZombieRecords(ctx, ds, datasources, endpoint.Url[:idx])
 	}
 
 	return nil
 }
 
-func deleteZombieRecords(ds *DataSource, datasources []*proto.Endpoint, urlToDelete string) {
+func deleteZombieRecords(ctx context.Context, ds *DataSource, datasources []*proto.Endpoint, urlToDelete string) {
 	delete := 0
 
 	for _, v := range datasources {
@@ -323,13 +323,13 @@ func deleteZombieRecords(ds *DataSource, datasources []*proto.Endpoint, urlToDel
 		)
 		deleteRes := &db_proto.DeleteResponse{}
 
-		if err := ds.Client.Call(context.Background(), deleteReq, deleteRes); err != nil {
+		if err := ds.Client.Call(ctx, deleteReq, deleteRes); err != nil {
 			log.Println("ERROR", err)
 		}
 		idx := strings.LastIndex(urlToDelete, "/")
 
 		if idx > 0 && urlToDelete[:idx] != "local:/" {
-			deleteZombieRecords(ds, datasources, urlToDelete[:idx])
+			deleteZombieRecords(ctx, ds, datasources, urlToDelete[:idx])
 		}
 	}
 }

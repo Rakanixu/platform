@@ -11,7 +11,7 @@ import (
 
 type FileStorer interface {
 	Validate(datasources string) (*datasource_proto.Endpoint, error)
-	Save(data interface{}, id string) error
+	Save(ctx context.Context, data interface{}, id string) error
 }
 
 type FileStore struct {
@@ -19,7 +19,7 @@ type FileStore struct {
 }
 
 // Save FileStore configuration
-func (fs *FileStore) Save(data interface{}, id string) error {
+func (fs *FileStore) Save(ctx context.Context, data interface{}, id string) error {
 	b, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -37,7 +37,7 @@ func (fs *FileStore) Save(data interface{}, id string) error {
 	)
 	srvRes := &db_proto.CreateResponse{}
 
-	if err := client.Call(context.Background(), srvReq, srvRes); err != nil {
+	if err := client.Call(ctx, srvReq, srvRes); err != nil {
 		return err
 	}
 

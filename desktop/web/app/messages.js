@@ -8,7 +8,7 @@ const windows = require('./windows.js');
 // Messages to communicate between node.js and IPC render process
 module.exports = (function() {
   function openFolderWindow(event, arg) {
-    dialog.showOpenDialog(win,{properties: ['openDirectory']},function(args){
+    dialog.showOpenDialog(windows.getMainWindow(), {properties: ['openDirectory']},function(args){
       event.sender.send("add-folder", args);
     });
   }

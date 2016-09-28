@@ -14,6 +14,10 @@ module.exports = (function() {
   let feedURL = "https://protected-reaches-10740.herokuapp.com";
   let isDevelopment = process.env.NODE_ENV === "development";
 
+  var _getMainWindow = function() {
+    return win;
+  };
+
   var _createMainWindow = function() {
     // Create the browser window.
     win = new BrowserWindow({
@@ -120,6 +124,7 @@ module.exports = (function() {
   }
 
   return {
+    getMainWindow: _getMainWindow,
     createMainWindow: _createMainWindow,
     createAuthWindow: _createAuthWindow
   }
