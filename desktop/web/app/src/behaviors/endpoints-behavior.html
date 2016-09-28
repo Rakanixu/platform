@@ -11,6 +11,19 @@
           value: function() {
             return window.Endpoints
           }
+        },
+        headers: {
+          type: Object,
+          notify: true,
+          value: function() {
+            return this.getHeaders();
+          }
+        }
+      },
+      getHeaders: function() {
+        return {
+          'User': 'user_id',
+          'Token': 'bearer'
         }
       }
     };

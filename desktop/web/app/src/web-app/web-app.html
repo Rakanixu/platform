@@ -412,7 +412,8 @@
                    handle-as="json"
                    on-error="_handleError"
                    on-response="_handleStartScan"
-                   params="[[rpcStartScanParams]]"></iron-ajax>
+                   params="[[rpcStartScanParams]]"
+                   headers="[[headers]]"></iron-ajax>
 
         <iron-ajax id="rpcAddDatasource"
                    method="POST"
@@ -421,7 +422,8 @@
                    handle-as="json"
                    on-error="_handleError"
                    on-response="_handleAddDatasource"
-                   params="[[rpcAddDatasourceParams]]"></iron-ajax>
+                   params="[[rpcAddDatasourceParams]]"
+                   headers="[[headers]]"></iron-ajax>
 
         <iron-ajax id="rpcGetDatasources"
                    method="POST"
@@ -430,7 +432,8 @@
                    handle-as="json"
                    on-error="_handleError"
                    on-response="_handleGetDatasource"
-                   params="[[rpcGetDatasourcesParams]]"></iron-ajax>
+                   params="[[rpcGetDatasourcesParams]]"
+                   headers="[[headers]]"></iron-ajax>
 
         <iron-ajax id="rpcElastic"
                    method="POST"
@@ -439,7 +442,8 @@
                    handle-as="json"
                    on-error="_handleError"
                    on-response="_handleElastic"
-                   params="[[rpcElasticParams]]"></iron-ajax>
+                   params="[[rpcElasticParams]]"
+                   headers="[[headers]]"></iron-ajax>
 
         <iron-media-query query="(min-width: 601px)"
                           query-matches="{{mediaQuerySmall}}"></iron-media-query>

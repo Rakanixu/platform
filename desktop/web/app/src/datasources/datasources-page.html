@@ -106,7 +106,8 @@
                handle-as="json"
                on-error="_handleError"
                on-response="_handleGetDatasource"
-               params="[[rpcGetDatasourceParams]]"></iron-ajax>
+               params="[[rpcGetDatasourceParams]]"
+               headers="[[headers]]"></iron-ajax>
 
     <iron-ajax id="rpcAddDatasource"
                method="POST"
@@ -115,7 +116,8 @@
                handle-as="json"
                on-error="_handleError"
                on-response="_handleAddDatasource"
-               params="{{rpcAddDatasourceParams}}"></iron-ajax>
+               params="{{rpcAddDatasourceParams}}"
+               headers="[[headers]]"></iron-ajax>
 
     <iron-ajax id="rpcDeleteDatasource"
                method="POST"
@@ -124,7 +126,8 @@
                handle-as="json"
                on-error="_handleError"
                on-response="_handleDeleteDatasource"
-               params="{{rpcDeleteDatasourceParams}}"></iron-ajax>
+               params="{{rpcDeleteDatasourceParams}}"
+               headers="[[headers]]"></iron-ajax>
 
     <iron-ajax id="rpcStartScan"
                method="POST"
@@ -133,7 +136,8 @@
                handle-as="json"
                on-error="_handleError"
                on-response="_handleStartScan"
-               params="[[rpcStartScanParams]]"></iron-ajax>
+               params="[[rpcStartScanParams]]"
+               headers="[[headers]]"></iron-ajax>
 
   </template>
 

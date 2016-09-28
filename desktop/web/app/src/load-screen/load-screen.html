@@ -57,7 +57,8 @@
                handle-as="json"
                on-error="_handleError"
                on-response="_handleDbStatus"
-               params="{{rpcDbStatusParams}}"></iron-ajax>
+               params="{{rpcDbStatusParams}}"
+               headers="[[headers]]"></iron-ajax>
 
     <iron-ajax id="rpcDbDatasourcesIndex"
                method="POST"
@@ -66,7 +67,8 @@
                handle-as="json"
                on-error="_handleError"
                on-response="_handleDbDatasourcesIndex"
-               params="{{rpcDbDatasorucesIndexParams}}"></iron-ajax>
+               params="{{rpcDbDatasorucesIndexParams}}"
+               headers="[[headers]]"></iron-ajax>
 
     <iron-ajax id="rpcSanitizeDatasources"
                method="POST"
@@ -75,7 +77,8 @@
                handle-as="json"
                on-error="_handleError"
                on-response="_handleSanitizeDatasources"
-               params="{{rpcSanitizeDatasourcesParams}}"></iron-ajax>
+               params="{{rpcSanitizeDatasourcesParams}}"
+               headers="[[headers]]"></iron-ajax>
 
     <iron-ajax id="rpcSetFlags"
                method="POST"
@@ -84,7 +87,8 @@
                handle-as="json"
                on-error="_handleError"
                on-response="_handleSetFlags"
-               params="{{rpcSetFlagsParams}}"></iron-ajax>
+               params="{{rpcSetFlagsParams}}"
+               headers="[[headers]]"></iron-ajax>
 
     <iron-ajax id="rpcSearch"
                method="POST"
@@ -93,7 +97,8 @@
                handle-as="json"
                on-error="_handleError"
                on-response="_handleSearch"
-               params="{{rpcSearchParams}}"></iron-ajax>
+               params="{{rpcSearchParams}}"
+               headers="[[headers]]"></iron-ajax>
 
   </template>
 
