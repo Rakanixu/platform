@@ -50,7 +50,7 @@ const (
 
 func NewGoogleOautConfig() *oauth2.Config {
 	return &oauth2.Config{
-		RedirectURL:  "http://localhost:8082/auth/google/callback",
+		RedirectURL:  SERVER_ADDRESS + "/auth/google/callback",
 		ClientID:     "928848534435-kjubrqvl1sp50sfs3icemj2ma6v2an5j.apps.googleusercontent.com",
 		ClientSecret: "zZAQz3zP5xnpLaA1S_q6YNhy",
 		Scopes: []string{
@@ -70,7 +70,7 @@ func NewGoogleOautConfig() *oauth2.Config {
 
 func NewSlackOauthConfig() *oauth2.Config {
 	return &oauth2.Config{
-		RedirectURL:  "http://localhost:8082/auth/slack/callback",
+		RedirectURL:  SERVER_ADDRESS + "/auth/slack/callback",
 		ClientID:     "2506087186.66729631906",
 		ClientSecret: "53ea1f0afa4560b7e070964fb2b0c5d6",
 		Scopes: []string{
@@ -86,7 +86,7 @@ func NewSlackOauthConfig() *oauth2.Config {
 
 func NewMicrosoftOauthConfig() *oauth2.Config {
 	return &oauth2.Config{
-		RedirectURL:  "http://localhost:8082/auth/microsoft/callback",
+		RedirectURL:  SERVER_ADDRESS + "/auth/microsoft/callback",
 		ClientID:     "60f54c2b-6631-4bf4-ae45-01b5715cb881",
 		ClientSecret: "COC67cMupbGdSCx1Omc3Z5g",
 		Endpoint: oauth2.Endpoint{
