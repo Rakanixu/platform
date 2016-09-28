@@ -49,6 +49,7 @@
 <link rel="import" href="../../src/behaviors/nav-behavior.html">
 <link rel="import" href="../../src/behaviors/categories-map-behavior.html">
 <link rel="import" href="../../src/behaviors/common-behavior.html">
+<link rel="import" href="../../src/behaviors/endpoints-behavior.html">
 
 <link rel="import" href="../../src/filter-converter/filter-converter.html">
 <link rel="import" href="../../src/detail-view/detail-view.html">
@@ -296,7 +297,7 @@
                                                 <template is="dom-if" if="[[isVideoPreview(item.category, bigVideoClass)]]">
                                                     <mat-avatar background="[[documentType(item.name)]]"
                                                                 class="primary image"
-                                                                icon-src="http://localhost:8082/media/preview?file_id=[[item.id]]&width=128&height=128&mode=fit&quality=50"></mat-avatar>
+                                                                icon-src="[[endpoints.web]]/media/preview?file_id=[[item.id]]&width=128&height=128&mode=fit&quality=50"></mat-avatar>
                                                 </template>
                                                 <template is="dom-if" if="[[!isVideoPreview(item.category, bigVideoClass)]]">
                                                     <mat-avatar background="[[documentType(item.name)]]"
@@ -333,7 +334,7 @@
                                         <div class="photoContainer grid">
                                             <div class="photoContent" tabindex$="[[tabIndex]]" on-tap="mainAction">
                                                 <iron-image sizing="cover"
-                                                            src="http://localhost:8082/media/preview?file_id=[[item.id]]&width=600&mode=fit&quality=100"
+                                                            src="[[endpoints.web]]/media/preview?file_id=[[item.id]]&width=600&mode=fit&quality=100"
                                                             preload
                                                             fade><!--placeholder="src/static/spinner_small.gif"-->
                                                     <mat-ripple></mat-ripple>
@@ -407,7 +408,7 @@
         <iron-ajax id="rpcStartScan"
                    method="POST"
                    content-type="application/json"
-                   url="http://localhost:8082/rpc"
+                   url="[[endpoints.endpoint]]"
                    handle-as="json"
                    on-error="_handleError"
                    on-response="_handleStartScan"
@@ -416,7 +417,7 @@
         <iron-ajax id="rpcAddDatasource"
                    method="POST"
                    content-type="application/json"
-                   url="http://localhost:8082/rpc"
+                   url="[[endpoints.endpoint]]"
                    handle-as="json"
                    on-error="_handleError"
                    on-response="_handleAddDatasource"
@@ -425,7 +426,7 @@
         <iron-ajax id="rpcGetDatasources"
                    method="POST"
                    content-type="application/json"
-                   url="http://localhost:8082/rpc"
+                   url="[[endpoints.endpoint]]"
                    handle-as="json"
                    on-error="_handleError"
                    on-response="_handleGetDatasource"
@@ -434,7 +435,7 @@
         <iron-ajax id="rpcElastic"
                    method="POST"
                    content-type="application/json"
-                   url="http://localhost:8082/rpc"
+                   url="[[endpoints.endpoint]]"
                    handle-as="json"
                    on-error="_handleError"
                    on-response="_handleElastic"

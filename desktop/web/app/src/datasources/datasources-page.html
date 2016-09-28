@@ -23,6 +23,7 @@
 <link rel="import" href="../../src/empty-state/empty-state.html">
 
 <link rel="import" href="../../src/behaviors/util-behavior.html">
+<link rel="import" href="../../src/behaviors/endpoints-behavior.html">
 <link rel="import" href="../../src/behaviors/nav-behavior.html">
 <link rel="import" href="../../src/behaviors/categories-map-behavior.html">
 
@@ -73,22 +74,22 @@
 
     <mat-dialog id="addDatasourceDialog" label="">
       <div>
-        <paper-button  on-tap="doAuth" data-url="local://">
-          <iron-icon  class="big" icon="kazoup:local"></iron-icon>
-          <mat-item   label="Local"/>
+        <paper-button on-tap="doAuth" data-url="local://">
+          <iron-icon class="big" icon="kazoup:local"></iron-icon>
+          <mat-item label="Local"/>
         </paper-button>
 
-        <paper-button on-tap="doAuth" data-url="http:///localhost:8082/auth/slack/login">
+        <paper-button on-tap="doAuth" data-url="[[endpoints.web]]/auth/slack/login">
           <iron-icon class="big" icon="kazoup:slack"></iron-icon>
           <mat-item label="Slack"/>
         </paper-button>
 
-        <paper-button on-tap="doAuth" data-url="http:///localhost:8082/auth/google/login">
+        <paper-button on-tap="doAuth" data-url="[[endpoints.web]]/auth/google/login">
           <iron-icon class="big" icon="kazoup:googledrive"></iron-icon>
           <mat-item label="Google Drive"/>
         </paper-button>
 
-        <paper-button  on-tap="doAuth" data-url="http:///localhost:8082/auth/microsoft/login">
+        <paper-button on-tap="doAuth" data-url="[[endpoints.web]]/auth/microsoft/login">
           <iron-icon class="big" icon="kazoup:onedrive"></iron-icon>
           <mat-item label="One Drive"/>
         </paper-button>
@@ -101,7 +102,7 @@
     <iron-ajax id="rpcGetDatasources"
                method="POST"
                content-type="application/json"
-               url="http://localhost:8082/rpc"
+               url="[[endpoints.endpoint]]"
                handle-as="json"
                on-error="_handleError"
                on-response="_handleGetDatasource"
@@ -110,7 +111,7 @@
     <iron-ajax id="rpcAddDatasource"
                method="POST"
                content-type="application/json"
-               url="http://localhost:8082/rpc"
+               url="[[endpoints.endpoint]]"
                handle-as="json"
                on-error="_handleError"
                on-response="_handleAddDatasource"
@@ -119,7 +120,7 @@
     <iron-ajax id="rpcDeleteDatasource"
                method="POST"
                content-type="application/json"
-               url="http://localhost:8082/rpc"
+               url="[[endpoints.endpoint]]"
                handle-as="json"
                on-error="_handleError"
                on-response="_handleDeleteDatasource"
@@ -128,7 +129,7 @@
     <iron-ajax id="rpcStartScan"
                method="POST"
                content-type="application/json"
-               url="http://localhost:8082/rpc"
+               url="[[endpoints.endpoint]]"
                handle-as="json"
                on-error="_handleError"
                on-response="_handleStartScan"
@@ -147,7 +148,8 @@
           Polymer.NavBehaviorImp,
           Polymer.CategoriesMapBehaviorImp,
           Polymer.AsyncBehaviorImp,
-          Polymer.CommonBehaviorImp
+          Polymer.CommonBehaviorImp,
+          Polymer.EndpointsBehaviorImp
         ],
         properties: {
           rpcGetDatasourceParams: {
