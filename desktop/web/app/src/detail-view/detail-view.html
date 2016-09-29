@@ -267,6 +267,8 @@
           }
         },
         itemChanged: function(newVal, oldVal) {
+          this.headers = this.getHeaders();
+
           switch(this.item.file_type) {
             case 'local':
               this.getMoreInfoForDirectory();

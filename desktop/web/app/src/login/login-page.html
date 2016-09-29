@@ -1,0 +1,176 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+
+<link rel="import" href="../../src/behaviors/async-behavior.html">
+<link rel="import" href="../../src/behaviors/endpoints-behavior.html">
+
+<dom-module id="login-page">
+  <style is="custom-style" include="iron-flex iron-positioning iron-flex-alignment"></style>
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      .container {
+        @apply(--layout-fullbleed);
+      }
+
+      .inner-container {
+        margin: auto;
+        text-align: center;
+      }
+
+      .inner-container paper-progress,
+      .inner-container iron-image {
+        width: 120px;
+      }
+
+      .inner-container div.form {
+        width: 220px;
+        text-align: left;
+      }
+
+      .inner-container div.form paper-button {
+        text-align: center;
+        width: 100%;
+        background: #21a9f5;
+        color: #fff;
+      }
+    </style>
+
+    <section>
+      <div class="container vertical layout">
+        <div class="flex vertical layout">
+          <div class="inner-container">
+            <iron-image src="../../src/static/kazoup-logo.png"></iron-image>
+
+            <div class="form">
+              <paper-input value="{{user.email}}" label="Email"></paper-input>
+              <paper-input value="{{user.password}}" label="Password"></paper-input>
+              <paper-button raised on-tap="login">Login</paper-button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <iron-ajax id="rpcAuthorize"
+               method="POST"
+               content-type="application/json"
+               url="[[endpoints.endpoint]]"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleAuthorize"
+               params="{{rpcAuthorizeParams}}"></iron-ajax>
+
+    <iron-ajax id="rpcToken"
+               method="POST"
+               content-type="application/json"
+               url="[[endpoints.endpoint]]"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleToken"
+               params="{{rpcTokenParams}}"></iron-ajax>
+  </template>
+
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'login-page',
+        behaviors: [
+          Polymer.AsyncBehaviorImp,
+          Polymer.EndpointsBehaviorImp
+        ],
+        properties: {
+          user: {
+            type: Object,
+            notify: true,
+            value: function() {
+              return {
+                email: '',
+                password: ''
+              }
+            }
+          },
+          rpcAuthorizeParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: 'com.kazoup.srv.auth',
+                method: 'Oauth2.Authorize',
+                request:{
+                  response_type: 'code',
+                  client_id: '',
+                  state: 'login',
+                  redirect_uri: ''
+                }
+              };
+            }
+          },
+          rpcTokenParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: 'com.kazoup.srv.auth',
+                method: 'Oauth2.Token',
+                request: {
+                  client_id: '',
+                  client_secret: '',
+                  code: '',
+                  grant_type: 'authorization_code',
+                  redirect_uri: ''
+                }
+              };
+            }
+          }
+        },
+        ready: function() {
+          window.addEventListener('login-activated', this.init.bind(this));
+        },
+        init: function() {
+
+        },
+        login: function() {
+          this.rpcAuthorizeParams.request.client_id = this.user.email;
+          this.$.rpcAuthorize.body = this.rpcAuthorizeParams;
+          this.$.rpcAuthorize.generateRequest();
+        },
+        _handleAuthorize: function(e) {
+          if (!_.isEmpty(e.detail.response) && e.detail.response.code) {
+            this.rpcTokenParams.request.code = e.detail.response.code;
+            this.rpcTokenParams.request.client_id = this.user.email;
+            this.rpcTokenParams.request.client_secret = this.user.password;
+            this.$.rpcToken.body = this.rpcTokenParams;
+            this.$.rpcToken.generateRequest();
+          } else {
+            //TODO: error toast and repeat
+          }
+        },
+        _handleToken: function(e) {
+          if (!_.isEmpty(e.detail.response) && !_.isEmpty(e.detail.response.token)) {
+            localStorage.setItem('token', JSON.stringify(e.detail.response.token));
+            this.setHeaders({
+              Token: e.detail.response.token.access_token
+            });
+
+            document.querySelector('#ironPages').selected = 2;
+            this.fireEvent('web-app-activated', {});
+          } else {
+            //TODO: error toast and repeat
+          }
+        },
+        _handleError: function(e) {
+          //TODO: error toast
+        }
+      });
+    }());
+  </script>
+</dom-module>

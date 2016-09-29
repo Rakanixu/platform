@@ -261,13 +261,16 @@
               firstScan = true;
             }
 
-            this._loadPage(1, 'web-app-activated', {
+            this._loadPage(2, 'web-app-activated', {
               first_scan: firstScan
             });
           }
         },
         _handleError: function(e) {
-
+          // Unauthorize
+          if (event.detail.request.xhr.response.code === 401) {
+            this._loadPage(1, 'login-activated', {});
+          }
         },
         _loadPage: function(selected, eventName, obj) {
           document.querySelector('#ironPages').selected = selected;

@@ -2,6 +2,8 @@
   'use strict';
 
   (function() {
+    var customHeaders;
+
     // window.Endpoints are defined on the electron index.js file (The one which is loaded in browser)
     Polymer.EndpointsBehaviorImp = {
       properties: {
@@ -21,10 +23,10 @@
         }
       },
       getHeaders: function() {
-        return {
-          'User': 'user_id',
-          'Token': 'QzV5d3RJdWtYTjdhSzN2amJxeXZPc0dXaGFDbTd1SEFiS25xd1RrTG9XWHlCN0h6WTRlYWVGcElGTlNLN3RBTg=='
-        }
+        return customHeaders;
+      },
+      setHeaders: function(headers) {
+        customHeaders = headers;
       }
     };
   }());

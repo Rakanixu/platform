@@ -104,6 +104,10 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 			return errors.InternalServerError("AuthWrapper", "Unable to retrieve metadata")
 		}
 
+		if len(md["Token"]) == 0 {
+			return errors.Unauthorized("", "")
+		}
+
 		c := auth_proto.NewOauth2Client(globals.AUTH_SERVICE_NAME, nil)
 		r, err := c.Introspect(ctx, &auth_proto.IntrospectRequest{
 			AccessToken: md["Token"],

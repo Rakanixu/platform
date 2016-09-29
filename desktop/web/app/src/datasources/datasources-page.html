@@ -235,6 +235,7 @@
           }
         },
         init: function(e, detail) {
+          this.headers = this.getHeaders();
           this.set('loading', true);
           this.async(function() {
             this.$.rpcGetDatasources.generateRequest();
