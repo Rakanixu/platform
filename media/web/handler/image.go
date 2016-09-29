@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
+
 	db "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/structs/file"
 	"github.com/kazoup/platform/structs/fs"
 	"github.com/kazoup/platform/structs/globals"
 	"github.com/micro/go-micro/client"
+	"github.com/micro/go-micro/metadata"
 
 	"golang.org/x/net/context"
 	"io/ioutil"
@@ -29,7 +31,7 @@ func NewImageHandler() *ImageHandler {
 		fs:               make([]fs.Fs, 0),
 	}
 
-	ih.loadDatasources()
+	//ih.loadDatasources()
 
 	return ih
 }
@@ -43,6 +45,7 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	height := r.FormValue("height")
 	mode := r.FormValue("mode")
 	quality := r.FormValue("quality")
+	token := r.FormValue("token")
 	//Handle empty values
 	if file_id == "" {
 		http.Error(w, "file_id argument in URL can not be empty", http.StatusBadRequest)
@@ -68,10 +71,16 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	var fSys fs.Fs
 	fSys = ih.getFs(f)
+	//build COntext
+
+	ctx := metadata.NewContext(context.TODO(), map[string]string{
+		"Token": token,
+	})
+
 	// Datasource is not on memory yet, (was created after the srv started to run)
 	// Lets reload the datasources in memory
 	if fSys == nil {
-		ih.loadDatasources()
+		ih.loadDatasources(ctx)
 		fSys = ih.getFs(f)
 	}
 
@@ -113,8 +122,8 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func (ih *ImageHandler) loadDatasources() {
-	rsp, err := ih.datasourceClient.Search(context.Background(), &datasource.SearchRequest{
+func (ih *ImageHandler) loadDatasources(ctx context.Context) {
+	rsp, err := ih.datasourceClient.Search(ctx, &datasource.SearchRequest{
 		Index: "datasources",
 		Type:  "datasource",
 		From:  0,
