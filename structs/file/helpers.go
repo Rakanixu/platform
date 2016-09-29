@@ -18,8 +18,8 @@ import (
 	googledrive "google.golang.org/api/drive/v3"
 )
 
-func GetFileByID(id string, c db.DBClient) (File, error) {
-	dbres, err := c.SearchById(context.TODO(), &db.SearchByIdRequest{
+func GetFileByID(ctx context.Context, id string, c db.DBClient) (File, error) {
+	dbres, err := c.SearchById(ctx, &db.SearchByIdRequest{
 		Index: "files",
 		Type:  "file",
 		Id:    id,

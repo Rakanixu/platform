@@ -63,7 +63,13 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if quality == "" {
 		quality = "50"
 	}
-	f, err := file.GetFileByID(file_id, ih.dbclient)
+
+	// Build context
+	ctx := metadata.NewContext(context.TODO(), map[string]string{
+		"Token": token,
+	})
+
+	f, err := file.GetFileByID(ctx, file_id, ih.dbclient)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -71,11 +77,6 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	var fSys fs.Fs
 	fSys = ih.getFs(f)
-	//build COntext
-
-	ctx := metadata.NewContext(context.TODO(), map[string]string{
-		"Token": token,
-	})
 
 	// Datasource is not on memory yet, (was created after the srv started to run)
 	// Lets reload the datasources in memory
