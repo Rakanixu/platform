@@ -3,18 +3,20 @@ package wrappers
 import (
 	"fmt"
 	log "github.com/Sirupsen/logrus"
-	"os"
-	"os/user"
-
 	"github.com/kazoup/platform/structs/globals"
+	auth_proto "github.com/micro/auth-srv/proto/oauth2"
 	"github.com/micro/cli"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/client"
+	"github.com/micro/go-micro/errors"
 	"github.com/micro/go-micro/metadata"
 	"github.com/micro/go-micro/registry"
 	"github.com/micro/go-micro/selector"
 	"github.com/micro/go-micro/server"
 	"golang.org/x/net/context"
+	"golang.org/x/oauth2"
+	"os"
+	"os/user"
 	"time"
 )
 
@@ -22,9 +24,11 @@ import (
 type LogWrapper struct {
 	client.Client
 }
+
 type DesktopWrapper struct {
 	client.Client
 }
+
 type clientWrapper struct {
 	service micro.Service
 	client.Client
@@ -51,6 +55,7 @@ func NewHandlerWrapper(service micro.Service) server.HandlerWrapper {
 		}
 	}
 }
+
 func (dw *DesktopWrapper) Call(ctx context.Context, req client.Request, rsp interface{}, opts ...client.CallOption) error {
 	hostname, _ := os.Hostname()
 	md, _ := metadata.FromContext(ctx)
@@ -78,6 +83,7 @@ func (dw *DesktopWrapper) Call(ctx context.Context, req client.Request, rsp inte
 	}).Info("[Dekstop Wrapper] filtering for hostname")
 	return dw.Client.Call(ctx, req, rsp, callOptions...)
 }
+
 func (l *LogWrapper) Call(ctx context.Context, req client.Request, rsp interface{}, opts ...client.CallOption) error {
 	md, _ := metadata.FromContext(ctx)
 	log.WithFields(log.Fields{
@@ -89,6 +95,58 @@ func (l *LogWrapper) Call(ctx context.Context, req client.Request, rsp interface
 	return l.Client.Call(ctx, req, rsp)
 }
 
+func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
+	return func(ctx context.Context, req server.Request, rsp interface{}) error {
+		var f error
+
+		md, ok := metadata.FromContext(ctx)
+		if !ok {
+			return errors.InternalServerError("AuthWrapper", "Unable to retrieve metadata")
+		}
+
+		c := auth_proto.NewOauth2Client(globals.AUTH_SERVICE_NAME, nil)
+		r, err := c.Introspect(ctx, &auth_proto.IntrospectRequest{
+			AccessToken: md["Token"],
+		})
+		if err != nil {
+			return errors.InternalServerError("AuthWrapper", err.Error())
+		}
+
+		if r.GetToken() == nil {
+			return errors.Unauthorized("", "")
+		}
+
+		if !r.Active {
+			cfg := &oauth2.Config{}
+			tokenSource := cfg.TokenSource(oauth2.NoContext, &oauth2.Token{
+				AccessToken:  r.Token.AccessToken,
+				TokenType:    r.Token.TokenType,
+				RefreshToken: r.Token.RefreshToken,
+				Expiry:       time.Unix(r.Token.ExpiresAt, 0),
+			})
+			t, err := tokenSource.Token()
+			if err != nil {
+				return errors.InternalServerError("AuthWrapper", err.Error())
+			}
+
+			//newCtx := client.NewContext(ctx, t)
+
+			newCtx := metadata.NewContext(ctx, map[string]string{
+				"Token": t.AccessToken,
+			})
+
+			log.Println("========")
+			log.Println(newCtx)
+
+			f = fn(newCtx, req, rsp)
+		} else {
+			f = fn(ctx, req, rsp)
+		}
+
+		return f
+	}
+}
+
 // Implements client.Wrapper as logWrapper
 func LogWrap(c client.Client) client.Client {
 	return &LogWrapper{c}
@@ -96,6 +154,7 @@ func LogWrap(c client.Client) client.Client {
 func DesktopWrap(c client.Client) client.Client {
 	return &DesktopWrapper{c}
 }
+
 func NewKazoupClient() client.Client {
 	c := client.NewClient(
 		client.Wrap(DesktopWrap),
@@ -118,14 +177,15 @@ func NewKazoupService(name string) micro.Service {
 		"hostname": hostname,
 		"username": u.Username,
 	}
-	if name == "db" {
 
+	if name == "db" {
 		sn := fmt.Sprintf("%s.srv.%s", globals.NAMESPACE, name)
 		service := micro.NewService(
 			micro.Name(sn),
 			micro.Version("latest"),
 			micro.Metadata(md),
 			micro.Client(NewKazoupClient()),
+			micro.WrapHandler(AuthWrapper),
 			micro.Flags(
 				cli.StringFlag{
 					Name:   "elasticsearch_hosts",
@@ -139,10 +199,10 @@ func NewKazoupService(name string) micro.Service {
 				//elastic.Hosts = parts
 			}),
 		)
+
 		return service
 	}
 	sn := fmt.Sprintf("%s.srv.%s", globals.NAMESPACE, name)
-
 	service := micro.NewService(
 		micro.Name(sn),
 		micro.Version("latest"),
@@ -150,8 +210,7 @@ func NewKazoupService(name string) micro.Service {
 		micro.RegisterTTL(time.Minute),
 		micro.RegisterInterval(time.Second*30),
 		micro.Client(NewKazoupClient()),
-		//micro.WrapHandler(service_wrapper.NewHandlerWrapper(service)),
-		//micro.WrapClient(service_wrapper.NewClientWrapper(service)),
+		micro.WrapHandler(AuthWrapper),
 	)
 	return service
 }

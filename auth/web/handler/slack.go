@@ -6,7 +6,6 @@ import (
 	"github.com/kazoup/platform/structs/globals"
 	"golang.org/x/oauth2"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
@@ -23,7 +22,6 @@ type SlackTeamInfo struct {
 
 func HandleSlackLogin(w http.ResponseWriter, r *http.Request) {
 	url := globals.NewSlackOauthConfig().AuthCodeURL(globals.OauthStateString, oauth2.AccessTypeOffline)
-	log.Print(url)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 

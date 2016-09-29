@@ -88,8 +88,6 @@ func (ofs *OneDriveFs) GetThumbnail(id string) (string, error) {
 	c := &http.Client{}
 	//https://api.onedrive.com/v1.0/drives
 	url := fmt.Sprintf("%sitems/%s/thumbnails/0/medium", globals.OneDriveEndpoint+Drive, id)
-	log.Println("----------------")
-	log.Println(url)
 	req, err := http.NewRequest("GET", url, nil)
 	req.Header.Set("Authorization", ofs.Endpoint.Token.TokenType+" "+ofs.Endpoint.Token.AccessToken)
 	if err != nil {
