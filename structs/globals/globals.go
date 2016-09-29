@@ -46,7 +46,7 @@ const (
 
 	StartScanTask = "start_scan"
 
-	SERVER_ADDRESS = "http://10.17.57.130:8082"
+	SERVER_ADDRESS = "http://web.kazoup.io:8082"
 )
 
 func NewGoogleOautConfig() *oauth2.Config {

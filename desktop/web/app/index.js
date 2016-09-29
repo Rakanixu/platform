@@ -26,8 +26,8 @@ function boot() {
 
 var Endpoints = (function() {
   return {
-      endpoint: 'http://10.17.57.130:8082/rpc',
-      web: 'http://10.17.57.130:8082',
+      endpoint: 'http://web.kazoup.io:8082/rpc',
+      web: 'http://web.kazoup.io:8082',
       srvs:{
           config: {
               srv: 'com.kazoup.srv.config',
