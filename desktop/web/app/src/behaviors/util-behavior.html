@@ -139,10 +139,10 @@
         return stripDataOrigin(path);
       },
       getPreview: function(id){
-	      return this.endpoints.web + "/media/image?file_id=" + id;
+	      return this.endpoints.web + "/media/image?file_id=" + id + "&token=" + this.getToken();
       },
       getAsset: function(path) {
-	      return this.endpoints.web + "/media/raw/" + removeSlashesFromBegining(stripDataOrigin(path));
+	      return this.endpoints.web + "/media/raw/" + removeSlashesFromBegining(stripDataOrigin(path)) + "&token=" + this.getToken();
       },
       getDatasourceType: function(datasource) {
         return datasource.split('://')[0];

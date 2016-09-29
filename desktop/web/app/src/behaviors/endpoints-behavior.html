@@ -27,6 +27,9 @@
       },
       setHeaders: function(headers) {
         customHeaders = headers;
+      },
+      getToken: function() {
+        return JSON.parse(localStorage.getItem('token')).access_token;
       }
     };
   }());

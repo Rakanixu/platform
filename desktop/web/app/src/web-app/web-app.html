@@ -297,7 +297,7 @@
                                                 <template is="dom-if" if="[[isVideoPreview(item.category, bigVideoClass)]]">
                                                     <mat-avatar background="[[documentType(item.name)]]"
                                                                 class="primary image"
-                                                                icon-src="[[endpoints.web]]/media/preview?file_id=[[item.id]]&width=128&height=128&mode=fit&quality=50"></mat-avatar>
+                                                                icon-src="[[endpoints.web]]/media/preview?file_id=[[item.id]]&width=128&height=128&mode=fit&quality=50&token=[[getToken()]]"></mat-avatar>
                                                 </template>
                                                 <template is="dom-if" if="[[!isVideoPreview(item.category, bigVideoClass)]]">
                                                     <mat-avatar background="[[documentType(item.name)]]"
@@ -334,7 +334,7 @@
                                         <div class="photoContainer grid">
                                             <div class="photoContent" tabindex$="[[tabIndex]]" on-tap="mainAction">
                                                 <iron-image sizing="cover"
-                                                            src="[[endpoints.web]]/media/preview?file_id=[[item.id]]&width=600&mode=fit&quality=100"
+                                                            src="[[endpoints.web]]/media/preview?file_id=[[item.id]]&width=600&mode=fit&quality=100&token=[[getToken()]]"
                                                             preload
                                                             fade><!--placeholder="src/static/spinner_small.gif"-->
                                                     <mat-ripple></mat-ripple>
