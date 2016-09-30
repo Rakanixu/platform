@@ -17,6 +17,12 @@
         document.querySelector('#ironPages').selected = 3;
         this.fireEvent('settings-page-activated');
       },
+      logout: function() {
+        // TODO: Revoke token from system
+        localStorage.clear();
+        document.querySelector('#ironPages').selected = 1;
+        this.fireEvent('login-activated');
+      },
       ready: function() {
         // This is being fired more than once, exactly as many elements import it.
         // ready on behavior is a bad practice
