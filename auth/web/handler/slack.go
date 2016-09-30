@@ -21,14 +21,14 @@ type SlackTeamInfo struct {
 }
 
 func HandleSlackLogin(w http.ResponseWriter, r *http.Request) {
-	url := globals.NewSlackOauthConfig().AuthCodeURL(globals.OauthStateString, oauth2.AccessTypeOffline)
+	url := globals.NewSlackOauthConfig().AuthCodeURL(r.URL.Query().Get("user"), oauth2.AccessTypeOffline)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
 func HandleSlackCallback(w http.ResponseWriter, r *http.Request) {
 	state := r.FormValue("state")
-	if state != globals.OauthStateString {
-		fmt.Printf("invalid oauth state, expected '%s', got '%s'\n", globals.OauthStateString, state)
+	if len(state) == 0 {
+		fmt.Printf("invalid oauth state, got '%s'\n", state)
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
@@ -57,7 +57,7 @@ func HandleSlackCallback(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Error $s", sr)
 	}
 	url := fmt.Sprintf("slack://%s", sr.Team.Name)
-	if err := SaveDatasource(globals.NewSystemContext(), url, token); err != nil {
+	if err := SaveDatasource(globals.NewSystemContext(), state, url, token); err != nil {
 		fmt.Fprintf(w, err.Error())
 	}
 

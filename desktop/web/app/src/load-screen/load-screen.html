@@ -70,6 +70,16 @@
                params="{{rpcDbDatasorucesIndexParams}}"
                headers="[[headers]]"></iron-ajax>
 
+    <iron-ajax id="rpcDbDatasourcesMapping"
+               method="POST"
+               content-type="application/json"
+               url="[[endpoints.endpoint]]"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleDbDatasourcesMapping"
+               params="{{rpcDbDatasourcesMappingParams}}"
+               headers="[[headers]]"></iron-ajax>
+
     <iron-ajax id="rpcSanitizeDatasources"
                method="POST"
                content-type="application/json"
@@ -147,6 +157,20 @@
               };
             }
           },
+          rpcDbDatasourcesMappingParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: 'com.kazoup.srv.db',
+                method: 'DB.PutMappingFromJSON',
+                request: {
+                  index: 'datasources',
+                  type: 'datasource'
+                }
+              };
+            }
+          },
           rpcSanitizeDatasourcesParams: {
             type: Object,
             notify: false,
@@ -192,6 +216,8 @@
           }
         },
         ready: function() {
+          this.headers = this.getPublicHeaders();
+
           this.$.rpcDbStatus.body = this.rpcDbStatusParams;
           this.$.rpcDbDatasourcesIndex.body = this.rpcDbDatasourcesIndexParams;
           this.$.rpcSetFlags.body = this.rpcSetFlagsParams;
@@ -229,6 +255,10 @@
           }
         },
         _handleDbDatasourcesIndex: function(e) {
+          this.$.rpcDbDatasourcesMapping.body = this.rpcDbDatasourcesMappingParams;
+          this.$.rpcDbDatasourcesMapping.generateRequest();
+        },
+        _handleDbDatasourcesMapping: function(e) {
 
         },
         _handleSetFlags: function(e) {

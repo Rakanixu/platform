@@ -75,6 +75,15 @@
                on-error="_handleError"
                on-response="_handleToken"
                params="{{rpcTokenParams}}"></iron-ajax>
+
+    <iron-ajax id="rpcUser"
+               method="POST"
+               content-type="application/json"
+               url="[[endpoints.endpoint]]"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleUser"
+               params="{{rpcUserParams}}"></iron-ajax>
   </template>
 
   <script>
@@ -130,18 +139,45 @@
                 }
               };
             }
+          },
+          rpcUserParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: 'com.kazoup.srv.auth',
+                method: 'Account.Search',
+                request: {
+                  client_id: '',
+                }
+              };
+            }
           }
         },
         ready: function() {
           window.addEventListener('login-activated', this.init.bind(this));
         },
         init: function() {
-
+          this.set('user.email', '');
+          this.set('user.password', '');
         },
         login: function() {
-          this.rpcAuthorizeParams.request.client_id = this.user.email;
-          this.$.rpcAuthorize.body = this.rpcAuthorizeParams;
-          this.$.rpcAuthorize.generateRequest();
+          this.rpcUserParams.request.client_id = this.user.email;
+          this.$.rpcUser.body = this.rpcUserParams;
+
+          this.$.rpcUser.generateRequest();
+        },
+        _handleUser: function(e) {
+          if (!_.isEmpty(e.detail.response) && e.detail.response.accounts && e.detail.response.accounts.length) {
+            this.setUserId(e.detail.response.accounts[0].id);
+
+            this.rpcAuthorizeParams.request.client_id = this.user.email;
+            this.$.rpcAuthorize.body = this.rpcAuthorizeParams;
+
+            this.$.rpcAuthorize.generateRequest();
+          } else {
+            //TODO: error toast and repeat
+          }
         },
         _handleAuthorize: function(e) {
           if (!_.isEmpty(e.detail.response) && e.detail.response.code) {
@@ -158,7 +194,8 @@
           if (!_.isEmpty(e.detail.response) && !_.isEmpty(e.detail.response.token)) {
             localStorage.setItem('token', JSON.stringify(e.detail.response.token));
             this.setHeaders({
-              Token: e.detail.response.token.access_token
+              Token: e.detail.response.token.access_token,
+              User: this.getUserId()
             });
 
             document.querySelector('#ironPages').selected = 2;

@@ -250,7 +250,7 @@
               ipcRenderer.send(
                 'auth-message',
                 {
-                  url: e.currentTarget.getAttribute('data-url') + '?token=' + this.getToken(),
+                  url: e.currentTarget.getAttribute('data-url') + '?user=' + this.getUserId(),
                   token: localStorage.getItem('token')
                 }
               );

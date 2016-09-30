@@ -147,6 +147,7 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 				} else {
 
 				}*/
+
 		f = fn(ctx, req, rsp)
 
 		return f

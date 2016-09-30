@@ -115,6 +115,7 @@ func (e *elastic) RemoveAlias(index string, alias string) (lib.BaseResponse, err
 type ElasticQuery struct {
 	Index    string
 	Id       string
+	UserId   string
 	Term     string
 	From     int64
 	Size     int64
@@ -139,6 +140,7 @@ func (e *ElasticQuery) Query() (string, error) {
 	buffer.WriteString(e.filterCategory() + ",")
 	buffer.WriteString(e.filterDepth() + ",")
 	buffer.WriteString(e.filterUrl() + ",")
+	buffer.WriteString(e.filterUser() + ",")
 	buffer.WriteString(e.filterType())
 	buffer.WriteString(`]}}, "sort":[`)
 	buffer.WriteString(e.defaultSorting())
@@ -246,6 +248,20 @@ func (e *ElasticQuery) filterUrl() string {
 	} else {
 		buffer.WriteString(`{"term": {"url": "`)
 		buffer.WriteString(e.Url)
+		buffer.WriteString(`"}}`)
+	}
+
+	return buffer.String()
+}
+
+func (e *ElasticQuery) filterUser() string {
+	var buffer bytes.Buffer
+
+	if len(e.UserId) <= 0 {
+		buffer.WriteString(`{}`)
+	} else {
+		buffer.WriteString(`{"term": {"user_id": "`)
+		buffer.WriteString(e.UserId)
 		buffer.WriteString(`"}}`)
 	}
 

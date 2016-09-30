@@ -11,11 +11,18 @@ import (
 )
 
 func HandleMicrosoftLogin(w http.ResponseWriter, r *http.Request) {
-	url := globals.NewMicrosoftOauthConfig().AuthCodeURL(globals.OauthStateString, oauth2.AccessTypeOffline)
+	url := globals.NewMicrosoftOauthConfig().AuthCodeURL(r.URL.Query().Get("user"), oauth2.AccessTypeOffline)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
 func HandleMicrosoftCallback(w http.ResponseWriter, r *http.Request) {
+	state := r.FormValue("state")
+	if len(state) == 0 {
+		fmt.Printf("invalid oauth state, got '%s'\n", state)
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		return
+	}
+
 	code := r.FormValue("code")
 	token, err := globals.NewMicrosoftOauthConfig().Exchange(oauth2.NoContext, code)
 	if err != nil {
@@ -52,7 +59,7 @@ func HandleMicrosoftCallback(w http.ResponseWriter, r *http.Request) {
 
 	url := fmt.Sprintf("onedrive://%s", drivesRsp.Value[0].Owner.User.DisplayName)
 
-	if err := SaveDatasource(globals.NewSystemContext(), url, token); err != nil {
+	if err := SaveDatasource(globals.NewSystemContext(), state, url, token); err != nil {
 		fmt.Fprintf(w, "Error adding data source %s \n", err.Error())
 	}
 

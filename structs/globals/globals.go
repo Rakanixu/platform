@@ -25,9 +25,10 @@ const (
 	CrawlerFinishedTopic    string = NAMESPACE + ".topic.crawlerfinished"
 	NotificationTopic       string = NAMESPACE + ".topic.notification"
 
-	IndexHelper = "files_helper"
-	FilesAlias  = "files"
-	FileType    = "file"
+	IndexDatasources = "datasources"
+	IndexHelper      = "files_helper"
+	FilesAlias       = "files"
+	FileType         = "file"
 
 	FileTypeFile      = "files"
 	FileTypeDirectory = "directories"

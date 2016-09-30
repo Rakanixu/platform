@@ -11,12 +11,13 @@ service DataSource {
 
 message Endpoint {
   string id = 1;
-  string url = 2;  // example: local://tmp/test, nfs://123.19.2.8/volume1, smb://10.17.77.3/volume1
-  string index = 3;
-  int64 last_scan = 4;
-  int64 last_scan_started = 5;
-  bool crawler_running = 6;
-  Token token = 7;
+  string user_id =2;
+  string url = 3;  // example: local://tmp/test, nfs://123.19.2.8/volume1, smb://10.17.77.3/volume1
+  string index = 4;
+  int64 last_scan = 5;
+  int64 last_scan_started = 6;
+  bool crawler_running = 7;
+  Token token = 8;
 }
 
 message CreateRequest {

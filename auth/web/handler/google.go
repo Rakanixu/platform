@@ -24,16 +24,15 @@ type GoogleUserInfo struct {
 }
 
 func HandleGoogleLogin(w http.ResponseWriter, r *http.Request) {
-	url := globals.NewGoogleOautConfig().AuthCodeURL(globals.OauthStateString, oauth2.AccessTypeOffline)
-	log.Print(url)
+	url := globals.NewGoogleOautConfig().AuthCodeURL(r.URL.Query().Get("user"), oauth2.AccessTypeOffline)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
 func HandleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 	userInfo := new(GoogleUserInfo)
 	state := r.FormValue("state")
-	if state != globals.OauthStateString {
-		fmt.Printf("invalid oauth state, expected '%s', got '%s'\n", globals.OauthStateString, state)
+	if len(state) == 0 {
+		fmt.Printf("invalid oauth state, got '%s'\n", state)
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
@@ -54,7 +53,7 @@ func HandleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 	}
 	url := fmt.Sprintf("googledrive://%s", userInfo.Email)
 
-	if err := SaveDatasource(globals.NewSystemContext(), url, token); err != nil {
+	if err := SaveDatasource(globals.NewSystemContext(), state, url, token); err != nil {
 		fmt.Fprintf(w, "Error adding data source %s \n", err.Error())
 	}
 

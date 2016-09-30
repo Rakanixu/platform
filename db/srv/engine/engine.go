@@ -22,21 +22,21 @@ type Engine interface {
 	SubscribeSlackUsers(ctx context.Context, msg *crawler.SlackUserMessage) error
 	SubscribeSlackChannels(ctx context.Context, msg *crawler.SlackChannelMessage) error
 	SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedMessage) error
-	Create(req *db.CreateRequest) (*db.CreateResponse, error)
-	Read(req *db.ReadRequest) (*db.ReadResponse, error)
-	Update(req *db.UpdateRequest) (*db.UpdateResponse, error)
-	Delete(req *db.DeleteRequest) (*db.DeleteResponse, error)
-	DeleteByQuery(req *db.DeleteByQueryRequest) (*db.DeleteByQueryResponse, error)
-	CreateIndexWithSettings(req *db.CreateIndexWithSettingsRequest) (*db.CreateIndexWithSettingsResponse, error)
-	PutMappingFromJSON(req *db.PutMappingFromJSONRequest) (*db.PutMappingFromJSONResponse, error)
-	Status(req *db.StatusRequest) (*db.StatusResponse, error)
-	Search(req *db.SearchRequest) (*db.SearchResponse, error)
-	SearchById(req *db.SearchByIdRequest) (*db.SearchByIdResponse, error)
-	AddAlias(req *db.AddAliasRequest) (*db.AddAliasResponse, error)
-	DeleteIndex(req *db.DeleteIndexRequest) (*db.DeleteIndexResponse, error)
-	DeleteAlias(req *db.DeleteAliasRequest) (*db.DeleteAliasResponse, error)
-	RenameAlias(req *db.RenameAliasRequest) (*db.RenameAliasResponse, error)
-	Aggregate(req *search_proto.AggregateRequest) (*search_proto.AggregateResponse, error)
+	Create(ctx context.Context, req *db.CreateRequest) (*db.CreateResponse, error)
+	Read(ctx context.Context, req *db.ReadRequest) (*db.ReadResponse, error)
+	Update(ctx context.Context, req *db.UpdateRequest) (*db.UpdateResponse, error)
+	Delete(ctx context.Context, req *db.DeleteRequest) (*db.DeleteResponse, error)
+	DeleteByQuery(ctx context.Context, req *db.DeleteByQueryRequest) (*db.DeleteByQueryResponse, error)
+	CreateIndexWithSettings(ctx context.Context, req *db.CreateIndexWithSettingsRequest) (*db.CreateIndexWithSettingsResponse, error)
+	PutMappingFromJSON(ctx context.Context, req *db.PutMappingFromJSONRequest) (*db.PutMappingFromJSONResponse, error)
+	Status(ctx context.Context, req *db.StatusRequest) (*db.StatusResponse, error)
+	Search(ctx context.Context, req *db.SearchRequest) (*db.SearchResponse, error)
+	SearchById(ctx context.Context, req *db.SearchByIdRequest) (*db.SearchByIdResponse, error)
+	AddAlias(ctx context.Context, req *db.AddAliasRequest) (*db.AddAliasResponse, error)
+	DeleteIndex(ctx context.Context, req *db.DeleteIndexRequest) (*db.DeleteIndexResponse, error)
+	DeleteAlias(ctx context.Context, req *db.DeleteAliasRequest) (*db.DeleteAliasResponse, error)
+	RenameAlias(ctx context.Context, req *db.RenameAliasRequest) (*db.RenameAliasResponse, error)
+	Aggregate(ctx context.Context, req *search_proto.AggregateRequest) (*search_proto.AggregateResponse, error)
 }
 
 var (
@@ -67,64 +67,64 @@ func SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedM
 	return engine.SubscribeCrawlerFinished(ctx, msg)
 }
 
-func Create(req *db.CreateRequest) (*db.CreateResponse, error) {
-	return engine.Create(req)
+func Create(ctx context.Context, req *db.CreateRequest) (*db.CreateResponse, error) {
+	return engine.Create(ctx, req)
 }
 
-func Read(req *db.ReadRequest) (*db.ReadResponse, error) {
-	return engine.Read(req)
+func Read(ctx context.Context, req *db.ReadRequest) (*db.ReadResponse, error) {
+	return engine.Read(ctx, req)
 }
 
-func Update(req *db.UpdateRequest) (*db.UpdateResponse, error) {
-	return engine.Update(req)
+func Update(ctx context.Context, req *db.UpdateRequest) (*db.UpdateResponse, error) {
+	return engine.Update(ctx, req)
 }
 
-func Delete(req *db.DeleteRequest) (*db.DeleteResponse, error) {
-	return engine.Delete(req)
+func Delete(ctx context.Context, req *db.DeleteRequest) (*db.DeleteResponse, error) {
+	return engine.Delete(ctx, req)
 }
 
-func DeleteByQuery(req *db.DeleteByQueryRequest) (*db.DeleteByQueryResponse, error) {
-	return engine.DeleteByQuery(req)
+func DeleteByQuery(ctx context.Context, req *db.DeleteByQueryRequest) (*db.DeleteByQueryResponse, error) {
+	return engine.DeleteByQuery(ctx, req)
 }
 
-func CreateIndexWithSettings(req *db.CreateIndexWithSettingsRequest) (*db.CreateIndexWithSettingsResponse, error) {
-	return engine.CreateIndexWithSettings(req)
+func CreateIndexWithSettings(ctx context.Context, req *db.CreateIndexWithSettingsRequest) (*db.CreateIndexWithSettingsResponse, error) {
+	return engine.CreateIndexWithSettings(ctx, req)
 }
 
-func PutMappingFromJSON(req *db.PutMappingFromJSONRequest) (*db.PutMappingFromJSONResponse, error) {
-	return engine.PutMappingFromJSON(req)
+func PutMappingFromJSON(ctx context.Context, req *db.PutMappingFromJSONRequest) (*db.PutMappingFromJSONResponse, error) {
+	return engine.PutMappingFromJSON(ctx, req)
 }
 
-func Status(req *db.StatusRequest) (*db.StatusResponse, error) {
-	return engine.Status(req)
+func Status(ctx context.Context, req *db.StatusRequest) (*db.StatusResponse, error) {
+	return engine.Status(ctx, req)
 }
 
-func Search(req *db.SearchRequest) (*db.SearchResponse, error) {
-	return engine.Search(req)
+func Search(ctx context.Context, req *db.SearchRequest) (*db.SearchResponse, error) {
+	return engine.Search(ctx, req)
 }
 
-func SearchById(req *db.SearchByIdRequest) (*db.SearchByIdResponse, error) {
-	return engine.SearchById(req)
+func SearchById(ctx context.Context, req *db.SearchByIdRequest) (*db.SearchByIdResponse, error) {
+	return engine.SearchById(ctx, req)
 }
 
-func AddAlias(req *db.AddAliasRequest) (*db.AddAliasResponse, error) {
-	return engine.AddAlias(req)
+func AddAlias(ctx context.Context, req *db.AddAliasRequest) (*db.AddAliasResponse, error) {
+	return engine.AddAlias(ctx, req)
 }
 
-func DeleteIndex(req *db.DeleteIndexRequest) (*db.DeleteIndexResponse, error) {
-	return engine.DeleteIndex(req)
+func DeleteIndex(ctx context.Context, req *db.DeleteIndexRequest) (*db.DeleteIndexResponse, error) {
+	return engine.DeleteIndex(ctx, req)
 }
 
-func DeleteAlias(req *db.DeleteAliasRequest) (*db.DeleteAliasResponse, error) {
-	return engine.DeleteAlias(req)
+func DeleteAlias(ctx context.Context, req *db.DeleteAliasRequest) (*db.DeleteAliasResponse, error) {
+	return engine.DeleteAlias(ctx, req)
 }
 
-func RenameAlias(req *db.RenameAliasRequest) (*db.RenameAliasResponse, error) {
-	return engine.RenameAlias(req)
+func RenameAlias(ctx context.Context, req *db.RenameAliasRequest) (*db.RenameAliasResponse, error) {
+	return engine.RenameAlias(ctx, req)
 }
 
-func Aggregate(req *search_proto.AggregateRequest) (*search_proto.AggregateResponse, error) {
-	return engine.Aggregate(req)
+func Aggregate(ctx context.Context, req *search_proto.AggregateRequest) (*search_proto.AggregateResponse, error) {
+	return engine.Aggregate(ctx, req)
 }
 
 func TypeFactory(typ string, data string) (interface{}, error) {
