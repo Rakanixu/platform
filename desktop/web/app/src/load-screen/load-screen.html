@@ -267,10 +267,7 @@
           }
         },
         _handleError: function(e) {
-          // Unauthorize
-          if (event.detail.request.xhr.response.code === 401) {
-            this._loadPage(1, 'login-activated', {});
-          }
+          this.checkUnauthorize(e);
         },
         _loadPage: function(selected, eventName, obj) {
           document.querySelector('#ironPages').selected = selected;

@@ -30,6 +30,13 @@
       },
       getToken: function() {
         return JSON.parse(localStorage.getItem('token')).access_token;
+      },
+      checkUnauthorize: function() {
+        // Unauthorize
+        if (event.detail.request.xhr.response.code === 401) {
+          localStorage.clear();
+          this._loadPage(1, 'login-activated', {});
+        }
       }
     };
   }());

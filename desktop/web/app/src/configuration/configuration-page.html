@@ -96,6 +96,8 @@
         },
         _handleError: function(e) {
           this.set('loading', false);
+          this.checkUnauthorize(e);
+
           if (e.detail.request && e.detail.request.response) {
             this.$.toast.text = e.detail.request.response.detail;
             this.$.toast.show();
