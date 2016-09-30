@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
+	"github.com/micro/go-micro/metadata"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -47,6 +48,8 @@ const (
 	StartScanTask = "start_scan"
 
 	SERVER_ADDRESS = "http://web.kazoup.io:8082"
+
+	SYSTEM_TOKEN = "ajsdIgsnaloHFGis823jsdgyjTGDKijfcjk783JDUYFJyggvwejkxsnmbkjwpoj6483"
 )
 
 func NewGoogleOautConfig() *oauth2.Config {
@@ -87,7 +90,8 @@ func NewSlackOauthConfig() *oauth2.Config {
 
 func NewMicrosoftOauthConfig() *oauth2.Config {
 	return &oauth2.Config{
-		RedirectURL:  SERVER_ADDRESS + "/auth/microsoft/callback",
+		//TODO: switch to SSl
+		RedirectURL:  "http://localhost:8082/auth/microsoft/callback",
 		ClientID:     "60f54c2b-6631-4bf4-ae45-01b5715cb881",
 		ClientSecret: "COC67cMupbGdSCx1Omc3Z5g",
 		Endpoint: oauth2.Endpoint{
@@ -101,6 +105,13 @@ func NewMicrosoftOauthConfig() *oauth2.Config {
 			"offline_access",
 		},
 	}
+}
+
+// NewSystemContext System context
+func NewSystemContext() context.Context {
+	return metadata.NewContext(context.TODO(), map[string]string{
+		"Token": SYSTEM_TOKEN,
+	})
 }
 
 // Remove records (Files) from db that not longer belong to a datasource

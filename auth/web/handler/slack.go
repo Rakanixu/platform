@@ -57,7 +57,7 @@ func HandleSlackCallback(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Error $s", sr)
 	}
 	url := fmt.Sprintf("slack://%s", sr.Team.Name)
-	if err := SaveDatasource(url, token); err != nil {
+	if err := SaveDatasource(globals.NewSystemContext(), url, token); err != nil {
 		fmt.Fprintf(w, err.Error())
 	}
 

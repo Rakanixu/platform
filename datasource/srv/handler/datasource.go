@@ -112,11 +112,11 @@ func SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedM
 		Id:    msg.DatasourceId,
 	})
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 
 	if err := json.Unmarshal([]byte(rsp.Result), &ds); err != nil {
-		log.Println(err)
+		return err
 	}
 
 	ds.CrawlerRunning = false

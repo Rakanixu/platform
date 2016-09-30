@@ -14,7 +14,6 @@ import (
 	"github.com/micro/go-micro/selector"
 	"github.com/micro/go-micro/server"
 	"golang.org/x/net/context"
-	"golang.org/x/oauth2"
 	"os"
 	"os/user"
 	"time"
@@ -108,44 +107,58 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 			return errors.Unauthorized("", "")
 		}
 
-		c := auth_proto.NewOauth2Client(globals.AUTH_SERVICE_NAME, nil)
-		r, err := c.Introspect(ctx, &auth_proto.IntrospectRequest{
-			AccessToken: md["Token"],
-		})
-		if err != nil {
-			return errors.InternalServerError("AuthWrapper", err.Error())
-		}
-
-		if r.GetToken() == nil {
-			return errors.Unauthorized("", "")
-		}
-
-		if !r.Active {
-			cfg := &oauth2.Config{}
-			tokenSource := cfg.TokenSource(oauth2.NoContext, &oauth2.Token{
-				AccessToken:  r.Token.AccessToken,
-				TokenType:    r.Token.TokenType,
-				RefreshToken: r.Token.RefreshToken,
-				Expiry:       time.Unix(r.Token.ExpiresAt, 0),
+		if md["Token"] != globals.SYSTEM_TOKEN {
+			c := auth_proto.NewOauth2Client(globals.AUTH_SERVICE_NAME, nil)
+			r, err := c.Introspect(ctx, &auth_proto.IntrospectRequest{
+				AccessToken: md["Token"],
 			})
-			t, err := tokenSource.Token()
 			if err != nil {
 				return errors.InternalServerError("AuthWrapper", err.Error())
 			}
 
-			//newCtx := client.NewContext(ctx, t)
-
-			newCtx := metadata.NewContext(ctx, map[string]string{
-				"Token": t.AccessToken,
-			})
-
-			log.Println("========")
-			log.Println(newCtx)
-
-			f = fn(newCtx, req, rsp)
-		} else {
-			f = fn(ctx, req, rsp)
+			if r.GetToken() == nil {
+				return errors.Unauthorized("", "")
+			}
 		}
+
+		/*		if !r.Active {
+					cfg := &oauth2.Config{}
+					tokenSource := cfg.TokenSource(oauth2.NoContext, &oauth2.Token{
+						AccessToken:  r.Token.AccessToken,
+						TokenType:    r.Token.TokenType,
+						RefreshToken: r.Token.RefreshToken,
+						Expiry:       time.Unix(r.Token.ExpiresAt, 0),
+					})
+					t, err := tokenSource.Token()
+					if err != nil {
+						return errors.InternalServerError("AuthWrapper", err.Error())
+					}
+
+					//newCtx := client.NewContext(ctx, t)
+
+					newCtx := metadata.NewContext(ctx, map[string]string{
+						"Token": t.AccessToken,
+					})
+
+					log.Println("========")
+					log.Println(newCtx)
+
+					f = fn(newCtx, req, rsp)
+				} else {
+
+				}*/
+		f = fn(ctx, req, rsp)
+
+		return f
+	}
+}
+
+// SubscriberWrapper for auth internal async messages
+func SubscriberWrapper(fn server.SubscriberFunc) server.SubscriberFunc {
+	return func(ctx context.Context, msg server.Publication) error {
+		var f error
+
+		f = fn(globals.NewSystemContext(), msg)
 
 		return f
 	}
@@ -189,6 +202,7 @@ func NewKazoupService(name string) micro.Service {
 			micro.Version("latest"),
 			micro.Metadata(md),
 			micro.Client(NewKazoupClient()),
+			micro.WrapSubscriber(SubscriberWrapper),
 			micro.WrapHandler(AuthWrapper),
 			micro.Flags(
 				cli.StringFlag{
@@ -214,6 +228,7 @@ func NewKazoupService(name string) micro.Service {
 		micro.RegisterTTL(time.Minute),
 		micro.RegisterInterval(time.Second*30),
 		micro.Client(NewKazoupClient()),
+		micro.WrapSubscriber(SubscriberWrapper),
 		micro.WrapHandler(AuthWrapper),
 	)
 	return service

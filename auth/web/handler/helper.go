@@ -7,7 +7,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-func SaveDatasource(url string, token *oauth2.Token) error {
+func SaveDatasource(ctx context.Context, url string, token *oauth2.Token) error {
 	c := proto_datasource.NewDataSourceClient(globals.DATASOURCE_SERVICE_NAME, nil)
 
 	req := &proto_datasource.CreateRequest{
@@ -25,7 +25,7 @@ func SaveDatasource(url string, token *oauth2.Token) error {
 		},
 	}
 
-	_, err := c.Create(context.Background(), req)
+	_, err := c.Create(ctx, req)
 	if err != nil {
 		return err
 	}

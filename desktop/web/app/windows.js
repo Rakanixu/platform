@@ -112,12 +112,12 @@ module.exports = (function() {
     });
 
     auth.webContents.session.clearStorageData(function() {
-      auth.loadURL(arg)
+      auth.loadURL(arg.url)
     });
 
     auth.on("closed", () => {
       // Let main window has the focus again
-      event.sender.send('auth-callback-message');
+      event.sender.send('auth-callback-message', arg.token);
     });
 
     auth.show();

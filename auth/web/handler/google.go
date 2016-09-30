@@ -54,7 +54,7 @@ func HandleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 	}
 	url := fmt.Sprintf("googledrive://%s", userInfo.Email)
 
-	if err := SaveDatasource(url, token); err != nil {
+	if err := SaveDatasource(globals.NewSystemContext(), url, token); err != nil {
 		fmt.Fprintf(w, "Error adding data source %s \n", err.Error())
 	}
 
