@@ -1,6 +1,7 @@
 package wrappers
 
 import (
+	"encoding/base64"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/dgrijalva/jwt-go"
@@ -114,14 +115,21 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 			}
 
-			return []byte("3qcdoA5qSXMivUPeKDtdg-dCp9tAnlkewB3RdMyLOaJkmtS3GMBbkRas7hoW0tvH"), nil
+			decoded, err := base64.URLEncoding.DecodeString("3qcdoA5qSXMivUPeKDtdg-dCp9tAnlkewB3RdMyLOaJkmtS3GMBbkRas7hoW0tvH")
+			if err != nil {
+				return nil, err
+			}
+
+			return decoded, nil
 		})
 
 		if err != nil {
 			return errors.Unauthorized("Token", err.Error())
 		}
+
 		if token.Valid {
 			fmt.Println(token.Raw)
+			fmt.Println(token.Claims)
 			//Extract claims and put into ctx
 
 			f = fn(ctx, req, rsp)
