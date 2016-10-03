@@ -8,8 +8,10 @@ import (
 	"github.com/kazoup/gabs"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+
 	"github.com/kazoup/platform/db/srv/engine"
 	db "github.com/kazoup/platform/db/srv/proto/db"
+	search_proto "github.com/kazoup/platform/search/srv/proto/search"
 	"golang.org/x/net/context"
 	"io/ioutil"
 	"os"
@@ -301,4 +303,22 @@ func (b *bleve) DeleteAlias(req *db.DeleteAliasRequest) (*db.DeleteAliasResponse
 func (b *bleve) RenameAlias(req *db.RenameAliasRequest) (*db.RenameAliasResponse, error) {
 	// TODO: implement
 	return &db.RenameAliasResponse{}, nil
+}
+
+func (b *bleve) Aggregate(req *search_proto.AggregateRequest) (*search_proto.AggregateResponse, error) {
+	return nil, nil
+}
+
+func (b *bleve) DeleteByQuery(req *db.DeleteByQueryRequest) (*db.DeleteByQueryResponse, error) {
+	return nil, nil
+}
+func (b *bleve) SearchById(req *db.SearchByIdRequest) (*db.SearchByIdResponse, error) {
+	return nil, nil
+}
+
+func (b *bleve) SubscribeSlackUsers(ctx context.Context, msg *crawler.SlackUserMessage) error {
+	return nil
+}
+func (b *bleve) SubscribeSlackChannels(ctx context.Context, msg *crawler.SlackChannelMessage) error {
+	return nil
 }

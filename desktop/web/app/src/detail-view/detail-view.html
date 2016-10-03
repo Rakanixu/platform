@@ -267,7 +267,7 @@
           }
         },
         itemChanged: function(newVal, oldVal) {
-          this.headers = this.getHeaders();
+          this.headers = Auth.getHeaders();
 
           switch(this.item.file_type) {
             case 'local':

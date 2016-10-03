@@ -236,7 +236,7 @@
           }
         },
         init: function(e, detail) {
-          this.headers = this.getHeaders();
+          this.headers = Auth.getHeaders();
           this.set('loading', true);
           this.async(function() {
             this.$.rpcGetDatasources.generateRequest();

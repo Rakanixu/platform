@@ -687,8 +687,8 @@
                     ipcRenderer.send('home-dir-message');
                 }
             },
-            init: function(e, detail) {
-                this.headers = this.getHeaders();
+            init: function(e, detail) {debugger;
+                this.headers = Auth.getHeaders();
                 this.listDatasources();
                 this.$.secondaryMenu.selected = "-1";
 
