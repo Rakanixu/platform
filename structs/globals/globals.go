@@ -2,9 +2,12 @@ package globals
 
 import (
 	"crypto/md5"
+	"encoding/base64"
 	"encoding/hex"
+	"github.com/dgrijalva/jwt-go"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
+	"github.com/micro/go-micro/errors"
 	"github.com/micro/go-micro/metadata"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -45,13 +48,12 @@ const (
 
 	OneDriveEndpoint = "https://api.onedrive.com/v1.0/"
 
-	OauthStateString = "randomsdsdahfoashfouahsfohasofhoashfaf"
-
 	StartScanTask = "start_scan"
 
 	SERVER_ADDRESS = "http://web.kazoup.io:8082"
 
-	SYSTEM_TOKEN = "ajsdIgsnaloHFGis823jsdgyjTGDKijfcjk783JDUYFJyggvwejkxsnmbkjwpoj6483"
+	SYSTEM_TOKEN     = "ajsdIgsnaloHFGis823jsdgyjTGDKijfcjk783JDUYFJyggvwejkxsnmbkjwpoj6483"
+	CLIENT_ID_SECRET = "EC1FD9R5t6D3cs9CzPbgJaBJjshoVgrJrTs6U39scYzYF7HYyMlv_mal2IjLLaA9" // Auth0 RPC API client
 )
 
 func NewGoogleOautConfig() *oauth2.Config {
@@ -112,8 +114,40 @@ func NewMicrosoftOauthConfig() *oauth2.Config {
 // NewSystemContext System context
 func NewSystemContext() context.Context {
 	return metadata.NewContext(context.TODO(), map[string]string{
-		"Token": SYSTEM_TOKEN,
+		"Authorization": SYSTEM_TOKEN,
 	})
+}
+
+func ParseJWTToken(ctx context.Context) (string, error) {
+	md, ok := metadata.FromContext(ctx)
+	if !ok {
+		return "", errors.InternalServerError("AuthWrapper", "Unable to retrieve metadata")
+	}
+
+	token, err := jwt.Parse(md["Authorization"], func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.InternalServerError("Unexpected signing method", token.Header["alg"].(string))
+		}
+
+		decoded, err := base64.URLEncoding.DecodeString(CLIENT_ID_SECRET)
+		if err != nil {
+			return nil, err
+		}
+
+		return decoded, nil
+	})
+
+	if err != nil {
+		return "", errors.Unauthorized("Token", err.Error())
+	}
+
+	if !token.Valid {
+		return "", errors.Unauthorized("", "Invalid token")
+	}
+
+	return token.Claims.(jwt.MapClaims)["sub"].(string), nil
 }
 
 // Remove records (Files) from db that not longer belong to a datasource

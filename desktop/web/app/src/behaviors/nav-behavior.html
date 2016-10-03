@@ -14,14 +14,13 @@
         _.forEach(document.querySelectorAll('#navDrawerPanel'), function(el) {
           el.closeDrawer();
         });
-        document.querySelector('#ironPages').selected = 3;
         this.fireEvent('settings-page-activated');
       },
       logout: function() {
-        // TODO: Revoke token from system
         localStorage.clear();
-        document.querySelector('#ironPages').selected = 1;
-        this.fireEvent('login-activated');
+        Auth.clear();
+
+        this.fireEvent('login-auth0-activated');
       },
       ready: function() {
         // This is being fired more than once, exactly as many elements import it.

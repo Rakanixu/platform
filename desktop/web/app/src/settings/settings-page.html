@@ -224,6 +224,10 @@
           this.$.mainMenu.selected = "-1";
           this.$.secondaryMenu.selected = "0";
 
+          if (document.querySelector('iron-pages').selected !== 2) {
+            document.querySelector('iron-pages').selected = 2;
+          }
+
           switch (this.selectedTab) {
             case 0:
               this.set('addDatasourceIconVisible', true);
@@ -249,7 +253,6 @@
             },
             callback: 'browseDatasource' // Internal method to be call
           });
-          document.querySelector('#ironPages').selected = 2;
         },
         showCategorySearch: function(e) {
           var index = parseInt(e.currentTarget.dataset.index, 10);
@@ -272,7 +275,6 @@
             },
             callback: 'setCategory' // Internal method to be call
           });
-          document.querySelector('#ironPages').selected = 2;
         },
         ready: function() {
           window.addEventListener('settings-page-activated', this.init.bind(this));

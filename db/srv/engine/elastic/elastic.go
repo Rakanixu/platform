@@ -11,7 +11,6 @@ import (
 	search_proto "github.com/kazoup/platform/search/srv/proto/search"
 	"github.com/kazoup/platform/structs/globals"
 	lib "github.com/mattbaird/elastigo/lib"
-	"github.com/micro/go-micro/metadata"
 	"golang.org/x/net/context"
 	"log"
 )
@@ -178,14 +177,14 @@ func (e *elastic) Search(ctx context.Context, req *db.SearchRequest) (*db.Search
 	var results []interface{}
 	var rstr string
 
-	md, ok := metadata.FromContext(ctx)
-	if !ok {
-		return &db.SearchResponse{}, errors.New("Unable to retrieve metadata")
+	uId, err := globals.ParseJWTToken(ctx)
+	if err != nil {
+		return &db.SearchResponse{}, err
 	}
 
 	eQuery := ElasticQuery{
 		Index:    req.Index,
-		UserId:   md["User"],
+		UserId:   uId,
 		Term:     req.Term,
 		From:     req.From,
 		Size:     req.Size,

@@ -27,9 +27,12 @@
           this.init();
 
           // Register listener when user is redirect back to login
-          window.addEventListener('web-app-activated', this.init.bind(this));
+          window.addEventListener('login-auth0-activated', this.init.bind(this));
         },
         init: function() {
+          if (document.querySelector('iron-pages').selected !== 0) {
+            document.querySelector('iron-pages').selected = 0;
+          }
           Auth.showLogin();
         }
       })

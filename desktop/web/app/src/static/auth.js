@@ -14,7 +14,6 @@ window.Auth = (function() {
     e.initEvent('web-app-activated', true, true);
     e.data = {}; // Set params if needed
     window.dispatchEvent(e);
-    document.querySelector('#ironPages').selected = 1;
   }
 
   function _authenticateUser(code) {
@@ -40,7 +39,7 @@ window.Auth = (function() {
       _authenticateUser(authResult.idToken).then(function(xhr, response) {
         localStorage.setItem('token', response.id_token);
         _customHeaders = {
-          Token: response.id_token
+          'Authorization': response.id_token
         };
 
         _loadWebApp();
@@ -66,6 +65,13 @@ window.Auth = (function() {
     },
     getProfile: function() {
       return _profile;
+    },
+    getUserId: function() {
+      return _profile.user_id;
+    },
+    clear: function() {
+      _profile = {};
+      _customHeaders = {};
     }
   }
 }());

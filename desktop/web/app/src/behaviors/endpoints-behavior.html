@@ -11,31 +11,13 @@
         endpoints: {
           type: Object,
           notify: true,
-          value: function() {
+          value: function () {
             return window.Endpoints
           }
-        },
-        headers: {
-          type: Object,
-          notify: true,
-          value: function() {
-            return this.getHeaders();
-          }
         }
-      },
-      getHeaders: function() {
-        return customHeaders;
-      },
-      getPublicHeaders: function() {
-        return {
-          Token: 'ajsdIgsnaloHFGis823jsdgyjTGDKijfcjk783JDUYFJyggvwejkxsnmbkjwpoj6483'
-        }
-      },
-      setHeaders: function(headers) {
-        customHeaders = headers;
       },
       getToken: function() {
-        return JSON.parse(localStorage.getItem('token')).access_token;
+        return localStorage.getItem('token');
       },
       loadPage: function(selected, eventName, obj) {
         document.querySelector('#ironPages').selected = selected;
@@ -45,14 +27,8 @@
         // Unauthorize
         if (event.detail.request.xhr.response.code === 401) {
           localStorage.clear();
-          this.loadPage(1, 'login-activated', {});
+          this.loadPage(1, 'login-auth0-activated', {});
         }
-      },
-      getUserId: function() {
-        return userId;
-      },
-      setUserId: function(id) {
-        userId = id;
       }
     };
   }());

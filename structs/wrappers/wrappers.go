@@ -105,87 +105,32 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 		}
 
 		if len(md["Authorization"]) == 0 {
-			return errors.Unauthorized("", "")
+			return errors.Unauthorized("", "Authorization required")
 		}
 
-		token, err := jwt.Parse(md["Authorization"], func(token *jwt.Token) (interface{}, error) {
-			// Don't forget to validate the alg is what you expect:
+		if md["Authorization"] != globals.SYSTEM_TOKEN {
+			token, err := jwt.Parse(md["Authorization"], func(token *jwt.Token) (interface{}, error) {
+				// Don't forget to validate the alg is what you expect:
+				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+					return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+				}
 
-			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-			}
+				decoded, err := base64.URLEncoding.DecodeString(globals.CLIENT_ID_SECRET)
+				if err != nil {
+					return nil, err
+				}
 
-			decoded, err := base64.URLEncoding.DecodeString("3qcdoA5qSXMivUPeKDtdg-dCp9tAnlkewB3RdMyLOaJkmtS3GMBbkRas7hoW0tvH")
+				return decoded, nil
+			})
+
 			if err != nil {
-				return nil, err
+				return errors.Unauthorized("Token", err.Error())
 			}
 
-			return decoded, nil
-		})
-
-		if err != nil {
-			return errors.Unauthorized("Token", err.Error())
+			if !token.Valid {
+				return errors.Unauthorized("", "Invalid token")
+			}
 		}
-
-		if token.Valid {
-			fmt.Println(token.Raw)
-			fmt.Println(token.Claims)
-			//Extract claims and put into ctx
-
-			f = fn(ctx, req, rsp)
-			return f
-		} else {
-			fmt.Println(err)
-
-			return errors.Unauthorized("", "")
-
-		}
-		/*
-						c := auth_proto.NewOauth2Client(globals.AUTH_SERVICE_NAME, nil)
-
-			>>>>>>> initial setup
-						r, err := c.Introspect(ctx, &auth_proto.IntrospectRequest{
-							AccessToken: md["Token"],
-						})
-						if err != nil {
-							return errors.InternalServerError("AuthWrapper", err.Error())
-						}
-						if r.GetToken() == nil {
-							return errors.Unauthorized("", "")
-						}
-
-			<<<<<<< HEAD
-						if r.GetToken() == nil {
-							return errors.Unauthorized("", "")
-						}
-					}
-
-					/*		if !r.Active {
-								cfg := &oauth2.Config{}
-								tokenSource := cfg.TokenSource(oauth2.NoContext, &oauth2.Token{
-									AccessToken:  r.Token.AccessToken,
-									TokenType:    r.Token.TokenType,
-									RefreshToken: r.Token.RefreshToken,
-									Expiry:       time.Unix(r.Token.ExpiresAt, 0),
-								})
-								t, err := tokenSource.Token()
-								if err != nil {
-									return errors.InternalServerError("AuthWrapper", err.Error())
-								}
-
-								//newCtx := client.NewContext(ctx, t)
-
-								newCtx := metadata.NewContext(ctx, map[string]string{
-									"Token": t.AccessToken,
-								})
-
-								log.Println("========")
-								log.Println(newCtx)
-
-								f = fn(newCtx, req, rsp)
-							} else {
-
-							}*/
 
 		f = fn(ctx, req, rsp)
 
@@ -199,38 +144,6 @@ func SubscriberWrapper(fn server.SubscriberFunc) server.SubscriberFunc {
 		var f error
 
 		f = fn(globals.NewSystemContext(), msg)
-		/*
-		   =======
-		   			if !r.Active {
-		   				cfg := &oauth2.Config{}
-		   				tokenSource := cfg.TokenSource(oauth2.NoContext, &oauth2.Token{
-		   					AccessToken:  r.Token.AccessToken,
-		   					TokenType:    r.Token.TokenType,
-		   					RefreshToken: r.Token.RefreshToken,
-		   					Expiry:       time.Unix(r.Token.ExpiresAt, 0),
-		   				})
-		   				t, err := tokenSource.Token()
-		   				if err != nil {
-		   					return errors.InternalServerError("AuthWrapper", err.Error())
-		   				}
-
-		   				//newCtx := client.NewContext(ctx, t)
-
-		   				newCtx := metadata.NewContext(ctx, map[string]string{
-		   					"Token": t.AccessToken,
-		   				})
-
-		   				log.Println("========")
-		   				log.Println(newCtx)
-
-		   				f = fn(newCtx, req, rsp)
-		   			} else {
-		   				f = fn(ctx, req, rsp)
-		   			}
-		*/ /*
-
-			>>>>>>> initial setup
-		*/
 
 		return f
 	}

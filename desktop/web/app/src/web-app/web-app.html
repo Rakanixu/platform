@@ -687,7 +687,11 @@
                     ipcRenderer.send('home-dir-message');
                 }
             },
-            init: function(e, detail) {debugger;
+            init: function(e, detail) {
+                if (document.querySelector('iron-pages').selected !== 1) {
+                    document.querySelector('iron-pages').selected = 1;
+                }
+
                 this.headers = Auth.getHeaders();
                 this.listDatasources();
                 this.$.secondaryMenu.selected = "-1";
