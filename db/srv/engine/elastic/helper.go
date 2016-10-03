@@ -257,12 +257,13 @@ func (e *ElasticQuery) filterUrl() string {
 func (e *ElasticQuery) filterUser() string {
 	var buffer bytes.Buffer
 
-	if len(e.UserId) <= 0 {
-		buffer.WriteString(`{}`)
-	} else {
+	// We filter datasources index
+	if len(e.UserId) > 0 && e.Index != globals.IndexFlags {
 		buffer.WriteString(`{"term": {"user_id": "`)
 		buffer.WriteString(e.UserId)
 		buffer.WriteString(`"}}`)
+	} else {
+		buffer.WriteString(`{}`)
 	}
 
 	return buffer.String()

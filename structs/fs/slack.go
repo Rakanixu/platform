@@ -156,7 +156,7 @@ func (sfs *SlackFs) getFiles(page int) error {
 	}
 
 	for _, v := range filesRsp.Files {
-		f := file.NewKazoupFileFromSlackFile(&v, sfs.Endpoint.Id, sfs.Endpoint.Index)
+		f := file.NewKazoupFileFromSlackFile(&v, sfs.Endpoint.Id, sfs.Endpoint.UserId, sfs.Endpoint.Index)
 
 		sfs.FilesChan <- f
 	}

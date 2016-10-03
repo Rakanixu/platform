@@ -5,6 +5,7 @@ import "time"
 // KazoupFile represents all different types
 type KazoupFile struct {
 	ID           string    `json:"id"`
+	UserId       string    `json:"user_id"`
 	Name         string    `json:"name"`
 	URL          string    `json:"url"`
 	Modified     time.Time `json:"modified"`

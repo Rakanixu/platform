@@ -26,6 +26,7 @@ const (
 	NotificationTopic       string = NAMESPACE + ".topic.notification"
 
 	IndexDatasources = "datasources"
+	IndexFlags       = "flags"
 	IndexHelper      = "files_helper"
 	FilesAlias       = "files"
 	FileType         = "file"

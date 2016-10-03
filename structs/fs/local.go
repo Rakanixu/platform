@@ -109,7 +109,7 @@ func (lfs *LocalFs) walkDatasourceParents() error {
 		f := file.NewKazoupFileFromLocal(&local.LocalFile{
 			Path: path,
 			Info: info,
-		}, lfs.Endpoint.Id, globals.IndexHelper)
+		}, lfs.Endpoint.Id, lfs.Endpoint.UserId, globals.IndexHelper)
 
 		lfs.FilesChan <- f
 	}
@@ -131,7 +131,7 @@ func (lfs *LocalFs) walkHandler() filepath.WalkFunc {
 			f := file.NewKazoupFileFromLocal(&local.LocalFile{
 				Path: path,
 				Info: info,
-			}, lfs.Endpoint.Id, lfs.Endpoint.Index)
+			}, lfs.Endpoint.Id, lfs.Endpoint.UserId, lfs.Endpoint.Index)
 
 			lfs.FilesChan <- f
 		}

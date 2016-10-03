@@ -37,11 +37,15 @@
       getToken: function() {
         return JSON.parse(localStorage.getItem('token')).access_token;
       },
+      loadPage: function(selected, eventName, obj) {
+        document.querySelector('#ironPages').selected = selected;
+        this.fireEvent(eventName, obj);
+      },
       checkUnauthorize: function() {
         // Unauthorize
         if (event.detail.request.xhr.response.code === 401) {
           localStorage.clear();
-          this._loadPage(1, 'login-activated', {});
+          this.loadPage(1, 'login-activated', {});
         }
       },
       getUserId: function() {

@@ -72,7 +72,7 @@ func NewFileFromString(s string) (File, error) {
 }
 
 // NewKazoupFileFromGoogleDriveFile constructor
-func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId, index string) *KazoupGoogleFile {
+func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId, uId, index string) *KazoupGoogleFile {
 	t, _ := time.Parse("2006-01-02T15:04:05.000Z", g.ModifiedTime)
 	d := false
 	if len(g.FolderColorRgb) > 0 {
@@ -81,6 +81,7 @@ func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId, index string) *
 
 	kf := &KazoupFile{
 		ID:           globals.GetMD5Hash(g.WebViewLink),
+		UserId:       uId,
 		Name:         g.Name,
 		URL:          g.WebViewLink,
 		Modified:     t,
@@ -97,11 +98,12 @@ func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId, index string) *
 }
 
 // NewKazoupFileFromSlackFile constructor
-func NewKazoupFileFromSlackFile(s *slack.SlackFile, dsId, index string) *KazoupSlackFile {
+func NewKazoupFileFromSlackFile(s *slack.SlackFile, dsId, uId, index string) *KazoupSlackFile {
 	t := time.Unix(s.Timestamp, 0)
 
 	kf := &KazoupFile{
 		ID:           globals.GetMD5Hash(s.URLPrivate),
+		UserId:       uId,
 		Name:         s.Name,
 		URL:          s.URLPrivate,
 		Modified:     t,
@@ -117,10 +119,11 @@ func NewKazoupFileFromSlackFile(s *slack.SlackFile, dsId, index string) *KazoupS
 	return &KazoupSlackFile{*kf, *s}
 }
 
-func NewKazoupFileFromLocal(lf *local.LocalFile, dsId, index string) *KazoupLocalFile {
+func NewKazoupFileFromLocal(lf *local.LocalFile, dsId, uId, index string) *KazoupLocalFile {
 	// don;t save all LocalFile as mmost of data is same as KazoupFile just pass file mode
 	kf := &KazoupFile{
 		ID:           globals.GetMD5Hash(lf.Path),
+		UserId:       uId,
 		Name:         lf.Info.Name(),
 		URL:          "/local" + lf.Path,
 		Modified:     lf.Info.ModTime(),
@@ -138,7 +141,7 @@ func NewKazoupFileFromLocal(lf *local.LocalFile, dsId, index string) *KazoupLoca
 }
 
 // NewKazoupFileFromOneDriveFile constructor
-func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile, dsId, index string) *KazoupOneDriveFile {
+func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile, dsId, uId, index string) *KazoupOneDriveFile {
 
 	isDir := true
 	name := strings.Split(o.Name, ".")
@@ -149,6 +152,7 @@ func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile, dsId, index string)
 
 	kf := &KazoupFile{
 		ID:           globals.GetMD5Hash(o.WebURL),
+		UserId:       uId,
 		Name:         o.Name,
 		URL:          o.WebURL,
 		Modified:     o.LastModifiedDateTime,

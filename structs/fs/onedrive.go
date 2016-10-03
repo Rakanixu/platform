@@ -219,7 +219,7 @@ func (ofs *OneDriveFs) getDrivesChildren() error {
 				ofs.Directories <- v.ID
 				// Is file
 			} else {
-				f := file.NewKazoupFileFromOneDriveFile(&v, ofs.Endpoint.Id, ofs.Endpoint.Index)
+				f := file.NewKazoupFileFromOneDriveFile(&v, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)
 				ofs.FilesChan <- f
 			}
 		}
@@ -254,7 +254,7 @@ func (ofs *OneDriveFs) getDirChildren(id string) error {
 			//ofs.DirCounter++
 			ofs.Directories <- v.ID
 		} else {
-			f := file.NewKazoupFileFromOneDriveFile(&v, ofs.Endpoint.Id, ofs.Endpoint.Index)
+			f := file.NewKazoupFileFromOneDriveFile(&v, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)
 			ofs.FilesChan <- f
 		}
 	}

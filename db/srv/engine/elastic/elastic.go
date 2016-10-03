@@ -196,6 +196,9 @@ func (e *elastic) Search(ctx context.Context, req *db.SearchRequest) (*db.Search
 	}
 	query, err := eQuery.Query()
 
+	log.Println("===============")
+	log.Println(query)
+
 	if err != nil {
 		return &db.SearchResponse{}, err
 	}

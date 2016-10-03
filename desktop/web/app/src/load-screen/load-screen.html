@@ -291,17 +291,13 @@
               firstScan = true;
             }
 
-            this._loadPage(2, 'web-app-activated', {
+            this.loadPage(2, 'web-app-activated', {
               first_scan: firstScan
             });
           }
         },
         _handleError: function(e) {
           this.checkUnauthorize(e);
-        },
-        _loadPage: function(selected, eventName, obj) {
-          document.querySelector('#ironPages').selected = selected;
-          this.fireEvent(eventName, obj);
         }
       });
     }());
