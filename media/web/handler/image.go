@@ -66,7 +66,7 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Build context
 	ctx := metadata.NewContext(context.TODO(), map[string]string{
-		"Token": token,
+		"Authorization": token,
 	})
 
 	f, err := file.GetFileByID(ctx, file_id, ih.dbclient)
