@@ -5,20 +5,19 @@ window.Auth = (function() {
   var _customHeaders;
   var _lock = new Auth0Lock('5OCJYuTq5Dog960c3lfVEsBlquDX9Ka2', 'kazoup.eu.auth0.com',{
     auth: {
-      	redirect : false,
- 	responseType: 'token',
-       	redirectUrl: location.href,
-	sso:false
+      redirect : false,
+      responseType: 'token',
+      redirectUrl: location.href,
+      sso:false
     },
-   mustAcceptTerms: true,
-   languageDictionary: {
-    title: "Kazoup",
-    signUpTerms: "I agree to the <a href='http://www.kazoup.com/legal/master-agreement/' target='_new'>terms of service</a> and <a href='http://www.kazoup.com/legal/privacy-policy/' target='_new'>privacy policy</a>."
-
-  },
+    mustAcceptTerms: true,
+    languageDictionary: {
+      title: "Kazoup",
+      signUpTerms: "I agree to the <a href='http://www.kazoup.com/legal/master-agreement/' target='_new'>terms of service</a> and <a href='http://www.kazoup.com/legal/privacy-policy/' target='_new'>privacy policy</a>."
+    },
     theme: {
-    logo: 'http://www.kazoup.com/img/kazoup-logo-small.png',
-    primaryColor: '#2CB4D9',
+      logo: 'http://www.kazoup.com/img/kazoup-logo-small.png',
+      primaryColor: '#2CB4D9',
   	},  
     closable : false
   });
@@ -47,6 +46,17 @@ window.Auth = (function() {
         return;
       }
       _profile = profile;
+
+      // TODO: we need srv to hash the user_id and get it back to send it to Intercom
+      // https://segment.com/docs/integrations/intercom/
+      /*
+      window.intercomSettings = {
+        name: _profile.user_id,
+        email: _profile.email,
+        created_at: new Date()
+      };
+      window.Intercom('update', window.intercomSettings);
+      */
 
       localStorage.setItem('id_token', authResult.idToken);
 
