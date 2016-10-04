@@ -20,7 +20,6 @@ const (
 	FLAG_SERVICE_NAME       string = NAMESPACE + ".srv.flag"
 	DB_SERVICE_NAME         string = NAMESPACE + ".srv.db"
 	DATASOURCE_SERVICE_NAME string = NAMESPACE + ".srv.datasource"
-	AUTH_SERVICE_NAME       string = NAMESPACE + ".srv.auth"
 	FilesTopic              string = NAMESPACE + ".topic.files"
 	SlackChannelsTopic      string = NAMESPACE + ".topic.slackchannels"
 	SlackUsersTopic         string = NAMESPACE + ".topic.slackusers"

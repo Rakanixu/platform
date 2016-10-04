@@ -20,7 +20,7 @@
         localStorage.clear();
         Auth.clear();
 
-        this.fireEvent('login-auth0-activated');
+        window.location.href = window.location.href;
       },
       ready: function() {
         // This is being fired more than once, exactly as many elements import it.
