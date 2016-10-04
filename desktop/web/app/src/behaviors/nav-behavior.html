@@ -3,13 +3,6 @@
 
   (function() {
     Polymer.NavBehaviorImp = {
-      properties: {
-        user: {
-          type: Object,
-          notify: false,
-          value: {}
-        },
-      },
       showSettingsPage: function(e) {
         _.forEach(document.querySelectorAll('#navDrawerPanel'), function(el) {
           el.closeDrawer();
@@ -21,20 +14,7 @@
         Auth.clear();
 
         window.location.href = window.location.href;
-      },
-      ready: function() {
-        // This is being fired more than once, exactly as many elements import it.
-        // ready on behavior is a bad practice
-        if (window && window.process && window.process.type){
-          ipcRenderer.on('user-info-message', this._handleUser.bind(this));
-          ipcRenderer.send('user-info-message');
-        } else {
-          //TODO handle on browser
-        }
-      },
-      _handleUser: function(e, detail) {
-        this.set('user', detail);
-      },
+      }
     };
   }());
 </script>

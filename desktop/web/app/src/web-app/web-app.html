@@ -164,8 +164,9 @@
             <!-- Nav Content -->
             <div class="nav" drawer>
                 <paper-toolbar class="medium-tall left-menu">
+                    <mat-avatar icon-src="[[profile.picture]]"></mat-avatar>
                     <mat-item class="bottom light username"
-                              label="[[user.user.username]]@[[user.hostname]]"></mat-item>
+                              label="[[profile.name]]"></mat-item>
                 </paper-toolbar>
 
                 <div style="height:100%; overflow-y:auto;">
@@ -697,6 +698,8 @@
                 }
 
                 this.headers = Auth.getHeaders();
+                this.profile = Auth.getProfile();
+
                 this.listDatasources();
                 this.$.secondaryMenu.selected = "-1";
 
