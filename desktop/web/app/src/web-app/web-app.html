@@ -154,7 +154,7 @@
                 font-weight: 100;
             }
 
-            .big-video mat-item mat-avatar {
+            .big-video mat-item iron-image {
                 width: 113px;
                 height: 72px;
             }
@@ -298,9 +298,13 @@
                                                       description="[[item.url]]">
 
                                                 <template is="dom-if" if="[[isVideoPreview(item.category, bigVideoClass)]]">
-                                                    <mat-avatar background="[[documentType(item.name)]]"
+                                                    <iron-image background="[[documentType(item.name)]]"
                                                                 class="primary image"
-                                                                icon-src="[[endpoints.web]]/media/preview?file_id=[[item.id]]&width=128&height=128&mode=fit&quality=50&token=[[getToken()]]"></mat-avatar>
+                                                                sizing="cover"
+                                                                placeholder="src/static/unknown-video.png"
+                                                                src="[[endpoints.web]]/media/preview?file_id=[[item.id]]&width=128&height=128&mode=fit&quality=50&token=[[getToken()]]"
+                                                                preload
+                                                                fade></iron-image>
                                                 </template>
                                                 <template is="dom-if" if="[[!isVideoPreview(item.category, bigVideoClass)]]">
                                                     <mat-avatar background="[[documentType(item.name)]]"
