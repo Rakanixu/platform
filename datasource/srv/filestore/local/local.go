@@ -8,10 +8,9 @@ import (
 	filestorer "github.com/kazoup/platform/datasource/srv/filestore"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/structs/globals"
 	"os"
-	"strconv"
 	"strings"
-	"time"
 )
 
 // Local struct
@@ -49,9 +48,12 @@ func (l *Local) Validate(datasources string) (*proto_datasource.Endpoint, error)
 		}
 
 	}
-
-	l.Endpoint.Id = getMD5Hash(l.Endpoint.Url)
-	l.Endpoint.Index = "index" + strconv.Itoa(int(time.Now().UnixNano()))
+	s, err := globals.NewUUID()
+	if err != nil {
+		return &l.Endpoint, err
+	}
+	l.Endpoint.Index = "index" + strings.Replace(s, "|", "", 1)
+	l.Endpoint.Id = getMD5Hash(l.Endpoint.Url + l.Endpoint.UserId)
 
 	return &l.Endpoint, nil
 }

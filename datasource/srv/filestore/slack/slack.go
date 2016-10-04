@@ -5,8 +5,8 @@ import (
 	"encoding/hex"
 	filestorer "github.com/kazoup/platform/datasource/srv/filestore"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	"strconv"
-	"time"
+	"github.com/kazoup/platform/structs/globals"
+	"strings"
 )
 
 // Fake struct
@@ -17,8 +17,12 @@ type Slack struct {
 
 // Validate slack
 func (s *Slack) Validate(datasources string) (*proto.Endpoint, error) {
-	s.Endpoint.Index = "index" + strconv.Itoa(int(time.Now().UnixNano()))
-	s.Endpoint.Id = getMD5Hash(s.Endpoint.Url)
+	str, err := globals.NewUUID()
+	if err != nil {
+		return &s.Endpoint, err
+	}
+	s.Endpoint.Index = "index" + strings.Replace(str, "-", "", 1)
+	s.Endpoint.Id = getMD5Hash(s.Endpoint.Url + s.Endpoint.UserId)
 
 	return &s.Endpoint, nil
 }

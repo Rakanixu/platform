@@ -2,8 +2,10 @@ package globals
 
 import (
 	"crypto/md5"
+	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
+	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
@@ -13,6 +15,7 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"golang.org/x/oauth2/slack"
+	"io"
 )
 
 const (
@@ -147,6 +150,20 @@ func ParseJWTToken(ctx context.Context) (string, error) {
 	}
 
 	return token.Claims.(jwt.MapClaims)["sub"].(string), nil
+}
+
+// NewUUID generates a random UUID according to RFC 4122
+func NewUUID() (string, error) {
+	uuid := make([]byte, 16)
+	n, err := io.ReadFull(rand.Reader, uuid)
+	if n != len(uuid) || err != nil {
+		return "", err
+	}
+	// variant bits; see section 4.1.1
+	uuid[8] = uuid[8]&^0xc0 | 0x80
+	// version 4 (pseudo-random); see section 4.1.3
+	uuid[6] = uuid[6]&^0xf0 | 0x40
+	return fmt.Sprintf("%x-%x-%x-%x-%x", uuid[0:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:]), nil
 }
 
 // Remove records (Files) from db that not longer belong to a datasource
