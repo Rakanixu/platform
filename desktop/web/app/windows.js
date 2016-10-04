@@ -13,13 +13,15 @@ module.exports = (function() {
   let updateFeed = "";
   let feedURL = "https://protected-reaches-10740.herokuapp.com";
   let isDevelopment = process.env.NODE_ENV === "development";
-
+  
   var _getMainWindow = function() {
     return win;
   };
 
-  var _createMainWindow = function() {
+  var _createMainWindow = function(app) {
     // Create the browser window.
+    
+    version = app.getVersion();
     win = new BrowserWindow({
       width: 1024,
       height: 768,

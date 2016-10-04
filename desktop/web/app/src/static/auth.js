@@ -6,7 +6,15 @@ window.Auth = (function() {
   var _lock = new Auth0Lock('5OCJYuTq5Dog960c3lfVEsBlquDX9Ka2', 'kazoup.eu.auth0.com',{
     auth: {
       redirect :false
-    }
+    },
+   languageDictionary: {
+    title: "Kazoup"
+  },
+    theme: {
+    logo: 'http://www.kazoup.com/img/kazoup-logo-small.png',
+    primaryColor: '#2CB4D9',
+  	},  
+    closable : false
   });
 
   function _loadWebApp() {

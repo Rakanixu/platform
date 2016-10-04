@@ -21,29 +21,15 @@
   },
   "build": {
     "appId": "com.kazoup.app",
-    "app-category-type": "public.app-category.productivity",
-    "extraResources": [
-      "elasticsearch"
-    ],
+    "category": "public.app-category.productivity",
     "dmg": {
       "background": "build/background.png"
     },
     "win": {
-      "iconUrl": "https://s3-eu-west-1.amazonaws.com/www.kazoup.com/img/favicon.ico",
-      "extraResources": [
-        "bin/windows","java/windows/amd64"
-      ]
-    },
-    "mac": {
-      "extraResources": [
-        "bin/darwin","java/darwin/amd64"
-      ]
+      "iconUrl": "https://s3-eu-west-1.amazonaws.com/www.kazoup.com/img/favicon.ico"
     },
     "linux": {
-      "target": "deb",
-      "extraResources": [
-        "bin/linux","java/linux/amd64"
-      ]
+      "target": "deb"
     }
   },
   "scripts": {
@@ -61,6 +47,6 @@
     "clean:release": "rm -rf release/* ",
     "clean:dist": "rm -rf dist/*",
     "release": "npm run clean:release && run-p release:*",
-    "all": "./build.sh && run-p clean:* && npm run dep && npm run dist && npm run release"
+    "all": "run-p clean:* && npm run dep && npm run dist && npm run release"
   }
 }

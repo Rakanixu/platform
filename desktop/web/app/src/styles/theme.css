@@ -145,6 +145,11 @@ datasources-page {
     font-size: 13px;
 }
 
+.auth0-lock.auth0-lock .auth0-lock-header-logo{
+	width:55px !important;
+}
+
+
 .title {
     margin-top: auto;
     margin-bottom: auto;
