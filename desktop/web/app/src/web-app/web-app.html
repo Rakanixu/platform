@@ -343,8 +343,9 @@
                                             <div class="photoContent" tabindex$="[[tabIndex]]" on-tap="mainAction">
                                                 <iron-image sizing="cover"
                                                             src="[[endpoints.web]]/media/preview?file_id=[[item.id]]&width=600&mode=fit&quality=100&token=[[getToken()]]"
+                                                            placeholder="src/static/unknown-img.jpg"
                                                             preload
-                                                            fade><!--placeholder="src/static/spinner_small.gif"-->
+                                                            fade>
                                                     <mat-ripple></mat-ripple>
                                                 </iron-image>
 
