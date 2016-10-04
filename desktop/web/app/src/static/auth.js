@@ -5,10 +5,16 @@ window.Auth = (function() {
   var _customHeaders;
   var _lock = new Auth0Lock('5OCJYuTq5Dog960c3lfVEsBlquDX9Ka2', 'kazoup.eu.auth0.com',{
     auth: {
-      redirect :false
+      	redirect : false,
+ 	responseType: 'token',
+       	redirectUrl: location.href,
+	sso:false
     },
+   mustAcceptTerms: true,
    languageDictionary: {
-    title: "Kazoup"
+    title: "Kazoup",
+    signUpTerms: "I agree to the <a href='http://www.kazoup.com/legal/master-agreement/' target='_new'>terms of service</a> and <a href='http://www.kazoup.com/legal/privacy-policy/' target='_new'>privacy policy</a>."
+
   },
     theme: {
     logo: 'http://www.kazoup.com/img/kazoup-logo-small.png',
