@@ -20,8 +20,6 @@
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
 
-<link rel="import" href="../../bower_components/web-socket/web-socket.html">
-
 <link rel="import" href="../../bower_components/mat-list/mat-list.html">
 <link rel="import" href="../../bower_components/mat-text-field/mat-text-field.html">
 <link rel="import" href="../../bower_components/mat-icon/mat-icon.html">
@@ -405,14 +403,6 @@
                       action-color="yellow"
                       label=""
                       on-xp-activate="addDatasourceAndScan"></mat-snackbar>
-
-        <web-socket url="[[endpoints.socket]]/config/platform/ping"
-                    on-open="_onOpen"
-                    on-close="_onClose"
-                    on-message="_onMessage"
-                    on-error="_onError"
-                    auto
-                    json></web-socket>
 
         <iron-ajax id="rpcStartScan"
                    method="POST"
@@ -833,19 +823,6 @@
             },
             _listTap: function() {
                 this.$.mainDrawerPanel.closeDrawer();
-            },
-            _onOpen: function(e) {
-                console.log("OPEN WS", e);
-            },
-            _onClose: function() {
-
-            },
-            _onMessage: function(e) {
-
-
-            },
-            _onError: function(e) {
-                //console.log(e)
             },
             _handleError: function(e, detail) {
                 this.set('loading', false);
