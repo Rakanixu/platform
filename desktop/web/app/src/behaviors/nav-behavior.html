@@ -10,7 +10,8 @@
         this.fireEvent('settings-page-activated');
       },
       logout: function() {
-        localStorage.clear();
+        localStorage.setItem('token', null);
+        localStorage.setItem('id_token', null);
         Auth.clear();
 
         window.location.href = window.location.href;

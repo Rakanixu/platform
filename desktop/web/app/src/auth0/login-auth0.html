@@ -24,14 +24,11 @@
       Polymer({
         is: 'login-auth0',
         ready: function() {
-          this.init();
-
-          // Register listener when user is redirect back to login
           window.addEventListener('login-auth0-activated', this.init.bind(this));
         },
         init: function() {
-          if (document.querySelector('iron-pages').selected !== 0) {
-            document.querySelector('iron-pages').selected = 0;
+          if (document.querySelector('iron-pages').selected !== 1) {
+            document.querySelector('iron-pages').selected = 1;
           }
           Auth.showLogin();
         }
