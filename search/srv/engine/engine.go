@@ -9,6 +9,7 @@ import (
 type Engine interface {
 	Init() error
 	Search(ctx context.Context, req *search.SearchRequest, client client.Client) (*search.SearchResponse, error)
+	SearchProxy(ctx context.Context, req *search.SearchProxyRequest, client client.Client) (*search.SearchProxyResponse, error)
 	Aggregate(ctx context.Context, req *search.AggregateRequest, client client.Client) (*search.AggregateResponse, error)
 }
 
@@ -26,6 +27,10 @@ func Init() error {
 
 func Search(ctx context.Context, req *search.SearchRequest, client client.Client) (*search.SearchResponse, error) {
 	return engine.Search(ctx, req, client)
+}
+
+func SearchProxy(ctx context.Context, req *search.SearchProxyRequest, client client.Client) (*search.SearchProxyResponse, error) {
+	return engine.SearchProxy(ctx, req, client)
 }
 
 func Aggregate(ctx context.Context, req *search.AggregateRequest, client client.Client) (*search.AggregateResponse, error) {

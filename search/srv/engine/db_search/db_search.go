@@ -47,6 +47,14 @@ func (d *dbSearch) Search(ctx context.Context, req *search.SearchRequest, client
 	}, nil
 }
 
+func (d *dbSearch) SearchProxy(ctx context.Context, req *search.SearchProxyRequest, client client.Client) (*search.SearchProxyResponse, error) {
+
+	return &search.SearchProxyResponse{
+		Result: "",
+		Info:   "",
+	}, nil
+}
+
 func (d *dbSearch) Aggregate(ctx context.Context, req *search.AggregateRequest, client client.Client) (*search.AggregateResponse, error) {
 	srvReq := client.NewRequest(
 		globals.DB_SERVICE_NAME,
