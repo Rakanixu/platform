@@ -1,0 +1,111 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/l2t-paper-slider/l2t-paper-slider.html">
+
+<link rel="import" href="../../src/behaviors/async-behavior.html">
+
+<dom-module id="onboarding-page">
+  <style is="custom-style" include="iron-flex iron-positioning iron-flex-alignment"></style>
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      l2t-paper-slider {
+        --paper-slide-height: 100%;
+      }
+
+      l2t-paper-slider paper-slide {
+        background-color: #00b8d4;
+      }
+
+      l2t-paper-slider paper-slide iron-image {
+        height: 70%;
+        display: block;
+      }
+
+      l2t-paper-slider paper-slide h1,
+      l2t-paper-slider paper-slide p,
+      l2t-paper-slider paper-slide div {
+        text-align: center;
+      }
+
+      l2t-paper-slider paper-slide paper-button {
+        background-color: rgba(158,158,158,0.8);
+      }
+    </style>
+
+    <l2t-paper-slider total-slides="4" class="fit">
+      <paper-slide>
+        <iron-image sizing="cover"
+                    src="http://img.wallpaperfolder.com/f/7A64E5BE77F8/install-android-kitkat-apps-any.jpg"></iron-image>
+        <h1>Header</h1>
+        <p>Text bitch</p>
+        <div>
+          <paper-button noink on-tap="goToApp">Get started</paper-button>
+        </div>
+      </paper-slide>
+      <paper-slide>
+        <iron-image sizing="cover"
+                    src="http://img.wallpaperfolder.com/f/7A97EAE4FDF0/nexus-backgrounds-love-set-official.jpg"></iron-image>
+        <h1>Header</h1>
+        <p>Text 22</p>
+        <div>
+          <paper-button noink on-tap="goToApp">Get started</paper-button>
+        </div>
+      </paper-slide>
+      <paper-slide>
+        <iron-image sizing="cover"
+                    src="http://img.wallpaperfolder.com/f/7A97EAE4FDF0/nexus-backgrounds-love-set-official.jpg"></iron-image>
+        <h1>Header</h1>
+        <p>Text 33</p>
+        <div>
+          <paper-button noink on-tap="goToApp">Get started</paper-button>
+        </div>
+      </paper-slide>
+      <paper-slide>
+        <iron-image sizing="cover"
+                    src="http://img.wallpaperfolder.com/f/7A97EAE4FDF0/nexus-backgrounds-love-set-official.jpg"></iron-image>
+        <h1>Header</h1>
+        <p>Text 44</p>
+        <div>
+          <paper-button noink on-tap="goToApp">Get started</paper-button>
+        </div>
+      </paper-slide>
+    </l2t-paper-slider>
+  </template>
+  <script>
+    (function() {
+      'use strict';
+
+      Polymer({
+        is: 'onboarding-page',
+        behaviors: [
+          Polymer.AsyncBehaviorImp
+        ],
+        created: function() {
+          if (localStorage.getItem('show-onboarding') != 'false') {
+            localStorage.setItem('show-onboarding', 'false');
+          } else {
+            this.async(function() {
+              this.fireEvent('login-auth0-activated', {});
+            }, 1);
+          }
+        },
+        ready: function() {
+          window.addEventListener('onboarding-page-activated', this.init.bind(this));
+        },
+        init: function() {
+          if (document.querySelector('iron-pages').selected !== 0) {
+            document.querySelector('iron-pages').selected = 0;
+          }
+        },
+        goToApp: function() {
+          this.fireEvent('login-auth0-activated', {});
+        }
+      })
+    }());
+  </script>
+</dom-module>
