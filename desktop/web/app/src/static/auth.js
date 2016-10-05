@@ -47,14 +47,11 @@ window.Auth = (function() {
       }
       _profile = profile;
 
-      // TODO: we need srv to hash the user_id and get it back to send it to Intercom
-      // https://segment.com/docs/integrations/intercom/
-      console.log(profile)
       window.intercomSettings = {
         name: _profile.name,
         email: _profile.email,
-	user_id :_profile.user_id,
-	user_hash: _profile.intercom_hash,
+        user_id :_profile.user_id,
+        user_hash: _profile.intercom_hash,
         created_at: _profile.created_at
       };
       window.Intercom('update', window.intercomSettings);

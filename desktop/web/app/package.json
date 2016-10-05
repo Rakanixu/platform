@@ -8,6 +8,7 @@
   "main": "main.js",
   "dependencies": {
     "drivelist": "^3.2.2",
+    "menubar": "^5.1.0",
     "shell": "^0.3.2"
   }
 }
