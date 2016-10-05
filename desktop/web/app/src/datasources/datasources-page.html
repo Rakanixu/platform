@@ -236,7 +236,7 @@
           }
         },
         init: function(e, detail) {
-          this.headers = this.getHeaders();
+          this.headers = Auth.getHeaders();
           this.set('loading', true);
           this.async(function() {
             this.$.rpcGetDatasources.generateRequest();
@@ -250,7 +250,7 @@
               ipcRenderer.send(
                 'auth-message',
                 {
-                  url: e.currentTarget.getAttribute('data-url') + '?user=' + this.getUserId(),
+                  url: e.currentTarget.getAttribute('data-url') + '?user=' + Auth.getUserId(),
                   token: localStorage.getItem('token')
                 }
               );

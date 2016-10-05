@@ -1,10 +1,11 @@
 package wrappers
 
 import (
+	"encoding/base64"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/kazoup/platform/structs/globals"
-	auth_proto "github.com/micro/auth-srv/proto/oauth2"
 	"github.com/micro/cli"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/client"
@@ -103,50 +104,33 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 			return errors.InternalServerError("AuthWrapper", "Unable to retrieve metadata")
 		}
 
-		if len(md["Token"]) == 0 {
-			return errors.Unauthorized("", "")
+		if len(md["Authorization"]) == 0 {
+			return errors.Unauthorized("", "Authorization required")
 		}
 
-		if md["Token"] != globals.SYSTEM_TOKEN {
-			c := auth_proto.NewOauth2Client(globals.AUTH_SERVICE_NAME, nil)
-			r, err := c.Introspect(ctx, &auth_proto.IntrospectRequest{
-				AccessToken: md["Token"],
+		if md["Authorization"] != globals.SYSTEM_TOKEN {
+			token, err := jwt.Parse(md["Authorization"], func(token *jwt.Token) (interface{}, error) {
+				// Don't forget to validate the alg is what you expect:
+				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+					return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+				}
+
+				decoded, err := base64.URLEncoding.DecodeString(globals.CLIENT_ID_SECRET)
+				if err != nil {
+					return nil, err
+				}
+
+				return decoded, nil
 			})
+
 			if err != nil {
-				return errors.InternalServerError("AuthWrapper", err.Error())
+				return errors.Unauthorized("Token", err.Error())
 			}
 
-			if r.GetToken() == nil {
-				return errors.Unauthorized("", "")
+			if !token.Valid {
+				return errors.Unauthorized("", "Invalid token")
 			}
 		}
-
-		/*		if !r.Active {
-					cfg := &oauth2.Config{}
-					tokenSource := cfg.TokenSource(oauth2.NoContext, &oauth2.Token{
-						AccessToken:  r.Token.AccessToken,
-						TokenType:    r.Token.TokenType,
-						RefreshToken: r.Token.RefreshToken,
-						Expiry:       time.Unix(r.Token.ExpiresAt, 0),
-					})
-					t, err := tokenSource.Token()
-					if err != nil {
-						return errors.InternalServerError("AuthWrapper", err.Error())
-					}
-
-					//newCtx := client.NewContext(ctx, t)
-
-					newCtx := metadata.NewContext(ctx, map[string]string{
-						"Token": t.AccessToken,
-					})
-
-					log.Println("========")
-					log.Println(newCtx)
-
-					f = fn(newCtx, req, rsp)
-				} else {
-
-				}*/
 
 		f = fn(ctx, req, rsp)
 

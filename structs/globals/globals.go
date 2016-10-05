@@ -2,14 +2,20 @@ package globals
 
 import (
 	"crypto/md5"
+	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
+	"fmt"
+	"github.com/dgrijalva/jwt-go"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
+	"github.com/micro/go-micro/errors"
 	"github.com/micro/go-micro/metadata"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"golang.org/x/oauth2/slack"
+	"io"
 )
 
 const (
@@ -17,7 +23,6 @@ const (
 	FLAG_SERVICE_NAME       string = NAMESPACE + ".srv.flag"
 	DB_SERVICE_NAME         string = NAMESPACE + ".srv.db"
 	DATASOURCE_SERVICE_NAME string = NAMESPACE + ".srv.datasource"
-	AUTH_SERVICE_NAME       string = NAMESPACE + ".srv.auth"
 	FilesTopic              string = NAMESPACE + ".topic.files"
 	SlackChannelsTopic      string = NAMESPACE + ".topic.slackchannels"
 	SlackUsersTopic         string = NAMESPACE + ".topic.slackusers"
@@ -45,13 +50,12 @@ const (
 
 	OneDriveEndpoint = "https://api.onedrive.com/v1.0/"
 
-	OauthStateString = "randomsdsdahfoashfouahsfohasofhoashfaf"
-
 	StartScanTask = "start_scan"
 
 	SERVER_ADDRESS = "http://web.kazoup.io:8082"
 
-	SYSTEM_TOKEN = "ajsdIgsnaloHFGis823jsdgyjTGDKijfcjk783JDUYFJyggvwejkxsnmbkjwpoj6483"
+	SYSTEM_TOKEN     = "ajsdIgsnaloHFGis823jsdgyjTGDKijfcjk783JDUYFJyggvwejkxsnmbkjwpoj6483"
+	CLIENT_ID_SECRET = "EC1FD9R5t6D3cs9CzPbgJaBJjshoVgrJrTs6U39scYzYF7HYyMlv_mal2IjLLaA9" // Auth0 RPC API client
 )
 
 func NewGoogleOautConfig() *oauth2.Config {
@@ -112,8 +116,54 @@ func NewMicrosoftOauthConfig() *oauth2.Config {
 // NewSystemContext System context
 func NewSystemContext() context.Context {
 	return metadata.NewContext(context.TODO(), map[string]string{
-		"Token": SYSTEM_TOKEN,
+		"Authorization": SYSTEM_TOKEN,
 	})
+}
+
+func ParseJWTToken(ctx context.Context) (string, error) {
+	md, ok := metadata.FromContext(ctx)
+	if !ok {
+		return "", errors.InternalServerError("AuthWrapper", "Unable to retrieve metadata")
+	}
+
+	token, err := jwt.Parse(md["Authorization"], func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.InternalServerError("Unexpected signing method", token.Header["alg"].(string))
+		}
+
+		decoded, err := base64.URLEncoding.DecodeString(CLIENT_ID_SECRET)
+		if err != nil {
+			return nil, err
+		}
+
+		return decoded, nil
+	})
+
+	if err != nil {
+		return "", errors.Unauthorized("Token", err.Error())
+	}
+
+	if !token.Valid {
+		return "", errors.Unauthorized("", "Invalid token")
+	}
+
+	return token.Claims.(jwt.MapClaims)["sub"].(string), nil
+}
+
+// NewUUID generates a random UUID according to RFC 4122
+func NewUUID() (string, error) {
+	uuid := make([]byte, 16)
+	n, err := io.ReadFull(rand.Reader, uuid)
+	if n != len(uuid) || err != nil {
+		return "", err
+	}
+	// variant bits; see section 4.1.1
+	uuid[8] = uuid[8]&^0xc0 | 0x80
+	// version 4 (pseudo-random); see section 4.1.3
+	uuid[6] = uuid[6]&^0xf0 | 0x40
+	return fmt.Sprintf("%x-%x-%x-%x-%x", uuid[0:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:]), nil
 }
 
 // Remove records (Files) from db that not longer belong to a datasource

@@ -1,6 +1,7 @@
 // Windows to be manage by electron main process
 const electron = require("electron");
 const os = require("os");
+const menubar = require('menubar')
 const {BrowserWindow} = electron;
 const {autoUpdater} = electron;
 
@@ -8,18 +9,22 @@ const {autoUpdater} = electron;
 // be closed automatically when the JavaScript object is garbage collected.
 let win;
 let auth;
+let widget;
+
 
 module.exports = (function() {
   let updateFeed = "";
   let feedURL = "https://protected-reaches-10740.herokuapp.com";
   let isDevelopment = process.env.NODE_ENV === "development";
-
+  let version;
+  
   var _getMainWindow = function() {
     return win;
   };
 
-  var _createMainWindow = function() {
+  var _createMainWindow = function(app) {
     // Create the browser window.
+    version = app.getVersion();
     win = new BrowserWindow({
       width: 1024,
       height: 768,
@@ -99,6 +104,18 @@ module.exports = (function() {
     }
   };
 
+  var _createWidgetWindow = function(app) {
+    mb = menubar({
+      index: `file://${__dirname}/index-electron.html`
+    });
+
+    mb.on('ready', function ready () {
+      console.log('app is ready')
+    });
+
+    return mb;
+  };
+
   var _createAuthWindow =  function(event, arg) {
     auth = new BrowserWindow({
       parent: win,
@@ -126,6 +143,7 @@ module.exports = (function() {
   return {
     getMainWindow: _getMainWindow,
     createMainWindow: _createMainWindow,
+    createWidgetWindow: _createWidgetWindow,
     createAuthWindow: _createAuthWindow
   }
 }());

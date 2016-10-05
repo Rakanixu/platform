@@ -154,7 +154,7 @@
                 font-weight: 100;
             }
 
-            .big-video mat-item mat-avatar {
+            .big-video mat-item iron-image {
                 width: 113px;
                 height: 72px;
             }
@@ -164,8 +164,9 @@
             <!-- Nav Content -->
             <div class="nav" drawer>
                 <paper-toolbar class="medium-tall left-menu">
+                    <mat-avatar icon-src="[[profile.picture]]"></mat-avatar>
                     <mat-item class="bottom light username"
-                              label="[[user.user.username]]@[[user.hostname]]"></mat-item>
+                              label="[[profile.name]]"></mat-item>
                 </paper-toolbar>
 
                 <div style="height:100%; overflow-y:auto;">
@@ -298,9 +299,13 @@
                                                       description="[[item.url]]">
 
                                                 <template is="dom-if" if="[[isVideoPreview(item.category, bigVideoClass)]]">
-                                                    <mat-avatar background="[[documentType(item.name)]]"
+                                                    <iron-image background="[[documentType(item.name)]]"
                                                                 class="primary image"
-                                                                icon-src="[[endpoints.web]]/media/preview?file_id=[[item.id]]&width=128&height=128&mode=fit&quality=50&token=[[getToken()]]"></mat-avatar>
+                                                                sizing="cover"
+                                                                placeholder="src/static/unknown-video.png"
+                                                                src="[[endpoints.web]]/media/preview?file_id=[[item.id]]&width=128&height=128&mode=fit&quality=50&token=[[getToken()]]"
+                                                                preload
+                                                                fade></iron-image>
                                                 </template>
                                                 <template is="dom-if" if="[[!isVideoPreview(item.category, bigVideoClass)]]">
                                                     <mat-avatar background="[[documentType(item.name)]]"
@@ -338,8 +343,9 @@
                                             <div class="photoContent" tabindex$="[[tabIndex]]" on-tap="mainAction">
                                                 <iron-image sizing="cover"
                                                             src="[[endpoints.web]]/media/preview?file_id=[[item.id]]&width=600&mode=fit&quality=100&token=[[getToken()]]"
+                                                            placeholder="src/static/unknown-img.jpg"
                                                             preload
-                                                            fade><!--placeholder="src/static/spinner_small.gif"-->
+                                                            fade>
                                                     <mat-ripple></mat-ripple>
                                                 </iron-image>
 
@@ -688,7 +694,13 @@
                 }
             },
             init: function(e, detail) {
-                this.headers = this.getHeaders();
+                if (document.querySelector('iron-pages').selected !== 2) {
+                    document.querySelector('iron-pages').selected = 2;
+                }
+
+                this.headers = Auth.getHeaders();
+                this.profile = Auth.getProfile();
+
                 this.listDatasources();
                 this.$.secondaryMenu.selected = "-1";
 

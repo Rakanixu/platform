@@ -83,7 +83,7 @@
           window.addEventListener('configuration-page-activated', this.init.bind(this));
         },
         init: function(e, detail) {
-          this.headers = this.getHeaders();
+          this.headers = Auth.getHeaders();;
 
           this.set('loading', true);
           this.$.rpcGetFlags.generateRequest();

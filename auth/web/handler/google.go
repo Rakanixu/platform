@@ -24,7 +24,7 @@ type GoogleUserInfo struct {
 }
 
 func HandleGoogleLogin(w http.ResponseWriter, r *http.Request) {
-	url := globals.NewGoogleOautConfig().AuthCodeURL(r.URL.Query().Get("user"), oauth2.AccessTypeOffline)
+	url := globals.NewGoogleOautConfig().AuthCodeURL(r.URL.Query().Get("user"), oauth2.AccessTypeOffline, oauth2.ApprovalForce)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
