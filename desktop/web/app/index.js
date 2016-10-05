@@ -28,6 +28,7 @@ var Endpoints = (function() {
   return {
       endpoint: 'http://web.kazoup.io:8082/rpc',
       web: 'http://web.kazoup.io:8082',
+      socket: 'ws://web.kazoup.io:8082',
       srvs:{
           config: {
               srv: 'com.kazoup.srv.config',

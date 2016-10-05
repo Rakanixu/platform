@@ -11,7 +11,6 @@ import (
 )
 
 func srv(ctx *cli.Context) {
-
 	// New Service
 	service := wrappers.NewKazoupService("db")
 

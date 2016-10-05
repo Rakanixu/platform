@@ -18,7 +18,6 @@ import (
 	_ "github.com/pierrre/imageserver/image/png"
 	imageserver_file "github.com/pierrre/imageserver/source/file"
 	imageserver_source_http "github.com/pierrre/imageserver/source/http"
-	"golang.org/x/net/websocket"
 
 	"log"
 	"net/http"
@@ -75,9 +74,6 @@ func web(ctx *cli.Context) {
 	//service.Handle("/mp4/", http.StripPrefix("/mp4/", handler.NewMP4Handler(contentDir)))
 	service.Handle("/raw/", http.StripPrefix("/raw/", handler.NewRAWHandler(contentDir)))
 	//service.Handle("/webm/", http.StripPrefix("/webm/", handler.NewWebmHandler(contentDir)))
-
-	//TODO move to crawler web service
-	service.Handle("/crawler/status", websocket.Handler(handler.CrawlerStatus))
 
 	service.Run()
 }

@@ -406,13 +406,13 @@
                       label=""
                       on-xp-activate="addDatasourceAndScan"></mat-snackbar>
 
-<!--        <web-socket url="ws://localhost:8082/media/crawler/status"
+        <web-socket url="[[endpoints.socket]]/config/platform/ping"
                     on-open="_onOpen"
                     on-close="_onClose"
                     on-message="_onMessage"
                     on-error="_onError"
                     auto
-                    json></web-socket>-->
+                    json></web-socket>
 
         <iron-ajax id="rpcStartScan"
                    method="POST"
@@ -834,20 +834,15 @@
             _listTap: function() {
                 this.$.mainDrawerPanel.closeDrawer();
             },
-            _onOpen: function() {
-
+            _onOpen: function(e) {
+                console.log("OPEN WS", e);
             },
             _onClose: function() {
 
             },
             _onMessage: function(e) {
-                // No crawler running
-                if (_.isEmpty(e.detail)) {
-                    this.$.scan.removeAttribute('disabled');
-                // Crawler running
-                } else {
-                    this.$.scan.setAttribute('disabled', '');
-                }
+
+
             },
             _onError: function(e) {
                 //console.log(e)
