@@ -3,15 +3,14 @@ package file
 import (
 	"encoding/json"
 	"errors"
-	"golang.org/x/net/context"
-	"path/filepath"
-	"strings"
-	"time"
-
 	"github.com/kazoup/platform/structs/categories"
 	"github.com/kazoup/platform/structs/local"
 	"github.com/kazoup/platform/structs/onedrive"
 	"github.com/kazoup/platform/structs/slack"
+	"golang.org/x/net/context"
+	"path/filepath"
+	"strings"
+	"time"
 
 	db "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/structs/globals"
@@ -27,6 +26,7 @@ func GetFileByID(ctx context.Context, id string, c db.DBClient) (File, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	f, err := NewFileFromString(dbres.Result)
 	if err != nil {
 		return nil, err

@@ -244,9 +244,15 @@ func (e *elastic) Search(ctx context.Context, req *db.SearchRequest) (*db.Search
 // This should return single ID as all files should have unique ID's as we seting them up based on unique path MD5
 // Method will work on any index and alias as long ID's are unique
 func (e *elastic) SearchById(ctx context.Context, req *db.SearchByIdRequest) (*db.SearchByIdResponse, error) {
+	uId, err := globals.ParseJWTToken(ctx)
+	if err != nil {
+		return &db.SearchByIdResponse{}, err
+	}
+
 	eQuery := ElasticQuery{
-		Index: req.Index,
-		Id:    req.Id,
+		Index:  req.Index,
+		Id:     req.Id,
+		UserId: uId,
 	}
 	query, err := eQuery.QueryById()
 	if err != nil {

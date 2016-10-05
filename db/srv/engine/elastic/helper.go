@@ -180,9 +180,10 @@ func (e *ElasticQuery) DeleteQuery() (string, error) {
 func (e *ElasticQuery) QueryById() (string, error) {
 	var buffer bytes.Buffer
 
-	buffer.WriteString(`{"query":{"term":{"id":"`)
-	buffer.WriteString(e.Id)
-	buffer.WriteString(`"}}}`)
+	buffer.WriteString(`{"query":{"filtered":{"filter":{"bool":{"must":[{"term":{"id":"`)
+	buffer.WriteString(e.Id + `"}},`)
+	buffer.WriteString(e.filterUser())
+	buffer.WriteString(`]}}}}}`)
 
 	return buffer.String(), nil
 }
