@@ -14,7 +14,7 @@ func PingPlatform(ws *websocket.Conn) {
 
 		if err := websocket.JSON.Send(ws, jObj.String()); err != nil {
 			log.Println("SOCKET ERROR", err)
-			//return
+			return
 		}
 		time.Sleep(time.Second * 3)
 	}

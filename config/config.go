@@ -12,7 +12,6 @@ import (
 
 func srv(ctx *cli.Context) {
 	service := wrappers.NewKazoupService("config")
-	web := microweb.NewService(microweb.Name("go.micro.web.config"))
 
 	// Attach handler
 	service.Server().Handle(
@@ -23,11 +22,16 @@ func srv(ctx *cli.Context) {
 	if err := service.Run(); err != nil {
 		log.Fatalf("%v", err)
 	}
+}
+
+func web(ctx *cli.Context) {
+	web := microweb.NewService(microweb.Name("go.micro.web.config"))
 
 	// Attach web handler (socket)
 	web.Handle("/platform/ping", websocket.Handler(sockets.PingPlatform))
 	web.Run()
 }
+
 func configCommands() []cli.Command {
 	return []cli.Command{
 		{
@@ -35,8 +39,14 @@ func configCommands() []cli.Command {
 			Usage:  "Run config srv service",
 			Action: srv,
 		},
+		{
+			Name:   "web",
+			Usage:  "Run config web service",
+			Action: web,
+		},
 	}
 }
+
 func Commands() []cli.Command {
 	return []cli.Command{
 		{

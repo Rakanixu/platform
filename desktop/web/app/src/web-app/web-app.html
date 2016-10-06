@@ -37,7 +37,6 @@
 <link rel="import" href="../../bower_components/mat-breadcrumb/mat-breadcrumb-step.html">
 <link rel="import" href="../../bower_components/mat-toast/mat-toast.html">
 <link rel="import" href="../../bower_components/mat-typography/mat-typography.html">
-<link rel="import" href="../../bower_components/mat-snackbar/mat-snackbar.html">
 <link rel="import" href="../../bower_components/mat-ink/mat-ink.html">
 <link rel="import" href="../../bower_components/mat-menu/mat-menu.html">
 
@@ -397,13 +396,6 @@
 
         <paper-toast id="toast" text=""></paper-toast>
 
-        <mat-snackbar id="snackbar"
-                      button="OK"
-                      timeout="10000000"
-                      action-color="yellow"
-                      label=""
-                      on-xp-activate="addDatasourceAndScan"></mat-snackbar>
-
         <iron-ajax id="rpcStartScan"
                    method="POST"
                    content-type="application/json"
@@ -412,16 +404,6 @@
                    on-error="_handleError"
                    on-response="_handleStartScan"
                    params="[[rpcStartScanParams]]"
-                   headers="[[headers]]"></iron-ajax>
-
-        <iron-ajax id="rpcAddDatasource"
-                   method="POST"
-                   content-type="application/json"
-                   url="[[endpoints.endpoint]]"
-                   handle-as="json"
-                   on-error="_handleError"
-                   on-response="_handleAddDatasource"
-                   params="[[rpcAddDatasourceParams]]"
                    headers="[[headers]]"></iron-ajax>
 
         <iron-ajax id="rpcGetDatasources"
@@ -474,10 +456,6 @@
                     type: Boolean,
                     notify: true,
                     value: false
-                },
-                rpcAddDatasourceParams: {
-                    type: Object,
-                    notify: true
                 },
                 rpcGetDatasourcesParams: {
                     type: Object,
@@ -833,16 +811,6 @@
                     this.$.toast.show();
                 }
             },
-            _handleAddDatasource: function(e) {
-                if (e.detail.response) {
-                    this.$.toast.text = 'New datasource created succesfully';
-                    this.$.toast.show();
-
-                    this.async(function() {
-                        this.$.rpcGetDatasources.generateRequest();
-                    }, 1000);
-                }
-            },
             _handleGetDatasource: function(e) {
                 if (e.detail.response && e.detail.response.result) {
                     var results = JSON.parse(e.detail.response.result);
@@ -1052,19 +1020,6 @@
                     this.$.search.focus();
                 }, 10);
                 this.set('searching', !this.searching);
-            },
-            addDatasourceAndScan: function(e, detail) {
-                this.set('doScan', true);
-                this.$.rpcAddDatasource.body = {
-                    service: 'com.kazoup.srv.datasource',
-                    method: 'DataSource.Create',
-                    request: {
-                        endpoint: {
-                            url: 'local://' + this.homeDirPath
-                        }
-                    }
-                };
-                this.$.rpcAddDatasource.generateRequest();
             },
             mainAction: function(e, detail) {
                 this.clearSelectedItemStyling();

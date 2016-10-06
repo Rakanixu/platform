@@ -34,34 +34,47 @@
             type: Number,
             notify: false,
             value: 0
+          },
+          connected: {
+            type: Boolean,
+            notify: false,
+            value: true,
+            observer: 'connectedChanged'
+          }
+        },
+        connectedChanged: function(newVal, oldVal) {
+          if (!newVal) {
+            document.querySelector('#globalErrMsg').label = 'Connection with server failed. Please check your internet connection.';
+            document.querySelector('#globalErrMsg').show();
+          } else {
+            document.querySelector('#globalErrMsg').hide();
           }
         },
         ready: function() {
           this.async(function() {
+            console.log(this.$.socket.url)
             this.$.socket.open();
-          }, 2500);
+          }, 2000);
         },
         _onOpen: function(e) {
           console.log("OPEN WS");
         },
         _onClose: function(e) {
-          console.log("CLOSED WS");
+          console.log("CLOSED WS", e);
         },
         _onMessage: function(e) {
           var data = JSON.parse(e.detail);
 
-          this.lastTimestamp = data.timestamp;
+          this.set('lastTimestamp', data.timestamp);
+          this.set('connected', true);
 
           clearTimeout(this.timeout);
           this.timeout = setTimeout(function() {
-            document.querySelector('#globalToast').text = 'Connection with server failed. Please check your internet connection.';
-            document.querySelector('#globalToast').show();
+            this.set('connected', false);
           }.bind(this), 3500);
-
-          console.log("msg WS", this.lastTimestamp);
         },
         _onError: function(e) {
-          console.log("ERROR WS")
+          console.log("ERROR WS", e)
         },
       });
     }());

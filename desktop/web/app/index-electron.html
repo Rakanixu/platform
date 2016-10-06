@@ -17,6 +17,7 @@
         <!-- Setting the right viewport -->
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <link rel="import" href="bower_components/iron-pages/iron-pages.html">
+        <link rel="import" href="bower_components/mat-snackbar/mat-snackbar.html">
         <link rel="import" href="src/sockets/check-connection.html">
         <link rel="import" href="src/onboarding/onboarding-page.html">
         <link rel="import" href="src/auth0/login-auth0.html">
@@ -44,13 +45,19 @@
     </head>
 
     <body>
-        <paper-toast id="globalToast" text=""></paper-toast>
         <iron-pages id="ironPages" selected="0">
             <onboarding-page></onboarding-page>
             <login-auth0></login-auth0>
             <web-app></web-app>
             <settings-page></settings-page>
         </iron-pages>
+
+        <mat-snackbar id="globalErrMsg"
+                      button="OK"
+                      timeout="10000000"
+                      action-color="yellow"
+                      label=""></mat-snackbar>
+
         <check-connection></check-connection>
     </body>
 </html>
