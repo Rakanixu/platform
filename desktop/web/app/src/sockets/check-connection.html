@@ -60,7 +60,10 @@
           console.log("OPEN WS");
         },
         _onClose: function(e) {
-          console.log("CLOSED WS", e);
+          clearTimeout(this.reconnectTimeout);
+          this.reconnectTimeout = setTimeout(function() {
+            this.$.socket.open();
+          }.bind(this), 2000);
         },
         _onMessage: function(e) {
           var data = JSON.parse(e.detail);
@@ -74,7 +77,7 @@
           }.bind(this), 3500);
         },
         _onError: function(e) {
-          console.log("ERROR WS", e)
+          console.log("ERROR WS");
         },
       });
     }());

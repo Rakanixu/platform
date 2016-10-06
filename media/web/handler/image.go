@@ -102,15 +102,26 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		rsp, err := c.Do(req)
 		if err != nil {
 			log.Println("ERROR", err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
-		defer rsp.Body.Close()
+		if rsp.StatusCode != http.StatusOK {
+			log.Println("Error getting file status code ", rsp.StatusCode)
+			http.Error(w, "Error getting file status code ", http.StatusInternalServerError)
+			return
+		}
 		b, err := ioutil.ReadAll(rsp.Body)
+		defer rsp.Body.Close()
 		if err != nil {
 			log.Println("ERROR", err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 		_, err = w.Write(b)
 		if err != nil {
 			log.Println("ERROR", err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 	case globals.GoogleDrive, globals.OneDrive:
 		url, err = fSys.GetThumbnail(f.GetIDFromOriginal())
