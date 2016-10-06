@@ -295,7 +295,7 @@
                                                       label="[[item.name]]"
                                                       description="[[item.url]]">
 
-                                                <template is="dom-if" if="[[isVideoPreview(item.category, bigVideoClass)]]">
+                                                <template is="dom-if" if="[[isVideoPreview(item.category, bigVideoClass)]]" restamp="true">
                                                     <iron-image background="[[documentType(item.name)]]"
                                                                 class="primary image"
                                                                 sizing="cover"
@@ -316,7 +316,7 @@
                                             </mat-item>
                                         </template>
 
-                                        <template is="dom-if" if="[[isNoVisualMedia(item.category)]]">
+                                        <template is="dom-if" if="[[isNoVisualMedia(item.category)]]" restamp="true">
                                             <mat-item on-tap="mainAction"
                                                       label="[[item.name]]"
                                                       description="[[item.url]]">

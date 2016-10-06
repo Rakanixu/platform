@@ -44,7 +44,7 @@
         },
         connectedChanged: function(newVal, oldVal) {
           if (!newVal) {
-            document.querySelector('#globalErrMsg').label = 'Connection with server failed. Please check your internet connection.';
+            document.querySelector('#globalErrMsg').label = 'Connection with Kazoup servers failed. Hold on, we are trying to reconnect..';
             document.querySelector('#globalErrMsg').show();
           } else {
             document.querySelector('#globalErrMsg').hide();
@@ -57,7 +57,7 @@
           }, 2000);
         },
         _onOpen: function(e) {
-          console.log("OPEN WS");
+
         },
         _onClose: function(e) {
           clearTimeout(this.reconnectTimeout);
@@ -77,7 +77,7 @@
           }.bind(this), 3500);
         },
         _onError: function(e) {
-          console.log("ERROR WS");
+
         },
       });
     }());
