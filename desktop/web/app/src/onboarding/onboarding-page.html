@@ -18,11 +18,11 @@
       }
 
       l2t-paper-slider paper-slide {
-        background-color: #00b8d4;
+        
       }
 
       l2t-paper-slider paper-slide iron-image {
-        height: 70%;
+        height: 60%;
         display: block;
       }
 
@@ -33,47 +33,65 @@
       }
 
       l2t-paper-slider paper-slide paper-button {
-        background-color: rgba(158,158,158,0.8);
+        background-color: rgba(255,255,255,1);
+      }
+      h1 {
+        font-size:28px;
+        line-height:32px;
+         color: rgba(255,255,255,1);
+         font-weight:400;
+         padding-top:14px;
+      }
+      p {
+        font-size:15px;
+        line-height:24px;
+        padding-bottom:24px;
+        color: rgba(255,255,255,0.9);
+        font-weight:200;
+      }
+      .green {
+        background-color :#4CAF50;
+      }
+      .blue {
+        background-color:#2196F3;
+      }
+      .purple{
+        background-color :#F44336;
       }
     </style>
 
-    <l2t-paper-slider total-slides="4" class="fit">
-      <paper-slide>
+    <l2t-paper-slider total-slides="3" class="fit">
+      <paper-slide class="blue">
         <iron-image sizing="cover"
-                    src="http://img.wallpaperfolder.com/f/7A64E5BE77F8/install-android-kitkat-apps-any.jpg"></iron-image>
-        <h1>Header</h1>
-        <p>Text bitch</p>
+                    src="http://cdn2.xyztimes.com/wp-content/uploads/2015/05/Material-Wallpaper-11.1-696x407.png"></iron-image>
+        <h1>Find files, anywhere</h1>
+        <p>
+        Search all your cloud files in one place.</br>
+        Putting cloud files at your fingertips.
+	      </p>
         <div>
-          <paper-button noink on-tap="goToApp">Get started</paper-button>
+          <paper-button raised on-tap="goToApp">Get started</paper-button>
         </div>
       </paper-slide>
-      <paper-slide>
+      <paper-slide class="green">
         <iron-image sizing="cover"
-                    src="http://img.wallpaperfolder.com/f/7A97EAE4FDF0/nexus-backgrounds-love-set-official.jpg"></iron-image>
-        <h1>Header</h1>
-        <p>Text 22</p>
+                    src="http://www.lirent.net/wp-content/uploads/2014/11/Android-Nexus-5-Lollipop-wallpaper-4.png"></iron-image>
+        <h1>Share files with anyone</h1>
+        <p>Share your files quickly anywhere.</p>
         <div>
-          <paper-button noink on-tap="goToApp">Get started</paper-button>
+          <paper-button raised on-tap="goToApp">Get started</paper-button>
         </div>
       </paper-slide>
-      <paper-slide>
+      <paper-slide class="purple">
         <iron-image sizing="cover"
-                    src="http://img.wallpaperfolder.com/f/7A97EAE4FDF0/nexus-backgrounds-love-set-official.jpg"></iron-image>
-        <h1>Header</h1>
-        <p>Text 33</p>
+                    src="https://4kwallpapers.co/wp-content/uploads/2015/07/Dark-Grey-Red-Material-Design-4K-Wallpaper.jpg"></iron-image>
+        <h1>Safe files anywhere</h1>
+        <p>Create and save files anywhere.</p>
         <div>
-          <paper-button noink on-tap="goToApp">Get started</paper-button>
+          <paper-button raised on-tap="goToApp">Get started</paper-button>
         </div>
       </paper-slide>
-      <paper-slide>
-        <iron-image sizing="cover"
-                    src="http://img.wallpaperfolder.com/f/7A97EAE4FDF0/nexus-backgrounds-love-set-official.jpg"></iron-image>
-        <h1>Header</h1>
-        <p>Text 44</p>
-        <div>
-          <paper-button noink on-tap="goToApp">Get started</paper-button>
-        </div>
-      </paper-slide>
+      
     </l2t-paper-slider>
   </template>
   <script>
