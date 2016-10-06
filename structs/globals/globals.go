@@ -52,7 +52,8 @@ const (
 
 	StartScanTask = "start_scan"
 
-	SERVER_ADDRESS = "http://web.kazoup.io:8082"
+	SERVER_ADDRESS        = "http://web.kazoup.io:8082"
+	SECURE_SERVER_ADDRESS = "https://web.kazoup.io:8082"
 
 	SYSTEM_TOKEN     = "ajsdIgsnaloHFGis823jsdgyjTGDKijfcjk783JDUYFJyggvwejkxsnmbkjwpoj6483"
 	CLIENT_ID_SECRET = "EC1FD9R5t6D3cs9CzPbgJaBJjshoVgrJrTs6U39scYzYF7HYyMlv_mal2IjLLaA9" // Auth0 RPC API client

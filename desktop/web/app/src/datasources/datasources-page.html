@@ -251,7 +251,9 @@
                 'auth-message',
                 {
                   url: e.currentTarget.getAttribute('data-url') + '?user=' + Auth.getUserId(),
-                  token: localStorage.getItem('token')
+                  token: localStorage.getItem('token'),
+                  id_token: localStorage.getItem('id_token'),
+                  show_onboarding: localStorage.getItem('show_onboarding')
                 }
               );
             }
@@ -292,7 +294,11 @@
           this.$.rpcAddDatasource.generateRequest();
         },
         _authSuccessful: function(e, detail) {
-          localStorage.setItem('token', detail);
+          for (var attr in detail) {
+            if (detail.hasOwnProperty(attr)) {
+              localStorage.setItem(attr, detail[attr]);
+            }
+          }
           this.init();
         },
         _handleStartScan: function(e) {

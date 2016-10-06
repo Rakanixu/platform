@@ -134,7 +134,11 @@ module.exports = (function() {
 
     auth.on("closed", () => {
       // Let main window has the focus again
-      event.sender.send('auth-callback-message', arg.token);
+      event.sender.send('auth-callback-message', {
+        token: arg.token,
+        id_token: arg.id_token,
+        show_onboarding: arg.show_onboarding
+      });
     });
 
     auth.show();
