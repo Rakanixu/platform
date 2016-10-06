@@ -67,6 +67,10 @@ curl -XPUT localhost:9200/_template/template_file -d '
             }
           }
         },
+        "category": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
         "url": {
           "type": "string",
           "analyzer": "path_analyzer"
