@@ -229,21 +229,6 @@ func CreateIndexWithAlias(ds *DataSource, ctx context.Context, endpoint *proto.E
 		return err
 	}
 
-	// Put mapping
-	mappingSrvReq := ds.Client.NewRequest(
-		globals.DB_SERVICE_NAME,
-		"DB.PutMappingFromJSON",
-		&db_proto.PutMappingFromJSONRequest{
-			Index: endpoint.Index,
-			Type:  "file",
-		},
-	)
-	mappingSrvRes := &db_proto.PutMappingFromJSONResponse{}
-
-	if err := ds.Client.Call(ctx, mappingSrvReq, mappingSrvRes); err != nil {
-		return err
-	}
-
 	// Create DS alias
 	addAliasReq := ds.Client.NewRequest(
 		globals.DB_SERVICE_NAME,

@@ -59,7 +59,7 @@ curl -XPUT localhost:9200/_template/template_file -d '
         },
         "name":{
           "type": "string",
-          "analyzer": "standard",
+          "analyzer": "filename_index",
           "fields": {
             "raw": {
               "type": "string",
