@@ -180,17 +180,15 @@ func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile, dsId, uId, index st
 func NewKazoupFileFromDropboxFile(d *dropbox.DropboxFile, dsId, uId, index string) *KazoupDropboxFile {
 	isDir := false
 	name := strings.Split(d.Name, ".")
-	scapeName := url.QueryEscape(d.Name)
-	path := strings.Replace(d.PathLower, "/"+scapeName, "", 1)
-	url := fmt.Sprintf("https://www.dropbox.com/home%s?preview=%s", path, scapeName)
+	path := strings.Replace(d.PathDisplay, "/"+d.Name, "", 1)
+	url := fmt.Sprintf("https://www.dropbox.com/home%s?preview=%s", path, url.QueryEscape(d.Name))
 
 	if d.Size == 0 {
 		isDir = true
 	}
 
 	kf := &KazoupFile{
-		ID: globals.GetMD5Hash(d.Name),
-		//ID:           globals.GetMD5Hash(d.WebURL),
+		ID:           globals.GetMD5Hash(url),
 		UserId:       uId,
 		Name:         d.Name,
 		URL:          url,

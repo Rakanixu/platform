@@ -1,7 +1,6 @@
 package dropbox
 
 import (
-	//"encoding/json"
 	"time"
 )
 
@@ -35,7 +34,7 @@ type DropboxFile struct {
 }
 
 /*
-//TODO: meanwhile.. I remove just the Tag property, so I can keep going quickly and not have to implement the following:
+// I remove just the Tag property, so I can keep going quickly and not have to implement the following TODO:
 
 
 type Marshaler interface {

@@ -2,7 +2,6 @@ package file
 
 import (
 	"github.com/kazoup/platform/structs/dropbox"
-	"github.com/kazoup/platform/structs/globals"
 )
 
 type KazoupDropboxFile struct {
@@ -15,8 +14,7 @@ func (kf *KazoupDropboxFile) PreviewURL(width, height, mode, quality string) str
 }
 
 func (kf *KazoupDropboxFile) GetID() string {
-	//return globals.GetMD5Hash(kf.Original.WebViewLink)
-	return globals.GetMD5Hash(kf.Name)
+	return kf.ID
 }
 
 func (kf *KazoupDropboxFile) GetIDFromOriginal() string {

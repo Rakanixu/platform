@@ -147,7 +147,7 @@
       getDatasourceType: function(datasource) {
         return datasource.split('://')[0];
       },
-      getDatasourcePrettyType: function(datasource) {console.log(datasource);
+      getDatasourcePrettyType: function(datasource) {
         switch (this.getDatasourceType(datasource)) {
           case 'local':
             return 'Local';
