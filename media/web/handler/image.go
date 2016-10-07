@@ -130,11 +130,7 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		http.Redirect(w, r, url, http.StatusSeeOther)
 	case globals.Dropbox:
-		log.Println("DROPBOX")
 		url, err = fSys.GetThumbnail(f.GetPathDisplay())
-
-		log.Println(url)
-
 		if err != nil {
 			log.Println("ERROR", err.Error())
 		}
