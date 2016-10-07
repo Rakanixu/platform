@@ -33,3 +33,7 @@ func (kf *KazoupOneDriveFile) GetDatasourceID() string {
 func (kf *KazoupOneDriveFile) GetFileType() string {
 	return kf.FileType
 }
+
+func (kf *KazoupOneDriveFile) GetPathDisplay() string {
+	return ""
+}

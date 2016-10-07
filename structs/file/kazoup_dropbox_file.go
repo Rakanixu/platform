@@ -32,3 +32,7 @@ func (kf *KazoupDropboxFile) GetDatasourceID() string {
 func (kf *KazoupDropboxFile) GetFileType() string {
 	return kf.FileType
 }
+
+func (kf *KazoupDropboxFile) GetPathDisplay() string {
+	return kf.Original.PathDisplay
+}

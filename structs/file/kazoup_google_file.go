@@ -33,3 +33,7 @@ func (kf *KazoupGoogleFile) GetDatasourceID() string {
 func (kf *KazoupGoogleFile) GetFileType() string {
 	return kf.FileType
 }
+
+func (kf *KazoupGoogleFile) GetPathDisplay() string {
+	return ""
+}

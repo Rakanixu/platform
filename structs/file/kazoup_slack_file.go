@@ -30,3 +30,7 @@ func (kf *KazoupSlackFile) GetDatasourceID() string {
 func (kf *KazoupSlackFile) GetFileType() string {
 	return kf.FileType
 }
+
+func (kf *KazoupSlackFile) GetPathDisplay() string {
+	return ""
+}

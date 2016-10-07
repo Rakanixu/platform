@@ -51,8 +51,9 @@ const (
 
 	OneDriveEndpoint = "https://api.onedrive.com/v1.0/"
 
-	DropboxAccountEndpoint = "https://api.dropboxapi.com/2/users/get_account"
-	DropboxFilesEndpoint   = "https://api.dropboxapi.com/2/files/list_folder"
+	DropboxAccountEndpoint   = "https://api.dropboxapi.com/2/users/get_account"
+	DropboxFilesEndpoint     = "https://api.dropboxapi.com/2/files/list_folder"
+	DropboxThumbnailEndpoint = "https://content.dropboxapi.com/2/files/get_thumbnail"
 
 	StartScanTask = "start_scan"
 

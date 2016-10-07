@@ -20,6 +20,7 @@ type File interface {
 	GetIndex() string
 	GetDatasourceID() string
 	GetFileType() string
+	GetPathDisplay() string
 }
 
 func IndexAsync(file File, topic, index string) error {

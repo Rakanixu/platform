@@ -3,12 +3,14 @@ package fs
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/structs/dropbox"
 	"github.com/kazoup/platform/structs/file"
 	"github.com/kazoup/platform/structs/globals"
 	"log"
 	"net/http"
+	"net/url"
 )
 
 type DropboxFs struct {
@@ -46,25 +48,10 @@ func (dfs *DropboxFs) GetDatasourceId() string {
 }
 
 func (dfs *DropboxFs) GetThumbnail(id string) (string, error) {
-	/*	cfg := globals.NewGoogleOautConfig()
-		c := cfg.Client(context.Background(), &oauth2.Token{
-			AccessToken:  dfs.Endpoint.Token.AccessToken,
-			TokenType:    dfs.Endpoint.Token.TokenType,
-			RefreshToken: dfs.Endpoint.Token.RefreshToken,
-			Expiry:       time.Unix(dfs.Endpoint.Token.Expiry, 0),
-		})
+	args := `{"path":"` + id + `","size":{".tag":"w640h480"}}`
+	url := fmt.Sprintf("%s?authorization=%s&arg=%s", globals.DropboxThumbnailEndpoint, dfs.Token(), url.QueryEscape(args))
 
-		srv, err := drive.New(c)
-		if err != nil {
-			return "", err
-		}
-		r, err := srv.Files.Get(id).Fields("thumbnailLink").Do()
-		if err != nil {
-			return "", err
-		}
-
-		return fmt.Sprintf("%ss700", r.ThumbnailLink[:len(r.ThumbnailLink)-4]), nil*/
-	return "", nil
+	return url, nil
 }
 
 func (dfs *DropboxFs) getFiles() error {

@@ -48,3 +48,7 @@ func (kf *KazoupLocalFile) GetDatasourceID() string {
 func (kf *KazoupLocalFile) GetFileType() string {
 	return kf.FileType
 }
+
+func (kf *KazoupLocalFile) GetPathDisplay() string {
+	return ""
+}
