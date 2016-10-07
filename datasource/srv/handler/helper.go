@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/kazoup/platform/datasource/srv/filestore"
+	"github.com/kazoup/platform/datasource/srv/filestore/dropbox"
 	googledrive "github.com/kazoup/platform/datasource/srv/filestore/googledrive"
 	local "github.com/kazoup/platform/datasource/srv/filestore/local"
 	onedrive "github.com/kazoup/platform/datasource/srv/filestore/onedrive"
@@ -25,6 +26,7 @@ const (
 	googledriveEnpoint = "googledrive://"
 	onedriveEndpoint   = "onedrive://"
 	slackEnpoint       = "slack://"
+	dropboxEnpoint     = "dropbox://"
 	nfsEndpoint        = "nfs://"
 	smbEndpoint        = "smb://"
 	filesHelperIndex   = "files_helper"
@@ -45,14 +47,23 @@ func GetDataSource(ctx context.Context, ds *DataSource, endpoint *proto.Endpoint
 			FileStore: filestorer.FileStore{},
 		}, nil
 	}
+
 	if strings.Contains(endpoint.Url, onedriveEndpoint) {
 		return &onedrive.Onedrive{
 			Endpoint:  *endpoint,
 			FileStore: filestorer.FileStore{},
 		}, nil
 	}
+
 	if strings.Contains(endpoint.Url, slackEnpoint) {
 		return &slack.Slack{
+			Endpoint:  *endpoint,
+			FileStore: filestorer.FileStore{},
+		}, nil
+	}
+
+	if strings.Contains(endpoint.Url, dropboxEnpoint) {
+		return &dropbox.Dropbox{
 			Endpoint:  *endpoint,
 			FileStore: filestorer.FileStore{},
 		}, nil
@@ -167,8 +178,6 @@ func SearchDataSources(ctx context.Context, ds *DataSource, req *proto.SearchReq
 func ScanDataSource(ds *DataSource, ctx context.Context, id string) error {
 	//FIXME use ds.Client
 	c := db_proto.NewDBClient(globals.DB_SERVICE_NAME, nil)
-
-	log.Println(globals.DB_SERVICE_NAME)
 	dbSrvRes, err := c.Read(ctx, &db_proto.ReadRequest{
 		Index: "datasources",
 		Type:  "datasource",

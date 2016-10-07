@@ -6,6 +6,7 @@ import (
 	"github.com/kazoup/platform/structs/globals"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	"log"
 )
 
 const (
@@ -27,6 +28,11 @@ func IndexAsync(file File, topic, index string) error {
 	if err != nil {
 		return err
 	}
+
+	log.Println("IndexAsync")
+	log.Println(file.GetID())
+	log.Println(index)
+	log.Println(string(b))
 
 	msg := &crawler.FileMessage{
 		Id:    file.GetID(),

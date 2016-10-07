@@ -3,18 +3,18 @@ package file
 import (
 	"encoding/json"
 	"errors"
+	db "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/structs/categories"
+	"github.com/kazoup/platform/structs/dropbox"
+	"github.com/kazoup/platform/structs/globals"
 	"github.com/kazoup/platform/structs/local"
 	"github.com/kazoup/platform/structs/onedrive"
 	"github.com/kazoup/platform/structs/slack"
 	"golang.org/x/net/context"
+	googledrive "google.golang.org/api/drive/v3"
 	"path/filepath"
 	"strings"
 	"time"
-
-	db "github.com/kazoup/platform/db/srv/proto/db"
-	"github.com/kazoup/platform/structs/globals"
-	googledrive "google.golang.org/api/drive/v3"
 )
 
 func GetFileByID(ctx context.Context, id string, c db.DBClient) (File, error) {
@@ -42,30 +42,36 @@ func NewFileFromString(s string) (File, error) {
 	}
 
 	switch kf.FileType {
-	case "local":
+	case globals.Local:
 		klf := &KazoupLocalFile{}
 		if err := json.Unmarshal([]byte(s), klf); err != nil {
 			return nil, errors.New("Error unmarsahling NewFileFromString case local")
 		}
 		return klf, nil
-	case "slack":
+	case globals.Slack:
 		ksf := &KazoupSlackFile{}
 		if err := json.Unmarshal([]byte(s), ksf); err != nil {
 			return nil, errors.New("Error unmarsahling NewFileFromString case slack")
 		}
 		return ksf, nil
-	case "googledrive":
+	case globals.GoogleDrive:
 		kgf := &KazoupGoogleFile{}
 		if err := json.Unmarshal([]byte(s), kgf); err != nil {
 			return nil, errors.New("Error unmarsahling NewFileFromString case googledrive")
 		}
 		return kgf, nil
-	case "onedrive":
+	case globals.OneDrive:
 		kof := &KazoupOneDriveFile{}
 		if err := json.Unmarshal([]byte(s), kof); err != nil {
 			return nil, errors.New("Error unmarsahling NewFileFromString case onedrive")
 		}
 		return kof, nil
+	case globals.Dropbox:
+		kdf := &KazoupDropboxFile{}
+		if err := json.Unmarshal([]byte(s), kdf); err != nil {
+			return nil, errors.New("Error unmarsahling NewFileFromString case dropbox")
+		}
+		return kdf, nil
 	default:
 		return nil, errors.New("Error constructing file type")
 	}
@@ -166,6 +172,36 @@ func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile, dsId, uId, index st
 		Index:        index,
 	}
 	return &KazoupOneDriveFile{*kf, *o}
+}
+
+// NewKazoupFileFromDropboxFile constructor
+func NewKazoupFileFromDropboxFile(d *dropbox.DropboxFile, dsId, uId, index string) *KazoupDropboxFile {
+	isDir := false
+	name := strings.Split(d.Name, ".")
+
+	// TODO: have a look on structs/dropbox/dropbox.go
+	/*	if d.Tag == "folder" {
+		isDir = true
+	}*/
+
+	kf := &KazoupFile{
+		ID: globals.GetMD5Hash(d.Name),
+		//ID:           globals.GetMD5Hash(d.WebURL),
+		UserId: uId,
+		Name:   d.Name,
+		//URL:          o.WebURL,
+		Modified:     d.ServerModified,
+		FileSize:     int64(d.Size),
+		IsDir:        isDir,
+		Category:     categories.GetDocType("." + name[len(name)-1]),
+		Depth:        0,
+		FileType:     globals.Dropbox,
+		LastSeen:     time.Now().Unix(),
+		DatasourceId: dsId,
+		Index:        index,
+	}
+
+	return &KazoupDropboxFile{*kf, *d}
 }
 
 func UrlDepth(str string) int64 {

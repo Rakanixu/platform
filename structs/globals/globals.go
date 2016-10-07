@@ -43,12 +43,16 @@ const (
 	Slack       = "slack"
 	GoogleDrive = "googledrive"
 	OneDrive    = "onedrive"
+	Dropbox     = "dropbox"
 
 	SlackFilesEndpoint    = "https://slack.com/api/files.list"
 	SlackUsersEndpoint    = "https://slack.com/api/users.list"
 	SlackChannelsEndpoint = "https://slack.com/api/channels.list"
 
 	OneDriveEndpoint = "https://api.onedrive.com/v1.0/"
+
+	DropboxAccountEndpoint = "https://api.dropboxapi.com/2/users/get_account"
+	DropboxFilesEndpoint   = "https://api.dropboxapi.com/2/files/list_folder"
 
 	StartScanTask = "start_scan"
 
@@ -114,6 +118,22 @@ func NewMicrosoftOauthConfig() *oauth2.Config {
 	}
 }
 
+func NewDropboxOauthConfig() *oauth2.Config {
+	return &oauth2.Config{
+		//TODO: switch to SSl
+		RedirectURL: "http://localhost:8082/auth/dropbox/callback",
+		//ClientID:     "6l5aj1fombrp6i7",
+		ClientID: "882k4mhdmtza7y1",
+		//ClientSecret: "nf8xar3qc1f32li",
+		ClientSecret: "krhjkoim5u2a3v3",
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  "https://www.dropbox.com/oauth2/authorize",
+			TokenURL: "https://api.dropbox.com/1/oauth2/token",
+		},
+		Scopes: []string{},
+	}
+}
+
 // NewSystemContext System context
 func NewSystemContext() context.Context {
 	return metadata.NewContext(context.TODO(), map[string]string{
@@ -173,7 +193,7 @@ func NewUUID() (string, error) {
 // file does not exists any more on datasource
 func ClearIndex(e *datasource_proto.Endpoint) error {
 	c := db_proto.NewDBClient(DB_SERVICE_NAME, nil)
-	_, err := c.DeleteByQuery(context.Background(), &db_proto.DeleteByQueryRequest{
+	_, err := c.DeleteByQuery(NewSystemContext(), &db_proto.DeleteByQueryRequest{
 		Indexes:  []string{e.Index},
 		Types:    []string{"file"},
 		LastSeen: e.LastScanStarted,

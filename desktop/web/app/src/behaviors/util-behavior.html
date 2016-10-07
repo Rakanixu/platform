@@ -161,6 +161,9 @@
           case 'onedrive':
             return 'One Drive';
             break;
+          case 'dropbox':
+            return 'Dropbox';
+            break;
         }
       },
       getDatasourceUrl: function(datasource) {
@@ -179,6 +182,9 @@
             break;
           case 'onedrive':
             return 'kazoup:onedrive';
+            break;
+          case 'dropbox':
+            return 'kazoup:dropbox';
             break;
         }
       },
@@ -223,6 +229,9 @@
       },
       isSlack: function(fileType) {
         return (fileType === 'slack');
+      },
+      isDropbox: function(fileType) {
+        return (fileType === 'dropbox');
       },
       hasSlackComments: function(original) {
         if (!_.isEmpty(original)) {

@@ -94,6 +94,11 @@
           <iron-icon class="big" icon="kazoup:onedrive"></iron-icon>
           <mat-item label="One Drive"/>
         </paper-button>
+
+        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/dropbox/login">
+          <iron-icon class="big" icon=""></iron-icon>
+          <mat-item label="Dropbox"/>
+        </paper-button>
       </div>
       <mat-button class="action" label="Cancel" on-tap="closeDatasourceDialog"></mat-button>
     </mat-dialog>

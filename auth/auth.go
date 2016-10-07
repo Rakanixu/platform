@@ -17,6 +17,8 @@ func web(ctx *cli.Context) {
 	service.HandleFunc("/microsoft/callback", handler.HandleMicrosoftCallback)
 	service.HandleFunc("/slack/login", handler.HandleSlackLogin)
 	service.HandleFunc("/slack/callback", handler.HandleSlackCallback)
+	service.HandleFunc("/dropbox/login", handler.HandleDropboxLogin)
+	service.HandleFunc("/dropbox/callback", handler.HandleDropboxCallback)
 
 	if err := service.Run(); err != nil {
 		log.Panic(err)

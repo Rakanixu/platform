@@ -22,7 +22,6 @@ func Scans(ctx context.Context, endpoint *datasource.Endpoint) error {
 	c, r, err := fs.List()
 	if err != nil {
 		return err
-
 	}
 
 	// Publish notification
