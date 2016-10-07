@@ -3,6 +3,7 @@ package file
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	db "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/structs/categories"
 	"github.com/kazoup/platform/structs/dropbox"
@@ -12,6 +13,7 @@ import (
 	"github.com/kazoup/platform/structs/slack"
 	"golang.org/x/net/context"
 	googledrive "google.golang.org/api/drive/v3"
+	"net/url"
 	"path/filepath"
 	"strings"
 	"time"
@@ -178,18 +180,20 @@ func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile, dsId, uId, index st
 func NewKazoupFileFromDropboxFile(d *dropbox.DropboxFile, dsId, uId, index string) *KazoupDropboxFile {
 	isDir := false
 	name := strings.Split(d.Name, ".")
+	scapeName := url.QueryEscape(d.Name)
+	path := strings.Replace(d.PathLower, "/"+scapeName, "", 1)
+	url := fmt.Sprintf("https://www.dropbox.com/home%s?preview=%s", path, scapeName)
 
-	// TODO: have a look on structs/dropbox/dropbox.go
-	/*	if d.Tag == "folder" {
+	if d.Size == 0 {
 		isDir = true
-	}*/
+	}
 
 	kf := &KazoupFile{
 		ID: globals.GetMD5Hash(d.Name),
 		//ID:           globals.GetMD5Hash(d.WebURL),
-		UserId: uId,
-		Name:   d.Name,
-		//URL:          o.WebURL,
+		UserId:       uId,
+		Name:         d.Name,
+		URL:          url,
 		Modified:     d.ServerModified,
 		FileSize:     int64(d.Size),
 		IsDir:        isDir,
