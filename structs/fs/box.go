@@ -10,7 +10,7 @@ import (
 	"log"
 	"golang.org/x/oauth2"
 	"net/http"
-	//"net/url"
+	"fmt"
 	"time"
 )
 
@@ -75,10 +75,9 @@ func (bfs *BoxFs) GetDatasourceId() string {
 }
 
 func (bfs *BoxFs) GetThumbnail(id string) (string, error) {
-	/*args := `{"path":"` + id + `","size":{".tag":"w640h480"}}`
-	url := fmt.Sprintf("%s?authorization=%s&arg=%s", globals.DropboxThumbnailEndpoint, dfs.Token(), url.QueryEscape(args))
-*/
-	return "", nil
+	url := fmt.Sprintf("%s%s&Authorization=%s", globals.BoxFileMetadataEndpoint, id, bfs.Token())
+
+	return url, nil
 }
 
 // getDirChildren get children from directory
