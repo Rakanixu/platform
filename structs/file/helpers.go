@@ -218,9 +218,7 @@ func NewKazoupFileFromBoxFile(d *box.BoxFileMeta, dsId, uId, index string) *Kazo
 	isDir := false
 	name := strings.Split(d.Name, ".")
 	url := fmt.Sprintf("https://app.box.com/%s/%s", d.Type, d.ID)
-	layout := "2016-10-10T00:47:45-07:00"
-	// TODO: fix this bullshit!! just parse the coming string to a valit time.Time
-	t, err := time.Parse(layout, d.ModifiedAt)
+	t, err := time.Parse(time.RFC3339, d.ModifiedAt)
 	if err != nil {
 	    fmt.Println(err)
 	}
