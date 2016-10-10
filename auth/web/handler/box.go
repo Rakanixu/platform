@@ -51,10 +51,6 @@ func HandleBoxCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("TOKEN")
-	log.Println(token)
-
-
 	c := &http.Client{}
 	req, err := http.NewRequest("GET", globals.BoxAccountEndpoint, nil)
 	if err != nil {

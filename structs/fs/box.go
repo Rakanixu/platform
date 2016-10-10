@@ -1,9 +1,7 @@
 package fs
 
 import (
-	//"bytes"
 	"encoding/json"
-	//"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/structs/box"
@@ -60,7 +58,7 @@ func (bfs *BoxFs) List() (chan file.File, chan bool, error) {
 	}()
 
 	go func() {
-		if err := bfs.getContentFromRoot(); err != nil {
+		if err := bfs.getDirChildren("0"); err != nil {
 			log.Println(err)
 		}
 	}()
@@ -83,40 +81,6 @@ func (bfs *BoxFs) GetThumbnail(id string) (string, error) {
 	return "", nil
 }
 
-func (bfs *BoxFs) getContentFromRoot() error {
-	c := &http.Client{}
-	req, err := http.NewRequest("GET", globals.BoxFoldersEndpoint + "0", nil)
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Authorization", bfs.Token())
-	rsp, err := c.Do(req)
-	if err != nil {
-		return err
-	}
-	defer rsp.Body.Close()
-
-	var bdc *box.BoxDirContents
-	if err := json.NewDecoder(rsp.Body).Decode(&bdc); err != nil {
-		return err
-	}
-
-	log.Println("FILES")
-	log.Println(bdc)
-
-
-	for _, v := range bdc.ItemCollection.Entries {
-		f := file.NewKazoupFileFromBoxFile(&v, bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
-		bfs.FilesChan <- f
-
-		if v.Type == "folder" {
-			bfs.Directories <- v.ID
-		}
-	}
-
-	return nil
-}
-
 // getDirChildren get children from directory
 func (bfs *BoxFs) getDirChildren(id string) error {
 	c := &http.Client{}
@@ -136,18 +100,41 @@ func (bfs *BoxFs) getDirChildren(id string) error {
 		return err
 	}
 
-	log.Println("FILES")
-	log.Println(bdc)
-
-
 	for _, v := range bdc.ItemCollection.Entries {
-		f := file.NewKazoupFileFromBoxFile(&v, bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
-		bfs.FilesChan <- f
-
 		if v.Type == "folder" {
+			// Push found direcotries into the queue to be crawled
 			bfs.Directories <- v.ID
+		} else {
+			// File discovered, but need to retrieve more info about the file
+			if err := bfs.getMetadataFromFile(v.ID); err != nil {
+				return err
+			}
 		}
 	}
+
+	return nil
+}
+
+func (bfs *BoxFs) getMetadataFromFile(id string) error {
+	c := &http.Client{}
+	req, err := http.NewRequest("GET", globals.BoxFileMetadataEndpoint + id, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", bfs.Token())
+	rsp, err := c.Do(req)
+	if err != nil {
+		return err
+	}
+	defer rsp.Body.Close()
+
+	var fm *box.BoxFileMeta
+	if err := json.NewDecoder(rsp.Body).Decode(&fm); err != nil {
+		return err
+	}
+
+	f := file.NewKazoupFileFromBoxFile(fm, bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
+	bfs.FilesChan <- f
 
 	return nil
 }

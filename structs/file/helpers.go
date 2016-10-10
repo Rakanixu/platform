@@ -214,11 +214,16 @@ func NewKazoupFileFromDropboxFile(d *dropbox.DropboxFile, dsId, uId, index strin
 }
 
 // NewKazoupFileFromDropboxFile constructor
-func NewKazoupFileFromBoxFile(d *box.BoxFile, dsId, uId, index string) *KazoupBoxFile {
+func NewKazoupFileFromBoxFile(d *box.BoxFileMeta, dsId, uId, index string) *KazoupBoxFile {
 	isDir := false
 	name := strings.Split(d.Name, ".")
 	url := fmt.Sprintf("https://app.box.com/%s/%s", d.Type, d.ID)
-	t := time.Unix(/*d.ModifiedAt*/0, 0)
+	layout := "2016-10-10T00:47:45-07:00"
+	// TODO: fix this bullshit!! just parse the coming string to a valit time.Time
+	t, err := time.Parse(layout, d.ModifiedAt)
+	if err != nil {
+	    fmt.Println(err)
+	}
 
 	if d.Type == "folder" {
 		isDir = true
@@ -230,7 +235,7 @@ func NewKazoupFileFromBoxFile(d *box.BoxFile, dsId, uId, index string) *KazoupBo
 		Name:         d.Name,
 		URL:          url,
 		Modified:     t,
-		//FileSize:     int64(d.Size),
+		FileSize:     int64(d.Size),
 		IsDir:        isDir,
 		Category:     categories.GetDocType("." + name[len(name)-1]),
 		Depth:        0,

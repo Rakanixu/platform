@@ -6,7 +6,7 @@ import (
 
 type KazoupBoxFile struct {
 	KazoupFile
-	Original box.BoxFile
+	Original box.BoxFileMeta
 }
 
 func (kf *KazoupBoxFile) PreviewURL(width, height, mode, quality string) string {

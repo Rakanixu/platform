@@ -58,6 +58,7 @@ const (
 
 	BoxAccountEndpoint = "https://api.box.com/2.0/users/me"
 	BoxFoldersEndpoint = "https://api.box.com/2.0/folders/"
+	BoxFileMetadataEndpoint = "https://api.box.com/2.0/files/"
 
 	StartScanTask = "start_scan"
 
