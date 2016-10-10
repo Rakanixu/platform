@@ -1,0 +1,89 @@
+package box
+
+type BoxFile struct {
+	Type string `json:"type"`
+	ID string `json:"id"`
+	SequenceID string `json:"sequence_id"`
+	Etag string `json:"etag"`
+	Name string `json:"name"`
+	CreatedAt string `json:"created_at"`
+	ModifiedAt string `json:"modified_at"`
+	Description string `json:"description"`
+	Size int `json:"size"`
+	PathCollection struct {
+		TotalCount int `json:"total_count"`
+		Entries []struct {
+			Type string `json:"type"`
+			ID string `json:"id"`
+			SequenceID interface{} `json:"sequence_id"`
+			Etag interface{} `json:"etag"`
+			Name string `json:"name"`
+		} `json:"entries"`
+	} `json:"path_collection"`
+	CreatedBy struct {
+		Type string `json:"type"`
+		ID string `json:"id"`
+		Name string `json:"name"`
+		Login string `json:"login"`
+	} `json:"created_by"`
+	ModifiedBy struct {
+		Type string `json:"type"`
+		ID string `json:"id"`
+		Name string `json:"name"`
+		Login string `json:"login"`
+	} `json:"modified_by"`
+	OwnedBy struct {
+		Type string `json:"type"`
+		ID string `json:"id"`
+		Name string `json:"name"`
+		Login string `json:"login"`
+	} `json:"owned_by"`
+	SharedLink struct {
+		URL string `json:"url"`
+		DownloadURL interface{} `json:"download_url"`
+		VanityURL interface{} `json:"vanity_url"`
+		IsPasswordEnabled bool `json:"is_password_enabled"`
+		UnsharedAt interface{} `json:"unshared_at"`
+		DownloadCount int `json:"download_count"`
+		PreviewCount int `json:"preview_count"`
+		Access string `json:"access"`
+		Permissions struct {
+			CanDownload bool `json:"can_download"`
+			CanPreview bool `json:"can_preview"`
+		} `json:"permissions"`
+	} `json:"shared_link"`
+	FolderUploadEmail struct {
+		Access string `json:"access"`
+		Email string `json:"email"`
+	} `json:"folder_upload_email"`
+	Parent struct {
+		Type string `json:"type"`
+		ID string `json:"id"`
+		SequenceID interface{} `json:"sequence_id"`
+		Etag interface{} `json:"etag"`
+		Name string `json:"name"`
+	} `json:"parent"`
+	ItemStatus string `json:"item_status"`
+	ItemCollection struct {
+		TotalCount int `json:"total_count"`
+		Entries []struct {
+			Type string `json:"type"`
+			ID string `json:"id"`
+			SequenceID string `json:"sequence_id"`
+			Etag string `json:"etag"`
+			Sha1 string `json:"sha1"`
+			Name string `json:"name"`
+		} `json:"entries"`
+		Offset int `json:"offset"`
+		Limit int `json:"limit"`
+	} `json:"item_collection"`
+}
+/*
+type BoxFile struct {
+			Type string `json:"type"`
+			ID string `json:"id"`
+			SequenceID string `json:"sequence_id"`
+			Etag string `json:"etag"`
+			Sha1 string `json:"sha1"`
+			Name string `json:"name"`
+		}*/

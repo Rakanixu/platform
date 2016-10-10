@@ -7,6 +7,7 @@ import (
 	db "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/structs/categories"
 	"github.com/kazoup/platform/structs/dropbox"
+	"github.com/kazoup/platform/structs/box"
 	"github.com/kazoup/platform/structs/globals"
 	"github.com/kazoup/platform/structs/local"
 	"github.com/kazoup/platform/structs/onedrive"
@@ -74,6 +75,12 @@ func NewFileFromString(s string) (File, error) {
 			return nil, errors.New("Error unmarsahling NewFileFromString case dropbox")
 		}
 		return kdf, nil
+	case globals.Box:
+		kbf := &KazoupBoxFile{}
+		if err := json.Unmarshal([]byte(s), kbf); err != nil {
+			return nil, errors.New("Error unmarsahling NewFileFromString case box")
+		}
+		return kbf, nil		
 	default:
 		return nil, errors.New("Error constructing file type")
 	}
@@ -204,6 +211,36 @@ func NewKazoupFileFromDropboxFile(d *dropbox.DropboxFile, dsId, uId, index strin
 	}
 
 	return &KazoupDropboxFile{*kf, *d}
+}
+
+// NewKazoupFileFromDropboxFile constructor
+func NewKazoupFileFromBoxFile(d *box.BoxFile, dsId, uId, index string) *KazoupBoxFile {
+	isDir := false
+	name := strings.Split(d.Name, ".")
+	url := fmt.Sprintf("https://app.box.com/%s/%s", d.Type, d.ID)
+	t := time.Unix(/*d.ModifiedAt*/0, 0)
+
+	if d.Type == "folder" {
+		isDir = true
+	}
+
+	kf := &KazoupFile{
+		ID:           globals.GetMD5Hash(url),
+		UserId:       uId,
+		Name:         d.Name,
+		URL:          url,
+		Modified:     t,
+		FileSize:     int64(d.Size),
+		IsDir:        isDir,
+		Category:     categories.GetDocType("." + name[len(name)-1]),
+		Depth:        0,
+		FileType:     globals.Box,
+		LastSeen:     time.Now().Unix(),
+		DatasourceId: dsId,
+		Index:        index,
+	}
+
+	return &KazoupBoxFile{*kf, *d}
 }
 
 func UrlDepth(str string) int64 {

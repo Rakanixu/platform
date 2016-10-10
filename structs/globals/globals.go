@@ -44,6 +44,7 @@ const (
 	GoogleDrive = "googledrive"
 	OneDrive    = "onedrive"
 	Dropbox     = "dropbox"
+	Box    		= "box"
 
 	SlackFilesEndpoint    = "https://slack.com/api/files.list"
 	SlackUsersEndpoint    = "https://slack.com/api/users.list"
@@ -56,6 +57,7 @@ const (
 	DropboxThumbnailEndpoint = "https://content.dropboxapi.com/2/files/get_thumbnail"
 
 	BoxAccountEndpoint = "https://api.box.com/2.0/users/me"
+	BoxFoldersEndpoint = "https://api.box.com/2.0/folders/"
 
 	StartScanTask = "start_scan"
 
