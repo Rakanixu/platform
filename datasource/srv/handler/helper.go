@@ -8,6 +8,7 @@ import (
 	"errors"
 	"github.com/kazoup/platform/datasource/srv/filestore"
 	"github.com/kazoup/platform/datasource/srv/filestore/dropbox"
+	"github.com/kazoup/platform/datasource/srv/filestore/box"
 	googledrive "github.com/kazoup/platform/datasource/srv/filestore/googledrive"
 	local "github.com/kazoup/platform/datasource/srv/filestore/local"
 	onedrive "github.com/kazoup/platform/datasource/srv/filestore/onedrive"
@@ -27,6 +28,7 @@ const (
 	onedriveEndpoint   = "onedrive://"
 	slackEnpoint       = "slack://"
 	dropboxEnpoint     = "dropbox://"
+	boxEnpoint		   = "box://"
 	nfsEndpoint        = "nfs://"
 	smbEndpoint        = "smb://"
 	filesHelperIndex   = "files_helper"
@@ -64,6 +66,13 @@ func GetDataSource(ctx context.Context, ds *DataSource, endpoint *proto.Endpoint
 
 	if strings.Contains(endpoint.Url, dropboxEnpoint) {
 		return &dropbox.Dropbox{
+			Endpoint:  *endpoint,
+			FileStore: filestorer.FileStore{},
+		}, nil
+	}
+
+	if strings.Contains(endpoint.Url, boxEnpoint) {
+		return &box.Box{
 			Endpoint:  *endpoint,
 			FileStore: filestorer.FileStore{},
 		}, nil

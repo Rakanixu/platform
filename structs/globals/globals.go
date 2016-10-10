@@ -55,6 +55,8 @@ const (
 	DropboxFilesEndpoint     = "https://api.dropboxapi.com/2/files/list_folder"
 	DropboxThumbnailEndpoint = "https://content.dropboxapi.com/2/files/get_thumbnail"
 
+	BoxAccountEndpoint = "https://api.box.com/2.0/users/me"
+
 	StartScanTask = "start_scan"
 
 	SERVER_ADDRESS        = "http://web.kazoup.io:8082"
@@ -130,6 +132,20 @@ func NewDropboxOauthConfig() *oauth2.Config {
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  "https://www.dropbox.com/oauth2/authorize",
 			TokenURL: "https://api.dropbox.com/1/oauth2/token",
+		},
+		Scopes: []string{},
+	}
+}
+
+func NewBoxOauthConfig() *oauth2.Config {
+	return &oauth2.Config{
+		//TODO: switch to SSl
+		RedirectURL: "http://localhost:8082/auth/box/callback",
+		ClientID: "8ryeu572aa5rk7iun56hsb0g7ta1oblp",
+		ClientSecret: "An5sAtmY5KzlCvrAZgQ4rXQtBY3v6TwT",
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  "https://app.box.com/api/oauth2/authorize",
+			TokenURL: "https://app.box.com/api/oauth2/token",
 		},
 		Scopes: []string{},
 	}

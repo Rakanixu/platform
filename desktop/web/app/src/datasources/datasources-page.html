@@ -99,6 +99,11 @@
           <iron-icon class="big" icon="kazoup:dropbox"></iron-icon>
           <mat-item label="Dropbox"/>
         </paper-button>
+
+        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/box/login">
+          <iron-icon class="big" icon="kazoup:box"></iron-icon>
+          <mat-item label="Box"/>
+        </paper-button>
       </div>
       <mat-button class="action" label="Cancel" on-tap="closeDatasourceDialog"></mat-button>
     </mat-dialog>
