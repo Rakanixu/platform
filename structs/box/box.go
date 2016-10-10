@@ -1,6 +1,6 @@
 package box
 
-type BoxFile struct {
+type BoxDirContents struct {
 	Type string `json:"type"`
 	ID string `json:"id"`
 	SequenceID string `json:"sequence_id"`
@@ -66,24 +66,22 @@ type BoxFile struct {
 	ItemStatus string `json:"item_status"`
 	ItemCollection struct {
 		TotalCount int `json:"total_count"`
-		Entries []struct {
-			Type string `json:"type"`
-			ID string `json:"id"`
-			SequenceID string `json:"sequence_id"`
-			Etag string `json:"etag"`
-			Sha1 string `json:"sha1"`
-			Name string `json:"name"`
-		} `json:"entries"`
+		Entries []BoxFile `json:"entries"`
 		Offset int `json:"offset"`
 		Limit int `json:"limit"`
 	} `json:"item_collection"`
 }
-/*
+
 type BoxFile struct {
-			Type string `json:"type"`
-			ID string `json:"id"`
-			SequenceID string `json:"sequence_id"`
-			Etag string `json:"etag"`
-			Sha1 string `json:"sha1"`
-			Name string `json:"name"`
-		}*/
+	Type string `json:"type"`
+	ID string `json:"id"`
+	FileVersion struct {
+		Type string `json:"type"`
+		ID string `json:"id"`
+		Sha1 string `json:"sha1"`
+	} `json:"file_version"`
+	SequenceID string `json:"sequence_id"`
+	Etag string `json:"etag"`
+	Sha1 string `json:"sha1"`
+	Name string `json:"name"`
+}

@@ -230,7 +230,7 @@ func NewKazoupFileFromBoxFile(d *box.BoxFile, dsId, uId, index string) *KazoupBo
 		Name:         d.Name,
 		URL:          url,
 		Modified:     t,
-		FileSize:     int64(d.Size),
+		//FileSize:     int64(d.Size),
 		IsDir:        isDir,
 		Category:     categories.GetDocType("." + name[len(name)-1]),
 		Depth:        0,

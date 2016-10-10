@@ -29,12 +29,14 @@ func NewBoxFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 		Endpoint:  e,
 		Running:   make(chan bool, 1),
 		FilesChan: make(chan file.File),
+		Directories: make(chan string),
 	}
 }
 
 func (bfs *BoxFs) List() (chan file.File, chan bool, error) {
 	bfs.refreshToken()
-	/*go func() {
+
+	go func() {
 		bfs.LastDirTime = time.Now().Unix()
 		for {
 			select {
@@ -55,10 +57,10 @@ func (bfs *BoxFs) List() (chan file.File, chan bool, error) {
 			}
 
 		}
-	}()*/
+	}()
 
 	go func() {
-		if err := bfs.getFiles(); err != nil {
+		if err := bfs.getContentFromRoot(); err != nil {
 			log.Println(err)
 		}
 	}()
@@ -81,7 +83,7 @@ func (bfs *BoxFs) GetThumbnail(id string) (string, error) {
 	return "", nil
 }
 
-func (bfs *BoxFs) getFiles() error {
+func (bfs *BoxFs) getContentFromRoot() error {
 	c := &http.Client{}
 	req, err := http.NewRequest("GET", globals.BoxFoldersEndpoint + "0", nil)
 	if err != nil {
@@ -93,56 +95,59 @@ func (bfs *BoxFs) getFiles() error {
 		return err
 	}
 	defer rsp.Body.Close()
-log.Println("BODY")
-log.Println(bfs.Token())
-log.Println(rsp.Body)
-	var bf *box.BoxFile
-	if err := json.NewDecoder(rsp.Body).Decode(&bf); err != nil {
+
+	var bdc *box.BoxDirContents
+	if err := json.NewDecoder(rsp.Body).Decode(&bdc); err != nil {
 		return err
 	}
 
 	log.Println("FILES")
-	log.Println(bf)
-	log.Println("")
+	log.Println(bdc)
 
-	/*for _, v := range filesRsp.Entries {
-		f := file.NewKazoupFileFromBoxFile(&v, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
-		dfs.FilesChan <- f
-	}*/
+
+	for _, v := range bdc.ItemCollection.Entries {
+		f := file.NewKazoupFileFromBoxFile(&v, bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
+		bfs.FilesChan <- f
+
+		if v.Type == "folder" {
+			bfs.Directories <- v.ID
+		}
+	}
 
 	return nil
 }
 
 // getDirChildren get children from directory
 func (bfs *BoxFs) getDirChildren(id string) error {
-	// https://api.onedrive.com/v1.0/drive/items/F5A34C5D0F17415A!114/children
-	/*c := &http.Client{}
-	url := globals.OneDriveEndpoint + Drive + "items/" + id + "/children"
-	req, err := http.NewRequest("GET", url, nil)
-	req.Header.Set("Authorization", ofs.Endpoint.Token.TokenType+" "+ofs.Endpoint.Token.AccessToken)
+	c := &http.Client{}
+	req, err := http.NewRequest("GET", globals.BoxFoldersEndpoint + id, nil)
 	if err != nil {
 		return err
 	}
-	res, err := c.Do(req)
+	req.Header.Set("Authorization", bfs.Token())
+	rsp, err := c.Do(req)
 	if err != nil {
 		return err
 	}
-	defer res.Body.Close()
+	defer rsp.Body.Close()
 
-	var filesRsp *onedrive.FilesListResponse
-	if err := json.NewDecoder(res.Body).Decode(&filesRsp); err != nil {
+	var bdc *box.BoxDirContents
+	if err := json.NewDecoder(rsp.Body).Decode(&bdc); err != nil {
 		return err
 	}
 
-	for _, v := range filesRsp.Value {
-		if len(v.File.MimeType) == 0 {
-			//ofs.DirCounter++
-			ofs.Directories <- v.ID
-		} else {
-			f := file.NewKazoupFileFromOneDriveFile(&v, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)
-			ofs.FilesChan <- f
+	log.Println("FILES")
+	log.Println(bdc)
+
+
+	for _, v := range bdc.ItemCollection.Entries {
+		f := file.NewKazoupFileFromBoxFile(&v, bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
+		bfs.FilesChan <- f
+
+		if v.Type == "folder" {
+			bfs.Directories <- v.ID
 		}
-	}*/
+	}
 
 	return nil
 }
@@ -170,7 +175,7 @@ func (bfs *BoxFs) refreshToken() error {
 		return err
 	}
 
-	c := db_proto.NewDBClient("", nil)
+	c := db_proto.NewDBClient(globals.DB_SERVICE_NAME, nil)
 	_, err = c.Update(globals.NewSystemContext(), &db_proto.UpdateRequest{
 		Index: "datasources",
 		Type:  "datasource",
