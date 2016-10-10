@@ -164,6 +164,9 @@
           case 'dropbox':
             return 'Dropbox';
             break;
+          case 'box':
+            return 'Box';
+            break;  
         }
       },
       getDatasourceUrl: function(datasource) {
@@ -186,6 +189,9 @@
           case 'dropbox':
             return 'kazoup:dropbox';
             break;
+          case 'box':
+            return 'kazoup:box';
+            break;  
         }
       },
       crawlerRunningMsg: function(datasource) {
@@ -232,6 +238,9 @@
       },
       isDropbox: function(fileType) {
         return (fileType === 'dropbox');
+      },
+      isBox: function(fileType) {
+        return (fileType === 'box');
       },
       hasSlackComments: function(original) {
         if (!_.isEmpty(original)) {
