@@ -69,7 +69,7 @@ func web(ctx *cli.Context) {
 		},
 	})
 	//service.Handle("/stream/", http.StripPrefix("/stream/", handler.NewPlaylistHandler(contentDir)))
-	service.Handle("/frame/", http.StripPrefix("/frame/", handler.NewFrameHandler(contentDir)))
+	//service.Handle("/frame/", http.StripPrefix("/frame/", handler.NewFrameHandler(contentDir)))
 	//service.Handle("/segments/", http.StripPrefix("/segments/", handler.NewStreamHandler(contentDir)))
 	//service.Handle("/mp4/", http.StripPrefix("/mp4/", handler.NewMP4Handler(contentDir)))
 	service.Handle("/raw/", http.StripPrefix("/raw/", handler.NewRAWHandler(contentDir)))

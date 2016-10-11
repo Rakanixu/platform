@@ -2,6 +2,8 @@ package file
 
 import (
 	"github.com/kazoup/platform/structs/box"
+	"github.com/kazoup/platform/structs/globals"
+	"fmt"
 )
 
 type KazoupBoxFile struct {
@@ -10,7 +12,9 @@ type KazoupBoxFile struct {
 }
 
 func (kf *KazoupBoxFile) PreviewURL(width, height, mode, quality string) string {
-	return ""
+	url := fmt.Sprintf("%s%s%s", globals.BoxFileMetadataEndpoint, kf.Original.ID, "/thumbnail.png?min_height=256&min_width=256")
+
+	return url
 }
 
 func (kf *KazoupBoxFile) GetID() string {

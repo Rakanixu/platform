@@ -75,7 +75,13 @@ func (bfs *BoxFs) GetDatasourceId() string {
 }
 
 func (bfs *BoxFs) GetThumbnail(id string) (string, error) {
-	url := fmt.Sprintf("%s%s&Authorization=%s", globals.BoxFileMetadataEndpoint, id, bfs.Token())
+	url := fmt.Sprintf(
+		"%s%s&Authorization=%s", 
+		globals.BoxFileMetadataEndpoint, 
+		id, 
+		"/thumbnail.png?min_height=256&min_width=256", 
+		bfs.Token(),
+	)
 
 	return url, nil
 }
