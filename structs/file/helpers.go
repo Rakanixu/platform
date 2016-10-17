@@ -253,20 +253,24 @@ func NewKazoupFileFromBoxFile(d *box.BoxFileMeta, dsId, uId, index string) *Kazo
 }
 
 // NewKazoupFileFromGmailFile constructor
-func NewKazoupFileFromGmailFile(m *gmail.Message, dsId, uId, index string) *KazoupGmailFile {
+func NewKazoupFileFromGmailFile(m *gmail.Message, dsId, uId, dsURL, index string) *KazoupGmailFile {
 	var name string
-	var ext []string
+	ext := []string{"none"}
 
-	url := fmt.Sprintf("%s/%s", globals.GmailEndpoint, m.Id)
+	url := fmt.Sprintf("%s%s/#inbox/%s", globals.GmailEndpoint, strings.Replace(dsURL, globals.Gmail+"://", "", 1), m.Id)
 	t := time.Unix(m.InternalDate/1000, 0)
-
-	fmt.Println(m.Payload.Parts)
 
 	for _, v := range m.Payload.Parts {
 		if len(v.Filename) > 0 {
 			name = v.Filename
-			ext = strings.Split(v.Filename, ".")
+			ext = strings.Split(strings.Replace(v.Filename, " ", "-", 1), ".")
+			break
 		}
+	}
+
+	// Attachment is a marketing image
+	if len(name) == 0 {
+		return nil
 	}
 
 	kf := &KazoupFile{

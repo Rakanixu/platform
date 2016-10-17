@@ -8,7 +8,7 @@ window.Auth = (function() {
       redirect : false,
       responseType: 'token',
       redirectUrl: location.href,
-      sso:false
+      sso:true
     },
     mustAcceptTerms: true,
     languageDictionary: {

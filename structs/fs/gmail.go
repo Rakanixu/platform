@@ -68,8 +68,6 @@ func (gfs *GmailFs) GetThumbnail(id string) (string, error) {
 }
 
 func (gfs *GmailFs) getMessages() error {
-	log.Println("***********************")
-
 	cfg := globals.NewGmailOauthConfig()
 	c := cfg.Client(context.Background(), &oauth2.Token{
 		AccessToken:  gfs.Endpoint.Token.AccessToken,
@@ -137,8 +135,12 @@ func (gfs *GmailFs) pushMessagesToChanForPage(s *gmail.Service, msgs []*gmail.Me
 			return err
 		}
 
-		f := file.NewKazoupFileFromGmailFile(msgBdy, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
-		gfs.FilesChan <- f
+		f := file.NewKazoupFileFromGmailFile(msgBdy, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Url, gfs.Endpoint.Index)
+		// Constructor will return nil when the attachment has no name
+		// When an attachment has no name, attachment use to be a marketing image
+		if f != nil {
+			gfs.FilesChan <- f
+		}
 	}
 
 	return nil

@@ -61,7 +61,7 @@ const (
 	BoxFoldersEndpoint      = "https://api.box.com/2.0/folders/"
 	BoxFileMetadataEndpoint = "https://api.box.com/2.0/files/"
 
-	GmailEndpoint = "https://mail.google.com/mail/u/0/#inbox"
+	GmailEndpoint = "https://mail.google.com/mail/u/"
 
 	StartScanTask = "start_scan"
 

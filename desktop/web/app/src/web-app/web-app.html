@@ -742,6 +742,30 @@
                             depth: 0
                         });
                         break;
+                    case 'dropbox':
+                        this.push('breadcrumbs', {
+                            label: 'Dropbox Files',
+                            index: this.selectedDatasource.index,
+                            url: '',
+                            depth: 0
+                        });
+                        break;
+                    case 'box':
+                        this.push('breadcrumbs', {
+                            label: 'Box Files',
+                            index: this.selectedDatasource.index,
+                            url: '',
+                            depth: 0
+                        });
+                        break;
+                    case 'gmail':
+                        this.push('breadcrumbs', {
+                            label: 'Gmail Attached Files',
+                            index: this.selectedDatasource.index,
+                            url: '',
+                            depth: 0
+                        });
+                        break;
                 }
 
                 this.$.breadcrumbsSteps.render();
