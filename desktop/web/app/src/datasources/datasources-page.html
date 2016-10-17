@@ -90,6 +90,11 @@
           <mat-item label="Google Drive"/>
         </paper-button>
 
+        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/gmail/login">
+          <iron-icon class="big" icon="kazoup:gmail"></iron-icon>
+          <mat-item label="Gmail"/>
+        </paper-button>
+
         <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/microsoft/login">
           <iron-icon class="big" icon="kazoup:onedrive"></iron-icon>
           <mat-item label="One Drive"/>
@@ -104,6 +109,12 @@
           <iron-icon class="big" icon="kazoup:box"></iron-icon>
           <mat-item label="Box"/>
         </paper-button>
+<!--
+        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/evernote/login">
+          <iron-icon class="big" icon="kazoup:evernote"></iron-icon>
+          <mat-item label="Evernote"/>
+        </paper-button>
+        -->
       </div>
       <mat-button class="action" label="Cancel" on-tap="closeDatasourceDialog"></mat-button>
     </mat-dialog>
@@ -253,10 +264,10 @@
           }, 300);
         },
         doAuth: function(e) {
-          if (window && window.process && window.process.type){
+          if (window && window.process && window.process.type) {
             if (e.currentTarget.getAttribute('data-url') == 'local://' ) {
               ipcRenderer.send('open-folder');
-            }else {
+            } else {
               ipcRenderer.send(
                 'auth-message',
                 {

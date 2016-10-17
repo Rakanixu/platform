@@ -166,7 +166,10 @@
             break;
           case 'box':
             return 'Box';
-            break;  
+            break;
+          case 'gmail':
+            return 'Gmail';
+            break;
         }
       },
       getDatasourceUrl: function(datasource) {
@@ -191,7 +194,10 @@
             break;
           case 'box':
             return 'kazoup:box';
-            break;  
+            break;
+          case 'gmail':
+            return 'kazoup:gmail';
+            break;
         }
       },
       crawlerRunningMsg: function(datasource) {
