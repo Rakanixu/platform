@@ -4,14 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
-
 	db "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/structs/file"
 	"github.com/kazoup/platform/structs/fs"
 	"github.com/kazoup/platform/structs/globals"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/metadata"
-
 	"golang.org/x/net/context"
 	"io/ioutil"
 	"log"
@@ -90,7 +88,7 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch f.GetFileType() {
 	case globals.Local:
 		http.Redirect(w, r, url, http.StatusSeeOther)
-	case globals.Slack:
+	case globals.Slack, globals.Box:
 		// There is an issue when setting headers on a redirect request, the headers are dropped
 		// We query for the image directly and attach response to the first request response
 		c := &http.Client{}
@@ -98,6 +96,7 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Println("ERROR", err.Error())
 		}
+
 		req.Header.Set("Authorization", fSys.Token())
 		rsp, err := c.Do(req)
 		if err != nil {

@@ -29,6 +29,8 @@ func NewFsFromEndpoint(e *datasource_proto.Endpoint) (Fs, error) {
 		return NewOneDriveFsFromEndpoint(e), nil
 	case globals.Dropbox:
 		return NewDropboxFsFromEndpoint(e), nil
+	case globals.Box:
+		return NewBoxFsFromEndpoint(e), nil
 	default:
 		return nil, errors.New("Not such file system (fs)")
 	}
