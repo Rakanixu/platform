@@ -1,9 +1,9 @@
 package file
 
 import (
+	"fmt"
 	"github.com/kazoup/platform/structs/box"
 	"github.com/kazoup/platform/structs/globals"
-	"fmt"
 )
 
 type KazoupBoxFile struct {

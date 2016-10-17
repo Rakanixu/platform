@@ -2,31 +2,31 @@ package fs
 
 import (
 	"encoding/json"
+	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/structs/box"
 	"github.com/kazoup/platform/structs/file"
 	"github.com/kazoup/platform/structs/globals"
-	"log"
 	"golang.org/x/oauth2"
+	"log"
 	"net/http"
-	"fmt"
 	"time"
 )
 
 type BoxFs struct {
-	Endpoint  *datasource_proto.Endpoint
-	Running   chan bool
-	FilesChan chan file.File
+	Endpoint    *datasource_proto.Endpoint
+	Running     chan bool
+	FilesChan   chan file.File
 	Directories chan string
 	LastDirTime int64
 }
 
 func NewBoxFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	return &BoxFs{
-		Endpoint:  e,
-		Running:   make(chan bool, 1),
-		FilesChan: make(chan file.File),
+		Endpoint:    e,
+		Running:     make(chan bool, 1),
+		FilesChan:   make(chan file.File),
 		Directories: make(chan string),
 	}
 }
@@ -76,10 +76,10 @@ func (bfs *BoxFs) GetDatasourceId() string {
 
 func (bfs *BoxFs) GetThumbnail(id string) (string, error) {
 	url := fmt.Sprintf(
-		"%s%s&Authorization=%s", 
-		globals.BoxFileMetadataEndpoint, 
-		id, 
-		"/thumbnail.png?min_height=256&min_width=256", 
+		"%s%s&Authorization=%s",
+		globals.BoxFileMetadataEndpoint,
+		id,
+		"/thumbnail.png?min_height=256&min_width=256",
 		bfs.Token(),
 	)
 
@@ -89,7 +89,7 @@ func (bfs *BoxFs) GetThumbnail(id string) (string, error) {
 // getDirChildren get children from directory
 func (bfs *BoxFs) getDirChildren(id string) error {
 	c := &http.Client{}
-	req, err := http.NewRequest("GET", globals.BoxFoldersEndpoint + id, nil)
+	req, err := http.NewRequest("GET", globals.BoxFoldersEndpoint+id, nil)
 	if err != nil {
 		return err
 	}
@@ -122,7 +122,7 @@ func (bfs *BoxFs) getDirChildren(id string) error {
 
 func (bfs *BoxFs) getMetadataFromFile(id string) error {
 	c := &http.Client{}
-	req, err := http.NewRequest("GET", globals.BoxFileMetadataEndpoint + id, nil)
+	req, err := http.NewRequest("GET", globals.BoxFileMetadataEndpoint+id, nil)
 	if err != nil {
 		return err
 	}
@@ -180,4 +180,3 @@ func (bfs *BoxFs) refreshToken() error {
 
 	return nil
 }
-

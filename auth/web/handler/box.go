@@ -11,21 +11,21 @@ import (
 )
 
 type BoxUser struct {
-	Type string `json:"type"`
-	ID string `json:"id"`
-	Name string `json:"name"`
-	Login string `json:"login"`
-	CreatedAt string `json:"created_at"`
-	ModifiedAt string `json:"modified_at"`
-	Language string `json:"language"`
-	SpaceAmount int64 `json:"space_amount"`
-	SpaceUsed int `json:"space_used"`
-	MaxUploadSize int `json:"max_upload_size"`
-	Status string `json:"status"`
-	JobTitle string `json:"job_title"`
-	Phone string `json:"phone"`
-	Address string `json:"address"`
-	AvatarURL string `json:"avatar_url"`
+	Type          string `json:"type"`
+	ID            string `json:"id"`
+	Name          string `json:"name"`
+	Login         string `json:"login"`
+	CreatedAt     string `json:"created_at"`
+	ModifiedAt    string `json:"modified_at"`
+	Language      string `json:"language"`
+	SpaceAmount   int64  `json:"space_amount"`
+	SpaceUsed     int    `json:"space_used"`
+	MaxUploadSize int    `json:"max_upload_size"`
+	Status        string `json:"status"`
+	JobTitle      string `json:"job_title"`
+	Phone         string `json:"phone"`
+	Address       string `json:"address"`
+	AvatarURL     string `json:"avatar_url"`
 }
 
 func HandleBoxLogin(w http.ResponseWriter, r *http.Request) {

@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	db "github.com/kazoup/platform/db/srv/proto/db"
+	"github.com/kazoup/platform/structs/box"
 	"github.com/kazoup/platform/structs/categories"
 	"github.com/kazoup/platform/structs/dropbox"
-	"github.com/kazoup/platform/structs/box"
 	"github.com/kazoup/platform/structs/globals"
 	"github.com/kazoup/platform/structs/local"
 	"github.com/kazoup/platform/structs/onedrive"
@@ -80,7 +80,7 @@ func NewFileFromString(s string) (File, error) {
 		if err := json.Unmarshal([]byte(s), kbf); err != nil {
 			return nil, errors.New("Error unmarsahling NewFileFromString case box")
 		}
-		return kbf, nil		
+		return kbf, nil
 	default:
 		return nil, errors.New("Error constructing file type")
 	}
@@ -220,7 +220,7 @@ func NewKazoupFileFromBoxFile(d *box.BoxFileMeta, dsId, uId, index string) *Kazo
 	url := fmt.Sprintf("https://app.box.com/%s/%s", d.Type, d.ID)
 	t, err := time.Parse(time.RFC3339, d.ModifiedAt)
 	if err != nil {
-	    fmt.Println(err)
+		fmt.Println(err)
 	}
 
 	if d.Type == "folder" {
