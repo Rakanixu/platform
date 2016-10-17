@@ -42,6 +42,7 @@ const (
 	Local       = "local"
 	Slack       = "slack"
 	GoogleDrive = "googledrive"
+	Gmail       = "gmail"
 	OneDrive    = "onedrive"
 	Dropbox     = "dropbox"
 	Box         = "box"
@@ -59,6 +60,8 @@ const (
 	BoxAccountEndpoint      = "https://api.box.com/2.0/users/me"
 	BoxFoldersEndpoint      = "https://api.box.com/2.0/folders/"
 	BoxFileMetadataEndpoint = "https://api.box.com/2.0/files/"
+
+	GmailEndpoint = "https://mail.google.com/mail/u/0/#inbox"
 
 	StartScanTask = "start_scan"
 
@@ -151,6 +154,20 @@ func NewBoxOauthConfig() *oauth2.Config {
 			TokenURL: "https://app.box.com/api/oauth2/token",
 		},
 		Scopes: []string{},
+	}
+}
+
+func NewGmailOauthConfig() *oauth2.Config {
+	return &oauth2.Config{
+		RedirectURL:  SERVER_ADDRESS + "/auth/gmail/callback",
+		ClientID:     "928848534435-kjubrqvl1sp50sfs3icemj2ma6v2an5j.apps.googleusercontent.com",
+		ClientSecret: "zZAQz3zP5xnpLaA1S_q6YNhy",
+		Scopes: []string{
+			"https://www.googleapis.com/auth/userinfo.profile",
+			"https://www.googleapis.com/auth/userinfo.email",
+			"https://www.googleapis.com/auth/gmail.readonly",
+		},
+		Endpoint: google.Endpoint,
 	}
 }
 

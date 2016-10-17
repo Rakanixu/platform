@@ -25,6 +25,8 @@ func NewFsFromEndpoint(e *datasource_proto.Endpoint) (Fs, error) {
 		return NewSlackFsFromEndpoint(e), nil
 	case globals.GoogleDrive:
 		return NewGoogleDriveFsFromEndpoint(e), nil
+	case globals.Gmail:
+		return NewGmailFsFromEndpoint(e), nil
 	case globals.OneDrive:
 		return NewOneDriveFsFromEndpoint(e), nil
 	case globals.Dropbox:

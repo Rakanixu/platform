@@ -9,6 +9,7 @@ import (
 	"github.com/kazoup/platform/datasource/srv/filestore"
 	"github.com/kazoup/platform/datasource/srv/filestore/box"
 	"github.com/kazoup/platform/datasource/srv/filestore/dropbox"
+	gmail "github.com/kazoup/platform/datasource/srv/filestore/gmail"
 	googledrive "github.com/kazoup/platform/datasource/srv/filestore/googledrive"
 	local "github.com/kazoup/platform/datasource/srv/filestore/local"
 	onedrive "github.com/kazoup/platform/datasource/srv/filestore/onedrive"
@@ -25,6 +26,7 @@ import (
 const (
 	localEndpoint      = "local://"
 	googledriveEnpoint = "googledrive://"
+	gmailEnpoint       = "gmail://"
 	onedriveEndpoint   = "onedrive://"
 	slackEnpoint       = "slack://"
 	dropboxEnpoint     = "dropbox://"
@@ -45,6 +47,13 @@ func GetDataSource(ctx context.Context, ds *DataSource, endpoint *proto.Endpoint
 
 	if strings.Contains(endpoint.Url, googledriveEnpoint) {
 		return &googledrive.Googledrive{
+			Endpoint:  *endpoint,
+			FileStore: filestorer.FileStore{},
+		}, nil
+	}
+
+	if strings.Contains(endpoint.Url, gmailEnpoint) {
+		return &gmail.Gmail{
 			Endpoint:  *endpoint,
 			FileStore: filestorer.FileStore{},
 		}, nil

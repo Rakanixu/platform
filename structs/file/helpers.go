@@ -14,6 +14,7 @@ import (
 	"github.com/kazoup/platform/structs/slack"
 	"golang.org/x/net/context"
 	googledrive "google.golang.org/api/drive/v3"
+	gmail "google.golang.org/api/gmail/v1"
 	"net/url"
 	"path/filepath"
 	"strings"
@@ -61,6 +62,12 @@ func NewFileFromString(s string) (File, error) {
 		kgf := &KazoupGoogleFile{}
 		if err := json.Unmarshal([]byte(s), kgf); err != nil {
 			return nil, errors.New("Error unmarsahling NewFileFromString case googledrive")
+		}
+		return kgf, nil
+	case globals.Gmail:
+		kgf := &KazoupGmailFile{}
+		if err := json.Unmarshal([]byte(s), kgf); err != nil {
+			return nil, errors.New("Error unmarsahling NewFileFromString case gmail")
 		}
 		return kgf, nil
 	case globals.OneDrive:
@@ -157,7 +164,6 @@ func NewKazoupFileFromLocal(lf *local.LocalFile, dsId, uId, index string) *Kazou
 
 // NewKazoupFileFromOneDriveFile constructor
 func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile, dsId, uId, index string) *KazoupOneDriveFile {
-
 	isDir := true
 	name := strings.Split(o.Name, ".")
 
@@ -244,6 +250,41 @@ func NewKazoupFileFromBoxFile(d *box.BoxFileMeta, dsId, uId, index string) *Kazo
 	}
 
 	return &KazoupBoxFile{*kf, *d}
+}
+
+// NewKazoupFileFromGmailFile constructor
+func NewKazoupFileFromGmailFile(m *gmail.Message, dsId, uId, index string) *KazoupGmailFile {
+	var name string
+	var ext []string
+
+	url := fmt.Sprintf("%s/%s", globals.GmailEndpoint, m.Id)
+	t := time.Unix(m.InternalDate/1000, 0)
+
+	fmt.Println(m.Payload.Parts)
+
+	for _, v := range m.Payload.Parts {
+		if len(v.Filename) > 0 {
+			name = v.Filename
+			ext = strings.Split(v.Filename, ".")
+		}
+	}
+
+	kf := &KazoupFile{
+		ID:           globals.GetMD5Hash(url),
+		UserId:       uId,
+		Name:         name,
+		URL:          url,
+		Modified:     t,
+		FileSize:     m.SizeEstimate,
+		IsDir:        false,
+		Category:     categories.GetDocType("." + ext[len(ext)-1]),
+		Depth:        0,
+		FileType:     globals.Gmail,
+		LastSeen:     time.Now().Unix(),
+		DatasourceId: dsId,
+		Index:        index,
+	}
+	return &KazoupGmailFile{*kf, *m}
 }
 
 func UrlDepth(str string) int64 {
