@@ -88,7 +88,7 @@
         </paper-toolbar>
 
         <div style="height:100%; overflow-y:auto;">
-          <div class="content">
+          <div class="menu-content">
             <paper-menu id="mainMenu" selected="-1">
               <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.all]]" data-index="0">
                 <iron-icon icon="icons:home" item-icon></iron-icon>My Files
@@ -240,6 +240,8 @@
               this.fireEvent('configuration-page-activated');
               break;
           }
+
+          this.setMenuHeight();
         },
         showDatasourceSearch: function(e) {
           this.fireEvent('web-app-activated', {

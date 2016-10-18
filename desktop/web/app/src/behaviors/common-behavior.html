@@ -8,6 +8,11 @@
           type: Boolean,
           notify: true,
           value: false
+        },
+        menuAdjusted: {
+          type: Boolean,
+          notify: false,
+          value: false
         }
       },
       openDatasourceDialog: function(e) {
@@ -15,6 +20,15 @@
       },
       closeDatasourceDialog: function(e) {
         document.querySelector('#addDatasourceDialog').hide();
+      },
+      setMenuHeight: function() {
+        this.async(function() {
+          _.forEach(document.querySelectorAll('.menu-content'), function(el) {
+            if (!el.style.height) {
+              el.style.height = document.querySelector('.menu-content').getBoundingClientRect().height + (!this.menuAdjusted ? 256 : 0) + 'px';
+            }
+          }, this);
+        }, 250);
       }
     };
   }());
