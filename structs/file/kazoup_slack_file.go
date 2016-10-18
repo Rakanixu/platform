@@ -8,7 +8,24 @@ type KazoupSlackFile struct {
 }
 
 func (kf *KazoupSlackFile) PreviewURL(width, height, mode, quality string) string {
-	return kf.Original.Thumb480
+	// Not all files falling into pictures has all thumbX attrs
+	if len(kf.Original.Thumb480) > 0 {
+		return kf.Original.Thumb480
+	}
+
+	if len(kf.Original.Thumb720) > 0 {
+		return kf.Original.Thumb720
+	}
+
+	if len(kf.Original.Thumb960) > 0 {
+		return kf.Original.Thumb960
+	}
+
+	if len(kf.Original.Thumb1024) > 0 {
+		return kf.Original.Thumb1024
+	}
+
+	return kf.Original.Thumb360
 }
 
 func (kf *KazoupSlackFile) GetID() string {

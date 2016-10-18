@@ -67,6 +67,8 @@ func (bfs *BoxFs) List() (chan file.File, chan bool, error) {
 }
 
 func (bfs *BoxFs) Token() string {
+	bfs.refreshToken()
+
 	return "Bearer " + bfs.Endpoint.Token.AccessToken
 }
 
