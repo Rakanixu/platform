@@ -25,7 +25,8 @@
     "wave-player": "*",
     "qwest": "^4.4.5",
     "l2t-paper-slider": "^1.2.0",
-    "jsOAuth": "bytespider/jsOAuth#^1.3.7"
+    "jsOAuth": "bytespider/jsOAuth#^1.3.7",
+    "jshashes": "^1.0.5"
   },
   "devDependencies": {
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",

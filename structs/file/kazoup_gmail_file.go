@@ -8,7 +8,7 @@ import (
 
 type KazoupGmailFile struct {
 	KazoupFile
-	Original gmail.Message
+	Original gmail.Message `json:"original"`
 }
 
 func (kf *KazoupGmailFile) PreviewURL(width, height, mode, quality string) string {

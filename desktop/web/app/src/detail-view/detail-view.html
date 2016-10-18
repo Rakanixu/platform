@@ -99,6 +99,19 @@
       </mat-item>
     </template>
 
+    <template is="dom-if" if="[[isDropboxFileShared(item.file_type, dropboxInfo.sharedFile)]]" restamp="true">
+      <mat-item label="People"
+                class="overflow-visible"
+                tabindex="-1">
+        <template is="dom-repeat" items="[[dropboxInfo.people]]">
+          <mat-avatar id$="avatar_[[item.id]]"
+                      background="light"
+                      icon-src="[[item.profilePhoto]]"></mat-avatar>
+          <paper-tooltip for$="avatar_[[item.id]]">[[item.displayName]]</paper-tooltip>
+        </template>
+      </mat-item>
+    </template>
+
     <template is="dom-if" if="[[item.is_dir]]" restamp="true">
       <mat-item label="Total number of files"
                 description="[[aggsInfo.count]]"
@@ -218,6 +231,10 @@
             type: Object,
             notify: true
           },
+          dropboxInfo: {
+            type: Object,
+            notify: true
+          },
           rpcSearchSlackUsersParams: {
             type: Object,
             notify: false,
@@ -282,6 +299,9 @@
             case 'googledrive':
               this.getMoreInfoFromGoogleDrive();
               break;
+            case 'dropbox':
+              this.getMoreInfoFromDropbox();
+              break;
           }
 
           this.async(function() {
@@ -331,6 +351,35 @@
             lastModifiedDateTime: this.timestampToHumanTime(this.item.original.lastModifiedDateTime)
           });
         },
+        getMoreInfoFromDropbox: function() {
+          var people = [];
+          var id = 1;
+
+          _.forEach(this.item.original.dropbox_users, function(el) {
+            people.push({
+              id: id,
+              displayName: el.name.display_name,
+              profilePhoto: el.profile_photo_url ? el.profile_photo_url : this.getGravatarUrl(el.email)
+            });
+
+            id++;
+          }, this);
+
+          _.forEach(this.item.original.dropbox_invitee, function(el) {
+            people.push({
+              id: id,
+              displayName: el.invitee.email,
+              profilePhoto: this.getGravatarUrl(el.invitee.email)
+            });
+
+            id++;
+          }, this);
+
+          this.set('dropboxInfo', {
+            people: people,
+            sharedFile: people.length ? true : false
+          });
+        },
         getMoreInfoFromSlack: function() {
           var slackInfoEl = document.querySelector('#slackChannelInfo');
 
@@ -350,6 +399,9 @@
 
           this.$.rpcSearchSlackUsers.generateRequest();
           this.$.rpcSearchSlackChannels.generateRequest();
+        },
+        isDropboxFileShared: function(fileType, isShared) {
+          return this.isDropbox(fileType) && isShared;
         },
         _handleAggregate: function(e) {
           var aggs = {};
