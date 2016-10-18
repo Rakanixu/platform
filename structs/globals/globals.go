@@ -56,6 +56,7 @@ const (
 	DropboxAccountEndpoint   = "https://api.dropboxapi.com/2/users/get_account"
 	DropboxFilesEndpoint     = "https://api.dropboxapi.com/2/files/list_folder"
 	DropboxThumbnailEndpoint = "https://content.dropboxapi.com/2/files/get_thumbnail"
+	DropboxFileMembers       = "https://api.dropboxapi.com/2/sharing/list_file_members"
 
 	BoxAccountEndpoint      = "https://api.box.com/2.0/users/me"
 	BoxFoldersEndpoint      = "https://api.box.com/2.0/folders/"
