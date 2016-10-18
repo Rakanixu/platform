@@ -258,7 +258,7 @@
                 service: 'com.kazoup.srv.db',
                 method: 'DB.SearchById',
                 request: {
-                  index: 'files',
+                  index: '',
                   type: 'channel',
                   id: ''
                 }
@@ -385,6 +385,9 @@
 
           this.rpcSearchSlackUsersParams.request.id = this.item.original.user;
           this.rpcSearchSlackChannelsParams.request.id = this.item.original.channels[0];
+
+          this.rpcSearchSlackUsersParams.request.index = this.item.index;
+          this.rpcSearchSlackChannelsParams.request.index = this.item.index;
 
           if (slackInfoEl) {
             if (this.rpcSearchSlackChannelsParams.request.id) {
