@@ -181,8 +181,12 @@ func (e *ElasticQuery) QueryById() (string, error) {
 	var buffer bytes.Buffer
 
 	buffer.WriteString(`{"query":{"filtered":{"filter":{"bool":{"must":[{"term":{"id":"`)
-	buffer.WriteString(e.Id + `"}},`)
-	buffer.WriteString(e.filterUser())
+	buffer.WriteString(e.Id + `"}}`)
+	// Filter by user for files, not for users or channels (slack)
+	// This is due to channels and users (slack) does not have to store the user they belong to
+	if e.Type == globals.FileType {
+		buffer.WriteString(`,` + e.filterUser())
+	}
 	buffer.WriteString(`]}}}}}`)
 
 	return buffer.String(), nil

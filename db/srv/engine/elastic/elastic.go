@@ -253,6 +253,7 @@ func (e *elastic) SearchById(ctx context.Context, req *db.SearchByIdRequest) (*d
 		Index:  req.Index,
 		Id:     req.Id,
 		UserId: uId,
+		Type:   req.Type,
 	}
 	query, err := eQuery.QueryById()
 	if err != nil {
