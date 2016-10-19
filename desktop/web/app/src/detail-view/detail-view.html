@@ -112,6 +112,14 @@
       </mat-item>
     </template>
 
+    <template is="dom-if" if="[[isDropboxFileDeleted(item.file_type, dropboxInfo.dropboxTag)]]" restamp="true">
+      <mat-item label="This file is trashed on Dropbox"
+                class="overflow-visible"
+                tabindex="-1">
+      </mat-item>
+    </template>
+
+
     <template is="dom-if" if="[[item.is_dir]]" restamp="true">
       <mat-item label="Total number of files"
                 description="[[aggsInfo.count]]"
@@ -377,7 +385,8 @@
 
           this.set('dropboxInfo', {
             people: people,
-            sharedFile: people.length ? true : false
+            sharedFile: people.length ? true : false,
+            dropboxTag: this.item.original.dropbox_tag
           });
         },
         getMoreInfoFromSlack: function() {
@@ -405,6 +414,9 @@
         },
         isDropboxFileShared: function(fileType, isShared) {
           return this.isDropbox(fileType) && isShared;
+        },
+        isDropboxFileDeleted: function(fileType, dTag) {
+          return this.isDropbox(fileType) && dTag == 'deleted';
         },
         _handleAggregate: function(e) {
           var aggs = {};
