@@ -196,9 +196,14 @@ func NewKazoupFileFromDropboxFile(d *dropbox.DropboxFile, dsId, uId, index strin
 	path := strings.Replace(d.PathDisplay, "/"+d.Name, "", 1)
 	url := fmt.Sprintf("https://www.dropbox.com/home%s?preview=%s", path, url.QueryEscape(d.Name))
 
-	if d.Size == 0 {
+	// Dropbox file fall into those categories: file, folder, deleted
+	// By default, deleted files AND deleted folders will be flag as (isDir = false), then will appear on the frontend
+	// On the frontend
+	if d.Tag == globals.FoldeType {
 		isDir = true
 	}
+
+	d.DropboxTag = d.Tag // Store the tag friendly
 
 	kf := &KazoupFile{
 		ID:           globals.GetMD5Hash(url),

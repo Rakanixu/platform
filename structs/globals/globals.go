@@ -35,6 +35,7 @@ const (
 	IndexHelper      = "files_helper"
 	FilesAlias       = "files"
 	FileType         = "file"
+	FoldeType        = "folder"
 
 	FileTypeFile      = "files"
 	FileTypeDirectory = "directories"
@@ -131,7 +132,7 @@ func NewMicrosoftOauthConfig() *oauth2.Config {
 func NewDropboxOauthConfig() *oauth2.Config {
 	return &oauth2.Config{
 		//TODO: switch to SSl
-		RedirectURL: "http://localhost:8082/auth/dropbox/callback",
+		RedirectURL: SERVER_ADDRESS + "/auth/dropbox/callback",
 		//ClientID:     "6l5aj1fombrp6i7",
 		ClientID: "882k4mhdmtza7y1",
 		//ClientSecret: "nf8xar3qc1f32li",
@@ -147,7 +148,7 @@ func NewDropboxOauthConfig() *oauth2.Config {
 func NewBoxOauthConfig() *oauth2.Config {
 	return &oauth2.Config{
 		//TODO: switch to SSl
-		RedirectURL:  "http://localhost:8082/auth/box/callback",
+		RedirectURL:  SERVER_ADDRESS + "/auth/box/callback",
 		ClientID:     "8ryeu572aa5rk7iun56hsb0g7ta1oblp",
 		ClientSecret: "An5sAtmY5KzlCvrAZgQ4rXQtBY3v6TwT",
 		Endpoint: oauth2.Endpoint{

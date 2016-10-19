@@ -1,6 +1,7 @@
 package dropbox
 
 import (
+	"encoding/json"
 	"time"
 )
 
@@ -11,29 +12,36 @@ type FilesListResponse struct {
 }
 
 // DropboxFile represent a dropbox file
+// Unmarshall using default UnmarshalJSON(We get all info internally, including Tag string `json:".tag"` )
+// Custom Marshall to not include Tag string `json:".tag"`, so elastic search does not trow mapping exceptions
 type DropboxFile struct {
-	//Tag            string    `json:".tag"`
-	Name           string    `json:"name"`
-	PathLower      string    `json:"path_lower"`
-	PathDisplay    string    `json:"path_display"`
-	ID             string    `json:"id"`
-	ClientModified time.Time `json:"client_modified"`
-	ServerModified time.Time `json:"server_modified"`
-	Rev            string    `json:"rev"`
-	Size           int       `json:"size"`
-	MediaInfo      struct {
-		//Tag      string `json:".tag"`
-		Metadata struct {
-			//Tag        string `json:".tag"`
-			Dimensions struct {
-				Height int `json:"height"`
-				Width  int `json:"width"`
-			} `json:"dimensions"`
-		} `json:"metadata"`
-	} `json:"media_info"`
+	Tag                      string           `json:".tag"`
+	Name                     string           `json:"name"`
+	PathLower                string           `json:"path_lower"`
+	PathDisplay              string           `json:"path_display"`
+	ID                       string           `json:"id"`
+	ClientModified           time.Time        `json:"client_modified"`
+	ServerModified           time.Time        `json:"server_modified"`
+	Rev                      string           `json:"rev"`
+	Size                     int              `json:"size"`
+	MediaInfo                MediaInfo        `json:"media_info"`
 	HasExplicitSharedMembers bool             `json:"has_explicit_shared_members"`
+	DropboxTag               string           `json:"dropbox_tag"`     // This field does not exists on response, but we will fill constructing KazoupDropboxFile
 	DropboxUsers             []DropboxUser    `json:"dropbox_users"`   // This field is calculated in different request, only if file is shared
 	DropboxInvitees          []DropboxInvitee `json:"dropbox_invitee"` // This field is calculated in different request, only if file is shared
+}
+
+type MediaInfo struct {
+	Metadata Metadata `json:"metadata"`
+}
+
+type Metadata struct {
+	Dimensions Dimensions `json:"dimensions"`
+}
+
+type Dimensions struct {
+	Height int `json:"height"`
+	Width  int `json:"width"`
 }
 
 type FileMembersListResponse struct {
@@ -95,25 +103,37 @@ type DropboxInvitee struct {
 	} `json:"invitee"`
 }
 
-/*
-// I remove just the Tag property, so I can keep going quickly and not have to implement the following TODO:
-
-
-type Marshaler interface {
-	MarshalJSON() ([]byte, error)
-}
-
-// Fucking retarded developers..
-//https://www.dropboxforum.com/hc/en-us/community/posts/204403136-API-v2-feedback-files-tag-attribute-extremely-unfriendly-for-HTTP-JSON
+// Fucking retarded developers.. elastic search will throw mappijng exceptions cause they do not follow JSON standard
+// https://www.dropboxforum.com/hc/en-us/community/posts/204403136-API-v2-feedback-files-tag-attribute-extremely-unfriendly-for-HTTP-JSON
 func (df DropboxFile) MarshalJSON() ([]byte, error) {
-	//TODO: do a proper marshaller, so ".tag" is just "tag" , therefore elastic search won't trow the exception
-	tag, _ := json.Marshal(df.Tag)
-	name, _ := json.Marshal(df.Name)
-	//path_lower, _ := json.Marshal(df.PathLower)
-	//path_display, _ := json.Marshal(df.PathDisplay)
-
-	return []byte(`{
-		"tag":` + string(tag) + `,
-		"name":` + string(name) + `}`)
+	return json.Marshal(struct {
+		// Tag, this is the field we do not want to marshal to not be push to ES
+		Name                     string           `json:"name"`
+		PathLower                string           `json:"path_lower"`
+		PathDisplay              string           `json:"path_display"`
+		ID                       string           `json:"id"`
+		ClientModified           time.Time        `json:"client_modified"`
+		ServerModified           time.Time        `json:"server_modified"`
+		Rev                      string           `json:"rev"`
+		Size                     int              `json:"size"`
+		MediaInfo                MediaInfo        `json:"media_info"`
+		HasExplicitSharedMembers bool             `json:"has_explicit_shared_members"`
+		DropboxTag               string           `json:"dropbox_tag"`     // This field does not exists on response, but we will fill constructing KazoupDropboxFile
+		DropboxUsers             []DropboxUser    `json:"dropbox_users"`   // This field is calculated in different request, only if file is shared
+		DropboxInvitees          []DropboxInvitee `json:"dropbox_invitee"` // This field is calculated in different request, only if file is shared
+	}{
+		Name:                     df.Name,
+		PathLower:                df.PathLower,
+		PathDisplay:              df.PathDisplay,
+		ID:                       df.ID,
+		ClientModified:           df.ClientModified,
+		ServerModified:           df.ServerModified,
+		Rev:                      df.Rev,
+		Size:                     df.Size,
+		MediaInfo:                df.MediaInfo,
+		HasExplicitSharedMembers: df.HasExplicitSharedMembers,
+		DropboxTag:               df.DropboxTag,
+		DropboxUsers:             df.DropboxUsers,
+		DropboxInvitees:          df.DropboxInvitees,
+	})
 }
-*/
