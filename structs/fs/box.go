@@ -15,11 +15,13 @@ import (
 )
 
 type BoxFs struct {
-	Endpoint    *datasource_proto.Endpoint
-	Running     chan bool
-	FilesChan   chan file.File
-	Directories chan string
-	LastDirTime int64
+	Endpoint      *datasource_proto.Endpoint
+	Running       chan bool
+	FilesChan     chan file.File
+	Directories   chan string
+	LastDirTime   int64
+	DefaultOffset int
+	DefaultLimit  int
 }
 
 func NewBoxFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
@@ -31,7 +33,9 @@ func NewBoxFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 		// If not, program execution will block, due to recursivity,
 		// We are pushing more elements before finish execution.
 		// I expect to never push 10000 folders before other folders have been completly scanned
-		Directories: make(chan string, 10000),
+		Directories:   make(chan string, 10000),
+		DefaultOffset: 0,
+		DefaultLimit:  100,
 	}
 }
 
@@ -45,7 +49,7 @@ func (bfs *BoxFs) List() (chan file.File, chan bool, error) {
 			case v := <-bfs.Directories:
 				bfs.LastDirTime = time.Now().Unix()
 
-				err := bfs.getDirChildren(v)
+				err := bfs.getDirChildren(v, bfs.DefaultOffset, bfs.DefaultLimit)
 				if err != nil {
 					log.Println(err)
 				}
@@ -62,7 +66,7 @@ func (bfs *BoxFs) List() (chan file.File, chan bool, error) {
 	}()
 
 	go func() {
-		if err := bfs.getDirChildren("0"); err != nil {
+		if err := bfs.getDirChildren("0", bfs.DefaultOffset, bfs.DefaultLimit); err != nil {
 			log.Println(err)
 		}
 	}()
@@ -93,9 +97,10 @@ func (bfs *BoxFs) GetThumbnail(id string) (string, error) {
 }
 
 // getDirChildren get children from directory
-func (bfs *BoxFs) getDirChildren(id string) error {
+func (bfs *BoxFs) getDirChildren(id string, offset, limit int) error {
 	c := &http.Client{}
-	req, err := http.NewRequest("GET", globals.BoxFoldersEndpoint+id, nil)
+	url := fmt.Sprintf("%s%s/?offset=%d&limit=%d", globals.BoxFoldersEndpoint, id, offset, limit)
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return err
 	}
@@ -121,6 +126,14 @@ func (bfs *BoxFs) getDirChildren(id string) error {
 				return err
 			}
 		}
+	}
+
+	if bdc.ItemCollection.TotalCount > bdc.ItemCollection.Offset+bdc.ItemCollection.Limit {
+		bfs.getDirChildren(
+			id,
+			bdc.ItemCollection.Offset+bdc.ItemCollection.Limit,
+			bdc.ItemCollection.Limit,
+		)
 	}
 
 	return nil
