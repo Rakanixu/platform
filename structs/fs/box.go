@@ -24,10 +24,14 @@ type BoxFs struct {
 
 func NewBoxFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	return &BoxFs{
-		Endpoint:    e,
-		Running:     make(chan bool, 1),
-		FilesChan:   make(chan file.File),
-		Directories: make(chan string),
+		Endpoint:  e,
+		Running:   make(chan bool, 1),
+		FilesChan: make(chan file.File),
+		// This is important to have a size bigger than one, the bigger, less likely to block
+		// If not, program execution will block, due to recursivity,
+		// We are pushing more elements before finish execution.
+		// I expect to never push 1000 folders before other folders have been completly scanned
+		Directories: make(chan string, 1000),
 	}
 }
 
@@ -48,8 +52,8 @@ func (bfs *BoxFs) List() (chan file.File, chan bool, error) {
 			default:
 				// Helper for close channel and set that scanner has finish
 				if bfs.LastDirTime+10 < time.Now().Unix() {
-					bfs.Running <- false
 					close(bfs.Directories)
+					bfs.Running <- false
 					return
 				}
 			}
@@ -109,7 +113,7 @@ func (bfs *BoxFs) getDirChildren(id string) error {
 
 	for _, v := range bdc.ItemCollection.Entries {
 		if v.Type == "folder" {
-			// Push found direcotries into the queue to be crawled
+			// Push found directories into the queue to be crawled
 			bfs.Directories <- v.ID
 		} else {
 			// File discovered, but need to retrieve more info about the file
