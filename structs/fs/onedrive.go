@@ -31,11 +31,15 @@ type OneDriveFs struct {
 
 func NewOneDriveFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	return &OneDriveFs{
-		Endpoint:    e,
-		Running:     make(chan bool, 1),
-		FilesChan:   make(chan file.File),
-		DrivesId:    []string{},
-		Directories: make(chan string, 100),
+		Endpoint:  e,
+		Running:   make(chan bool, 1),
+		FilesChan: make(chan file.File),
+		DrivesId:  []string{},
+		// This is important to have a size bigger than one, the bigger, less likely to block
+		// If not, program execution will block, due to recursivity,
+		// We are pushing more elements before finish execution.
+		// I expect to never push 10000 folders before other folders have been completly scanned
+		Directories: make(chan string, 10000),
 	}
 }
 

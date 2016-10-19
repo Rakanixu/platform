@@ -30,8 +30,8 @@ func NewBoxFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 		// This is important to have a size bigger than one, the bigger, less likely to block
 		// If not, program execution will block, due to recursivity,
 		// We are pushing more elements before finish execution.
-		// I expect to never push 1000 folders before other folders have been completly scanned
-		Directories: make(chan string, 1000),
+		// I expect to never push 10000 folders before other folders have been completly scanned
+		Directories: make(chan string, 10000),
 	}
 }
 
