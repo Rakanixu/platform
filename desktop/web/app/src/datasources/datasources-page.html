@@ -352,6 +352,7 @@
             this.closeDatasourceDialog();
             this.$.toast.text = 'New datasource created succesfully';
             this.$.toast.show();
+            this.setMenuHeight.call(document.querySelector('settings-page'));
             this.async(this.init, 1000);
           }
         },

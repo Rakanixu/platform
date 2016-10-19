@@ -22,13 +22,14 @@
         document.querySelector('#addDatasourceDialog').hide();
       },
       setMenuHeight: function() {
+        var height = 128;
+
         this.async(function() {
-          _.forEach(document.querySelectorAll('.menu-content'), function(el) {
-            if (!el.style.height) {
-              el.style.height = document.querySelector('.menu-content').getBoundingClientRect().height + (!this.menuAdjusted ? 256 : 0) + 'px';
-            }
-          }, this);
-        }, 250);
+          _.forEach(document.querySelectorAll(this.tagName + ' .menu-content > *'), function(el) {
+            height += el.getBoundingClientRect().height;
+          });
+          document.querySelector(this.tagName + ' .menu-content').style.height = height + 'px';
+        }, 1500);
       }
     };
   }());
