@@ -251,7 +251,7 @@
 
           window.addEventListener('datasources-page-activated', this.init.bind(this));
 
-          if (window && window.process && window.process.type){
+          if (window && window.process && window.process.type) {
             ipcRenderer.on('add-folder', this._addDatasource.bind(this));
             ipcRenderer.on('auth-callback-message', this._authSuccessful.bind(this));
           }
@@ -279,7 +279,7 @@
               );
             }
           } else {
-           //TODO handle this in normal browser
+            window.open(e.currentTarget.getAttribute('data-url') + '?user=' + Auth.getUserId());
           }
 
           this.closeDatasourceDialog();
