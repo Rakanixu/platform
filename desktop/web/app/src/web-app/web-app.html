@@ -1099,9 +1099,13 @@
                 }
             },
             openFile: function(item) {
-                ipcRenderer.send('open-file-message', {
-                    url: this.getLocalAsset(item.url)
-                });
+                if (window && window.process && window.process.type) {
+                    ipcRenderer.send('open-file-message', {
+                        url: this.getLocalAsset(item.url)
+                    });
+                } else {
+                    window.open(this.getLocalAsset(item.url));
+                }
             },
             closeDetails: function(e, detail) {
                 this.set('itemSelected', false);
