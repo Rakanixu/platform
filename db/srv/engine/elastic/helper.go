@@ -195,7 +195,7 @@ func (e *ElasticQuery) QueryById() (string, error) {
 func (e *ElasticQuery) defaultSorting() string {
 	var buffer bytes.Buffer
 
-	if (e.From != 0 || e.Size != 0) && e.Index == globals.FilesAlias {
+	if (e.From != 0 || e.Size != 0) && e.Index == globals.FilesAlias && len(e.Term) == 0 {
 		buffer.WriteString(`{"is_dir": "desc"},{"modified":"desc"},{"file_size": "desc"}`)
 	}
 
