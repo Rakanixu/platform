@@ -13,7 +13,7 @@ window.Auth = (function() {
     mustAcceptTerms: true,
     languageDictionary: {
       title: "Kazoup",
-      signUpTerms: "I agree to the <a href='http://www.kazoup.com/legal/master-agreement/' target='_new'>terms of service</a> and <a href='http://www.kazoup.com/legal/privacy-policy/' target='_new'>privacy policy</a>."
+      signUpTerms: "I agree to the <a href='http://www.kazoup.com/legal/kazoup-term-of-service/' target='_new'>terms of service</a> and <a href='http://www.kazoup.com/legal/privacy-policy/' target='_new'>privacy policy</a>."
     },
     theme: {
       logo: 'http://www.kazoup.com/img/kazoup-logo-small.png',
