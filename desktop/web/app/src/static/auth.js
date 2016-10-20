@@ -37,6 +37,10 @@ window.Auth = (function() {
       scope: 'openid',
       api_type: 'app',
       id_token: code
+    }, {
+      headers: {
+        'Cache-Control': ''
+      }
     });
   }
 
