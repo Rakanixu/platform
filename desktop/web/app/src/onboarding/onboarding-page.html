@@ -35,13 +35,15 @@
       l2t-paper-slider paper-slide paper-button {
         background-color: rgba(255,255,255,1);
       }
+
       h1 {
         font-size:28px;
         line-height:32px;
-         color: rgba(255,255,255,1);
-         font-weight:400;
-         padding-top:14px;
+        color: rgba(255,255,255,1);
+        font-weight:400;
+        padding-top:14px;
       }
+
       p {
         font-size:15px;
         line-height:24px;
@@ -49,12 +51,15 @@
         color: rgba(255,255,255,0.9);
         font-weight:200;
       }
+
       .green {
         background-color :#4CAF50;
       }
+
       .blue {
         background-color:#2196F3;
       }
+
       .purple{
         background-color :#F44336;
       }
@@ -65,9 +70,7 @@
         <iron-image sizing="cover"
                     src="http://cdn2.xyztimes.com/wp-content/uploads/2015/05/Material-Wallpaper-11.1-696x407.png"></iron-image>
         <h1>Find files, anywhere</h1>
-        <p>
-        Putting cloud files at your fingertips.
-	      </p>
+        <p>Putting cloud files at your fingertips.</p>
         <div>
           <paper-button raised on-tap="goToApp">Get started</paper-button>
         </div>
@@ -105,6 +108,9 @@
         created: function() {
           if (localStorage.getItem('show_onboarding') != 'false') {
             localStorage.setItem('show_onboarding', 'false');
+            this.async(function() {
+              this.fireEvent('onboarding-page-activated', {});
+            }, 10);
           } else {
             this.async(function() {
               this.fireEvent('login-auth0-activated', {});
