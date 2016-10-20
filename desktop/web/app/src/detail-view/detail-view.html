@@ -159,13 +159,13 @@
       </mat-item>
     </template>
 
-    <template is="dom-if" if="[[!item.is_dir]]" restamp="true">
+    <template is="dom-if" if="[[showSize(item.file_size)]]" restamp="true">
       <mat-item label="Size"
                 description="[[bytesToSize(item.file_size)]]"
                 tabindex="-1"></mat-item>
     </template>
 
-    <template is="dom-if" if="[[item.is_dir]]" restamp="true">
+    <template is="dom-if" if="[[showSize(aggsInfo.totalSize)]]" restamp="true">
       <mat-item label="Size"
                 description="[[bytesToSize(aggsInfo.totalSize)]]"
                 tabindex="-1"></mat-item>
@@ -429,7 +429,6 @@
               totalSize: aggs['0'].sum
             });
           }
-          console.log(aggs)
         },
         _handleSlackUsers: function(e) {
           if (e.detail.response && e.detail.response.result) {

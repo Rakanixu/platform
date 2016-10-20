@@ -312,7 +312,7 @@
 
                                                 <iron-icon class="secondary info info-icon"
                                                            icon="icons:info"></iron-icon>
-                                                <span>[[timestampToHumanTime(item.modified)]], [[bytesToSize(item.file_size)]]</span>
+                                                <span>[[timestampToHumanTime(item.modified)]][[bytesToSize(item.file_size, "with_comma")]]</span>
                                             </mat-item>
                                         </template>
 
@@ -329,7 +329,7 @@
                                                      <span>[[timestampToHumanTime(item.modified)]]</span>
                                                 </template>
                                                 <template is="dom-if" if="[[!item.is_dir]]">
-                                                    <span>[[timestampToHumanTime(item.modified)]], [[bytesToSize(item.file_size)]]</span>
+                                                    <span>[[timestampToHumanTime(item.modified)]][[bytesToSize(item.file_size, "with_comma")]]</span>
                                                 </template>
                                             </mat-item>
                                         </template>

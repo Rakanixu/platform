@@ -40,10 +40,13 @@
       openMenu: function() {
         this.$.navDrawerPanel.openDrawer()
       },
-      bytesToSize: function(bytes) {
-        if (typeof bytes === 'number') {
-          return window.filesize(bytes);
+      bytesToSize: function(bytes, withPreComma) {
+        if (typeof bytes === 'number' && bytes > 0) {
+          return (withPreComma === 'with_comma' && bytes > 0 ? ', ' : '') + window.filesize(bytes);
         }
+      },
+      showSize: function(bytes) {
+        return bytes > 0;
       },
       timeSince: function(date) {
         var timeSince = '';
