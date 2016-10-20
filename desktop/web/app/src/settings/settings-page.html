@@ -18,6 +18,7 @@
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
 <link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
@@ -75,6 +76,14 @@
 
       paper-tabs {
         --paper-tabs-selection-bar-color: var(--accent);
+      }
+
+      paper-fab {
+        position: fixed;
+        right: 36px;
+        top: 99px;
+        z-index: 9999;
+        background-color: var(--accent);
       }
     </style>
 
@@ -147,10 +156,11 @@
 
             <div class="flex horizontal layout">
               <div class="title flex">Settings</div>
-              <paper-icon-button id="addDatasourceIcon"
-                                 icon="icons:add"
-                                 on-tap="openDatasourceDialog"
-                                 hidden$="[[!addDatasourceIconVisible]]"></paper-icon-button>
+              <paper-fab id="addDatasourceIcon"
+                         icon="icons:add"
+                         title="Add datasource"
+                         on-tap="openDatasourceDialog"
+                         hidden$="[[!addDatasourceIconVisible]]"></paper-fab>
             </div>
 
             <paper-tabs class="middle horizontal layout fit" selected="{{selectedTab}}" scrollable>
