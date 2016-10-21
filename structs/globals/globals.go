@@ -73,6 +73,8 @@ const (
 
 	SYSTEM_TOKEN     = "ajsdIgsnaloHFGis823jsdgyjTGDKijfcjk783JDUYFJyggvwejkxsnmbkjwpoj6483"
 	CLIENT_ID_SECRET = "EC1FD9R5t6D3cs9CzPbgJaBJjshoVgrJrTs6U39scYzYF7HYyMlv_mal2IjLLaA9" // Auth0 RPC API client
+
+	CODE_REFRESH_DS = "CODE_REFRESH_DS"
 )
 
 func NewGoogleOautConfig() *oauth2.Config {

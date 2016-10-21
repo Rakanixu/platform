@@ -60,6 +60,8 @@ window.Auth = (function() {
       };
       window.Intercom('update', window.intercomSettings);
 
+      document.querySelector('notify-messages').init(_profile.user_id);
+
       localStorage.setItem('id_token', authResult.idToken);
 
       _authenticateUser(authResult.idToken).then(function(xhr, response) {

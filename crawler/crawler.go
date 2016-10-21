@@ -33,11 +33,12 @@ func srv(ctx *cli.Context) {
 }
 
 func crawlerCommands() []cli.Command {
-	return []cli.Command{{
-		Name:   "srv",
-		Usage:  "Run crawler service",
-		Action: srv,
-	},
+	return []cli.Command{
+		{
+			Name:   "srv",
+			Usage:  "Run crawler service",
+			Action: srv,
+		},
 	}
 }
 func Commands() []cli.Command {

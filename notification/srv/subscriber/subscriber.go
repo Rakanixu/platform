@@ -1,63 +1,31 @@
 package subscriber
 
 import (
-	//"github.com/kazoup/platform/crawler/srv/proto/crawler"
-	datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	/*	proto "github.com/kazoup/platform/notification/srv/proto/notification"
-		"github.com/kazoup/platform/structs/file"
-		"github.com/kazoup/platform/structs/fs"
-		"github.com/kazoup/platform/structs/globals"
-		"github.com/micro/go-micro/client"*/
+	"errors"
+	"github.com/kazoup/platform/notification/srv/helpers"
+	proto "github.com/kazoup/platform/notification/srv/proto/notification"
+	"github.com/kazoup/platform/structs/globals"
 	"golang.org/x/net/context"
-	/*	"log"
-		"time"*/)
+	"log"
+)
 
-func Notify(ctx context.Context, endpoint *datasource.Endpoint) error {
-	/*	fs, err := fs.NewFsFromEndpoint(endpoint)
-		if err != nil {
-			return err
+func Notify(ctx context.Context, nMsg *proto.NotificationMessage) error {
+	if len(nMsg.UserId) == 0 {
+		return errors.New("ERROR UserId empty")
+	}
+	log.Println("NOTIFY SUBSCRIPTOR", nMsg.UserId, len(helpers.SocketClients))
+	log.Println("NOTIFY SUBSCRIPTOR", nMsg.UserId, len(helpers.GetSocketClients()))
+	log.Println("NOTIFY SUBSCRIPTOR", nMsg.UserId, helpers.SocketClients)
+	for _, v := range helpers.SocketClients {
+		log.Println(v.ID)
+
+		if v.ID == nMsg.UserId {
+			log.Println("NOTIFY", globals.CODE_REFRESH_DS)
+			v.Codes <- globals.CODE_REFRESH_DS
+			break
 		}
+	}
 
-		c, r, err := fs.List()
-		if err != nil {
-			return err
-		}
-
-		// Publish notification
-		msg := &proto.NotificationMessage{
-			Info: "Scan started on " + endpoint.Url + " datasource.",
-		}
-
-		if err := client.Publish(ctx, client.NewPublication(globals.NotificationTopic, msg)); err != nil {
-			return err
-		}
-
-		for {
-			select {
-			case <-r:
-				time.Sleep(time.Second * 5)
-
-				if err := globals.ClearIndex(endpoint); err != nil {
-					log.Println("ERROR clearing index after scan", err)
-				}
-
-				msg := &crawler.CrawlerFinishedMessage{
-					DatasourceId: endpoint.Id,
-				}
-
-				if err := client.Publish(context.Background(), client.NewPublication(globals.CrawlerFinishedTopic, msg)); err != nil {
-					return err
-				}
-				close(c)
-				close(r)
-
-				return nil
-			case f := <-c:
-				if err := file.IndexAsync(f, globals.FilesTopic, f.GetIndex()); err != nil {
-					log.Println("Error indexing async file")
-				}
-			}
-		}*/
-
+	log.Println("NOTIFY SUBSCRIPTOR, OK")
 	return nil
 }

@@ -2,10 +2,13 @@ syntax = "proto3";
 
 package go.micro.srv.notification;
 
-message NotificationMessage {
-  string info = 1;
+service Notification {
+
 }
 
-message DatasourceAddedMessage {
-
+message NotificationMessage {
+  string info = 1;
+  string code = 2;
+  string data = 3;
+  string user_id = 4;
 }

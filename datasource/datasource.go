@@ -28,6 +28,7 @@ func srv(ctx *cli.Context) {
 		log.Fatalf("%v", err)
 	}
 }
+
 func datasourceCommands() []cli.Command {
 	return []cli.Command{
 		{
@@ -37,6 +38,7 @@ func datasourceCommands() []cli.Command {
 		},
 	}
 }
+
 func Commands() []cli.Command {
 	return []cli.Command{
 		{

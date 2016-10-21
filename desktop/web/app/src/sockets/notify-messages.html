@@ -1,0 +1,56 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/web-socket/web-socket.html">
+
+<link rel="import" href="../../src/behaviors/endpoints-behavior.html">
+
+<dom-module id="notify-messages">
+  <template>
+    <style>
+      :host {
+        display: none;
+      }
+    </style>
+
+    <web-socket id="socket"
+                url="[[endpoints.socket]]/notification/platform/notify"
+                on-open="_onOpen"
+                on-close="_onClose"
+                on-message="_onMessage"
+                on-error="_onError"
+                json></web-socket>
+  </template>
+
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'notify-messages',
+        behaviors: [
+          Polymer.EndpointsBehaviorImp
+        ],
+        init: function(userId) {
+          this.$.socket.open();
+
+          this.async(function() {
+            this.$.socket.send({
+              user_id: userId
+            });
+          }, 2500);
+        },
+        _onOpen: function(e) {
+          console.log('_onOpen', e.detail);
+        },
+        _onClose: function(e) {
+          console.log('_onClose', e.detail);
+        },
+        _onMessage: function(e) {
+          console.log('_onMessage', e.detail);
+        },
+        _onError: function(e) {
+          console.log('_onError', e.detail);
+        }
+      });
+    }());
+  </script>
+</dom-module>

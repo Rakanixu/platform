@@ -3,7 +3,9 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/kazoup/platform/structs/globals"
+	"github.com/micro/go-micro/client"
 	"golang.org/x/oauth2"
 	"io/ioutil"
 	"log"
@@ -65,4 +67,22 @@ func HandleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 			}());
 		</script>
 	`)
+
+	c := client.NewClient() //notification_proto.NewNotificationClient("", nil)
+	n := &notification_proto.NotificationMessage{
+		Info:   "Datasource created succesfully",
+		Code:   "",
+		Data:   "",
+		UserId: state,
+	}
+
+	// Publish scan topic, crawlers should pick up message and start scanning
+	msg := c.NewPublication(
+		globals.NotificationTopic,
+		n,
+	)
+
+	if err := c.Publish(globals.NewSystemContext(), msg); err != nil {
+		fmt.Fprintf(w, "Error publishing notification msg %s \n", err.Error())
+	}
 }

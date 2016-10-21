@@ -10,6 +10,7 @@ import (
 	ui "github.com/kazoup/platform/desktop"
 	flag "github.com/kazoup/platform/flag"
 	media "github.com/kazoup/platform/media"
+	notification "github.com/kazoup/platform/notification"
 	scheduler "github.com/kazoup/platform/scheduler"
 	search "github.com/kazoup/platform/search"
 	"github.com/kazoup/platform/structs/globals"
@@ -36,6 +37,7 @@ func main() {
 	app.Commands = append(app.Commands, media.Commands()...)
 	app.Commands = append(app.Commands, search.Commands()...)
 	app.Commands = append(app.Commands, scheduler.Commands()...)
+	app.Commands = append(app.Commands, notification.Commands()...)
 	app.Commands = append(app.Commands, proxy.Commands()...)
 	app.Commands = append(app.Commands, web.Commands()...)
 	app.Commands = append(app.Commands, desktopCommands()...)
