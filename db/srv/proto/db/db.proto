@@ -2,15 +2,21 @@ syntax = "proto3";
 
 package go.micro.srv.db;
 
-service Elastic {
+service DB {
   rpc Create(CreateRequest) returns (CreateResponse) {}
   rpc Read(ReadRequest) returns (ReadResponse) {}
   rpc Update(UpdateRequest) returns (UpdateResponse) {}
   rpc Delete(DeleteRequest) returns (DeleteResponse) {}
+  rpc DeleteByQuery(DeleteByQueryRequest) returns (DeleteByQueryResponse) {}
   rpc CreateIndexWithSettings(CreateIndexWithSettingsRequest) returns (CreateIndexWithSettingsResponse) {}
   rpc PutMappingFromJSON(PutMappingFromJSONRequest) returns (PutMappingFromJSONRequest) {}
   rpc Status(StatusRequest) returns (StatusResponse) {}
   rpc Search(SearchRequest) returns (SearchResponse) {}
+  rpc SearchById(SearchByIdRequest) returns (SearchByIdResponse) {}
+  rpc AddAlias(AddAliasRequest) returns (AddAliasResponse) {}
+  rpc DeleteIndex(DeleteIndexRequest) returns (DeleteIndexResponse) {}
+  rpc DeleteAlias(DeleteAliasRequest) returns (DeleteAliasResponse) {}
+  rpc RenameAlias(RenameAliasRequest) returns (RenameAliasResponse) {}
 }
 
 message DocRef {
@@ -72,6 +78,21 @@ message DeleteResponse {
 
 }
 
+message DeleteByQueryRequest {
+  repeated string indexes = 1;
+  repeated string types = 2;
+  string term = 3;
+  string category = 4;
+  string url = 5;
+  int64 depth = 6;
+  string file_type = 7;
+  int64 last_seen = 8;
+}
+
+message DeleteByQueryResponse {
+
+}
+
 message CreateIndexWithSettingsRequest {
   string index = 1;
   string settings = 2;
@@ -108,9 +129,56 @@ message SearchRequest {
   string url = 6;
   int64 depth = 7;
   string type = 8;
+  string file_type = 9;
 }
 
 message SearchResponse {
   string result = 1;
   string info = 2;
+}
+
+message SearchByIdRequest {
+  string index = 1;
+  string type = 2;
+  string id = 3;
+}
+
+message SearchByIdResponse {
+  string result = 1;
+}
+
+message AddAliasRequest {
+  string index = 1;
+  string alias = 2;
+}
+
+message AddAliasResponse {
+
+}
+
+message DeleteIndexRequest {
+  string index = 1;
+}
+
+message DeleteIndexResponse {
+
+}
+
+message DeleteAliasRequest {
+  string index = 1;
+  string alias = 2;
+}
+
+message DeleteAliasResponse {
+
+}
+
+message RenameAliasRequest {
+  string index = 1;
+  string old_alias = 2;
+  string new_alias = 3;
+}
+
+message RenameAliasResponse {
+
 }

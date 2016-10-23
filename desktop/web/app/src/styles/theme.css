@@ -62,8 +62,30 @@ mat-breadcrumb-step mat-icon {
     color: #fff !important;
 }
 
+mat-item.selected-item {
+    outline: 0;
+    background-color: #ececec;
+}
+
 mat-item.light mat-ink {
     color: white;
+}
+
+mat-item.flag.mat-item-0 .ripple-ground.mat-item,
+mat-item.flag.mat-item-0 .ripple-waves.mat-item {
+    display: none !important;
+}
+
+mat-item.overflow-visible a,
+mat-item.overflow-visible a div,
+mat-item.overflow-visible a div div {
+    overflow: visible !important;
+}
+
+mat-item.username {
+    position: absolute;
+    left: 0;
+    width: 256px;
 }
 
 mat-avatar.image {
@@ -113,6 +135,21 @@ wave-player paper-material#container:not(.waveActive) {
     margin-top: 56px;
 }
 
+empty-state,
+neon-animated-pages,
+datasources-page {
+    height: 100%;
+}
+
+.photoContent div.detail .mat-item-0 .label.mat-item {
+    font-size: 13px;
+}
+
+.auth0-lock.auth0-lock .auth0-lock-header-logo{
+	width:55px !important;
+}
+
+
 .title {
     margin-top: auto;
     margin-bottom: auto;
@@ -139,6 +176,11 @@ wave-player paper-material#container:not(.waveActive) {
 
 .mat-breadcrumb-step-0 .anchor.mat-breadcrumb-step:after {
     height: 0;
+}
+
+.prepopulated mat-item div.body{
+    background: gray;
+    border-radius: 12px;
 }
 
 #noFitBreadcrumbs .mat-item-0 .label.mat-item {

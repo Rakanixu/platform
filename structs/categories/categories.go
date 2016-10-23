@@ -2,6 +2,7 @@ package categories
 
 import (
 	"encoding/json"
+	data "github.com/kazoup/platform/structs/categories/data"
 	"log"
 )
 
@@ -18,7 +19,7 @@ var categoryMap []*Category
 // SetMap helper
 func SetMap() error {
 	// Load categories JSON map. categories_map.json
-	mapping, err := Asset("data/categories_map.json")
+	mapping, err := data.Asset("data/categories_map.json")
 	if err != nil {
 		log.Fatal(err)
 	}

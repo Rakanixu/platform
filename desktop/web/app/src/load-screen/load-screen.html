@@ -5,6 +5,7 @@
 <link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
 
 <link rel="import" href="../../src/behaviors/async-behavior.html">
+<link rel="import" href="../../src/behaviors/endpoints-behavior.html">
 
 <dom-module id="load-screen">
   <style is="custom-style" include="iron-flex iron-positioning iron-flex-alignment"></style>
@@ -41,7 +42,7 @@
       <div class="container vertical layout">
         <div class="flex vertical layout">
           <div class="inner-container">
-            <iron-image src="http://localhost:8082/desktop/src/static/kazoup-logo.png"></iron-image>
+            <iron-image src="../../src/static/kazoup-logo.png"></iron-image>
             <paper-progress indeterminate></paper-progress>
             <p class="info">[[info]]</p>
           </div>
@@ -52,56 +53,62 @@
     <iron-ajax id="rpcDbStatus"
                method="POST"
                content-type="application/json"
-               url="http://localhost:8082/rpc"
+               url="[[endpoints.endpoint]]"
                handle-as="json"
                on-error="_handleError"
                on-response="_handleDbStatus"
-               params="{{rpcDbStatusParams}}"></iron-ajax>
-
-    <iron-ajax id="rpcDbFilesIndex"
-               method="POST"
-               content-type="application/json"
-               url="http://localhost:8082/rpc"
-               handle-as="json"
-               on-error="_handleError"
-               on-response="_handleDbFilesIndex"
-               params="{{rpcDbFilesIndexParams}}"></iron-ajax>
+               params="{{rpcDbStatusParams}}"
+               headers="[[headers]]"></iron-ajax>
 
     <iron-ajax id="rpcDbDatasourcesIndex"
                method="POST"
                content-type="application/json"
-               url="http://localhost:8082/rpc"
+               url="[[endpoints.endpoint]]"
                handle-as="json"
                on-error="_handleError"
                on-response="_handleDbDatasourcesIndex"
-               params="{{rpcDbDatasorucesIndexParams}}"></iron-ajax>
+               params="{{rpcDbDatasorucesIndexParams}}"
+               headers="[[headers]]"></iron-ajax>
 
-    <iron-ajax id="rpcDbFilesMapping"
+    <iron-ajax id="rpcDbDatasourcesMapping"
                method="POST"
                content-type="application/json"
-               url="http://localhost:8082/rpc"
+               url="[[endpoints.endpoint]]"
                handle-as="json"
                on-error="_handleError"
-               on-response="_handleDbFilesMapping"
-               params="{{rpcDbFilesMappingParams}}"></iron-ajax>
+               on-response="_handleDbDatasourcesMapping"
+               params="{{rpcDbDatasourcesMappingParams}}"
+               headers="[[headers]]"></iron-ajax>
+
+    <iron-ajax id="rpcSanitizeDatasources"
+               method="POST"
+               content-type="application/json"
+               url="[[endpoints.endpoint]]"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleSanitizeDatasources"
+               params="{{rpcSanitizeDatasourcesParams}}"
+               headers="[[headers]]"></iron-ajax>
 
     <iron-ajax id="rpcSetFlags"
                method="POST"
                content-type="application/json"
-               url="http://localhost:8082/rpc"
+               url="[[endpoints.endpoint]]"
                handle-as="json"
                on-error="_handleError"
                on-response="_handleSetFlags"
-               params="{{rpcSetFlagsParams}}"></iron-ajax>
+               params="{{rpcSetFlagsParams}}"
+               headers="[[headers]]"></iron-ajax>
 
     <iron-ajax id="rpcSearch"
                method="POST"
                content-type="application/json"
-               url="http://localhost:8082/rpc"
+               url="[[endpoints.endpoint]]"
                handle-as="json"
                on-error="_handleError"
                on-response="_handleSearch"
-               params="{{rpcSearchParams}}"></iron-ajax>
+               params="{{rpcSearchParams}}"
+               headers="[[headers]]"></iron-ajax>
 
   </template>
 
@@ -112,7 +119,8 @@
       Polymer({
         is: 'load-screen',
         behaviors: [
-          Polymer.AsyncBehaviorImp
+          Polymer.AsyncBehaviorImp,
+          Polymer.EndpointsBehaviorImp
         ],
         properties: {
           wait: {
@@ -130,22 +138,8 @@
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.desktop',
+                service: 'com.kazoup.srv.db',
                 method: 'DB.Status',
-              };
-            }
-          },
-          rpcDbFilesIndexParams: {
-            type: Object,
-            notify: false,
-            value: function() {
-              return {
-                service: 'go.micro.srv.desktop',
-                method: 'DB.CreateIndexWithSettings',
-                request: {
-                  index: 'files',
-                  type: 'file'
-                }
               };
             }
           },
@@ -154,7 +148,7 @@
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.desktop',
+                service: 'com.kazoup.srv.db',
                 method: 'DB.CreateIndexWithSettings',
                 request: {
                   index: 'datasources',
@@ -163,16 +157,32 @@
               };
             }
           },
-          rpcDbFilesMappingParams: {
+          rpcDbDatasourcesMappingParams: {
             type: Object,
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.desktop',
+                service: 'com.kazoup.srv.db',
                 method: 'DB.PutMappingFromJSON',
                 request: {
-                  index: 'files',
-                  type: 'file'
+                  index: 'datasources',
+                  type: 'datasource'
+                }
+              };
+            }
+          },
+          rpcSanitizeDatasourcesParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: 'com.kazoup.srv.db',
+                method: 'DB.Update',
+                request: {
+                  index: 'datasources',
+                  type: 'datasource',
+                  id: '',
+                  data:''
                 }
               };
             }
@@ -182,7 +192,7 @@
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.desktop',
+                service: 'com.kazoup.srv.config',
                 method: 'Config.SetFlags',
                 request: {
                   type: 'desktop'
@@ -195,23 +205,21 @@
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.desktop',
-                method: 'Search.Search',
+                service: 'com.kazoup.srv.datasource',
+                method: 'DataSource.Search',
                 request: {
-                  index: 'files',
-                  type: 'file',
                   from: 0,
-                  size: 0
+                  size: 999
                 }
               };
             }
           }
         },
         ready: function() {
+          this.headers = this.getPublicHeaders();
+
           this.$.rpcDbStatus.body = this.rpcDbStatusParams;
-          this.$.rpcDbFilesIndex.body = this.rpcDbFilesIndexParams;
           this.$.rpcDbDatasourcesIndex.body = this.rpcDbDatasourcesIndexParams;
-          this.$.rpcDbFilesMapping.body = this.rpcDbFilesMappingParams;
           this.$.rpcSetFlags.body = this.rpcSetFlagsParams;
           this.$.rpcSearch.body = this.rpcSearchParams;
 
@@ -236,11 +244,9 @@
                 this.$.rpcSetFlags.generateRequest();
               }
 
-              if (_.isEmpty(status.metadata.indices.files)) {
-                this.$.rpcDbFilesIndex.generateRequest();
-              } else {
+              this.async(function() {
                 this.$.rpcSearch.generateRequest();
-              }
+              }, this.wait);
             } else {
               this.async(function() {
                 this.$.rpcDbStatus.generateRequest();
@@ -248,39 +254,50 @@
             }
           }
         },
-        _handleDbFilesIndex: function(e) {
-          this.async(function() {
-            this.$.rpcDbFilesMapping.generateRequest();
-          }, this.wait);
-        },
         _handleDbDatasourcesIndex: function(e) {
-
+          this.$.rpcDbDatasourcesMapping.body = this.rpcDbDatasourcesMappingParams;
+          this.$.rpcDbDatasourcesMapping.generateRequest();
         },
-        _handleDbFilesMapping: function(e) {
-          this._loadPage(1, 'web-app-activated', {
-            first_scan: true
-          });
+        _handleDbDatasourcesMapping: function(e) {
+
         },
         _handleSetFlags: function(e) {
 
         },
+        _handleSanitizeDatasources: function(e) {
+
+        },
         _handleSearch: function(e) {
-          var info;
+          var datasources, info, firstScan;
 
           if (e.detail.response) {
-            info = JSON.parse(e.detail.response.info)
+            info = JSON.parse(e.detail.response.info);
+            datasources = JSON.parse(e.detail.response.result);
 
-            this._loadPage(1, 'web-app-activated', {
-              first_scan: (info.total) ? false : true
+            if (info.total) {
+              firstScan = false;
+
+              _.forEach(datasources, function(ds) {
+                if (ds.crawler_running) {
+                  ds.crawler_running = false;
+                  this.rpcSanitizeDatasourcesParams.request.id = ds.id;
+                  this.rpcSanitizeDatasourcesParams.request.data = JSON.stringify(ds);
+                  this.$.rpcSanitizeDatasources.body = this.rpcSanitizeDatasourcesParams;
+
+                  this.$.rpcSanitizeDatasources.generateRequest();
+                }
+              }.bind(this));
+            } else {
+              firstScan = true;
+            }
+
+            this.loadPage(2, 'web-app-activated', {
+              first_scan: firstScan
             });
           }
         },
         _handleError: function(e) {
-
-        },
-        _loadPage: function(selected, eventName, obj) {
-          document.querySelector('#ironPages').selected = selected;
-          this.fireEvent(eventName, obj);
+          this.checkUnauthorize(e);
         }
       });
     }());

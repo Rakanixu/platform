@@ -7,15 +7,15 @@ dependencies:
                 - ln -fs $HOME/$CIRCLE_PROJECT_REPONAME $HOME/.go_project/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
                 - echo 'export GOPATH=$GOPATH:$HOME/.go_project' >> ~/.circlerc
                 - sudo apt-get install ruby ruby-dev gcc make icnsutils graphicsmagick xz-utils
-                - go get -d -v -t ./...
 test:
         override:
-                - go test -v -race ./...
+                - ./build_docker.sh
 deployment:
         release:
                 branch: desktop
                 commands:
-                        - sleep 10
+                        - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+                        - ./deploy.sh
                         #- go get github.com/tcnksm/ghr
                         #- ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace `git describe --tags` desktop/dist/
         hub: 

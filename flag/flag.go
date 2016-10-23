@@ -1,30 +1,22 @@
 package flag
 
 import (
-
 	"github.com/kazoup/platform/flag/srv/handler"
-	"github.com/micro/go-micro"
+	"github.com/kazoup/platform/structs/wrappers"
 
 	"github.com/micro/cli"
 	"log"
-
 )
-
 
 func srv(ctx *cli.Context) {
 
 	// New Service
-	service := micro.NewService(
-		micro.Name("go.micro.srv.flag"),
-		micro.Version("latest"),
-	)
-
+	service := wrappers.NewKazoupService("flag")
 
 	// Register Handler
 	service.Server().Handle(
 		service.Server().NewHandler(&handler.Flag{
-			DbServiceName: "go.micro.srv.db",
-			Client:        service.Client(),
+			Client: service.Client(),
 		}),
 	)
 

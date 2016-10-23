@@ -8,6 +8,7 @@
 <link rel="import" href="../../bower_components/mat-item/mat-item.html">
 
 <link rel="import" href="../../src/behaviors/util-behavior.html">
+<link rel="import" href="../../src/behaviors/endpoints-behavior.html">
 <link rel="import" href="../../src/behaviors/nav-behavior.html">
 <link rel="import" href="../../src/behaviors/categories-map-behavior.html">
 
@@ -17,11 +18,6 @@
     <style>
       :host {
         display: block;
-      }
-
-      .mat-item-0 .ripple-ground.mat-item,
-      .mat-item-0 .ripple-waves.mat-item {
-        display: none !important;
       }
     </style>
 
@@ -38,11 +34,12 @@
     <iron-ajax id="rpcGetFlags"
                method="POST"
                content-type="application/json"
-               url="http://localhost:8082/rpc"
+               url="[[endpoints.endpoint]]"
                handle-as="json"
                on-error="_handleError"
                on-response="_handleGetFlags"
-               params="[[rpcGetFlagsParams]]"></iron-ajax>
+               params="[[rpcGetFlagsParams]]"
+               headers="[[headers]]"></iron-ajax>
 
   </template>
 
@@ -57,7 +54,8 @@
           Polymer.NavBehaviorImp,
           Polymer.CategoriesMapBehaviorImp,
           Polymer.AsyncBehaviorImp,
-          Polymer.CommonBehaviorImp
+          Polymer.CommonBehaviorImp,
+          Polymer.EndpointsBehaviorImp
         ],
         properties: {
           rpcGetFlagsParams: {
@@ -65,7 +63,7 @@
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.desktop',
+                service: 'com.kazoup.srv.flag',
                 method: 'Flag.List',
                 request: {}
               };
@@ -85,23 +83,21 @@
           window.addEventListener('configuration-page-activated', this.init.bind(this));
         },
         init: function(e, detail) {
+          this.headers = Auth.getHeaders();;
+
           this.set('loading', true);
           this.$.rpcGetFlags.generateRequest();
         },
-/*        clearRipples: function() {
-          _.forEach(document.querySelectorAll('mat-item.flag > div'), function(ripple) {
-            ripple.remove();
-          });
-        },*/
         _handleGetFlags: function(e) {
           this.set('loading', false);
           if (e.detail.response && e.detail.response.result) {
             this.set('flagsResults', JSON.parse(e.detail.response.result));
-      //      this.async(this.clearRipples, 100);
           }
         },
         _handleError: function(e) {
           this.set('loading', false);
+          this.checkUnauthorize(e);
+
           if (e.detail.request && e.detail.request.response) {
             this.$.toast.text = e.detail.request.response.detail;
             this.$.toast.show();

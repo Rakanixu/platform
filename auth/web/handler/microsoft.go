@@ -1,58 +1,74 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"github.com/kazoup/platform/structs/globals"
+	"github.com/kazoup/platform/structs/onedrive"
+	"golang.org/x/oauth2"
 	"log"
 	"net/http"
-	"net/url"
-
-	"golang.org/x/oauth2"
-)
-
-var (
-	AzureConnectEndpoint = oauth2.Endpoint{
-		AuthURL:  "https://login.microsoftonline.com/common/oauth2/authorize",
-		TokenURL: "https://login.microsoftonline.com/common/oauth2/token",
-	}
-	redirect_uri         = "http://localhost:8082/auth/microsoft/callback"
-	resource             = "https://graph.microsoft.com/"
-	microsoftOauthConfig = &oauth2.Config{
-		RedirectURL:  "http://localhost:8082/auth/microsoft/callback",
-		ClientID:     "6544d648-c29c-43f1-8e3c-7a903e8524c4",
-		ClientSecret: "lGFfMwyErTWXDjTFRDYeypIctjfjn1CcbgtWRfRv/kw=",
-		Endpoint:     AzureConnectEndpoint,
-	}
-	// Some random string, random for each request
-	oauthMStateString = "randomsdsdahfoashfouahsfohasofhoashfaf"
 )
 
 func HandleMicrosoftLogin(w http.ResponseWriter, r *http.Request) {
-	url := microsoftOauthConfig.AuthCodeURL(oauthStateString)
-	log.Print(url)
+	url := globals.NewMicrosoftOauthConfig().AuthCodeURL(r.URL.Query().Get("user"), oauth2.AccessTypeOffline)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
 func HandleMicrosoftCallback(w http.ResponseWriter, r *http.Request) {
 	state := r.FormValue("state")
-	if state != oauthMStateString {
-		fmt.Printf("invalid oauth state, expected '%s', got '%s'\n", oauthStateString, state)
+	if len(state) == 0 {
+		fmt.Printf("invalid oauth state, got '%s'\n", state)
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
 
 	code := r.FormValue("code")
-	log.Print(r.URL)
-	resp, err := http.PostForm(AzureConnectEndpoint.TokenURL, url.Values{"grant_type": {"authorization_code"}, "redirect_uri": {redirect_uri}, "client_id": {microsoftOauthConfig.ClientID}, "client_secret": {microsoftOauthConfig.ClientSecret}, "code": {code}, "resource": {resource}})
+	token, err := globals.NewMicrosoftOauthConfig().Exchange(oauth2.NoContext, code)
 	if err != nil {
-		fmt.Println("Code exchange failed with '%s'\n", err)
+		log.Printf("Code exchange failed with '%s'\n", err)
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
 
-	//response, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + token.AccessToken)
-	//response, err := http.Get("https://www.googleapis.com/drive/v3/files?corpus=user&key=" + token.AccessToken)
-	defer resp.Body.Close()
-	contents, err := ioutil.ReadAll(resp.Body)
-	fmt.Fprintf(w, "Token: %s\n", contents)
+	// Get user name
+	c := &http.Client{}
+	//https://api.onedrive.com/v1.0/drives
+	u := globals.OneDriveEndpoint + "drives"
+	req, err := http.NewRequest("GET", u, nil)
+	req.Header.Set("Authorization", token.TokenType+" "+token.AccessToken)
+	if err != nil {
+		log.Println(err)
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		return
+	}
+	res, err := c.Do(req)
+	if err != nil {
+		log.Println(err)
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		return
+	}
+	defer res.Body.Close()
+
+	var drivesRsp *onedrive.DrivesListResponse
+	if err := json.NewDecoder(res.Body).Decode(&drivesRsp); err != nil {
+		log.Println(err)
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		return
+	}
+
+	url := fmt.Sprintf("onedrive://%s", drivesRsp.Value[0].Owner.User.DisplayName)
+
+	if err := SaveDatasource(globals.NewSystemContext(), state, url, token); err != nil {
+		fmt.Fprintf(w, "Error adding data source %s \n", err.Error())
+	}
+
+	fmt.Fprintf(w, "%s", `
+		<script>
+		'use stric';
+			(function() {
+				window.close();
+			}());
+		</script>
+	`)
 }

@@ -6,26 +6,17 @@ import (
 	"github.com/kazoup/platform/search/srv/engine"
 	_ "github.com/kazoup/platform/search/srv/engine/db_search"
 	"github.com/kazoup/platform/search/srv/handler"
+	"github.com/kazoup/platform/structs/wrappers"
 	"github.com/micro/cli"
-	"github.com/micro/go-micro"
-)
-
-const (
-	elasticServiceName = "go.micro.srv.db"
 )
 
 func srv(ctx *cli.Context) {
 	// New Service
-	service := micro.NewService(
-		micro.Name("go.micro.srv.search"),
-		micro.Version("latest"),
-	)
-
+	service := wrappers.NewKazoupService("search")
 	// Register Handler
 	service.Server().Handle(
 		service.Server().NewHandler(&handler.Search{
-			ElasticServiceName: elasticServiceName,
-			Client:             service.Client(),
+			Client: service.Client(),
 		}),
 	)
 

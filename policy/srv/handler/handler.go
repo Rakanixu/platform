@@ -155,10 +155,10 @@ func (p *Policy) List(ctx context.Context, req *proto.ListRequest, rsp *proto.Li
 		"go.micro.srv.db",
 		"db.Search",
 		&db.SearchRequest{
-			Index:  "policies",
-			Type:   "policy",
+			Index: "policies",
+			Type:  "policy",
 			Size:  1000000,
-			From: 0,
+			From:  0,
 		},
 	)
 	srvRsp := &db.SearchResponse{}

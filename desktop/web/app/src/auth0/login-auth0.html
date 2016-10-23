@@ -1,0 +1,38 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+
+<link rel="import" href="../../src/behaviors/async-behavior.html">
+<link rel="import" href="../../src/behaviors/endpoints-behavior.html">
+
+<dom-module id="login-auth0">
+  <style is="custom-style" include="iron-flex iron-positioning iron-flex-alignment"></style>
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+  </template>
+
+  <script>
+    (function() {
+      'use strict';
+
+      Polymer({
+        is: 'login-auth0',
+        ready: function() {
+          window.addEventListener('login-auth0-activated', this.init.bind(this));
+        },
+        init: function() {
+          if (document.querySelector('iron-pages').selected !== 1) {
+            document.querySelector('iron-pages').selected = 1;
+          }
+          Auth.showLogin();
+        }
+      })
+    }());
+  </script>
+</dom-module>

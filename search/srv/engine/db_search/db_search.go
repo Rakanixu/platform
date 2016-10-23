@@ -4,6 +4,7 @@ import (
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/search/srv/engine"
 	search "github.com/kazoup/platform/search/srv/proto/search"
+	"github.com/kazoup/platform/structs/globals"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 )
@@ -18,9 +19,9 @@ func (d *dbSearch) Init() error {
 	return nil
 }
 
-func (d *dbSearch) Search(ctx context.Context, req *search.SearchRequest, client client.Client, serviceName string) (*search.SearchResponse, error) {
+func (d *dbSearch) Search(ctx context.Context, req *search.SearchRequest, client client.Client) (*search.SearchResponse, error) {
 	srvReq := client.NewRequest(
-		serviceName,
+		globals.DB_SERVICE_NAME,
 		"DB.Search",
 		&db_proto.SearchRequest{
 			Index:    req.Index,
@@ -31,6 +32,7 @@ func (d *dbSearch) Search(ctx context.Context, req *search.SearchRequest, client
 			Url:      req.Url,
 			Depth:    req.Depth,
 			Type:     req.Type,
+			FileType: req.FileType,
 		},
 	)
 	srvRes := &db_proto.SearchResponse{}
@@ -43,4 +45,27 @@ func (d *dbSearch) Search(ctx context.Context, req *search.SearchRequest, client
 		Result: srvRes.Result,
 		Info:   srvRes.Info,
 	}, nil
+}
+
+func (d *dbSearch) SearchProxy(ctx context.Context, req *search.SearchProxyRequest, client client.Client) (*search.SearchProxyResponse, error) {
+
+	return &search.SearchProxyResponse{
+		Result: "",
+		Info:   "",
+	}, nil
+}
+
+func (d *dbSearch) Aggregate(ctx context.Context, req *search.AggregateRequest, client client.Client) (*search.AggregateResponse, error) {
+	srvReq := client.NewRequest(
+		globals.DB_SERVICE_NAME,
+		"DB.Aggregate",
+		req,
+	)
+	srvRes := &search.AggregateResponse{}
+
+	if err := client.Call(ctx, srvReq, srvRes); err != nil {
+		return nil, err
+	}
+
+	return srvRes, nil
 }

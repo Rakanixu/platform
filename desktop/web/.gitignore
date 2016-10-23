@@ -3,4 +3,5 @@ bin
 dist
 release
 node_modules
+java
 build/*

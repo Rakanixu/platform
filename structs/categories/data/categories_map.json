@@ -139,7 +139,7 @@
       ".ish2", ".ish1", ".ifaith", ".key", ".keb", ".qb2010", ".qb2013",
       ".vcrd", ".rtstn", ".pln", ".pls", ".plw", ".plt", ".lhr", ".cpf",
       ".dvdproj", ".twzip", ".mjk", ".ifs", ".pptm", ".sqf", ".sqd",
-      ".pptx", ".sqr", ".awg", ".btif", ".xaf", ".smpkg", ".ebuild", ".ged",
+      ".sqr", ".awg", ".btif", ".xaf", ".smpkg", ".ebuild", ".ged",
       ".gen", ".dm2", ".flwa", ".dmr", ".dmc", ".dmm", ".dmo",
       ".booktemplate", ".mq4", ".zdct", ".gxl", ".cs", ".rpd", ".rpa",
       ".rpp", ".xmct", ".xgml", ".xmcd", ".efp", ".efx", ".gtar", ".txtrpt",
@@ -235,7 +235,7 @@
       ".dnc", ".contact", ".~hm", ".yam", ".fff", ".mapsdata", ".lbx",
       ".mtf", ".mtm", ".mth", ".mtw", ".mtt", ".wallet", ".xfd", ".eep",
       ".ustar", ".rda", ".pod", ".poi", ".pot", ".pos", ".por", ".ly",
-      ".l6t", ".m", ".mk4", ".srf", ".iphoto", ".hol", ".xslt", ".ppt",
+      ".l6t", ".m", ".mk4", ".srf", ".iphoto", ".hol", ".xslt",
       ".ppr", ".pps", ".ppp", ".flipchart", ".ppf", ".ign", ".igg", ".igc",
       ".gform", ".pp2", ".savedstate", ".ats", ".3pe", ".atf", ".dlt",
       ".t11", ".t10", ".t12", ".stdl", ".quox", ".btinstall", ".tie",
@@ -326,7 +326,8 @@
     "order": 1,
     "color": "#1f77b4",
     "extensions": [
-      ".doc", ".rtf", ".odt", ".docx"
+      ".pdf", ".doc", ".rtf", ".odt", ".docx", ".xlsx", ".xls", ".ppt",
+      ".pptx", ".ppsx", ".odp"
     ]
   },
   {
@@ -524,14 +525,6 @@
     ]
   },
   {
-    "name": "PDF Files",
-    "order": 2,
-    "color": "#ff7f0e",
-    "extensions": [
-      ".pdf"
-    ]
-  },
-  {
     "name": "Camera Raw Files",
     "order": 8,
     "extensions": [
@@ -612,9 +605,9 @@
     "color": "#2ca02c",
     "extensions": [
       ".uos", ".edx", ".aws", ".xltm", ".nmbtemplate", ".edxz", ".dis",
-      ".ods", ".xlsx", ".xlsb", ".xlsm", ".mar", ".sdc", ".gsheet", ".wq2",
+      ".ods", ".xlsb", ".xlsm", ".mar", ".sdc", ".gsheet", ".wq2",
       ".wq1", ".sxc", ".qpw", ".numbers-tef", ".numbers", ".123", ".xlr",
-      ".xls", ".fods", ".dfg", ".fcs", ".xl", ".bks", ".tmvt", ".wks",
+      ".fods", ".dfg", ".fcs", ".xl", ".bks", ".tmvt", ".wks",
       ".wku", ".wki", ".xltx", ".xlsmhtml", ".rdf", ".xlthtml", ".xlshtml",
       ".ess"
     ]

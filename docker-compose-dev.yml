@@ -72,6 +72,12 @@ flag-srv:
   links:
   - registry
 
+media-web:
+  command: --registry_address=registry:8500
+  image: kazoup/media-web:latest
+  links:
+  - registry
+
 search-srv:
   command: --registry_address=registry:8500
   image: kazoup/search-srv:latest

@@ -5,6 +5,7 @@ import (
 	data "github.com/kazoup/platform/config/srv/data"
 	proto "github.com/kazoup/platform/config/srv/proto/config"
 	flag "github.com/kazoup/platform/flag/srv/proto/flag"
+	"github.com/kazoup/platform/structs/globals"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
@@ -18,8 +19,7 @@ const (
 
 // Config struct
 type Config struct {
-	Client        client.Client
-	DbServiceName string
+	Client client.Client
 }
 
 // Status handler, retrieve kazoup appliance status
@@ -65,7 +65,7 @@ func (c *Config) SetFlags(ctx context.Context, req *proto.SetFlagsRequest, rsp *
 
 	for _, v := range flagsSlice {
 		srvReq := c.Client.NewRequest(
-			c.DbServiceName,
+			globals.FLAG_SERVICE_NAME,
 			"Flag.Create",
 			&flag.CreateRequest{
 				Key:         v.(map[string]interface{})["key"].(string),

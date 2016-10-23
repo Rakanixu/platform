@@ -2,10 +2,8 @@ package structs
 
 import (
 	"crypto/md5"
-	"crypto/rand"
 	"encoding/hex"
-	"fmt"
-	"mime"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,24 +11,41 @@ import (
 
 	"github.com/Pallinder/go-randomdata"
 	"github.com/kazoup/platform/structs/categories"
-	"github.com/kazoup/platform/structs/content"
 	"github.com/kazoup/platform/structs/intmap"
-	"github.com/kazoup/platform/structs/metadata"
-	"github.com/kazoup/platform/structs/permissions"
 )
 
-// File model
-type File struct {
-	ID           string `json:"id"`
-	ExistsOnDisk bool   `json:"exists_on_disk"`
-	//ID              string                  `json:"_id"`
-	ArchiveComplete bool                    `json:"archive_complete"`
-	FirstSeen       time.Time               `json:"first_seen"`
-	IDB64           string                  `json:"id_b64"`
-	LastSeen        time.Time               `json:"last_seen"`
-	Content         content.Content         `json:"content"`
-	Metadata        metadata.Metadata       `json:"metadata"`
-	Permissions     permissions.Permissions `json:"permissions"`
+const (
+	DEFAULT_IMAGE_URL string = "http://placehold.it/350x150"
+)
+
+// OriginalFile interface
+type OriginalFile interface {
+}
+
+// KazoupFile represents all different types
+type KazoupFile struct {
+	ID       string       `json:"id"`
+	Name     string       `json:"name"`
+	URL      string       `json:"url"`
+	Modified time.Time    `json:"modified"`
+	Size     int64        `json:"size"`
+	IsDir    bool         `json:"is_dir"`
+	Category string       `json:"category"`
+	Depth    int64        `json:"depth"`
+	FileType string       `json:"file_type"`
+	Original OriginalFile `json:"original,omitempty"`
+}
+
+func NewKazoupFileFromString(s string) (*KazoupFile, error) {
+	f := &KazoupFile{}
+	b, err := json.Marshal(s)
+	if err != nil {
+		return nil, err
+	}
+	if err := json.Unmarshal(b, f); err != nil {
+		return nil, err
+	}
+	return f, nil
 }
 
 // DesktopFile ...
@@ -61,56 +76,20 @@ type LocalFile struct {
 	Type string
 	Path string
 	Info os.FileInfo
+	Id   string
 }
 
 func NewDesktopFile(lf *LocalFile) *DesktopFile {
 	return &DesktopFile{
-		ID:       GetMD5Hash(lf.Path),
+		ID:       lf.Id,
 		Name:     lf.Info.Name(),
-		URL:      "/" + lf.Path,
+		URL:      "/local" + lf.Path,
 		Modified: lf.Info.ModTime(),
 		Size:     lf.Info.Size(),
 		IsDir:    lf.Info.IsDir(),
 		Mode:     lf.Info.Mode(),
 		Category: categories.GetDocType(filepath.Ext(lf.Info.Name())),
-		Depth:    urlDepth(filepath.Dir(lf.Path)),
-	}
-}
-
-func NewDesktopFileOptimised(lf *LocalFile) *DesktopFileOptimised {
-	return &DesktopFileOptimised{
-		N: lf.Info.Name(),
-		U: "/" + lf.Path,
-		M: lf.Info.ModTime(),
-		S: lf.Info.Size(),
-		D: lf.Info.IsDir(),
-		P: lf.Info.Mode(),
-	}
-}
-
-// NewFileFromLocal file constructor
-func NewFileFromLocal(lf *LocalFile) *File {
-	return &File{
-		//ID:              "/" + lf.Path + ":" + strconv.FormatInt(lf.Info.ModTime().Unix(), 10),
-		ExistsOnDisk:    true,
-		ArchiveComplete: false,
-		FirstSeen:       time.Now(),
-		Content:         content.Content{},
-		Metadata: metadata.Metadata{
-			Mimetype:     mime.TypeByExtension(filepath.Ext(lf.Info.Name())),
-			DocType:      categories.GetDocType(filepath.Ext(lf.Info.Name())),
-			DirpathSplit: pathToIntmap(lf.Path),
-			Extension:    filepath.Ext(lf.Info.Name()),
-			Created:      lf.Info.ModTime(),
-			Modified:     lf.Info.ModTime(),
-			Filename:     lf.Info.Name(),
-			Dirpath:      "/" + filepath.Dir(lf.Path), // For consistency with other data sources, //x/y/z
-			Accessed:     lf.Info.ModTime(),
-			Fullpath:     lf.Path,
-			Sharepath:    filepath.VolumeName(lf.Path),
-			Size:         lf.Info.Size(),
-		},
-		Permissions: permissions.Permissions{},
+		Depth:    UrlDepth(lf.Path),
 	}
 }
 
@@ -153,54 +132,8 @@ func (mf *MockFile) GenerateData() {
 }
 
 // NewMockFile constructor
-func NewMockFile() *File {
-	mockFile := &MockFile{
-		Filename: randomdata.SillyName(),
-	}
-	mockFile.GenerateData()
-
-	return &File{
-		ExistsOnDisk: true,
-		//ID:              pseudoUUID(),
-		ArchiveComplete: randomdata.Boolean(),
-		FirstSeen: time.Date(
-			randomdata.Number(1990, 2015),
-			time.November,
-			randomdata.Number(1, 28),
-			0, 0, 0, 0, time.UTC,
-		),
-		Content: content.Content{},
-		Metadata: metadata.Metadata{
-			Mimetype:     mockFile.Mimetype,
-			DocType:      mockFile.DocType,
-			DirpathSplit: mockFile.DirpathSplit,
-			Extension:    mockFile.Extension,
-			Created: time.Date(
-				randomdata.Number(1990, 2015),
-				time.November,
-				randomdata.Number(1, 28),
-				0, 0, 0, 0, time.UTC,
-			),
-			Modified: time.Date(
-				randomdata.Number(1995, 2016),
-				time.January,
-				randomdata.Number(1, 28),
-				0, 0, 0, 0, time.UTC,
-			),
-			Accessed: time.Date(
-				randomdata.Number(2000, 2016),
-				time.January,
-				randomdata.Number(1, 28),
-				0, 0, 0, 0, time.UTC,
-			),
-			Filename:  mockFile.Filename,
-			Dirpath:   mockFile.Dirpath,
-			Fullpath:  mockFile.Fullpath,
-			Sharepath: mockFile.Sharepath,
-			Size:      int64(randomdata.Number(1024, 1048576)),
-		},
-		Permissions: permissions.Permissions{},
-	}
+func NewMockFile() *DesktopFile {
+	return &DesktopFile{}
 }
 
 func pathToIntmap(path string) intmap.Intmap {
@@ -219,22 +152,10 @@ func pathToIntmap(path string) intmap.Intmap {
 	return results
 }
 
-func PseudoUUID() (uuid string) {
-	b := make([]byte, 16)
-	_, err := rand.Read(b)
-	if err != nil {
-		fmt.Println("Error: ", err)
-		return
-	}
-
-	uuid = fmt.Sprintf("%X-%X-%X-%X-%X", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
-
-	return
+func UrlDepth(str string) int64 {
+	return int64(len(strings.Split(str, "/")) - 1)
 }
 
-func urlDepth(str string) int64 {
-	return int64(len(strings.Split(str, "/"))) - 1
-}
 func GetMD5Hash(text string) string {
 	hash := md5.Sum([]byte(text))
 	return hex.EncodeToString(hash[:])

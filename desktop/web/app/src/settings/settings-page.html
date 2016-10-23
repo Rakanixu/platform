@@ -18,6 +18,7 @@
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
 <link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
 <link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
@@ -77,15 +78,12 @@
         --paper-tabs-selection-bar-color: var(--accent);
       }
 
-      .scan-container {
-        position: absolute;
-        bottom: 15px;
-      }
-
-      .scan-container mat-raised-button {
-        background-color: var(--dark-primary);
-        color: #fff;
-        margin-left: 70px;
+      paper-fab {
+        position: fixed;
+        right: 36px;
+        top: 99px;
+        z-index: 9999;
+        background-color: var(--accent);
       }
     </style>
 
@@ -93,43 +91,53 @@
       <!-- Nav Content -->
       <div class="nav" drawer>
         <paper-toolbar class="medium-tall left-menu">
-          <label is="mat-label" class="bottom">[[user.user.username]]@[[user.hostname]]</label>
+          <mat-avatar icon-src="[[profile.picture]]"></mat-avatar>
+          <mat-item class="bottom light username"
+                    label="[[profile.name]]"></mat-item>
         </paper-toolbar>
 
-        <div class="content">
-          <paper-menu selected="-1">
-            <paper-icon-item on-tap="showSearch" data-value="" data-index="0">
-              <iron-icon icon="icons:home" item-icon></iron-icon>All
-            </paper-icon-item>
-            <paper-icon-item on-tap="showSearch" data-value$="[[categoriesMap.documents]]" data-index="1">
-              <iron-icon icon="editor:insert-drive-file" item-icon></iron-icon>Documents
-            </paper-icon-item>
-            <paper-icon-item on-tap="showSearch" data-value$="[[categoriesMap.videos]]" data-index="2">
-              <iron-icon icon="av:movie" item-icon></iron-icon>Movies
-            </paper-icon-item>
-            <paper-icon-item on-tap="showSearch" data-value$="[[categoriesMap.images]]" data-index="3">
-              <iron-icon icon="image:camera-alt" item-icon></iron-icon>Pictures
-            </paper-icon-item>
-            <paper-icon-item on-tap="showSearch" data-value$="[[categoriesMap.audios]]" data-index="4">
-              <iron-icon icon="image:audiotrack" item-icon></iron-icon>Audio
-            </paper-icon-item>
-          </paper-menu>
+        <div style="height:100%; overflow-y:auto;">
+          <div class="menu-content">
+            <paper-menu id="mainMenu" selected="-1">
+              <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.all]]" data-index="0">
+                <iron-icon icon="icons:home" item-icon></iron-icon>My Files
+              </paper-icon-item>
 
-          <mat-divider></mat-divider>
+              <template is="dom-repeat" items="[[datasourceResults]]">
+                <paper-icon-item on-tap="showDatasourceSearch" id="datasource[[item.id]]">
+                  <iron-icon icon="[[getDatasourceIcon(item.url)]]" item-icon></iron-icon>[[getDatasourcePrettyType(item.url)]]
+                </paper-icon-item>
+                <paper-tooltip for="datasource[[item.id]]">[[getDatasourceUrl(item.url)]]</paper-tooltip>
+              </template>
+              <mat-divider></mat-divider>
 
-          <paper-menu>
-            <paper-icon-item id="settings" on-tap="showSettingsPage">
-              <iron-icon icon="icons:settings" item-icon></iron-icon>Settings
-            </paper-icon-item>
-            <paper-icon-item id="intercom_launch">
-              <iron-icon icon="icons:feedback" item-icon></iron-icon>Feedback
-            </paper-icon-item>
-          </paper-menu>
+              <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.documents]]" data-index="1">
+                <iron-icon icon="editor:insert-drive-file" item-icon></iron-icon>Documents
+              </paper-icon-item>
+              <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.videos]]" data-index="2">
+                <iron-icon icon="av:movie" item-icon></iron-icon>Movies
+              </paper-icon-item>
+              <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.images]]" data-index="3">
+                <iron-icon icon="image:camera-alt" item-icon></iron-icon>Pictures
+              </paper-icon-item>
+              <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.audios]]" data-index="4">
+                <iron-icon icon="image:audiotrack" item-icon></iron-icon>Audio
+              </paper-icon-item>
+            </paper-menu>
 
-          <div class="scan-container">
-            <mat-raised-button id="scan"
-                               on-tap="scanAll"
-                               label="Start scan"></mat-raised-button>
+            <mat-divider></mat-divider>
+
+            <paper-menu id="secondaryMenu" selected="0">
+              <paper-icon-item id="settings" on-tap="showSettingsPage">
+                <iron-icon icon="icons:settings" item-icon></iron-icon>Settings
+              </paper-icon-item>
+              <paper-icon-item id="intercom_launch">
+                <iron-icon icon="icons:feedback" item-icon></iron-icon>Feedback
+              </paper-icon-item>
+              <paper-icon-item id="logout" on-tap="logout">
+                <iron-icon icon="icons:power-settings-new" item-icon></iron-icon>Sign out
+              </paper-icon-item>
+            </paper-menu>
           </div>
         </div>
       </div>
@@ -148,15 +156,16 @@
 
             <div class="flex horizontal layout">
               <div class="title flex">Settings</div>
-              <paper-icon-button id="addDatasourceIcon"
-                                 icon="icons:add"
-                                 on-tap="openDatasourceDialog"
-                                 hidden$="[[!addDatasourceIconVisible]]"></paper-icon-button>
+              <paper-fab id="addDatasourceIcon"
+                         icon="icons:add"
+                         title="Add datasource"
+                         on-tap="openDatasourceDialog"
+                         hidden$="[[!addDatasourceIconVisible]]"></paper-fab>
             </div>
 
             <paper-tabs class="middle horizontal layout fit" selected="{{selectedTab}}" scrollable>
               <paper-tab class="flex">DATA SOURCES</paper-tab>
-              <paper-tab class="flex">CONFIGURATION</paper-tab>
+              <!--<paper-tab class="flex">CONFIGURATION</paper-tab>-->
             </paper-tabs>
 
             <paper-progress id="progressBar"
@@ -166,13 +175,12 @@
           </paper-toolbar>
 
           <!-- Search results -->
-          <div class="vertical layout center-justified">
+          <div class="vertical layout center-justified" style="height:100%;">
             <neon-animated-pages id="neonPages"
                                  selected="[[selectedTab]]">
               <neon-animatable>
-                <datasources-page></datasources-page>
+                <datasources-page datasources-results="{{datasourceResults}}"></datasources-page>
               </neon-animatable>
-
               <neon-animatable>
                 <configuration-page></configuration-page>
               </neon-animatable>
@@ -184,6 +192,9 @@
     </paper-drawer-panel>
 
     <paper-toast id="toast" text=""></paper-toast>
+
+    <iron-media-query query="(min-width: 1281px)"
+                      query-matches="{{mediaQueryLarge}}"></iron-media-query>
 
   </template>
 
@@ -221,6 +232,15 @@
         activatePage: function() {
           this.set('addDatasourceIconVisible', false);
 
+          this.profile = Auth.getProfile();
+
+          this.$.mainMenu.selected = "-1";
+          this.$.secondaryMenu.selected = "0";
+
+          if (document.querySelector('iron-pages').selected !== 3) {
+            document.querySelector('iron-pages').selected = 3;
+          }
+
           switch (this.selectedTab) {
             case 0:
               this.set('addDatasourceIconVisible', true);
@@ -230,26 +250,46 @@
               this.fireEvent('configuration-page-activated');
               break;
           }
+
+          this.setMenuHeight();
         },
-        showSearch: function(e) {
+        showDatasourceSearch: function(e) {
           this.fireEvent('web-app-activated', {
             e: {
-              target: {
-                dataset: {
-                  value: e.target.dataset.value
+              model: {
+                __data__: {
+                  item: e.model.__data__.item
                 }
               },
               selectedCategory: {
-                index: e.target.dataset.index,
-                label: (e.target.dataset.index == 0) ? 'My Files' : ''
+                index: e.model.__data__.index + 1,
+                label: 'Search'
+              }
+            },
+            callback: 'browseDatasource' // Internal method to be call
+          });
+        },
+        showCategorySearch: function(e) {
+          var index = parseInt(e.currentTarget.dataset.index, 10);
+
+          if (this.datasourceResults && this.datasourceResults.length > 0) {
+            index += this.datasourceResults.length;
+          }
+
+          this.fireEvent('web-app-activated', {
+            e: {
+              currentTarget: {
+                dataset: {
+                  value: e.currentTarget.dataset.value
+                }
+              },
+              selectedCategory: {
+                index: index,
+                label: (e.currentTarget.dataset.index == 0) ? 'My Files' : ''
               }
             },
             callback: 'setCategory' // Internal method to be call
           });
-          document.querySelector('#ironPages').selected = 1;
-        },
-        scanAll: function() {
-          document.querySelector('web-app').scanAll();
         },
         ready: function() {
           window.addEventListener('settings-page-activated', this.init.bind(this));

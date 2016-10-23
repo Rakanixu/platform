@@ -20,7 +20,10 @@
 <link rel="import" href="../../bower_components/mat-icon-button/mat-icon-button.html">
 <link rel="import" href="../../bower_components/mat-menu/mat-menu.html">
 
+<link rel="import" href="../../src/empty-state/empty-state.html">
+
 <link rel="import" href="../../src/behaviors/util-behavior.html">
+<link rel="import" href="../../src/behaviors/endpoints-behavior.html">
 <link rel="import" href="../../src/behaviors/nav-behavior.html">
 <link rel="import" href="../../src/behaviors/categories-map-behavior.html">
 
@@ -42,88 +45,122 @@
       }
     </style>
 
-    <template is="dom-repeat" items="[[datasourcesResults]]">
-      <mat-item label="[[getDatasourceUrl(item.url)]]"
-                description="">
+    <template is="dom-repeat" items="[[datasourcesResults]]" hidden$="[[emptyState.visible]]">
+      <mat-item label="[[getDatasourcePrettyType(item.url)]]"
+                description="[[getDatasourceUrl(item.url)]]">
         <mat-avatar class="primary"
                     icon$="[[getDatasourceIcon(item.url)]]">
 	      </mat-avatar>
-	
+
+        <span>[[crawlerRunningMsg(item)]]</span>
+
         <mat-icon-button class="secondary"
                          behavior="toggle"
                          icon="mat:more-vert"
+                         disabled$="[[item.crawler_running]]"
                          target="id[[item.id]]"></mat-icon-button>
         <mat-menu id="id[[item.id]]">
-          <mat-option label="Start scan" on-tap="startScan"></mat-option>
-          <mat-option label="Delete" on-tap="deleteDatasource"></mat-option>
+          <mat-option label="Start scan" on-tap="startScan" disabled$="[[item.crawler_running]]"></mat-option>
+          <mat-option label="Delete" on-tap="deleteDatasource" disabled$="[[item.crawler_running]]"></mat-option>
         </mat-menu>
       </mat-item>
     </template>
 
+    <empty-state id="emptyState"
+                 class="fit"
+                 hidden$="[[!emptyState.visible]]"
+                 icon="[[emptyState.icon]]"
+                 header="[[emptyState.header]]"></empty-state>
+
     <mat-dialog id="addDatasourceDialog" label="">
       <div>
-        <paper-button  on-tap="doAuth" data-url="local://">
-          <iron-icon  class="big" icon="kazoup-icons:local"></iron-icon>
-          <mat-item   label="Local"/>
+        <!--
+        <paper-button on-tap="doAuth" data-url="local://">
+          <iron-icon class="big" icon="kazoup:local"></iron-icon>
+          <mat-item label="Local"/>
         </paper-button>
-
-        <paper-button on-tap="doAuth" data-url="http:///localhost:8082/desktop/slack/login">
-          <iron-icon class="big" icon="kazoup-icons:slack"></iron-icon>
+        -->
+        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/slack/login">
+          <iron-icon class="big" icon="kazoup:slack"></iron-icon>
           <mat-item label="Slack"/>
         </paper-button>
 
-        <paper-button on-tap="doAuth" data-url="http:///localhost:8082/desktop/google/login">
-          <iron-icon class="big" icon="kazoup-icons:googledrive"></iron-icon>
+        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/google/login">
+          <iron-icon class="big" icon="kazoup:googledrive"></iron-icon>
           <mat-item label="Google Drive"/>
         </paper-button>
 
-        <paper-button  on-tap="doAuth" data-url="http:///localhost:8082/desktop/microsoft/login">
-          <iron-icon class="big" icon="kazoup-icons:onedrive"></iron-icon>
+        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/gmail/login">
+          <iron-icon class="big" icon="kazoup:gmail"></iron-icon>
+          <mat-item label="Gmail"/>
+        </paper-button>
+
+        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/microsoft/login">
+          <iron-icon class="big" icon="kazoup:onedrive"></iron-icon>
           <mat-item label="One Drive"/>
         </paper-button>
+
+        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/dropbox/login">
+          <iron-icon class="big" icon="kazoup:dropbox"></iron-icon>
+          <mat-item label="Dropbox"/>
+        </paper-button>
+
+        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/box/login">
+          <iron-icon class="big" icon="kazoup:box"></iron-icon>
+          <mat-item label="Box"/>
+        </paper-button>
+<!--
+        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/evernote/login">
+          <iron-icon class="big" icon="kazoup:evernote"></iron-icon>
+          <mat-item label="Evernote"/>
+        </paper-button>
+        -->
       </div>
       <mat-button class="action" label="Cancel" on-tap="closeDatasourceDialog"></mat-button>
     </mat-dialog>
 
-    <paper-toast id="toast" text=""></paper-toast>
+    <paper-toast id="toast" duration="6000" text=""></paper-toast>
 
     <iron-ajax id="rpcGetDatasources"
                method="POST"
                content-type="application/json"
-               url="http://localhost:8082/rpc"
+               url="[[endpoints.endpoint]]"
                handle-as="json"
                on-error="_handleError"
                on-response="_handleGetDatasource"
-               params="[[rpcGetDatasourceParams]]"></iron-ajax>
+               params="[[rpcGetDatasourceParams]]"
+               headers="[[headers]]"></iron-ajax>
 
     <iron-ajax id="rpcAddDatasource"
                method="POST"
                content-type="application/json"
-               url="http://localhost:8082/rpc"
+               url="[[endpoints.endpoint]]"
                handle-as="json"
                on-error="_handleError"
                on-response="_handleAddDatasource"
-               params="{{rpcAddDatasourceParams}}"></iron-ajax>
+               params="{{rpcAddDatasourceParams}}"
+               headers="[[headers]]"></iron-ajax>
 
     <iron-ajax id="rpcDeleteDatasource"
                method="POST"
                content-type="application/json"
-               url="http://localhost:8082/rpc"
+               url="[[endpoints.endpoint]]"
                handle-as="json"
                on-error="_handleError"
                on-response="_handleDeleteDatasource"
-               params="{{rpcDeleteDatasourceParams}}"></iron-ajax>
+               params="{{rpcDeleteDatasourceParams}}"
+               headers="[[headers]]"></iron-ajax>
 
     <iron-ajax id="rpcStartScan"
                method="POST"
                content-type="application/json"
-               url="http://localhost:8082/rpc"
+               url="[[endpoints.endpoint]]"
                handle-as="json"
                on-error="_handleError"
                on-response="_handleStartScan"
-               params="[[rpcStartScanParams]]"></iron-ajax>
+               params="[[rpcStartScanParams]]"
+               headers="[[headers]]"></iron-ajax>
 
-	<input id="localfolder" type="file" webkitdirectory directory style="display: none" />
   </template>
 
   <script>
@@ -137,7 +174,8 @@
           Polymer.NavBehaviorImp,
           Polymer.CategoriesMapBehaviorImp,
           Polymer.AsyncBehaviorImp,
-          Polymer.CommonBehaviorImp
+          Polymer.CommonBehaviorImp,
+          Polymer.EndpointsBehaviorImp
         ],
         properties: {
           rpcGetDatasourceParams: {
@@ -145,7 +183,7 @@
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.desktop',
+                service: 'com.kazoup.srv.datasource',
                 method: 'DataSource.Search',
                 request: {
                   from: 0,
@@ -161,7 +199,7 @@
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.desktop',
+                service: 'com.kazoup.srv.datasource',
                 method: 'DataSource.Scan',
                 request: {
                   id: ''
@@ -174,7 +212,7 @@
             notify: false,
             value: function() {
               return {
-                service: 'go.micro.srv.desktop',
+                service: 'com.kazoup.srv.datasource',
                 method: 'DataSource.Delete',
                 request: {
                   id: ''
@@ -188,6 +226,24 @@
             value: function() {
               return [];
             }
+          },
+          lastDatasourceCreated: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {};
+            }
+          },
+          emptyState: {
+            type: Object,
+            notify: true,
+            value: function() {
+              return {
+                visible: false,
+                icon: "icons:build",
+                header: "No datasources."
+              };
+            }
           }
         },
         ready: function() {
@@ -195,54 +251,38 @@
 
           window.addEventListener('datasources-page-activated', this.init.bind(this));
 
-	 if (window && window.process && window.process.type){
-          ipcRenderer.on('add-folder', this._addFolder.bind(this));
-	 }},
-        init: function(e, detail) {
-          this.set('loading', true);
-          this.$.rpcGetDatasources.generateRequest();
-        },
-	      _addFolder : function (e, folder){
-	        if (folder.length > 0) {
-            this.$.rpcAddDatasource.body = {
-              service: 'go.micro.srv.desktop',
-              method: 'DataSource.Create',
-              request: {
-                endpoint: {
-                  url: 'local://' + folder[0]
-                }
-              }
-            };
-
-            this.$.rpcAddDatasource.generateRequest();
-	        }
-        },
-        doAuth: function(e){
-	
-	 if (window && window.process && window.process.type){
-          if (e.currentTarget.getAttribute("data-url") == "local://" ) {
-            ipcRenderer.send('open-folder');
-          }else {
-            ipcRenderer.send('auth-message',e.currentTarget.getAttribute("data-url"));
+          if (window && window.process && window.process.type) {
+            ipcRenderer.on('add-folder', this._addDatasource.bind(this));
+            ipcRenderer.on('auth-callback-message', this._authSuccessful.bind(this));
           }
-	 } else {
-		 //TODO handle this in normal browser
-	 }
-	 this.localfolder.open()
-          this.closeDatasourceDialog();
         },
-        addDatasource: function(e) {
+        init: function(e, detail) {
+          this.headers = Auth.getHeaders();
           this.set('loading', true);
-          this.$.rpcAddDatasource.body = {
-            service: 'go.micro.srv.desktop',
-            method: 'DataSource.Create',
-            request: {
-              endpoint: {
-                url: 'local://' + this.$.datasourceInput.input.value
-              }
+          this.async(function() {
+            this.$.rpcGetDatasources.generateRequest();
+          }, 300);
+        },
+        doAuth: function(e) {
+          if (window && window.process && window.process.type) {
+            if (e.currentTarget.getAttribute('data-url') == 'local://' ) {
+              ipcRenderer.send('open-folder');
+            } else {
+              ipcRenderer.send(
+                'auth-message',
+                {
+                  url: e.currentTarget.getAttribute('data-url') + '?user=' + Auth.getUserId(),
+                  token: localStorage.getItem('token'),
+                  id_token: localStorage.getItem('id_token'),
+                  show_onboarding: localStorage.getItem('show_onboarding')
+                }
+              );
             }
-          };
-          this.$.rpcAddDatasource.generateRequest();
+          } else {
+            window.open(e.currentTarget.getAttribute('data-url') + '?user=' + Auth.getUserId());
+          }
+
+          this.closeDatasourceDialog();
         },
         startScan: function(e) {
           this.set('loading', true);
@@ -255,6 +295,32 @@
           this.rpcDeleteDatasourceParams.request.id = e.model.__data__.item.id;
           this.$.rpcDeleteDatasource.body = this.rpcDeleteDatasourceParams;
           this.$.rpcDeleteDatasource.generateRequest();
+        },
+        _addDatasource: function(e, folder) {
+          this.set('loading', true);
+
+          if (folder.length > 0) {
+            this.set('lastDatasourceCreated', {
+              endpoint: {
+                url: 'local://' + folder[0]
+              }
+            });
+          }
+
+          this.$.rpcAddDatasource.body = {
+            service: 'com.kazoup.srv.datasource',
+            method: 'DataSource.Create',
+            request: this.lastDatasourceCreated
+          };
+          this.$.rpcAddDatasource.generateRequest();
+        },
+        _authSuccessful: function(e, detail) {
+          for (var attr in detail) {
+            if (detail.hasOwnProperty(attr)) {
+              localStorage.setItem(attr, detail[attr]);
+            }
+          }
+          this.init();
         },
         _handleStartScan: function(e) {
           this.set('loading', false);
@@ -271,17 +337,29 @@
           this.set('loading', false);
           if (e.detail.response && e.detail.response.result) {
             this.set('datasourcesResults', JSON.parse(e.detail.response.result));
+            this.set('lastDatasourceCreated', {});
+
+            // this.datasourcesResults can be nil
+            if (this.datasourcesResults && this.datasourcesResults.length) {
+              this.set('emptyState.visible', false);
+            } else {
+              this.set('emptyState.visible', true);
+            }
           }
         },
         _handleAddDatasource: function(e) {
           if (e.detail.response) {
+            this.closeDatasourceDialog();
             this.$.toast.text = 'New datasource created succesfully';
             this.$.toast.show();
+            this.setMenuHeight.call(document.querySelector('settings-page'));
             this.async(this.init, 1000);
           }
         },
         _handleError: function(e) {
           this.set('loading', false);
+          this.checkUnauthorize(e);
+
           if (e.detail.request && e.detail.request.response) {
             this.$.toast.text = e.detail.request.response.detail;
             this.$.toast.show();

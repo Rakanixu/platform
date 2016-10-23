@@ -1,30 +1,32 @@
 package handler
 
 import (
-	"github.com/kazoup/platform/datasource/srv/proto/datasource"
+	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/structs/globals"
 	"golang.org/x/net/context"
-
 	"golang.org/x/oauth2"
 )
 
-func SaveDatasource(url string, token *oauth2.Token) error {
+func SaveDatasource(ctx context.Context, user string, url string, token *oauth2.Token) error {
+	c := proto_datasource.NewDataSourceClient(globals.DATASOURCE_SERVICE_NAME, nil)
 
-	t := &go_micro_srv_datasource.Token{
-		AccessToken:  token.AccessToken,
-		TokenType:    token.TokenType,
-		RefreshToken: token.RefreshToken,
-		Expiry:       token.Expiry.String(),
-	}
-	c := go_micro_srv_datasource.NewDataSourceClient("go.micro.srv.desktop", nil)
-	endpoint := &go_micro_srv_datasource.Endpoint{
-		Url:   url,
-		Token: t,
-	}
-	req := &go_micro_srv_datasource.CreateRequest{
-		Endpoint: endpoint,
+	req := &proto_datasource.CreateRequest{
+		Endpoint: &proto_datasource.Endpoint{
+			UserId:          user,
+			Url:             url,
+			LastScan:        0,
+			LastScanStarted: 0,
+			CrawlerRunning:  false,
+			Token: &proto_datasource.Token{
+				AccessToken:  token.AccessToken,
+				TokenType:    token.TokenType,
+				RefreshToken: token.RefreshToken,
+				Expiry:       token.Expiry.Unix(),
+			},
+		},
 	}
 
-	_, err := c.Create(context.TODO(), req)
+	_, err := c.Create(ctx, req)
 	if err != nil {
 		return err
 	}

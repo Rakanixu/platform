@@ -1,33 +1,26 @@
 package auth
 
 import (
-	"log"
-	"time"
-
-	"github.com/kazoup/platform/crawler/srv/handler"
-	"github.com/micro/cli"
-	"github.com/micro/go-micro"
-	_ "github.com/micro/go-plugins/broker/nats"
 	"github.com/kazoup/platform/crawler/srv/subscriber"
+	"github.com/kazoup/platform/structs/categories"
+	"github.com/kazoup/platform/structs/globals"
+	"github.com/kazoup/platform/structs/wrappers"
+	"github.com/micro/cli"
+	_ "github.com/micro/go-plugins/broker/nats"
+	"log"
 )
 
-const topic string = "go.micro.topic.scan"
 func srv(ctx *cli.Context) {
+	service := wrappers.NewKazoupService("crawler")
 
-	service := micro.NewService(
-		micro.Name("go.micro.srv.crawler"),
-		micro.RegisterTTL(time.Minute),
-		micro.RegisterInterval(time.Second*30),
-	)
-
-	service.Server().Handle(
-		service.Server().NewHandler(new(handler.Crawl)),
-	)
+	if err := categories.SetMap(); err != nil {
+		log.Fatal(err)
+	}
 
 	// Attach subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
-			topic,
+			globals.ScanTopic,
 			subscriber.Scans,
 		),
 	); err != nil {
