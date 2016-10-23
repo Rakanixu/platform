@@ -6,6 +6,8 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
+	"io"
+
 	"github.com/dgrijalva/jwt-go"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
@@ -15,7 +17,6 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"golang.org/x/oauth2/slack"
-	"io"
 )
 
 const (
@@ -209,7 +210,7 @@ func ParseJWTToken(ctx context.Context) (string, error) {
 		return "", errors.Unauthorized("", "Invalid token")
 	}
 
-	return token.Claims["sub"].(string), nil
+	return token.Claims.(jwt.MapClaims)["sub"].(string), nil
 }
 
 // NewUUID generates a random UUID according to RFC 4122
