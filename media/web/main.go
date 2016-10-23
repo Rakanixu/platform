@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/kazoup/platform/media/web/handler"
+	microweb "github.com/micro/go-web"
 	"github.com/pierrre/imageserver"
 	imageserver_cache "github.com/pierrre/imageserver/cache"
 	imageserver_cache_memory "github.com/pierrre/imageserver/cache/memory"
@@ -20,6 +21,7 @@ import (
 	_ "github.com/pierrre/imageserver/image/jpeg"
 	_ "github.com/pierrre/imageserver/image/png"
 	imageserver_file "github.com/pierrre/imageserver/source/file"
+	imageserver_source_http "github.com/pierrre/imageserver/source/http"
 )
 
 var (
