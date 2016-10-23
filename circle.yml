@@ -10,12 +10,13 @@ dependencies:
                 - go get -d -v -t ./...
 test:
         override:
-                - go test -v -race ./...
+                - ./build_docker.sh
 deployment:
         release:
                 branch: desktop
                 commands:
-                        - sleep 10
+                        - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+                        - ./deploy.sh
                         #- go get github.com/tcnksm/ghr
                         #- ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace `git describe --tags` desktop/dist/
         hub: 

@@ -209,7 +209,7 @@ func ParseJWTToken(ctx context.Context) (string, error) {
 		return "", errors.Unauthorized("", "Invalid token")
 	}
 
-	return token.Claims.(jwt.MapClaims)["sub"].(string), nil
+	return token.Claims["sub"].(string), nil
 }
 
 // NewUUID generates a random UUID according to RFC 4122
