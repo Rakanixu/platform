@@ -61,6 +61,10 @@ func (sfs *SlackFs) GetThumbnail(id string) (string, error) {
 	return "", nil
 }
 
+func (sfs *SlackFs) CreateFile(fileType string) (string, error) {
+	return "", nil
+}
+
 func (sfs *SlackFs) getUsers() error {
 	data := make(url.Values)
 	data.Add("token", sfs.Endpoint.Token.AccessToken)

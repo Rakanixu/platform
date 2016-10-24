@@ -2,7 +2,7 @@
   'use strict';
 
   (function() {
-    Polymer.CategoriesMapBehaviorImp = {
+    Polymer.MapBehaviorImp = {
       properties: {
         categoriesMap: {
           type: Object,
@@ -14,6 +14,18 @@
               videos: 'Movies',
               images: 'Pictures',
               audios: 'Audio'
+            };
+          }
+        },
+        fileTypesMap: {
+          type: Object,
+          notify: false,
+          value: function() {
+            return {
+              document: 'document',
+              presentation: 'presentation',
+              spreadsheet: 'spreadsheet',
+              text: 'text'
             };
           }
         }

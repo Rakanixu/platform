@@ -1,0 +1,151 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/device-icons.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
+
+<link rel="import" href="../../bower_components/mat-icon/mat-icon.html">
+<link rel="import" href="../../bower_components/mat-icons/mat-icons.html">
+<link rel="import" href="../../bower_components/mat-icons/hardware-icons.html">
+<link rel="import" href="../../bower_components/mat-icons/action-icons.html">
+<link rel="import" href="../../bower_components/mat-icon-button/mat-icon-button.html">
+
+<link rel="import" href="../../bower_components/mat-dialog/mat-dialog.html">
+
+<link rel="import" href="../../src/behaviors/endpoints-behavior.html">
+<link rel="import" href="../../src/behaviors/map-behavior.html">
+
+<dom-module id="create-file">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style>
+      :host {
+        display: block;
+      }
+
+      paper-fab {
+        position: fixed;
+        right: 36px;
+        top: 99px;
+        z-index: 9999;
+        background-color: var(--accent);
+      }
+
+      mat-dialog {
+        width: 320px;
+      }
+    </style>
+
+    <paper-fab id="createFileIcon"
+               icon="icons:add"
+               title="Create File"
+               on-tap="openCreateFileDialog"></paper-fab>
+
+    <mat-dialog id="createFileDialog" label="">
+      <div>
+        <paper-button on-tap="createFile" data-type$="[[fileTypesMap.document]]">
+          <iron-icon class="big" src="../static/icon_document.png"></iron-icon>
+          <mat-item label="Google Document"/>
+        </paper-button>
+        <paper-button on-tap="createFile" data-type$="[[fileTypesMap.spreadsheet]]">
+          <iron-icon class="big" src="../static/icon_spreadsheet.png"></iron-icon>
+          <mat-item label="Google Spreadsheet"/>
+        </paper-button>
+        <paper-button on-tap="createFile" data-type$="[[fileTypesMap.presentation]]">
+          <iron-icon class="big" src="../static/icon_presentation.png"></iron-icon>
+          <mat-item label="Google Presentation"/>
+        </paper-button>
+        <paper-button on-tap="createFile" data-type$="[[fileTypesMap.text]]">
+          <iron-icon class="big" src="../static/icon_text.png"></iron-icon>
+          <mat-item label="Drive Notepad"/>
+        </paper-button>
+      </div>
+      <mat-button class="action" label="Cancel" on-tap="closeCreateFileDialog"></mat-button>
+    </mat-dialog>
+
+    <mat-dialog id="setFileNameDialog" label="">
+      <div>
+        <mat-text-field id="fileName"
+                        class="flex"
+                        label="File Name"></mat-text-field>
+      </div>
+      <mat-button class="action" label="Cancel" on-tap="closeCreateFileDialog"></mat-button>
+    </mat-dialog>
+
+    <iron-ajax id="rpcCreateFile"
+               method="POST"
+               content-type="application/json"
+               url="[[endpoints.endpoint]]"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleCreateFile"
+               params="[[rpcCreateFileParams]]"
+               headers="[[headers]]"></iron-ajax>
+
+  </template>
+
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'create-file',
+        behaviors: [
+          Polymer.EndpointsBehaviorImp,
+          Polymer.MapBehaviorImp
+        ],
+        properties: {
+          rpcCreateFileParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: 'com.kazoup.srv.file',
+                method: 'File.Create',
+                request: {
+                  datasource_id: '5f7393781db95c51ad03cdf23a42dd1f',
+                  mime_type: ''
+                }
+              };
+            }
+          }
+        },
+        ready: function() {
+
+        },
+        openCreateFileDialog: function() {
+          this.$.createFileDialog.show();
+        },
+        closeCreateFileDialog: function() {
+          this.$.createFileDialog.hide();
+        },
+        createFile: function(e) {
+          this.headers = Auth.getHeaders();
+
+          this.rpcCreateFileParams.request.mime_type = e.currentTarget.dataset.type;
+          this.$.rpcCreateFile.body = this.rpcCreateFileParams;
+          this.$.rpcCreateFile.generateRequest();
+        },
+        _handleCreateFile: function(e) {
+          if (e.detail.response && e.detail.response.doc_url) {
+            if (window && window.process && window.process.type) {
+              ipcRenderer.send('open-file-message', {
+                url: e.detail.response.doc_url
+              });
+            } else {
+              window.open(e.detail.response.doc_url);
+            }
+          }
+
+          this.closeCreateFileDialog();
+        },
+        _handleError: function(e) {
+          console.log(e)
+        }
+      });
+    }());
+  </script>
+</dom-module>

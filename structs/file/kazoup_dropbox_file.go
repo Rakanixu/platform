@@ -36,3 +36,7 @@ func (kf *KazoupDropboxFile) GetFileType() string {
 func (kf *KazoupDropboxFile) GetPathDisplay() string {
 	return kf.Original.PathDisplay
 }
+
+func (kf *KazoupDropboxFile) GetURL() string {
+	return kf.URL
+}

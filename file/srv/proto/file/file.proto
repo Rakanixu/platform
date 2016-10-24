@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package go.micro.srv.file;
+
+service File {
+  rpc Create(CreateRequest) returns (CreateResponse) {}
+}
+
+message CreateRequest {
+  string datasource_id = 1;
+  string mime_type = 2;
+}
+
+message CreateResponse {
+  string doc_url = 1;
+}
+

@@ -49,6 +49,16 @@ const (
 	Dropbox     = "dropbox"
 	Box         = "box"
 
+	DOCUMENT     = "document"
+	PRESENTATION = "presentation"
+	SPREADSHEET  = "spreadsheet"
+	TEXT         = "text"
+
+	GOOGLE_DRIVE_DOCUMENT    = "application/vnd.google-apps.document"
+	GOOGLE_DRIVE_PRESETATION = "application/vnd.google-apps.presentation"
+	GOOGLE_DRIVE_SPREADSHEET = "application/vnd.google-apps.spreadsheet"
+	GOOGLE_DRIVE_TEXT        = "application/vnd.google-apps.file"
+
 	SlackFilesEndpoint    = "https://slack.com/api/files.list"
 	SlackUsersEndpoint    = "https://slack.com/api/users.list"
 	SlackChannelsEndpoint = "https://slack.com/api/channels.list"
@@ -250,4 +260,34 @@ func ClearIndex(e *datasource_proto.Endpoint) error {
 func GetMD5Hash(text string) string {
 	hash := md5.Sum([]byte(text))
 	return hex.EncodeToString(hash[:])
+}
+
+var fileTypeDict = struct {
+	m map[string]map[string]string
+}{
+	m: map[string]map[string]string{
+		GoogleDrive: map[string]string{
+			DOCUMENT:     GOOGLE_DRIVE_DOCUMENT,
+			PRESENTATION: GOOGLE_DRIVE_PRESETATION,
+			SPREADSHEET:  GOOGLE_DRIVE_SPREADSHEET,
+			TEXT:         GOOGLE_DRIVE_TEXT,
+		},
+		Gmail: map[string]string{ //TODO: everything exept gdrive, but model is done
+			GOOGLE_DRIVE_DOCUMENT:    "application/vnd.google-apps.document",
+			GOOGLE_DRIVE_PRESETATION: "application/vnd.google-apps.presentation",
+			GOOGLE_DRIVE_SPREADSHEET: "application/vnd.google-apps.spreadsheet",
+			GOOGLE_DRIVE_TEXT:        "application/vnd.google-apps.file",
+		},
+	},
+}
+
+func GetMimeType(fileSystemType, fileType string) string {
+	// Be sure to not panic if input not in map
+	if fileTypeDict.m[fileSystemType] != nil {
+		if len(fileTypeDict.m[fileSystemType][fileType]) > 0 {
+			return fileTypeDict.m[fileSystemType][fileType]
+		}
+	}
+
+	return ""
 }

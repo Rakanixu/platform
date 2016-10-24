@@ -96,6 +96,10 @@ func (bfs *BoxFs) GetThumbnail(id string) (string, error) {
 	return url, nil
 }
 
+func (bfs *BoxFs) CreateFile(fileType string) (string, error) {
+	return "", nil
+}
+
 // getDirChildren get children from directory
 func (bfs *BoxFs) getDirChildren(id string, offset, limit int) error {
 	c := &http.Client{}

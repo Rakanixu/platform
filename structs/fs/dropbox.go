@@ -54,6 +54,10 @@ func (dfs *DropboxFs) GetThumbnail(id string) (string, error) {
 	return url, nil
 }
 
+func (dfs *DropboxFs) CreateFile(fileType string) (string, error) {
+	return "", nil
+}
+
 func (dfs *DropboxFs) getFiles() error {
 	// We want all avilable info
 	// https://dropbox.github.io/dropbox-api-v2-explorer/#files_list_folder

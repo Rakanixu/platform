@@ -51,3 +51,7 @@ func (kf *KazoupSlackFile) GetFileType() string {
 func (kf *KazoupSlackFile) GetPathDisplay() string {
 	return ""
 }
+
+func (kf *KazoupSlackFile) GetURL() string {
+	return kf.URL
+}

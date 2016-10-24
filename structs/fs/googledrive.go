@@ -67,6 +67,35 @@ func (gfs *GoogleDriveFs) GetThumbnail(id string) (string, error) {
 	return fmt.Sprintf("%ss700", r.ThumbnailLink[:len(r.ThumbnailLink)-4]), nil
 }
 
+func (gfs *GoogleDriveFs) CreateFile(fileType string) (string, error) {
+	cfg := globals.NewGoogleOautConfig()
+	c := cfg.Client(context.Background(), &oauth2.Token{
+		AccessToken:  gfs.Endpoint.Token.AccessToken,
+		TokenType:    gfs.Endpoint.Token.TokenType,
+		RefreshToken: gfs.Endpoint.Token.RefreshToken,
+		Expiry:       time.Unix(gfs.Endpoint.Token.Expiry, 0),
+	})
+
+	srv, err := drive.New(c)
+	if err != nil {
+		return "", err
+	}
+
+	f, err := srv.Files.Create(&drive.File{
+		MimeType: globals.GetMimeType(globals.GoogleDrive, fileType),
+	}).Fields("*").Do()
+	if err != nil {
+		return "", err
+	}
+
+	kfg := file.NewKazoupFileFromGoogleDriveFile(f, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
+	if err := file.IndexAsync(kfg, globals.FilesTopic, gfs.Endpoint.Index); err != nil {
+		return "", err
+	}
+
+	return kfg.GetURL(), nil
+}
+
 func (gfs *GoogleDriveFs) getFiles() error {
 	cfg := globals.NewGoogleOautConfig()
 	c := cfg.Client(context.Background(), &oauth2.Token{

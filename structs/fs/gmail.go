@@ -49,6 +49,10 @@ func (gfs *GmailFs) GetThumbnail(id string) (string, error) {
 	return "", nil
 }
 
+func (gfs *GmailFs) CreateFile(fileType string) (string, error) {
+	return "", nil
+}
+
 func (gfs *GmailFs) getMessages() error {
 	cfg := globals.NewGmailOauthConfig()
 	c := cfg.Client(context.Background(), &oauth2.Token{

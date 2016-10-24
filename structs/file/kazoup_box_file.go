@@ -40,3 +40,7 @@ func (kf *KazoupBoxFile) GetFileType() string {
 func (kf *KazoupBoxFile) GetPathDisplay() string {
 	return ""
 }
+
+func (kf *KazoupBoxFile) GetURL() string {
+	return kf.URL
+}

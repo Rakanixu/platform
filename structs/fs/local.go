@@ -60,6 +60,10 @@ func (lfs *LocalFs) GetThumbnail(id string) (string, error) {
 	return "", nil
 }
 
+func (lfs *LocalFs) CreateFile(fileType string) (string, error) {
+	return "", nil
+}
+
 func (lfs *LocalFs) walkDatasourceParents() error {
 	// Create index and put mapping if does not exist
 	c := db_proto.NewDBClient(globals.DB_SERVICE_NAME, nil)
