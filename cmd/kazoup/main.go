@@ -14,7 +14,6 @@ import (
 	scheduler "github.com/kazoup/platform/scheduler"
 	search "github.com/kazoup/platform/search"
 	"github.com/kazoup/platform/structs/globals"
-	proxy "github.com/kazoup/platform/web"
 	"github.com/micro/cli"
 	ccli "github.com/micro/cli"
 	"github.com/micro/go-micro/cmd"
@@ -38,7 +37,6 @@ func main() {
 	app.Commands = append(app.Commands, search.Commands()...)
 	app.Commands = append(app.Commands, scheduler.Commands()...)
 	//app.Commands = append(app.Commands, notification.Commands()...)
-	app.Commands = append(app.Commands, proxy.Commands()...)
 	app.Commands = append(app.Commands, web.Commands()...)
 	app.Commands = append(app.Commands, desktopCommands()...)
 	app.Action = func(context *cli.Context) { cli.ShowAppHelp(context) }
