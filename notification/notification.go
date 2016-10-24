@@ -1,7 +1,6 @@
 package notification
 
 import (
-	"github.com/kazoup/platform/notification/srv/helpers"
 	"github.com/kazoup/platform/notification/srv/sockets"
 	"github.com/kazoup/platform/notification/srv/subscriber"
 	"github.com/kazoup/platform/structs/globals"
@@ -32,8 +31,6 @@ func srv(ctx *cli.Context) {
 }
 
 func web(ctx *cli.Context) {
-	helpers.SocketClients = make(helpers.ClientConnections, 0)
-
 	web := microweb.NewService(microweb.Name("go.micro.web.notification"))
 
 	// Attach web handler (socket)

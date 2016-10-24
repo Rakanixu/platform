@@ -13,12 +13,11 @@ func Notify(ctx context.Context, nMsg *proto.NotificationMessage) error {
 	if len(nMsg.UserId) == 0 {
 		return errors.New("ERROR UserId empty")
 	}
-	log.Println("NOTIFY SUBSCRIPTOR", nMsg.UserId, len(helpers.SocketClients))
-	log.Println("NOTIFY SUBSCRIPTOR", nMsg.UserId, len(helpers.GetSocketClients()))
-	log.Println("NOTIFY SUBSCRIPTOR", nMsg.UserId, helpers.SocketClients)
-	for _, v := range helpers.SocketClients {
-		log.Println(v.ID)
 
+	log.Println("NOTIFY SUBSCRIPTOR", nMsg.UserId, len(helpers.GetSocketClients().Sockets))
+
+	for _, v := range helpers.GetSocketClients().Sockets {
+		log.Println(v.ID)
 		if v.ID == nMsg.UserId {
 			log.Println("NOTIFY", globals.CODE_REFRESH_DS)
 			v.Codes <- globals.CODE_REFRESH_DS

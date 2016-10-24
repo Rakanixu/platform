@@ -48,7 +48,7 @@ func Notify(ws *websocket.Conn) {
 				helpers.AppendConn(sr)
 				helpers.NewSocketRef(ws, uId)
 
-				log.Println("CREATE", len(helpers.SocketClients))
+				log.Println("CREATE", len(helpers.GetSocketClients().Sockets))
 			}
 
 			// Connection closed
@@ -59,9 +59,9 @@ func Notify(ws *websocket.Conn) {
 				if sr != nil {
 					close(sr.Codes)
 				}
-				helpers.SocketClients = helpers.SocketClients.Delete(uId)
-
-				log.Println("DELETE", len(helpers.SocketClients))
+				//TODO: Fix delete
+				//helpers.SocketClients = helpers.SocketClients.Delete(uId)
+				//log.Println("DELETE", len(helpers.SocketClients))
 				break
 			}
 

@@ -10,16 +10,18 @@ type SocketRef struct {
 	Codes      chan string
 }
 
-type ClientConnections []*SocketRef
+type socketRefs struct {
+	Sockets []*SocketRef
+}
 
-var SocketClients ClientConnections
+var (
+	socketClients *socketRefs
+)
 
 func init() {
-
-	/*	// Keep a reference to all connections
-		sockets.SocketClients = make(sockets.ClientConnections, 0) // Keep a reference to all connections
-	*/
-
+	socketClients = &socketRefs{
+		Sockets: make([]*SocketRef, 0),
+	}
 }
 
 // NewSocketRef constructor
@@ -32,7 +34,7 @@ func NewSocketRef(ws *websocket.Conn, id string) *SocketRef {
 }
 
 // Delete returns open ClientConnections
-func (sc ClientConnections) Delete(id string) ClientConnections {
+/*func (sc ClientConnections) Delete(id string) []*SocketRef {
 	index := 0
 	found := false
 
@@ -49,13 +51,13 @@ func (sc ClientConnections) Delete(id string) ClientConnections {
 	}
 
 	return sc
-}
+}*/
 
 // Delete returns open ClientConnections
 func AppendConn(sr *SocketRef) {
-	SocketClients = append(SocketClients, sr)
+	socketClients.Sockets = append(socketClients.Sockets, sr)
 }
 
-func GetSocketClients() ClientConnections {
-	return SocketClients
+func GetSocketClients() *socketRefs {
+	return socketClients
 }
