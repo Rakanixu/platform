@@ -75,6 +75,7 @@ const (
 	BoxAccountEndpoint      = "https://api.box.com/2.0/users/me"
 	BoxFoldersEndpoint      = "https://api.box.com/2.0/folders/"
 	BoxFileMetadataEndpoint = "https://api.box.com/2.0/files/"
+	BoxUploadEndpoint       = "https://upload.box.com/api/2.0/files/content"
 
 	GmailEndpoint = "https://mail.google.com/mail/u/"
 
@@ -295,4 +296,25 @@ func GetMimeType(fileSystemType, fileType string) string {
 	}
 
 	return ""
+}
+
+func GetDocumentTemplate(fileType string, fullName bool) string {
+	var tmp string
+
+	switch fileType {
+	case DOCUMENT:
+		tmp = "docx"
+	case PRESENTATION:
+		tmp = "pptx"
+	case SPREADSHEET:
+		tmp = "xlsx"
+	case TEXT:
+		tmp = "txt"
+	}
+
+	if fullName {
+		tmp = fmt.Sprintf("%s.%s", tmp, tmp)
+	}
+
+	return tmp
 }

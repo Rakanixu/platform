@@ -1,16 +1,22 @@
 package fs
 
 import (
+	//"bytes"
 	"encoding/json"
 	"fmt"
+	//"github.com/kardianos/osext"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/structs/box"
 	"github.com/kazoup/platform/structs/file"
 	"github.com/kazoup/platform/structs/globals"
 	"golang.org/x/oauth2"
+	//"io"
+	//"io/ioutil"
 	"log"
+	//"mime/multipart"
 	"net/http"
+	//"os"
 	"time"
 )
 
@@ -97,6 +103,54 @@ func (bfs *BoxFs) GetThumbnail(id string) (string, error) {
 }
 
 func (bfs *BoxFs) CreateFile(fileType string) (string, error) {
+	/*	log.Println("CREATE FILE")
+		folderPath, err := osext.ExecutableFolder()
+		if err != nil {
+			return "", err
+		}
+		log.Println(folderPath)
+
+		p := fmt.Sprintf("%s%s", folderPath, "/doc_templates/txt.txt")
+		buf := &bytes.Buffer{}
+		mw := multipart.NewWriter(buf)
+		defer mw.Close()
+
+		f, err := os.Open(p)
+		if err != nil {
+			return "", err
+		}
+		defer f.Close()
+
+		ff, err := mw.CreateFormFile("name", "test1.txt")
+		if err != nil {
+			return "", err
+		}
+		if _, err = io.Copy(ff, f); err != nil {
+			return "", err
+		}
+
+		c := &http.Client{}
+		req, err := http.NewRequest("POST", globals.BoxUploadEndpoint, buf)
+		if err != nil {
+			return "", err
+		}
+		req.Header.Set("Authorization", bfs.Token())
+		req.Header.Set("Content-Type", mw.FormDataContentType())
+		req.Header.Set("attributes", `{"name":"test1.txt", "parent":{"id":"0"}}`)
+		rsp, err := c.Do(req)
+		if err != nil {
+			return "", err
+		}
+		defer rsp.Body.Close()
+
+		log.Println("===========")
+
+		b, _ := ioutil.ReadAll(rsp.Body)
+
+		log.Println(string(b))
+		log.Println(rsp)
+		log.Println(rsp.Status)*/
+
 	return "", nil
 }
 

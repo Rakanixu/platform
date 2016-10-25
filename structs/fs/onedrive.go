@@ -3,6 +3,7 @@ package fs
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/kardianos/osext"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/structs/file"
@@ -12,6 +13,7 @@ import (
 	"golang.org/x/oauth2"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -116,13 +118,24 @@ func (ofs *OneDriveFs) CreateFile(fileType string) (string, error) {
 		log.Println(err)
 	}
 
-	c := &http.Client{}
+	folderPath, err := osext.ExecutableFolder()
+	if err != nil {
+		return "", err
+	}
 
+	p := fmt.Sprintf("%s%s%s", folderPath, "/doc_templates/", globals.GetDocumentTemplate(fileType, true))
+	t, err := os.Open(p)
+	if err != nil {
+		return "", err
+	}
+	defer t.Close()
+
+	c := &http.Client{}
 	// https://dev.onedrive.com/items/upload_put.htm
-	url := fmt.Sprintf("%sroot:/untitled.txt:/content", globals.OneDriveEndpoint+Drive)
-	req, err := http.NewRequest("PUT", url, nil)
+	url := fmt.Sprintf("%sroot:/untitled.%s:/content", globals.OneDriveEndpoint+Drive, globals.GetDocumentTemplate(fileType, false))
+	req, err := http.NewRequest("PUT", url, t) // We require a template to be able to open / edit this files online
 	req.Header.Set("Authorization", ofs.Endpoint.Token.TokenType+" "+ofs.Endpoint.Token.AccessToken)
-	req.Header.Set("Content-Type", globals.GetMimeType(globals.OneDrive, fileType))
+	req.Header.Set("Content-Type", globals.ONEDRIVE_TEXT)
 	if err != nil {
 		return "", err
 	}
