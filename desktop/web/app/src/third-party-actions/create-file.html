@@ -86,6 +86,25 @@
           </paper-button>
         </template>
 
+        <template is="dom-if" if="[[isDropbox(selectedDatasource.type)]]">
+          <paper-button on-tap="createFile" data-type$="[[fileTypesMap.document]]">
+            <iron-icon class="big" src="../static/icon_document_od.png"></iron-icon>
+            <mat-item label="Word Document"/>
+          </paper-button>
+          <paper-button on-tap="createFile" data-type$="[[fileTypesMap.spreadsheet]]">
+            <iron-icon class="big" src="../static/icon_spreadsheet_od.png"></iron-icon>
+            <mat-item label="Excel Spreadsheet"/>
+          </paper-button>
+          <paper-button on-tap="createFile" data-type$="[[fileTypesMap.presentation]]">
+            <iron-icon class="big" src="../static/icon_presentation_od.png"></iron-icon>
+            <mat-item label="PowerPoint Presentation"/>
+          </paper-button>
+<!--          <paper-button on-tap="createFile" data-type$="[[fileTypesMap.text]]">
+            <iron-icon class="big" src="../static/icon_text_od.png"></iron-icon>
+            <mat-item label="Plain Text"/>
+          </paper-button>-->
+        </template>
+
         <template is="dom-if" if="[[isBox(selectedDatasource.type)]]">
           <paper-button on-tap="createFile" data-type$="[[fileTypesMap.text]]">
             <iron-icon class="big" src="../static/icon_text_od.png"></iron-icon>
@@ -157,7 +176,12 @@
         selectedDatasourceChanged: function(newVal, oldVal) {
           this.set(
             'createFileIconVisible',
-            (newVal.type === 'googledrive' || newVal.type === 'onedrive' || newVal.type === 'box')
+            (
+            newVal.type === 'googledrive' ||
+            newVal.type === 'onedrive' ||
+            newVal.type === 'dropbox' ||
+            newVal.type === 'box'
+            )
           );
         },
         openCreateFileDialog: function() {

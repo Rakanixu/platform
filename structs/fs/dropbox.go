@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/kardianos/osext"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/structs/dropbox"
 	"github.com/kazoup/platform/structs/file"
@@ -11,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 )
 
 type DropboxFs struct {
@@ -55,6 +57,55 @@ func (dfs *DropboxFs) GetThumbnail(id string) (string, error) {
 }
 
 func (dfs *DropboxFs) CreateFile(fileType string) (string, error) {
+	// https://www.dropbox.com/developers/documentation/http/documentation#files-upload
+	/*	b := []byte(`{
+		"path": "/test.txt",
+		"mode": "add",
+		"autorename": true,
+		"mute": false
+	}`)*/
+
+	folderPath, err := osext.ExecutableFolder()
+	if err != nil {
+		return "", err
+	}
+
+	p := fmt.Sprintf("%s%s%s", folderPath, "/doc_templates/", globals.GetDocumentTemplate(fileType, true))
+	t, err := os.Open(p)
+	if err != nil {
+		return "", err
+	}
+	defer t.Close()
+
+	c := &http.Client{}
+	req, err := http.NewRequest("POST", globals.DropboxFileUpload, t)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Authorization", dfs.Token())
+	req.Header.Set("Dropbox-API-Arg", `{
+		"path": "/untitle.`+globals.GetDocumentTemplate(fileType, false)+`",
+		"mode": "add",
+		"autorename": true,
+		"mute": false
+	}`)
+	req.Header.Set("Content-Type", "application/octet-stream")
+	rsp, err := c.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer rsp.Body.Close()
+
+	log.Println("=============")
+
+	log.Println(rsp)
+	log.Println(`{
+		"path": "/untitle.` + globals.GetDocumentTemplate(fileType, false) + `",
+		"mode": "add",
+		"autorename": true,
+		"mute": false
+	}`)
+
 	return "", nil
 }
 
