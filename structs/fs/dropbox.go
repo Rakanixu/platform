@@ -58,13 +58,6 @@ func (dfs *DropboxFs) GetThumbnail(id string) (string, error) {
 
 func (dfs *DropboxFs) CreateFile(fileType string) (string, error) {
 	// https://www.dropbox.com/developers/documentation/http/documentation#files-upload
-	/*	b := []byte(`{
-		"path": "/test.txt",
-		"mode": "add",
-		"autorename": true,
-		"mute": false
-	}`)*/
-
 	folderPath, err := osext.ExecutableFolder()
 	if err != nil {
 		return "", err
@@ -96,17 +89,17 @@ func (dfs *DropboxFs) CreateFile(fileType string) (string, error) {
 	}
 	defer rsp.Body.Close()
 
-	log.Println("=============")
+	var df *dropbox.DropboxFile
+	if err := json.NewDecoder(rsp.Body).Decode(&df); err != nil {
+		return "", err
+	}
 
-	log.Println(rsp)
-	log.Println(`{
-		"path": "/untitle.` + globals.GetDocumentTemplate(fileType, false) + `",
-		"mode": "add",
-		"autorename": true,
-		"mute": false
-	}`)
+	kfd := file.NewKazoupFileFromDropboxFile(df, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
+	if err := file.IndexAsync(kfd, globals.FilesTopic, dfs.Endpoint.Index); err != nil {
+		return "", err
+	}
 
-	return "", nil
+	return kfd.GetURL(), nil
 }
 
 func (dfs *DropboxFs) getFiles() error {
