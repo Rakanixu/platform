@@ -392,7 +392,7 @@
             </paper-drawer-panel>
         </paper-drawer-panel>
 
-        <create-file></create-file>
+        <create-file selected-datasource="[[selectedDatasource]]"></create-file>
 
         <filter-converter id="filterConverter"></filter-converter>
 
@@ -523,7 +523,7 @@
                 },
                 selectedDatasource: {
                     type: Object,
-                    notify: false,
+                    notify: true,
                     value: function() {
                         return {};
                     }
@@ -936,7 +936,8 @@
 
                 this.set('selectedDatasource', {
                     type: this.getDatasourceType(e.model.__data__.item.url),
-                    index: e.model.__data__.item.index
+                    index: e.model.__data__.item.index,
+                    id: e.model.__data__.item.id
                 });
 
                 if (this.getDatasourceType(e.model.__data__.item.url) === 'local') {

@@ -75,6 +75,8 @@
       <mat-button class="action" label="Cancel" on-tap="closeCreateFileDialog"></mat-button>
     </mat-dialog>
 
+    <paper-toast id="toast" duration="6000" text=""></paper-toast>
+
     <iron-ajax id="rpcCreateFile"
                method="POST"
                content-type="application/json"
@@ -125,6 +127,7 @@
         createFile: function(e) {
           this.headers = Auth.getHeaders();
 
+          this.rpcCreateFileParams.request.datasource_id = this.selectedDatasource.id;
           this.rpcCreateFileParams.request.mime_type = e.currentTarget.dataset.type;
           this.$.rpcCreateFile.body = this.rpcCreateFileParams;
           this.$.rpcCreateFile.generateRequest();
@@ -143,7 +146,12 @@
           this.closeCreateFileDialog();
         },
         _handleError: function(e) {
-          console.log(e)
+          this.checkUnauthorize(e);
+
+          if (e.detail.request && e.detail.request.response) {
+            this.$.toast.text = e.detail.request.response.detail;
+            this.$.toast.show();
+          }
         }
       });
     }());

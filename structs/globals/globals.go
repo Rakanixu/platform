@@ -57,7 +57,7 @@ const (
 	GOOGLE_DRIVE_DOCUMENT    = "application/vnd.google-apps.document"
 	GOOGLE_DRIVE_PRESETATION = "application/vnd.google-apps.presentation"
 	GOOGLE_DRIVE_SPREADSHEET = "application/vnd.google-apps.spreadsheet"
-	GOOGLE_DRIVE_TEXT        = "application/vnd.google-apps.file"
+	GOOGLE_DRIVE_TEXT        = "text/plain"
 
 	SlackFilesEndpoint    = "https://slack.com/api/files.list"
 	SlackUsersEndpoint    = "https://slack.com/api/users.list"
