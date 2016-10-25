@@ -107,12 +107,42 @@ func (ofs *OneDriveFs) GetThumbnail(id string) (string, error) {
 	if err := json.NewDecoder(res.Body).Decode(&thumbRsp); err != nil {
 		return "", err
 	}
-	log.Println(thumbRsp)
+
 	return thumbRsp.URL, nil
 }
 
 func (ofs *OneDriveFs) CreateFile(fileType string) (string, error) {
-	return "", nil
+	if err := ofs.refreshToken(); err != nil {
+		log.Println(err)
+	}
+
+	c := &http.Client{}
+
+	// https://dev.onedrive.com/items/upload_put.htm
+	url := fmt.Sprintf("%sroot:/untitled.txt:/content", globals.OneDriveEndpoint+Drive)
+	req, err := http.NewRequest("PUT", url, nil)
+	req.Header.Set("Authorization", ofs.Endpoint.Token.TokenType+" "+ofs.Endpoint.Token.AccessToken)
+	req.Header.Set("Content-Type", globals.GetMimeType(globals.OneDrive, fileType))
+	if err != nil {
+		return "", err
+	}
+	res, err := c.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+
+	var f *onedrive.OneDriveFile
+	if err := json.NewDecoder(res.Body).Decode(&f); err != nil {
+		return "", err
+	}
+
+	kfo := file.NewKazoupFileFromOneDriveFile(f, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)
+	if err := file.IndexAsync(kfo, globals.FilesTopic, ofs.Endpoint.Index); err != nil {
+		return "", err
+	}
+
+	return kfo.GetURL(), nil
 }
 
 // getFiles retrieves drives, directories and files

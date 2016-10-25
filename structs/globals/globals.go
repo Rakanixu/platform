@@ -59,6 +59,8 @@ const (
 	GOOGLE_DRIVE_SPREADSHEET = "application/vnd.google-apps.spreadsheet"
 	GOOGLE_DRIVE_TEXT        = "text/plain"
 
+	ONEDRIVE_TEXT = "text/plain"
+
 	SlackFilesEndpoint    = "https://slack.com/api/files.list"
 	SlackUsersEndpoint    = "https://slack.com/api/users.list"
 	SlackChannelsEndpoint = "https://slack.com/api/channels.list"
@@ -271,6 +273,9 @@ var fileTypeDict = struct {
 			PRESENTATION: GOOGLE_DRIVE_PRESETATION,
 			SPREADSHEET:  GOOGLE_DRIVE_SPREADSHEET,
 			TEXT:         GOOGLE_DRIVE_TEXT,
+		},
+		OneDrive: map[string]string{
+			TEXT: ONEDRIVE_TEXT,
 		},
 		Gmail: map[string]string{ //TODO: everything exept gdrive, but model is done
 			GOOGLE_DRIVE_DOCUMENT:    "application/vnd.google-apps.document",

@@ -17,6 +17,7 @@
 
 <link rel="import" href="../../src/behaviors/endpoints-behavior.html">
 <link rel="import" href="../../src/behaviors/map-behavior.html">
+<link rel="import" href="../../src/behaviors/util-behavior.html">
 
 <dom-module id="create-file">
   <template>
@@ -38,30 +39,42 @@
         width: 320px;
       }
     </style>
-
+    
     <paper-fab id="createFileIcon"
                icon="icons:add"
                title="Create File"
-               on-tap="openCreateFileDialog"></paper-fab>
+               on-tap="openCreateFileDialog"
+               hidden$="[[!createFileIconVisible]]"></paper-fab>
 
     <mat-dialog id="createFileDialog" label="">
       <div>
-        <paper-button on-tap="createFile" data-type$="[[fileTypesMap.document]]">
-          <iron-icon class="big" src="../static/icon_document.png"></iron-icon>
-          <mat-item label="Google Document"/>
-        </paper-button>
-        <paper-button on-tap="createFile" data-type$="[[fileTypesMap.spreadsheet]]">
-          <iron-icon class="big" src="../static/icon_spreadsheet.png"></iron-icon>
-          <mat-item label="Google Spreadsheet"/>
-        </paper-button>
-        <paper-button on-tap="createFile" data-type$="[[fileTypesMap.presentation]]">
-          <iron-icon class="big" src="../static/icon_presentation.png"></iron-icon>
-          <mat-item label="Google Presentation"/>
-        </paper-button>
-        <paper-button on-tap="createFile" data-type$="[[fileTypesMap.text]]">
-          <iron-icon class="big" src="../static/icon_text.png"></iron-icon>
-          <mat-item label="Drive Notepad"/>
-        </paper-button>
+        <template is="dom-if" if="[[isGoogleDrive(selectedDatasource.type)]]">
+          <paper-button on-tap="createFile" data-type$="[[fileTypesMap.document]]">
+            <iron-icon class="big" src="../static/icon_document.png"></iron-icon>
+            <mat-item label="Google Document"/>
+          </paper-button>
+          <paper-button on-tap="createFile" data-type$="[[fileTypesMap.spreadsheet]]">
+            <iron-icon class="big" src="../static/icon_spreadsheet.png"></iron-icon>
+            <mat-item label="Google Spreadsheet"/>
+          </paper-button>
+          <paper-button on-tap="createFile" data-type$="[[fileTypesMap.presentation]]">
+            <iron-icon class="big" src="../static/icon_presentation.png"></iron-icon>
+            <mat-item label="Google Presentation"/>
+          </paper-button>
+          <paper-button on-tap="createFile" data-type$="[[fileTypesMap.text]]">
+            <iron-icon class="big" src="../static/icon_text.png"></iron-icon>
+            <mat-item label="Drive Notepad"/>
+          </paper-button>
+        </template>
+
+        <template is="dom-if" if="[[isOneDrive(selectedDatasource.type)]]">
+          <paper-button on-tap="createFile" data-type$="[[fileTypesMap.text]]">
+            <iron-icon class="big" src="../static/icon_text_od.png"></iron-icon>
+            <mat-item label="Plain Text"/>
+          </paper-button>
+        </template>
+
+
       </div>
       <mat-button class="action" label="Cancel" on-tap="closeCreateFileDialog"></mat-button>
     </mat-dialog>
@@ -97,6 +110,7 @@
         is: 'create-file',
         behaviors: [
           Polymer.EndpointsBehaviorImp,
+          Polymer.UtilBehaviorImp,
           Polymer.MapBehaviorImp
         ],
         properties: {
@@ -108,15 +122,23 @@
                 service: 'com.kazoup.srv.file',
                 method: 'File.Create',
                 request: {
-                  datasource_id: '5f7393781db95c51ad03cdf23a42dd1f',
+                  datasource_id: '',
                   mime_type: ''
                 }
               };
             }
+          },
+          selectedDatasource: {
+            observer: 'selectedDatasourceChanged'
+          },
+          createFileIconVisible: {
+            type: Boolean,
+            notify: true,
+            value: false
           }
         },
-        ready: function() {
-
+        selectedDatasourceChanged: function(newVal, oldVal) {
+          this.set('createFileIconVisible', (newVal.type === 'googledrive' || newVal.type === 'onedrive'));
         },
         openCreateFileDialog: function() {
           this.$.createFileDialog.show();
