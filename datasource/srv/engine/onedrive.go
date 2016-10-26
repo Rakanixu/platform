@@ -36,3 +36,8 @@ func (o *Onedrive) Save(ctx context.Context, data interface{}, id string) error 
 func (o *Onedrive) Delete(ctx context.Context, c client.Client) error {
 	return DeleteDataSource(ctx, c, &o.Endpoint)
 }
+
+// Scan one drive data source
+func (o *Onedrive) Scan(ctx context.Context, c client.Client) error {
+	return ScanDataSource(ctx, c, &o.Endpoint)
+}

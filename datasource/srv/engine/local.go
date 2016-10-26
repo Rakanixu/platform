@@ -77,3 +77,8 @@ func (l *Local) Delete(ctx context.Context, c client.Client) error {
 
 	return nil
 }
+
+// Scan local data source
+func (l *Local) Scan(ctx context.Context, c client.Client) error {
+	return ScanDataSource(ctx, c, &l.Endpoint)
+}

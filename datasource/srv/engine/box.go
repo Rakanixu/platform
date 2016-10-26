@@ -34,3 +34,8 @@ func (b *Box) Save(ctx context.Context, data interface{}, id string) error {
 func (b *Box) Delete(ctx context.Context, c client.Client) error {
 	return DeleteDataSource(ctx, c, &b.Endpoint)
 }
+
+// Scan box data source
+func (b *Box) Scan(ctx context.Context, c client.Client) error {
+	return ScanDataSource(ctx, c, &b.Endpoint)
+}

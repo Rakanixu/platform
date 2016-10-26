@@ -9,6 +9,7 @@ import (
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"strings"
+	"time"
 )
 
 const (
@@ -26,6 +27,7 @@ type Engine interface {
 	Validate(datasources string) (*datasource_proto.Endpoint, error)
 	Save(ctx context.Context, data interface{}, id string) error
 	Delete(ctx context.Context, c client.Client) error
+	Scan(ctx context.Context, c client.Client) error
 }
 
 // NewDataSourceEngine returns a Engine interface
@@ -135,6 +137,45 @@ func DeleteDataSource(ctx context.Context, c client.Client, endpoint *datasource
 		if err := c.Call(ctx, deleteIndexReq, deleteIndexRes); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+// ScanDataSource is a helper to kick off scans
+func ScanDataSource(ctx context.Context, c client.Client, endpoint *datasource_proto.Endpoint) error {
+	// Set time for starting scan, crawler running  and update datasource
+	endpoint.CrawlerRunning = true
+	endpoint.LastScanStarted = time.Now().Unix()
+	b, err := json.Marshal(endpoint)
+	if err != nil {
+		return err
+	}
+
+	srvReq := c.NewRequest(
+		globals.DB_SERVICE_NAME,
+		"DB.Update",
+		&db_proto.UpdateRequest{
+			Index: "datasources",
+			Type:  "datasource",
+			Id:    endpoint.Id,
+			Data:  string(b),
+		},
+	)
+	srvRes := &db_proto.UpdateResponse{}
+
+	if err := c.Call(ctx, srvReq, srvRes); err != nil {
+		return err
+	}
+
+	// Publish scan topic, crawlers should pick up message and start scanning
+	msg := c.NewPublication(
+		globals.ScanTopic,
+		endpoint,
+	)
+
+	if err := c.Publish(ctx, msg); err != nil {
+		return err
 	}
 
 	return nil

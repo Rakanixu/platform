@@ -34,3 +34,8 @@ func (s *Dropbox) Save(ctx context.Context, data interface{}, id string) error {
 func (s *Dropbox) Delete(ctx context.Context, c client.Client) error {
 	return DeleteDataSource(ctx, c, &s.Endpoint)
 }
+
+// Scan dropbox data source
+func (s *Dropbox) Scan(ctx context.Context, c client.Client) error {
+	return ScanDataSource(ctx, c, &s.Endpoint)
+}

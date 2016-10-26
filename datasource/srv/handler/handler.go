@@ -56,7 +56,7 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 	}
 
 	// Scan created datasource
-	if err := ScanDataSource(ds, ctx, endpoint.Id); err != nil {
+	if err := eng.Scan(ctx, ds.Client); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 
@@ -108,7 +108,20 @@ func (ds *DataSource) Scan(ctx context.Context, req *proto.ScanRequest, rsp *pro
 		return errors.BadRequest("go.micro.srv.datasource", "id required")
 	}
 
-	if err := ScanDataSource(ds, ctx, req.Id); err != nil {
+	// Read datasource
+	endpoint, err := engine.ReadDataSource(ctx, ds.Client, req.Id)
+	if err != nil {
+		return err
+	}
+
+	// Instantiate an engine given datasource
+	eng, err := engine.NewDataSourceEngine(endpoint)
+	if err != nil {
+		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
+	}
+
+	// Start scan
+	if err := eng.Scan(ctx, ds.Client); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 
