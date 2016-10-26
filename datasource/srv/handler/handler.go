@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
+	"github.com/kazoup/platform/datasource/srv/engine"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/structs/globals"
@@ -23,12 +24,12 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 	if len(req.Endpoint.Url) <= 0 {
 		return errors.BadRequest("go.micro.srv.datasource", "url required")
 	}
-	dataSource, err := GetDataSource(ctx, ds, req.Endpoint)
+	eng, err := engine.NewDataSourceEngine(req.Endpoint)
 	if err != nil {
-		return errors.InternalServerError("go.micro.srv.datasource GetDataSource", err.Error())
+		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 
-	datasourcesList, err := SearchDataSources(ctx, ds, &proto.SearchRequest{
+	datasourcesList, err := engine.SearchDataSources(ctx, ds.Client, &proto.SearchRequest{
 		Index: "datasources",
 		Type:  "datasource",
 		From:  0,
@@ -41,21 +42,21 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 	}
 
 	// Validate and assigns Id and index
-	endpoint, err := dataSource.Validate(datasources)
+	endpoint, err := eng.Validate(datasources)
 	if err != nil {
 		return errors.BadRequest("go.micro.srv.datasource", err.Error())
 	}
 
-	if err := dataSource.Save(ctx, endpoint, endpoint.Id); err != nil {
+	if err := eng.Save(ctx, endpoint, endpoint.Id); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 
-	if err := CreateIndexWithAlias(ds, ctx, endpoint); err != nil {
+	if err := eng.CreateIndexWithAlias(ctx, ds.Client); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 
 	// Scan created datasource
-	if err := ScanDataSource(ds, ctx, endpoint.Id); err != nil {
+	if err := eng.Scan(ctx, ds.Client); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 
@@ -68,7 +69,20 @@ func (ds *DataSource) Delete(ctx context.Context, req *proto.DeleteRequest, rsp 
 		return errors.BadRequest("go.micro.srv.datasource", "id required")
 	}
 
-	if err := DeleteDataSource(ctx, ds, req.Id); err != nil {
+	// Read datasource
+	endpoint, err := engine.ReadDataSource(ctx, ds.Client, req.Id)
+	if err != nil {
+		return err
+	}
+
+	// Instantiate an engine given datasource
+	eng, err := engine.NewDataSourceEngine(endpoint)
+	if err != nil {
+		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
+	}
+
+	// Delete datasource
+	if err := eng.Delete(ctx, ds.Client); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 
@@ -77,7 +91,7 @@ func (ds *DataSource) Delete(ctx context.Context, req *proto.DeleteRequest, rsp 
 
 // Search datasources handler
 func (ds *DataSource) Search(ctx context.Context, req *proto.SearchRequest, rsp *proto.SearchResponse) error {
-	result, err := SearchDataSources(ctx, ds, req)
+	result, err := engine.SearchDataSources(ctx, ds.Client, req)
 	if err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
@@ -94,7 +108,20 @@ func (ds *DataSource) Scan(ctx context.Context, req *proto.ScanRequest, rsp *pro
 		return errors.BadRequest("go.micro.srv.datasource", "id required")
 	}
 
-	if err := ScanDataSource(ds, ctx, req.Id); err != nil {
+	// Read datasource
+	endpoint, err := engine.ReadDataSource(ctx, ds.Client, req.Id)
+	if err != nil {
+		return err
+	}
+
+	// Instantiate an engine given datasource
+	eng, err := engine.NewDataSourceEngine(endpoint)
+	if err != nil {
+		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
+	}
+
+	// Start scan
+	if err := eng.Scan(ctx, ds.Client); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 

@@ -1,21 +1,19 @@
-package local
+package engine
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
-	filestorer "github.com/kazoup/platform/datasource/srv/filestore"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/structs/globals"
+	"github.com/micro/go-micro/client"
+	"golang.org/x/net/context"
 	"os"
 	"strings"
 )
 
 // Local struct
 type Local struct {
-	filestorer.FileStore
 	Endpoint   proto.Endpoint
 	DataOrigin string
 }
@@ -53,12 +51,39 @@ func (l *Local) Validate(datasources string) (*proto_datasource.Endpoint, error)
 		return &l.Endpoint, err
 	}
 	l.Endpoint.Index = "index" + strings.Replace(s, "|", "", 1)
-	l.Endpoint.Id = getMD5Hash(l.Endpoint.Url + l.Endpoint.UserId)
+	l.Endpoint.Id = globals.GetMD5Hash(l.Endpoint.Url + l.Endpoint.UserId)
 
 	return &l.Endpoint, nil
 }
 
-func getMD5Hash(text string) string {
-	hash := md5.Sum([]byte(text))
-	return hex.EncodeToString(hash[:])
+// Save local datasource
+func (l *Local) Save(ctx context.Context, data interface{}, id string) error {
+	return SaveDataSource(ctx, data, id)
+}
+
+// Delete local data source
+func (l *Local) Delete(ctx context.Context, c client.Client) error {
+	if err := DeleteDataSource(ctx, c, &l.Endpoint); err != nil {
+		return err
+	}
+
+	// Specific clean up for local datasources ()
+	if strings.Contains(l.Endpoint.Url, localEndpoint) {
+		// Remove records from helper index that only belongs to the datasource
+		if err := cleanFilesHelperIndex(ctx, c, &l.Endpoint); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Scan local data source
+func (l *Local) Scan(ctx context.Context, c client.Client) error {
+	return ScanDataSource(ctx, c, &l.Endpoint)
+}
+
+// CreateIndeWithAlias creates a index for local datasource
+func (l *Local) CreateIndexWithAlias(ctx context.Context, c client.Client) error {
+	return CreateIndexWithAlias(ctx, c, &l.Endpoint)
 }
