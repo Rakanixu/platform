@@ -1,19 +1,18 @@
-package gmail
+package engine
 
 import (
-	"github.com/kazoup/platform/datasource/srv/engine"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/structs/globals"
+	"golang.org/x/net/context"
 	"strings"
 )
 
 // Gmail struct
 type Gmail struct {
-	engine.DataSource
 	Endpoint datasource_proto.Endpoint
 }
 
-// Validate
+// Validate gmail data  source
 func (g *Gmail) Validate(datasources string) (*datasource_proto.Endpoint, error) {
 	s, err := globals.NewUUID()
 	if err != nil {
@@ -23,4 +22,9 @@ func (g *Gmail) Validate(datasources string) (*datasource_proto.Endpoint, error)
 	g.Endpoint.Id = globals.GetMD5Hash(g.Endpoint.Url + g.Endpoint.UserId)
 
 	return &g.Endpoint, nil
+}
+
+// Save gmail data source
+func (g *Gmail) Save(ctx context.Context, data interface{}, id string) error {
+	return SaveDataSource(ctx, data, id)
 }

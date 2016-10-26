@@ -1,19 +1,18 @@
-package googledrive
+package engine
 
 import (
-	"github.com/kazoup/platform/datasource/srv/engine"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/structs/globals"
+	"golang.org/x/net/context"
 	"strings"
 )
 
 // Googledrive struct
 type Googledrive struct {
-	engine.DataSource
 	Endpoint datasource_proto.Endpoint
 }
 
-// Validate
+// Validate google drive data source
 func (g *Googledrive) Validate(datasources string) (*datasource_proto.Endpoint, error) {
 	s, err := globals.NewUUID()
 	if err != nil {
@@ -23,4 +22,9 @@ func (g *Googledrive) Validate(datasources string) (*datasource_proto.Endpoint, 
 	g.Endpoint.Id = globals.GetMD5Hash(g.Endpoint.Url + g.Endpoint.UserId)
 
 	return &g.Endpoint, nil
+}
+
+// Save google drive data source
+func (g *Googledrive) Save(ctx context.Context, data interface{}, id string) error {
+	return SaveDataSource(ctx, data, id)
 }

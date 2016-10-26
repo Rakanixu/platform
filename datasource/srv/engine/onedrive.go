@@ -1,15 +1,14 @@
-package onedrive
+package engine
 
 import (
-	"github.com/kazoup/platform/datasource/srv/engine"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/structs/globals"
+	"golang.org/x/net/context"
 	"strings"
 )
 
 // Onedrive struct
 type Onedrive struct {
-	engine.DataSource
 	Endpoint datasource_proto.Endpoint
 }
 
@@ -25,4 +24,9 @@ func (o *Onedrive) Validate(datasources string) (*datasource_proto.Endpoint, err
 	o.Endpoint.Id = globals.GetMD5Hash(o.Endpoint.Url + o.Endpoint.UserId)
 
 	return &o.Endpoint, nil
+}
+
+// Save local datasource
+func (o *Onedrive) Save(ctx context.Context, data interface{}, id string) error {
+	return SaveDataSource(ctx, data, id)
 }

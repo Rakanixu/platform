@@ -2,18 +2,7 @@ package handler
 
 import (
 	"bytes"
-	"crypto/md5"
-	"encoding/hex"
 	"encoding/json"
-	"errors"
-	"github.com/kazoup/platform/datasource/srv/engine"
-	"github.com/kazoup/platform/datasource/srv/engine/box"
-	"github.com/kazoup/platform/datasource/srv/engine/dropbox"
-	gmail "github.com/kazoup/platform/datasource/srv/engine/gmail"
-	googledrive "github.com/kazoup/platform/datasource/srv/engine/googledrive"
-	local "github.com/kazoup/platform/datasource/srv/engine/local"
-	onedrive "github.com/kazoup/platform/datasource/srv/engine/onedrive"
-	slack "github.com/kazoup/platform/datasource/srv/engine/slack"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/structs/globals"
@@ -24,70 +13,9 @@ import (
 )
 
 const (
-	localEndpoint      = "local://"
-	googledriveEnpoint = "googledrive://"
-	gmailEnpoint       = "gmail://"
-	onedriveEndpoint   = "onedrive://"
-	slackEnpoint       = "slack://"
-	dropboxEnpoint     = "dropbox://"
-	boxEnpoint         = "box://"
-	nfsEndpoint        = "nfs://"
-	smbEndpoint        = "smb://"
-	filesHelperIndex   = "files_helper"
+	localEndpoint    = "local://"
+	filesHelperIndex = "files_helper"
 )
-
-// GetDataSourceEngine returns a Engine interface
-func GetDataSourceEngine(ctx context.Context, ds *DataSource, endpoint *proto.Endpoint) (engine.Engine, error) {
-	if strings.Contains(endpoint.Url, localEndpoint) {
-		return &local.Local{
-			Endpoint: *endpoint,
-		}, nil
-	}
-
-	if strings.Contains(endpoint.Url, googledriveEnpoint) {
-		return &googledrive.Googledrive{
-			Endpoint: *endpoint,
-		}, nil
-	}
-
-	if strings.Contains(endpoint.Url, gmailEnpoint) {
-		return &gmail.Gmail{
-			Endpoint: *endpoint,
-		}, nil
-	}
-
-	if strings.Contains(endpoint.Url, onedriveEndpoint) {
-		return &onedrive.Onedrive{
-			Endpoint: *endpoint,
-		}, nil
-	}
-
-	if strings.Contains(endpoint.Url, slackEnpoint) {
-		return &slack.Slack{
-			Endpoint: *endpoint,
-		}, nil
-	}
-
-	if strings.Contains(endpoint.Url, dropboxEnpoint) {
-		return &dropbox.Dropbox{
-			Endpoint: *endpoint,
-		}, nil
-	}
-
-	if strings.Contains(endpoint.Url, boxEnpoint) {
-		return &box.Box{
-			Endpoint: *endpoint,
-		}, nil
-	}
-
-	if strings.Contains(endpoint.Url, smbEndpoint) {
-		//return &blabla{}, nil
-	}
-
-	err := errors.New("Error parsing endpoint for " + endpoint.Url)
-
-	return nil, err
-}
 
 // DeleteDataSource deletes a datasource previously stored and index associated with it
 func DeleteDataSource(ctx context.Context, ds *DataSource, id string) error {
@@ -323,7 +251,7 @@ func deleteZombieRecords(ctx context.Context, ds *DataSource, datasources []*pro
 			&db_proto.DeleteRequest{
 				Index: filesHelperIndex,
 				Type:  "file",
-				Id:    getMD5Hash(urlToDelete[len(localEndpoint):]),
+				Id:    globals.GetMD5Hash(urlToDelete[len(localEndpoint):]),
 			},
 		)
 		deleteRes := &db_proto.DeleteResponse{}
@@ -337,9 +265,4 @@ func deleteZombieRecords(ctx context.Context, ds *DataSource, datasources []*pro
 			deleteZombieRecords(ctx, ds, datasources, urlToDelete[:idx])
 		}
 	}
-}
-
-func getMD5Hash(text string) string {
-	hash := md5.Sum([]byte(text))
-	return hex.EncodeToString(hash[:])
 }

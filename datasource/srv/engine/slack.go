@@ -1,20 +1,19 @@
-package dropbox
+package engine
 
 import (
-	"github.com/kazoup/platform/datasource/srv/engine"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/structs/globals"
+	"golang.org/x/net/context"
 	"strings"
 )
 
-// Dropbox struct
-type Dropbox struct {
-	engine.DataSource
+// Slack struct
+type Slack struct {
 	Endpoint proto.Endpoint
 }
 
-// Validate
-func (s *Dropbox) Validate(datasources string) (*proto.Endpoint, error) {
+// Validate slack data source
+func (s *Slack) Validate(datasources string) (*proto.Endpoint, error) {
 	str, err := globals.NewUUID()
 	if err != nil {
 		return &s.Endpoint, err
@@ -23,4 +22,9 @@ func (s *Dropbox) Validate(datasources string) (*proto.Endpoint, error) {
 	s.Endpoint.Id = globals.GetMD5Hash(s.Endpoint.Url + s.Endpoint.UserId)
 
 	return &s.Endpoint, nil
+}
+
+// Save slack datasource
+func (s *Slack) Save(ctx context.Context, data interface{}, id string) error {
+	return SaveDataSource(ctx, data, id)
 }

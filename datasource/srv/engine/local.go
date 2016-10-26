@@ -1,19 +1,18 @@
-package local
+package engine
 
 import (
 	"encoding/json"
 	"errors"
-	"github.com/kazoup/platform/datasource/srv/engine"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/structs/globals"
+	"golang.org/x/net/context"
 	"os"
 	"strings"
 )
 
 // Local struct
 type Local struct {
-	engine.DataSource
 	Endpoint   proto.Endpoint
 	DataOrigin string
 }
@@ -54,4 +53,9 @@ func (l *Local) Validate(datasources string) (*proto_datasource.Endpoint, error)
 	l.Endpoint.Id = globals.GetMD5Hash(l.Endpoint.Url + l.Endpoint.UserId)
 
 	return &l.Endpoint, nil
+}
+
+// Save local datasource
+func (l *Local) Save(ctx context.Context, data interface{}, id string) error {
+	return SaveDataSource(ctx, data, id)
 }

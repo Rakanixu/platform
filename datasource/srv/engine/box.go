@@ -1,19 +1,18 @@
-package box
+package engine
 
 import (
-	"github.com/kazoup/platform/datasource/srv/engine"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/structs/globals"
+	"golang.org/x/net/context"
 	"strings"
 )
 
 // Box struct
 type Box struct {
-	engine.DataSource
 	Endpoint proto.Endpoint
 }
 
-// Validate
+// Validate box datasource
 func (b *Box) Validate(datasources string) (*proto.Endpoint, error) {
 	str, err := globals.NewUUID()
 	if err != nil {
@@ -23,4 +22,9 @@ func (b *Box) Validate(datasources string) (*proto.Endpoint, error) {
 	b.Endpoint.Id = globals.GetMD5Hash(b.Endpoint.Url + b.Endpoint.UserId)
 
 	return &b.Endpoint, nil
+}
+
+// Save box data source
+func (b *Box) Save(ctx context.Context, data interface{}, id string) error {
+	return SaveDataSource(ctx, data, id)
 }

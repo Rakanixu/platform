@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
+	"github.com/kazoup/platform/datasource/srv/engine"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/structs/globals"
@@ -23,7 +24,7 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 	if len(req.Endpoint.Url) <= 0 {
 		return errors.BadRequest("go.micro.srv.datasource", "url required")
 	}
-	engine, err := GetDataSourceEngine(ctx, ds, req.Endpoint)
+	eng, err := engine.NewDataSourceEngine(req.Endpoint)
 	if err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource GetDataSource", err.Error())
 	}
@@ -41,12 +42,12 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 	}
 
 	// Validate and assigns Id and index
-	endpoint, err := engine.Validate(datasources)
+	endpoint, err := eng.Validate(datasources)
 	if err != nil {
 		return errors.BadRequest("go.micro.srv.datasource", err.Error())
 	}
 
-	if err := engine.Save(ctx, endpoint, endpoint.Id); err != nil {
+	if err := eng.Save(ctx, endpoint, endpoint.Id); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 
