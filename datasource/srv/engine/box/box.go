@@ -1,19 +1,19 @@
 package box
 
 import (
-	filestorer "github.com/kazoup/platform/datasource/srv/filestore"
+	"github.com/kazoup/platform/datasource/srv/engine"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/structs/globals"
 	"strings"
 )
 
-// Dropbox struct
+// Box struct
 type Box struct {
-	filestorer.FileStore
+	engine.DataSource
 	Endpoint proto.Endpoint
 }
 
-// Validate slack
+// Validate
 func (b *Box) Validate(datasources string) (*proto.Endpoint, error) {
 	str, err := globals.NewUUID()
 	if err != nil {

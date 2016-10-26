@@ -1,11 +1,9 @@
 package local
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
-	filestorer "github.com/kazoup/platform/datasource/srv/filestore"
+	"github.com/kazoup/platform/datasource/srv/engine"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/structs/globals"
@@ -15,7 +13,7 @@ import (
 
 // Local struct
 type Local struct {
-	filestorer.FileStore
+	engine.DataSource
 	Endpoint   proto.Endpoint
 	DataOrigin string
 }
@@ -53,12 +51,7 @@ func (l *Local) Validate(datasources string) (*proto_datasource.Endpoint, error)
 		return &l.Endpoint, err
 	}
 	l.Endpoint.Index = "index" + strings.Replace(s, "|", "", 1)
-	l.Endpoint.Id = getMD5Hash(l.Endpoint.Url + l.Endpoint.UserId)
+	l.Endpoint.Id = globals.GetMD5Hash(l.Endpoint.Url + l.Endpoint.UserId)
 
 	return &l.Endpoint, nil
-}
-
-func getMD5Hash(text string) string {
-	hash := md5.Sum([]byte(text))
-	return hex.EncodeToString(hash[:])
 }

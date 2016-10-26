@@ -1,19 +1,19 @@
 package gmail
 
 import (
-	filestorer "github.com/kazoup/platform/datasource/srv/filestore"
+	"github.com/kazoup/platform/datasource/srv/engine"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/structs/globals"
 	"strings"
 )
 
-// Fake struct
+// Gmail struct
 type Gmail struct {
+	engine.DataSource
 	Endpoint datasource_proto.Endpoint
-	filestorer.FileStore
 }
 
-// Validate fake, always fine
+// Validate
 func (g *Gmail) Validate(datasources string) (*datasource_proto.Endpoint, error) {
 	s, err := globals.NewUUID()
 	if err != nil {

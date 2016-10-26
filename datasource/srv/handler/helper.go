@@ -6,14 +6,14 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"github.com/kazoup/platform/datasource/srv/filestore"
-	"github.com/kazoup/platform/datasource/srv/filestore/box"
-	"github.com/kazoup/platform/datasource/srv/filestore/dropbox"
-	gmail "github.com/kazoup/platform/datasource/srv/filestore/gmail"
-	googledrive "github.com/kazoup/platform/datasource/srv/filestore/googledrive"
-	local "github.com/kazoup/platform/datasource/srv/filestore/local"
-	onedrive "github.com/kazoup/platform/datasource/srv/filestore/onedrive"
-	slack "github.com/kazoup/platform/datasource/srv/filestore/slack"
+	"github.com/kazoup/platform/datasource/srv/engine"
+	"github.com/kazoup/platform/datasource/srv/engine/box"
+	"github.com/kazoup/platform/datasource/srv/engine/dropbox"
+	gmail "github.com/kazoup/platform/datasource/srv/engine/gmail"
+	googledrive "github.com/kazoup/platform/datasource/srv/engine/googledrive"
+	local "github.com/kazoup/platform/datasource/srv/engine/local"
+	onedrive "github.com/kazoup/platform/datasource/srv/engine/onedrive"
+	slack "github.com/kazoup/platform/datasource/srv/engine/slack"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/structs/globals"
@@ -36,54 +36,47 @@ const (
 	filesHelperIndex   = "files_helper"
 )
 
-// GetDataSource returns a FileStorer interface
-func GetDataSource(ctx context.Context, ds *DataSource, endpoint *proto.Endpoint) (filestorer.FileStorer, error) {
+// GetDataSourceEngine returns a Engine interface
+func GetDataSourceEngine(ctx context.Context, ds *DataSource, endpoint *proto.Endpoint) (engine.Engine, error) {
 	if strings.Contains(endpoint.Url, localEndpoint) {
 		return &local.Local{
-			Endpoint:  *endpoint,
-			FileStore: filestorer.FileStore{},
+			Endpoint: *endpoint,
 		}, nil
 	}
 
 	if strings.Contains(endpoint.Url, googledriveEnpoint) {
 		return &googledrive.Googledrive{
-			Endpoint:  *endpoint,
-			FileStore: filestorer.FileStore{},
+			Endpoint: *endpoint,
 		}, nil
 	}
 
 	if strings.Contains(endpoint.Url, gmailEnpoint) {
 		return &gmail.Gmail{
-			Endpoint:  *endpoint,
-			FileStore: filestorer.FileStore{},
+			Endpoint: *endpoint,
 		}, nil
 	}
 
 	if strings.Contains(endpoint.Url, onedriveEndpoint) {
 		return &onedrive.Onedrive{
-			Endpoint:  *endpoint,
-			FileStore: filestorer.FileStore{},
+			Endpoint: *endpoint,
 		}, nil
 	}
 
 	if strings.Contains(endpoint.Url, slackEnpoint) {
 		return &slack.Slack{
-			Endpoint:  *endpoint,
-			FileStore: filestorer.FileStore{},
+			Endpoint: *endpoint,
 		}, nil
 	}
 
 	if strings.Contains(endpoint.Url, dropboxEnpoint) {
 		return &dropbox.Dropbox{
-			Endpoint:  *endpoint,
-			FileStore: filestorer.FileStore{},
+			Endpoint: *endpoint,
 		}, nil
 	}
 
 	if strings.Contains(endpoint.Url, boxEnpoint) {
 		return &box.Box{
-			Endpoint:  *endpoint,
-			FileStore: filestorer.FileStore{},
+			Endpoint: *endpoint,
 		}, nil
 	}
 

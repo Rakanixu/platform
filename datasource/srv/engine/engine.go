@@ -1,4 +1,4 @@
-package filestorer
+package engine
 
 import (
 	"encoding/json"
@@ -9,17 +9,19 @@ import (
 	"golang.org/x/net/context"
 )
 
-type FileStorer interface {
+// Engine interface implements Validation and Save for datasources
+type Engine interface {
 	Validate(datasources string) (*datasource_proto.Endpoint, error)
 	Save(ctx context.Context, data interface{}, id string) error
 }
 
-type FileStore struct {
-	FileStorer FileStorer
+// DataSource struct is a helper for sharing Save functionality
+type DataSource struct {
+	Engine Engine
 }
 
-// Save FileStore configuration
-func (fs *FileStore) Save(ctx context.Context, data interface{}, id string) error {
+// Save DataSource configuration
+func (ds *DataSource) Save(ctx context.Context, data interface{}, id string) error {
 	b, err := json.Marshal(data)
 	if err != nil {
 		return err

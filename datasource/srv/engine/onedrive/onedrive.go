@@ -1,18 +1,16 @@
 package onedrive
 
 import (
-	"crypto/md5"
-	"encoding/hex"
-	filestorer "github.com/kazoup/platform/datasource/srv/filestore"
+	"github.com/kazoup/platform/datasource/srv/engine"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/structs/globals"
 	"strings"
 )
 
-// Fake struct
+// Onedrive struct
 type Onedrive struct {
+	engine.DataSource
 	Endpoint datasource_proto.Endpoint
-	filestorer.FileStore
 }
 
 // Validate
@@ -24,12 +22,7 @@ func (o *Onedrive) Validate(datasources string) (*datasource_proto.Endpoint, err
 		}
 		o.Endpoint.Index = "index" + strings.Replace(s, "-", "", 1)
 	}
-	o.Endpoint.Id = getMD5Hash(o.Endpoint.Url + o.Endpoint.UserId)
+	o.Endpoint.Id = globals.GetMD5Hash(o.Endpoint.Url + o.Endpoint.UserId)
 
 	return &o.Endpoint, nil
-}
-
-func getMD5Hash(text string) string {
-	hash := md5.Sum([]byte(text))
-	return hex.EncodeToString(hash[:])
 }

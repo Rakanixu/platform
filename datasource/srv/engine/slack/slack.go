@@ -1,33 +1,26 @@
 package slack
 
 import (
-	"crypto/md5"
-	"encoding/hex"
-	filestorer "github.com/kazoup/platform/datasource/srv/filestore"
+	"github.com/kazoup/platform/datasource/srv/engine"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/structs/globals"
 	"strings"
 )
 
-// Fake struct
+// Slack struct
 type Slack struct {
-	filestorer.FileStore
+	engine.DataSource
 	Endpoint proto.Endpoint
 }
 
-// Validate slack
+// Validate
 func (s *Slack) Validate(datasources string) (*proto.Endpoint, error) {
 	str, err := globals.NewUUID()
 	if err != nil {
 		return &s.Endpoint, err
 	}
 	s.Endpoint.Index = "index" + strings.Replace(str, "-", "", 1)
-	s.Endpoint.Id = getMD5Hash(s.Endpoint.Url + s.Endpoint.UserId)
+	s.Endpoint.Id = globals.GetMD5Hash(s.Endpoint.Url + s.Endpoint.UserId)
 
 	return &s.Endpoint, nil
-}
-
-func getMD5Hash(text string) string {
-	hash := md5.Sum([]byte(text))
-	return hex.EncodeToString(hash[:])
 }
