@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// Fs File System interface. Fyle system is responsible to manage its own files
 type Fs interface {
 	List() (chan file.File, chan bool, error)
 	CreateFile(string) (string, error)
@@ -16,6 +17,7 @@ type Fs interface {
 	GetThumbnail(id string) (string, error)
 }
 
+// NewFsFromEndpoint constructor from endpoint
 func NewFsFromEndpoint(e *datasource_proto.Endpoint) (Fs, error) {
 	dsUrl := strings.Split(e.Url, ":")
 

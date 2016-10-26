@@ -22,6 +22,7 @@ const (
 	Drives = "drives/"
 )
 
+// OneDriveFs one drive file system
 type OneDriveFs struct {
 	Endpoint    *datasource_proto.Endpoint
 	Running     chan bool
@@ -31,6 +32,7 @@ type OneDriveFs struct {
 	LastDirTime int64
 }
 
+// NewOneDriveFsFromEndpoint constructor
 func NewOneDriveFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	return &OneDriveFs{
 		Endpoint:  e,
@@ -45,6 +47,7 @@ func NewOneDriveFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	}
 }
 
+// List returns 2 channels, for files and state. Discover files in one drive datasources
 func (ofs *OneDriveFs) List() (chan file.File, chan bool, error) {
 	go func() {
 		ofs.LastDirTime = time.Now().Unix()
@@ -78,14 +81,17 @@ func (ofs *OneDriveFs) List() (chan file.File, chan bool, error) {
 	return ofs.FilesChan, ofs.Running, nil
 }
 
+// Token returns user token
 func (ofs *OneDriveFs) Token() string {
 	return ofs.Endpoint.Token.AccessToken
 }
 
+// GetDatasourceId returns datasource ID
 func (ofs *OneDriveFs) GetDatasourceId() string {
 	return ofs.Endpoint.Id
 }
 
+// GetThumbnail returns a URI pointing to a thumbnail
 func (ofs *OneDriveFs) GetThumbnail(id string) (string, error) {
 	if err := ofs.refreshToken(); err != nil {
 		log.Println(err)
@@ -113,6 +119,7 @@ func (ofs *OneDriveFs) GetThumbnail(id string) (string, error) {
 	return thumbRsp.URL, nil
 }
 
+// CreateFile creates a one drive document and index it on Elastic Search
 func (ofs *OneDriveFs) CreateFile(fileType string) (string, error) {
 	if err := ofs.refreshToken(); err != nil {
 		log.Println(err)

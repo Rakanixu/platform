@@ -12,12 +12,14 @@ import (
 	"time"
 )
 
+// GoogleDriveFs is the google drive file system struct
 type GoogleDriveFs struct {
 	Endpoint  *datasource_proto.Endpoint
 	Running   chan bool
 	FilesChan chan file.File
 }
 
+//NewGoogleDriveFsFromEndpoint constructor
 func NewGoogleDriveFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	return &GoogleDriveFs{
 		Endpoint:  e,
@@ -26,6 +28,7 @@ func NewGoogleDriveFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	}
 }
 
+// List returns 2 channels, for files and state. Discover files in google drive datasource
 func (gfs *GoogleDriveFs) List() (chan file.File, chan bool, error) {
 	go func() {
 		if err := gfs.getFiles(); err != nil {
@@ -38,14 +41,17 @@ func (gfs *GoogleDriveFs) List() (chan file.File, chan bool, error) {
 	return gfs.FilesChan, gfs.Running, nil
 }
 
+// Token returns google drive user token
 func (gfs *GoogleDriveFs) Token() string {
 	return gfs.Endpoint.Token.AccessToken
 }
 
+// GetDatasourceId returns datasource ID
 func (gfs *GoogleDriveFs) GetDatasourceId() string {
 	return gfs.Endpoint.Id
 }
 
+// GetThumbnail returns a URI pointing to a thumbnail
 func (gfs *GoogleDriveFs) GetThumbnail(id string) (string, error) {
 	cfg := globals.NewGoogleOautConfig()
 	c := cfg.Client(context.Background(), &oauth2.Token{
@@ -67,6 +73,7 @@ func (gfs *GoogleDriveFs) GetThumbnail(id string) (string, error) {
 	return fmt.Sprintf("%ss700", r.ThumbnailLink[:len(r.ThumbnailLink)-4]), nil
 }
 
+// CreateFile creates a google file and index it on Elastic Search
 func (gfs *GoogleDriveFs) CreateFile(fileType string) (string, error) {
 	cfg := globals.NewGoogleOautConfig()
 	c := cfg.Client(context.Background(), &oauth2.Token{
@@ -96,6 +103,7 @@ func (gfs *GoogleDriveFs) CreateFile(fileType string) (string, error) {
 	return kfg.GetURL(), nil
 }
 
+// getFiles discover all files in google drive account
 func (gfs *GoogleDriveFs) getFiles() error {
 	cfg := globals.NewGoogleOautConfig()
 	c := cfg.Client(context.Background(), &oauth2.Token{
@@ -130,6 +138,7 @@ func (gfs *GoogleDriveFs) getFiles() error {
 	return nil
 }
 
+// getNextPage allows pagination while discovering files
 func (gfs *GoogleDriveFs) getNextPage(srv *drive.Service, nextPageToken string) error {
 	r, err := srv.Files.List().PageToken(nextPageToken).Fields("files,kind,nextPageToken").Do()
 	if err != nil {
@@ -151,6 +160,7 @@ func (gfs *GoogleDriveFs) getNextPage(srv *drive.Service, nextPageToken string) 
 	return nil
 }
 
+// pushFilesToChanForPage sends discovered files to the file system channel
 func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
 	for _, v := range files {
 		f := file.NewKazoupFileFromGoogleDriveFile(v, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)

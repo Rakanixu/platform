@@ -14,6 +14,7 @@ import (
 	"strings"
 )
 
+// LocalFs struct
 type LocalFs struct {
 	Endpoint  *datasource_proto.Endpoint
 	Running   chan bool
@@ -21,6 +22,7 @@ type LocalFs struct {
 	FilesChan chan file.File
 }
 
+// NewLocalFsFromEndpoint constructor
 func NewLocalFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	url := strings.Split(e.Url, "://")
 
@@ -32,6 +34,7 @@ func NewLocalFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	}
 }
 
+// List returns 2 channels, for files and state. Discover local files
 func (lfs *LocalFs) List() (chan file.File, chan bool, error) {
 	go func() {
 		if err := lfs.walkDatasourceParents(); err != nil {
@@ -47,23 +50,28 @@ func (lfs *LocalFs) List() (chan file.File, chan bool, error) {
 	return lfs.FilesChan, lfs.Running, nil
 }
 
+// Token belongs to Fs interface
 func (lfs *LocalFs) Token() string {
 	// LocalFs cannot have Token, cause represents a Local datasource which does not required oauth
 	return ""
 }
 
+// GetDatasourceId returns datasource ID
 func (lfs *LocalFs) GetDatasourceId() string {
 	return lfs.Endpoint.Id
 }
 
+// GetThumbnail belongs to Fs interface
 func (lfs *LocalFs) GetThumbnail(id string) (string, error) {
 	return "", nil
 }
 
+// CreateFile belongs to Fs interface
 func (lfs *LocalFs) CreateFile(fileType string) (string, error) {
 	return "", nil
 }
 
+// walkDatasourceParents creates helper index, aliases and push the dirs that makes the root path of the datasource
 func (lfs *LocalFs) walkDatasourceParents() error {
 	// Create index and put mapping if does not exist
 	c := db_proto.NewDBClient(globals.DB_SERVICE_NAME, nil)
@@ -121,6 +129,7 @@ func (lfs *LocalFs) walkDatasourceParents() error {
 	return nil
 }
 
+// walkHandler recursively discover files belonging to datasource
 func (lfs *LocalFs) walkHandler() filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
 		if err != nil {
