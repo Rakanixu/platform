@@ -24,7 +24,6 @@
 <link rel="import" href="../../bower_components/mat-text-field/mat-text-field.html">
 <link rel="import" href="../../bower_components/mat-icon/mat-icon.html">
 <link rel="import" href="../../bower_components/mat-icons/mat-icons.html">
-<link rel="import" href="../../bower_components/mat-dialog/mat-dialog.html">
 <link rel="import" href="../../bower_components/mat-icons/image-icons.html">
 <link rel="import" href="../../bower_components/mat-avatar/mat-avatar.html">
 <link rel="import" href="../../bower_components/mat-button/mat-button.html">
@@ -44,12 +43,13 @@
 
 <link rel="import" href="../../src/behaviors/util-behavior.html">
 <link rel="import" href="../../src/behaviors/nav-behavior.html">
-<link rel="import" href="../../src/behaviors/categories-map-behavior.html">
+<link rel="import" href="../../src/behaviors/map-behavior.html">
 <link rel="import" href="../../src/behaviors/common-behavior.html">
 <link rel="import" href="../../src/behaviors/endpoints-behavior.html">
 
 <link rel="import" href="../../src/filter-converter/filter-converter.html">
 <link rel="import" href="../../src/detail-view/detail-view.html">
+<link rel="import" href="../../src/third-party-actions/create-file.html">
 <link rel="import" href="../../src/empty-state/empty-state.html">
 <link rel="import" href="../../src/kazoup-icons/kazoup-icons.html">
 
@@ -392,6 +392,8 @@
             </paper-drawer-panel>
         </paper-drawer-panel>
 
+        <create-file selected-datasource="[[selectedDatasource]]"></create-file>
+
         <filter-converter id="filterConverter"></filter-converter>
 
         <paper-toast id="toast" text=""></paper-toast>
@@ -446,7 +448,7 @@
             behaviors: [
                 Polymer.UtilBehaviorImp,
                 Polymer.NavBehaviorImp,
-                Polymer.CategoriesMapBehaviorImp,
+                Polymer.MapBehaviorImp,
                 Polymer.AsyncBehaviorImp,
                 Polymer.CommonBehaviorImp,
                 Polymer.EndpointsBehaviorImp
@@ -521,7 +523,7 @@
                 },
                 selectedDatasource: {
                     type: Object,
-                    notify: false,
+                    notify: true,
                     value: function() {
                         return {};
                     }
@@ -934,7 +936,8 @@
 
                 this.set('selectedDatasource', {
                     type: this.getDatasourceType(e.model.__data__.item.url),
-                    index: e.model.__data__.item.index
+                    index: e.model.__data__.item.index,
+                    id: e.model.__data__.item.id
                 });
 
                 if (this.getDatasourceType(e.model.__data__.item.url) === 'local') {

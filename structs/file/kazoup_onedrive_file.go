@@ -37,3 +37,7 @@ func (kf *KazoupOneDriveFile) GetFileType() string {
 func (kf *KazoupOneDriveFile) GetPathDisplay() string {
 	return ""
 }
+
+func (kf *KazoupOneDriveFile) GetURL() string {
+	return kf.URL
+}

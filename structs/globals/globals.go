@@ -49,6 +49,18 @@ const (
 	Dropbox     = "dropbox"
 	Box         = "box"
 
+	DOCUMENT     = "document"
+	PRESENTATION = "presentation"
+	SPREADSHEET  = "spreadsheet"
+	TEXT         = "text"
+
+	GOOGLE_DRIVE_DOCUMENT    = "application/vnd.google-apps.document"
+	GOOGLE_DRIVE_PRESETATION = "application/vnd.google-apps.presentation"
+	GOOGLE_DRIVE_SPREADSHEET = "application/vnd.google-apps.spreadsheet"
+	GOOGLE_DRIVE_TEXT        = "text/plain"
+
+	ONEDRIVE_TEXT = "text/plain"
+
 	SlackFilesEndpoint    = "https://slack.com/api/files.list"
 	SlackUsersEndpoint    = "https://slack.com/api/users.list"
 	SlackChannelsEndpoint = "https://slack.com/api/channels.list"
@@ -59,10 +71,12 @@ const (
 	DropboxFilesEndpoint     = "https://api.dropboxapi.com/2/files/list_folder"
 	DropboxThumbnailEndpoint = "https://content.dropboxapi.com/2/files/get_thumbnail"
 	DropboxFileMembers       = "https://api.dropboxapi.com/2/sharing/list_file_members"
+	DropboxFileUpload        = "https://content.dropboxapi.com/2/files/upload"
 
 	BoxAccountEndpoint      = "https://api.box.com/2.0/users/me"
 	BoxFoldersEndpoint      = "https://api.box.com/2.0/folders/"
 	BoxFileMetadataEndpoint = "https://api.box.com/2.0/files/"
+	BoxUploadEndpoint       = "https://upload.box.com/api/2.0/files/content"
 
 	GmailEndpoint = "https://mail.google.com/mail/u/"
 
@@ -250,4 +264,58 @@ func ClearIndex(e *datasource_proto.Endpoint) error {
 func GetMD5Hash(text string) string {
 	hash := md5.Sum([]byte(text))
 	return hex.EncodeToString(hash[:])
+}
+
+var fileTypeDict = struct {
+	m map[string]map[string]string
+}{
+	m: map[string]map[string]string{
+		GoogleDrive: map[string]string{
+			DOCUMENT:     GOOGLE_DRIVE_DOCUMENT,
+			PRESENTATION: GOOGLE_DRIVE_PRESETATION,
+			SPREADSHEET:  GOOGLE_DRIVE_SPREADSHEET,
+			TEXT:         GOOGLE_DRIVE_TEXT,
+		},
+		OneDrive: map[string]string{
+			TEXT: ONEDRIVE_TEXT,
+		},
+		Gmail: map[string]string{ //TODO: everything exept gdrive, but model is done
+			GOOGLE_DRIVE_DOCUMENT:    "application/vnd.google-apps.document",
+			GOOGLE_DRIVE_PRESETATION: "application/vnd.google-apps.presentation",
+			GOOGLE_DRIVE_SPREADSHEET: "application/vnd.google-apps.spreadsheet",
+			GOOGLE_DRIVE_TEXT:        "application/vnd.google-apps.file",
+		},
+	},
+}
+
+func GetMimeType(fileSystemType, fileType string) string {
+	// Be sure to not panic if input not in map
+	if fileTypeDict.m[fileSystemType] != nil {
+		if len(fileTypeDict.m[fileSystemType][fileType]) > 0 {
+			return fileTypeDict.m[fileSystemType][fileType]
+		}
+	}
+
+	return ""
+}
+
+func GetDocumentTemplate(fileType string, fullName bool) string {
+	var tmp string
+
+	switch fileType {
+	case DOCUMENT:
+		tmp = "docx"
+	case PRESENTATION:
+		tmp = "pptx"
+	case SPREADSHEET:
+		tmp = "xlsx"
+	case TEXT:
+		tmp = "txt"
+	}
+
+	if fullName {
+		tmp = fmt.Sprintf("%s.%s", tmp, tmp)
+	}
+
+	return tmp
 }

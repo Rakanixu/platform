@@ -52,3 +52,7 @@ func (kf *KazoupLocalFile) GetFileType() string {
 func (kf *KazoupLocalFile) GetPathDisplay() string {
 	return ""
 }
+
+func (kf *KazoupLocalFile) GetURL() string {
+	return kf.URL
+}

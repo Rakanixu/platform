@@ -9,7 +9,7 @@
 
 <link rel="import" href="../../src/behaviors/util-behavior.html">
 <link rel="import" href="../../src/behaviors/endpoints-behavior.html">
-<link rel="import" href="../../src/behaviors/categories-map-behavior.html">
+<link rel="import" href="../../src/behaviors/map-behavior.html">
 
 <dom-module id="detail-view">
   <style is="custom-style" include="iron-flex iron-positioning iron-flex-alignment"></style>
@@ -210,7 +210,7 @@
         is: 'detail-view',
         behaviors: [
           Polymer.UtilBehaviorImp,
-          Polymer.CategoriesMapBehaviorImp,
+          Polymer.MapBehaviorImp,
           Polymer.EndpointsBehaviorImp
         ],
         properties: {

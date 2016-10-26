@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/kardianos/osext"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/structs/dropbox"
 	"github.com/kazoup/platform/structs/file"
@@ -11,14 +12,17 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 )
 
+// DropboxFs dropbox file system
 type DropboxFs struct {
 	Endpoint  *datasource_proto.Endpoint
 	Running   chan bool
 	FilesChan chan file.File
 }
 
+// NewDropboxFsFromEndpoint constructor
 func NewDropboxFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	return &DropboxFs{
 		Endpoint:  e,
@@ -27,6 +31,7 @@ func NewDropboxFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	}
 }
 
+// List returns 2 channels, for files and state. Discover files in dropbox datasource
 func (dfs *DropboxFs) List() (chan file.File, chan bool, error) {
 	go func() {
 		if err := dfs.getFiles(); err != nil {
@@ -39,14 +44,17 @@ func (dfs *DropboxFs) List() (chan file.File, chan bool, error) {
 	return dfs.FilesChan, dfs.Running, nil
 }
 
+// Token returns dropbox user token
 func (dfs *DropboxFs) Token() string {
 	return "Bearer " + dfs.Endpoint.Token.AccessToken
 }
 
+// GetDatasourceId returns datasource ID
 func (dfs *DropboxFs) GetDatasourceId() string {
 	return dfs.Endpoint.Id
 }
 
+// GetThumbnail returns a URI pointing to a thumbnail
 func (dfs *DropboxFs) GetThumbnail(id string) (string, error) {
 	args := `{"path":"` + id + `","size":{".tag":"w640h480"}}`
 	url := fmt.Sprintf("%s?authorization=%s&arg=%s", globals.DropboxThumbnailEndpoint, dfs.Token(), url.QueryEscape(args))
@@ -54,6 +62,54 @@ func (dfs *DropboxFs) GetThumbnail(id string) (string, error) {
 	return url, nil
 }
 
+// CreateFile creates a file in dropbox and index it on Elastic Search
+func (dfs *DropboxFs) CreateFile(fileType string) (string, error) {
+	// https://www.dropbox.com/developers/documentation/http/documentation#files-upload
+	folderPath, err := osext.ExecutableFolder()
+	if err != nil {
+		return "", err
+	}
+
+	p := fmt.Sprintf("%s%s%s", folderPath, "/doc_templates/", globals.GetDocumentTemplate(fileType, true))
+	t, err := os.Open(p)
+	if err != nil {
+		return "", err
+	}
+	defer t.Close()
+
+	c := &http.Client{}
+	req, err := http.NewRequest("POST", globals.DropboxFileUpload, t)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Authorization", dfs.Token())
+	req.Header.Set("Dropbox-API-Arg", `{
+		"path": "/untitle.`+globals.GetDocumentTemplate(fileType, false)+`",
+		"mode": "add",
+		"autorename": true,
+		"mute": false
+	}`)
+	req.Header.Set("Content-Type", "application/octet-stream")
+	rsp, err := c.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer rsp.Body.Close()
+
+	var df *dropbox.DropboxFile
+	if err := json.NewDecoder(rsp.Body).Decode(&df); err != nil {
+		return "", err
+	}
+
+	kfd := file.NewKazoupFileFromDropboxFile(df, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
+	if err := file.IndexAsync(kfd, globals.FilesTopic, dfs.Endpoint.Index); err != nil {
+		return "", err
+	}
+
+	return kfd.GetURL(), nil
+}
+
+// getFiles discovers files in dropbox account
 func (dfs *DropboxFs) getFiles() error {
 	// We want all avilable info
 	// https://dropbox.github.io/dropbox-api-v2-explorer/#files_list_folder
@@ -103,6 +159,7 @@ func (dfs *DropboxFs) getFiles() error {
 	return nil
 }
 
+// getNextPage allows pagination while discovering files
 func (dfs *DropboxFs) getNextPage(cursor string) error {
 	// https://www.dropbox.com/developers/documentation/http/documentation#files-list_folder-continue
 	b := []byte(`{
@@ -139,6 +196,7 @@ func (dfs *DropboxFs) getNextPage(cursor string) error {
 	return nil
 }
 
+// getFileMembers retrieves users with acces to a given file
 func (dfs *DropboxFs) getFileMembers(f *file.KazoupDropboxFile) (*file.KazoupDropboxFile, error) {
 	// https://www.dropbox.com/developers/documentation/http/documentation#sharing-list_file_members
 	b := []byte(`{
@@ -187,6 +245,7 @@ func (dfs *DropboxFs) getFileMembers(f *file.KazoupDropboxFile) (*file.KazoupDro
 	return f, nil
 }
 
+// getAccount retrieves dropbox user accounts
 func (dfs *DropboxFs) getAccount(aId string) (*dropbox.DropboxUser, error) {
 	// https://www.dropbox.com/developers/documentation/http/documentation#users-get_account
 	b := []byte(`{

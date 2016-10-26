@@ -1,19 +1,26 @@
 package fs
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/kardianos/osext"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/structs/box"
 	"github.com/kazoup/platform/structs/file"
 	"github.com/kazoup/platform/structs/globals"
 	"golang.org/x/oauth2"
+	"io"
 	"log"
+	"mime/multipart"
 	"net/http"
+	"os"
 	"time"
 )
 
+// BoxFs Box File System
 type BoxFs struct {
 	Endpoint      *datasource_proto.Endpoint
 	Running       chan bool
@@ -24,6 +31,7 @@ type BoxFs struct {
 	DefaultLimit  int
 }
 
+// NewBoxFsFromEndpoint constructor
 func NewBoxFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	return &BoxFs{
 		Endpoint:  e,
@@ -39,6 +47,7 @@ func NewBoxFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	}
 }
 
+// List returns 2 channels, one for files , other for the state. Goes over a datasource and discover files
 func (bfs *BoxFs) List() (chan file.File, chan bool, error) {
 	bfs.refreshToken()
 
@@ -74,16 +83,19 @@ func (bfs *BoxFs) List() (chan file.File, chan bool, error) {
 	return bfs.FilesChan, bfs.Running, nil
 }
 
+// Token returns user token for box datasource
 func (bfs *BoxFs) Token() string {
 	bfs.refreshToken()
 
 	return "Bearer " + bfs.Endpoint.Token.AccessToken
 }
 
+// GetDatasourceId returns datasource ID
 func (bfs *BoxFs) GetDatasourceId() string {
 	return bfs.Endpoint.Id
 }
 
+// GetThumbnail returns a URI pointing to an image
 func (bfs *BoxFs) GetThumbnail(id string) (string, error) {
 	url := fmt.Sprintf(
 		"%s%s&Authorization=%s",
@@ -94,6 +106,80 @@ func (bfs *BoxFs) GetThumbnail(id string) (string, error) {
 	)
 
 	return url, nil
+}
+
+// CreateFile in box
+func (bfs *BoxFs) CreateFile(fileType string) (string, error) {
+	// Box supports multi part form upload
+	folderPath, err := osext.ExecutableFolder()
+	if err != nil {
+		return "", err
+	}
+
+	// File template path
+	t := fmt.Sprintf("%s%s%s", folderPath, "/doc_templates/", globals.GetDocumentTemplate(fileType, true))
+	buf := &bytes.Buffer{}
+	mw := multipart.NewWriter(buf)
+	defer mw.Close()
+
+	f, err := os.Open(t)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	// This is how you upload a file as multipart form
+	ff, err := mw.CreateFormFile("file", t)
+	if err != nil {
+		return "", err
+	}
+	if _, err = io.Copy(ff, f); err != nil {
+		return "", err
+	}
+
+	// Add extra fields required by API
+	mw.WriteField(
+		"attributes",
+		`{"name":"untitle.`+globals.GetDocumentTemplate(fileType, false)+`", "parent":{"id":"0"}}`,
+	)
+	if err := mw.Close(); err != nil {
+		return "", err
+	}
+
+	c := &http.Client{}
+	req, err := http.NewRequest("POST", globals.BoxUploadEndpoint, buf)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Authorization", bfs.Token())
+	req.Header.Set("Content-Type", mw.FormDataContentType())
+
+	rsp, err := c.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer rsp.Body.Close()
+
+	var bf *box.BoxUpload
+	if err := json.NewDecoder(rsp.Body).Decode(&bf); err != nil {
+		return "", err
+	}
+
+	if rsp.StatusCode == http.StatusConflict {
+		return "", errors.New("Conflict creating file in Box, file with same name already exists")
+	}
+
+	if rsp.StatusCode != http.StatusCreated && bf.TotalCount != 1 {
+		return "", errors.New("Failed creating file in Box")
+	}
+
+	// Construct Kazoup file from box created file and index it
+	kfb := file.NewKazoupFileFromBoxFile(&bf.Entries[0], bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
+	if err := file.IndexAsync(kfb, globals.FilesTopic, bfs.Endpoint.Index); err != nil {
+		return "", err
+	}
+
+	return kfb.GetURL(), nil
 }
 
 // getDirChildren get children from directory
@@ -139,6 +225,7 @@ func (bfs *BoxFs) getDirChildren(id string, offset, limit int) error {
 	return nil
 }
 
+// getMetadataFromFile retrieves more info about discovered files in box
 func (bfs *BoxFs) getMetadataFromFile(id string) error {
 	c := &http.Client{}
 	req, err := http.NewRequest("GET", globals.BoxFileMetadataEndpoint+id, nil)
@@ -163,7 +250,7 @@ func (bfs *BoxFs) getMetadataFromFile(id string) error {
 	return nil
 }
 
-// refreshToken gets a new token from custom one and saves it
+// refreshToken gets a new token (refreshed if expired) from custom one and saves it
 func (bfs *BoxFs) refreshToken() error {
 	tokenSource := globals.NewBoxOauthConfig().TokenSource(oauth2.NoContext, &oauth2.Token{
 		AccessToken:  bfs.Endpoint.Token.AccessToken,

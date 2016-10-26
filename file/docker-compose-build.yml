@@ -1,0 +1,5 @@
+file-srv:
+  command: --registry_address=registry:8500
+  image: kazoup/file-srv
+  external_links:
+  - consul:registry

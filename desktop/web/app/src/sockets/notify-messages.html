@@ -30,13 +30,13 @@
           Polymer.EndpointsBehaviorImp
         ],
         init: function(userId) {
-          this.$.socket.open();
+/*          this.$.socket.open();
 
           this.async(function() {
             this.$.socket.send({
               user_id: userId
             });
-          }, 2500);
+          }, 2500);*/
         },
         _onOpen: function(e) {
           console.log('_onOpen', e.detail);

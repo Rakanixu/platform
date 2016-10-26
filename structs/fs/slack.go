@@ -15,12 +15,14 @@ import (
 	"strconv"
 )
 
+// SlackFs slack file system
 type SlackFs struct {
 	Endpoint  *datasource_proto.Endpoint
 	Running   chan bool
 	FilesChan chan file.File
 }
 
+// NewSlackFsFromEndpoint constructor
 func NewSlackFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	return &SlackFs{
 		Endpoint:  e,
@@ -29,6 +31,7 @@ func NewSlackFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	}
 }
 
+// List returns 2 channels, for files and state. Discover files in slack datasource
 func (sfs *SlackFs) List() (chan file.File, chan bool, error) {
 	go func() {
 		if err := sfs.getUsers(); err != nil {
@@ -49,18 +52,27 @@ func (sfs *SlackFs) List() (chan file.File, chan bool, error) {
 	return sfs.FilesChan, sfs.Running, nil
 }
 
+// Token returns slack user token
 func (sfs *SlackFs) Token() string {
 	return "Bearer " + sfs.Endpoint.Token.AccessToken
 }
 
+// GetDatasourceId returns datasource ID
 func (sfs *SlackFs) GetDatasourceId() string {
 	return sfs.Endpoint.Id
 }
 
+// GetThumbnail belongs to Fs interface
 func (sfs *SlackFs) GetThumbnail(id string) (string, error) {
 	return "", nil
 }
 
+// CreateFile belongs to Fs interface
+func (sfs *SlackFs) CreateFile(fileType string) (string, error) {
+	return "", nil
+}
+
+// getUsers retrieves users from slack team
 func (sfs *SlackFs) getUsers() error {
 	data := make(url.Values)
 	data.Add("token", sfs.Endpoint.Token.AccessToken)
@@ -99,6 +111,7 @@ func (sfs *SlackFs) getUsers() error {
 	return nil
 }
 
+// getChannels retrieves channels from slack team
 func (sfs *SlackFs) getChannels() error {
 	data := make(url.Values)
 	data.Add("token", sfs.Endpoint.Token.AccessToken)
@@ -136,6 +149,7 @@ func (sfs *SlackFs) getChannels() error {
 	return nil
 }
 
+// getFiles discover slack files for user and push them to broker
 func (sfs *SlackFs) getFiles(page int) error {
 	data := make(url.Values)
 	data.Add("token", sfs.Endpoint.Token.AccessToken)

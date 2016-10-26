@@ -40,3 +40,7 @@ func (kf *KazoupGmailFile) GetFileType() string {
 func (kf *KazoupGmailFile) GetPathDisplay() string {
 	return ""
 }
+
+func (kf *KazoupGmailFile) GetURL() string {
+	return kf.URL
+}

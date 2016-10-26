@@ -3,6 +3,7 @@ package fs
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/kardianos/osext"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/structs/file"
@@ -12,6 +13,7 @@ import (
 	"golang.org/x/oauth2"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -20,6 +22,7 @@ const (
 	Drives = "drives/"
 )
 
+// OneDriveFs one drive file system
 type OneDriveFs struct {
 	Endpoint    *datasource_proto.Endpoint
 	Running     chan bool
@@ -29,6 +32,7 @@ type OneDriveFs struct {
 	LastDirTime int64
 }
 
+// NewOneDriveFsFromEndpoint constructor
 func NewOneDriveFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	return &OneDriveFs{
 		Endpoint:  e,
@@ -43,6 +47,7 @@ func NewOneDriveFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	}
 }
 
+// List returns 2 channels, for files and state. Discover files in one drive datasources
 func (ofs *OneDriveFs) List() (chan file.File, chan bool, error) {
 	go func() {
 		ofs.LastDirTime = time.Now().Unix()
@@ -76,14 +81,17 @@ func (ofs *OneDriveFs) List() (chan file.File, chan bool, error) {
 	return ofs.FilesChan, ofs.Running, nil
 }
 
+// Token returns user token
 func (ofs *OneDriveFs) Token() string {
 	return ofs.Endpoint.Token.AccessToken
 }
 
+// GetDatasourceId returns datasource ID
 func (ofs *OneDriveFs) GetDatasourceId() string {
 	return ofs.Endpoint.Id
 }
 
+// GetThumbnail returns a URI pointing to a thumbnail
 func (ofs *OneDriveFs) GetThumbnail(id string) (string, error) {
 	if err := ofs.refreshToken(); err != nil {
 		log.Println(err)
@@ -107,8 +115,54 @@ func (ofs *OneDriveFs) GetThumbnail(id string) (string, error) {
 	if err := json.NewDecoder(res.Body).Decode(&thumbRsp); err != nil {
 		return "", err
 	}
-	log.Println(thumbRsp)
+
 	return thumbRsp.URL, nil
+}
+
+// CreateFile creates a one drive document and index it on Elastic Search
+func (ofs *OneDriveFs) CreateFile(fileType string) (string, error) {
+	if err := ofs.refreshToken(); err != nil {
+		log.Println(err)
+	}
+
+	folderPath, err := osext.ExecutableFolder()
+	if err != nil {
+		return "", err
+	}
+
+	p := fmt.Sprintf("%s%s%s", folderPath, "/doc_templates/", globals.GetDocumentTemplate(fileType, true))
+	t, err := os.Open(p)
+	if err != nil {
+		return "", err
+	}
+	defer t.Close()
+
+	c := &http.Client{}
+	// https://dev.onedrive.com/items/upload_put.htm
+	url := fmt.Sprintf("%sroot:/untitled.%s:/content", globals.OneDriveEndpoint+Drive, globals.GetDocumentTemplate(fileType, false))
+	req, err := http.NewRequest("PUT", url, t) // We require a template to be able to open / edit this files online
+	req.Header.Set("Authorization", ofs.Endpoint.Token.TokenType+" "+ofs.Endpoint.Token.AccessToken)
+	req.Header.Set("Content-Type", globals.ONEDRIVE_TEXT)
+	if err != nil {
+		return "", err
+	}
+	res, err := c.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+
+	var f *onedrive.OneDriveFile
+	if err := json.NewDecoder(res.Body).Decode(&f); err != nil {
+		return "", err
+	}
+
+	kfo := file.NewKazoupFileFromOneDriveFile(f, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)
+	if err := file.IndexAsync(kfo, globals.FilesTopic, ofs.Endpoint.Index); err != nil {
+		return "", err
+	}
+
+	return kfo.GetURL(), nil
 }
 
 // getFiles retrieves drives, directories and files

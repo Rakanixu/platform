@@ -37,3 +37,7 @@ func (kf *KazoupGoogleFile) GetFileType() string {
 func (kf *KazoupGoogleFile) GetPathDisplay() string {
 	return ""
 }
+
+func (kf *KazoupGoogleFile) GetURL() string {
+	return kf.URL
+}
