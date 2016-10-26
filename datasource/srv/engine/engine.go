@@ -25,6 +25,7 @@ const (
 type Engine interface {
 	Validate(datasources string) (*datasource_proto.Endpoint, error)
 	Save(ctx context.Context, data interface{}, id string) error
+	Delete(ctx context.Context, c client.Client) error
 }
 
 // NewDataSourceEngine returns a Engine interface
@@ -97,6 +98,43 @@ func SaveDataSource(ctx context.Context, data interface{}, id string) error {
 
 	if err := client.Call(ctx, srvReq, srvRes); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// DeleteDataSource deletes a datasource previously stored and index associated with it
+func DeleteDataSource(ctx context.Context, c client.Client, endpoint *datasource_proto.Endpoint) error {
+	if endpoint != nil {
+		// Delete record from datasources index
+		srvReq := c.NewRequest(
+			globals.DB_SERVICE_NAME,
+			"DB.Delete",
+			&db_proto.DeleteRequest{
+				Index: "datasources",
+				Type:  "datasource",
+				Id:    endpoint.Id,
+			},
+		)
+		srvRes := &db_proto.DeleteResponse{}
+
+		if err := c.Call(ctx, srvReq, srvRes); err != nil {
+			return err
+		}
+
+		// Remove index for datasource associated with it
+		deleteIndexReq := c.NewRequest(
+			globals.DB_SERVICE_NAME,
+			"DB.DeleteIndex",
+			&db_proto.DeleteIndexRequest{
+				Index: endpoint.Index,
+			},
+		)
+		deleteIndexRes := &db_proto.DeleteResponse{}
+
+		if err := c.Call(ctx, deleteIndexReq, deleteIndexRes); err != nil {
+			return err
+		}
 	}
 
 	return nil

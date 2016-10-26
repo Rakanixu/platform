@@ -3,6 +3,7 @@ package engine
 import (
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/structs/globals"
+	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"strings"
 )
@@ -27,4 +28,9 @@ func (g *Googledrive) Validate(datasources string) (*datasource_proto.Endpoint, 
 // Save google drive data source
 func (g *Googledrive) Save(ctx context.Context, data interface{}, id string) error {
 	return SaveDataSource(ctx, data, id)
+}
+
+// Delete gmail data source
+func (g *Googledrive) Delete(ctx context.Context, c client.Client) error {
+	return DeleteDataSource(ctx, c, &g.Endpoint)
 }

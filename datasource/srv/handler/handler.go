@@ -26,10 +26,10 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 	}
 	eng, err := engine.NewDataSourceEngine(req.Endpoint)
 	if err != nil {
-		return errors.InternalServerError("go.micro.srv.datasource GetDataSource", err.Error())
+		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 
-	datasourcesList, err := SearchDataSources(ctx, ds, &proto.SearchRequest{
+	datasourcesList, err := engine.SearchDataSources(ctx, ds.Client, &proto.SearchRequest{
 		Index: "datasources",
 		Type:  "datasource",
 		From:  0,
@@ -69,7 +69,20 @@ func (ds *DataSource) Delete(ctx context.Context, req *proto.DeleteRequest, rsp 
 		return errors.BadRequest("go.micro.srv.datasource", "id required")
 	}
 
-	if err := DeleteDataSource(ctx, ds, req.Id); err != nil {
+	// Read datasource
+	endpoint, err := engine.ReadDataSource(ctx, ds.Client, req.Id)
+	if err != nil {
+		return err
+	}
+
+	// Instantiate an engine given datasource
+	eng, err := engine.NewDataSourceEngine(endpoint)
+	if err != nil {
+		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
+	}
+
+	// Delete datasource
+	if err := eng.Delete(ctx, ds.Client); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 
@@ -78,7 +91,7 @@ func (ds *DataSource) Delete(ctx context.Context, req *proto.DeleteRequest, rsp 
 
 // Search datasources handler
 func (ds *DataSource) Search(ctx context.Context, req *proto.SearchRequest, rsp *proto.SearchResponse) error {
-	result, err := SearchDataSources(ctx, ds, req)
+	result, err := engine.SearchDataSources(ctx, ds.Client, req)
 	if err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}

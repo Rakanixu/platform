@@ -8,7 +8,6 @@ import (
 	"github.com/kazoup/platform/structs/globals"
 	"golang.org/x/net/context"
 	"log"
-	"strings"
 	"time"
 )
 
@@ -17,7 +16,7 @@ const (
 	filesHelperIndex = "files_helper"
 )
 
-// DeleteDataSource deletes a datasource previously stored and index associated with it
+/*// DeleteDataSource deletes a datasource previously stored and index associated with it
 func DeleteDataSource(ctx context.Context, ds *DataSource, id string) error {
 	var endpoint *proto.Endpoint
 
@@ -82,9 +81,9 @@ func DeleteDataSource(ctx context.Context, ds *DataSource, id string) error {
 	}
 
 	return nil
-}
+}*/
 
-// SearchDataSources queries for datasources stored in ES
+/*// SearchDataSources queries for datasources stored in ES
 func SearchDataSources(ctx context.Context, ds *DataSource, req *proto.SearchRequest) (*proto.SearchResponse, error) {
 	srvReq := ds.Client.NewRequest(
 		globals.DB_SERVICE_NAME,
@@ -112,7 +111,7 @@ func SearchDataSources(ctx context.Context, ds *DataSource, req *proto.SearchReq
 	}
 
 	return rsp, nil
-}
+}*/
 
 func ScanDataSource(ds *DataSource, ctx context.Context, id string) error {
 	//FIXME use ds.Client
@@ -209,6 +208,7 @@ func CreateIndexWithAlias(ds *DataSource, ctx context.Context, endpoint *proto.E
 	return nil
 }
 
+/*
 func cleanFilesHelperIndex(ctx context.Context, ds *DataSource, endpoint *proto.Endpoint) error {
 	var datasources []*proto.Endpoint
 
@@ -232,9 +232,9 @@ func cleanFilesHelperIndex(ctx context.Context, ds *DataSource, endpoint *proto.
 	}
 
 	return nil
-}
+}*/
 
-func deleteZombieRecords(ctx context.Context, ds *DataSource, datasources []*proto.Endpoint, urlToDelete string) {
+/*func deleteZombieRecords(ctx context.Context, ds *DataSource, datasources []*proto.Endpoint, urlToDelete string) {
 	delete := 0
 
 	for _, v := range datasources {
@@ -265,4 +265,4 @@ func deleteZombieRecords(ctx context.Context, ds *DataSource, datasources []*pro
 			deleteZombieRecords(ctx, ds, datasources, urlToDelete[:idx])
 		}
 	}
-}
+}*/

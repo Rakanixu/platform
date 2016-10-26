@@ -3,6 +3,7 @@ package engine
 import (
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/structs/globals"
+	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"strings"
 )
@@ -27,4 +28,9 @@ func (s *Dropbox) Validate(datasources string) (*proto.Endpoint, error) {
 // Save dropbox data source
 func (s *Dropbox) Save(ctx context.Context, data interface{}, id string) error {
 	return SaveDataSource(ctx, data, id)
+}
+
+// Delete dropbox data source
+func (s *Dropbox) Delete(ctx context.Context, c client.Client) error {
+	return DeleteDataSource(ctx, c, &s.Endpoint)
 }

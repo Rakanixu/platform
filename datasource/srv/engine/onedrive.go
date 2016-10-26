@@ -3,6 +3,7 @@ package engine
 import (
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/structs/globals"
+	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"strings"
 )
@@ -26,7 +27,12 @@ func (o *Onedrive) Validate(datasources string) (*datasource_proto.Endpoint, err
 	return &o.Endpoint, nil
 }
 
-// Save local datasource
+// Save one drive datasource
 func (o *Onedrive) Save(ctx context.Context, data interface{}, id string) error {
 	return SaveDataSource(ctx, data, id)
+}
+
+// Delete one drive data source
+func (o *Onedrive) Delete(ctx context.Context, c client.Client) error {
+	return DeleteDataSource(ctx, c, &o.Endpoint)
 }
