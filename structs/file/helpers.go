@@ -21,9 +21,10 @@ import (
 	"time"
 )
 
-func GetFileByID(ctx context.Context, id string, c db.DBClient) (File, error) {
+// GetFileByID retrieves a file given its id and the user belongs to
+func GetFileByID(ctx context.Context, md5UserId, id string, c db.DBClient) (File, error) {
 	dbres, err := c.SearchById(ctx, &db.SearchByIdRequest{
-		Index: "files",
+		Index: md5UserId,
 		Type:  "file",
 		Id:    id,
 	})

@@ -97,6 +97,9 @@ window.Auth = (function() {
     getUserId: function() {
       return _profile.user_id;
     },
+    getMD5UserId: function() {
+      return new Hashes.MD5().hex(_profile.user_id);
+    },
     clear: function() {
       _profile = {};
       _customHeaders = {};

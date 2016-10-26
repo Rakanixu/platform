@@ -277,7 +277,7 @@ func CreateIndexWithAlias(ds *DataSource, ctx context.Context, endpoint *proto.E
 		"DB.AddAlias",
 		&db_proto.AddAliasRequest{
 			Index: endpoint.Index,
-			Alias: "files",
+			Alias: globals.GetMD5Hash(endpoint.UserId),
 		},
 	)
 
