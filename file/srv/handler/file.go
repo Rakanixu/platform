@@ -17,7 +17,7 @@ type File struct {
 	Client client.Client
 }
 
-// Create datasource handler
+// Create File handler
 func (f *File) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.CreateResponse) error {
 	var ds *datasource_proto.Endpoint
 

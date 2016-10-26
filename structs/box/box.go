@@ -144,3 +144,8 @@ type BoxFile struct {
 	Sha1       string `json:"sha1"`
 	Name       string `json:"name"`
 }
+
+type BoxUpload struct {
+	TotalCount int           `json:"total_count"`
+	Entries    []BoxFileMeta `json:"entries"`
+}

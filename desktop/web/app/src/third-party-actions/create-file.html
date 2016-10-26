@@ -48,6 +48,7 @@
 
     <mat-dialog id="createFileDialog" label="">
       <div>
+        <!-- Markup is duplicated to be able to add / remove actions by endpoint quickly, as change icons -->
         <template is="dom-if" if="[[isGoogleDrive(selectedDatasource.type)]]">
           <paper-button on-tap="createFile" data-type$="[[fileTypesMap.document]]">
             <iron-icon class="big" src="../static/icon_document.png"></iron-icon>
@@ -99,13 +100,21 @@
             <iron-icon class="big" src="../static/icon_presentation_od.png"></iron-icon>
             <mat-item label="PowerPoint Presentation"/>
           </paper-button>
-<!--          <paper-button on-tap="createFile" data-type$="[[fileTypesMap.text]]">
-            <iron-icon class="big" src="../static/icon_text_od.png"></iron-icon>
-            <mat-item label="Plain Text"/>
-          </paper-button>-->
         </template>
 
         <template is="dom-if" if="[[isBox(selectedDatasource.type)]]">
+          <paper-button on-tap="createFile" data-type$="[[fileTypesMap.document]]">
+            <iron-icon class="big" src="../static/icon_document_od.png"></iron-icon>
+            <mat-item label="Word Document"/>
+          </paper-button>
+          <paper-button on-tap="createFile" data-type$="[[fileTypesMap.spreadsheet]]">
+            <iron-icon class="big" src="../static/icon_spreadsheet_od.png"></iron-icon>
+            <mat-item label="Excel Spreadsheet"/>
+          </paper-button>
+          <paper-button on-tap="createFile" data-type$="[[fileTypesMap.presentation]]">
+            <iron-icon class="big" src="../static/icon_presentation_od.png"></iron-icon>
+            <mat-item label="PowerPoint Presentation"/>
+          </paper-button>
           <paper-button on-tap="createFile" data-type$="[[fileTypesMap.text]]">
             <iron-icon class="big" src="../static/icon_text_od.png"></iron-icon>
             <mat-item label="Plain Text"/>
