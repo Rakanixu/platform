@@ -35,9 +35,10 @@ func NewImageHandler() *ImageHandler {
 }
 
 //ServeHTTP handles requests depending on file type
-//http://ADDRESS:8082/desktop/image?file_id={file_id}&width=300&height=300&mode=fit&quality=50
+//http://ADDRESS:8082/desktop/image?user_id={user_id}&file_id={file_id}&width=300&height=300&mode=fit&quality=50
 func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//Extract values from URL
+	md5_user_id := r.FormValue("user_id")
 	file_id := r.FormValue("file_id")
 	width := r.FormValue("width")
 	height := r.FormValue("height")
@@ -67,7 +68,7 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"Authorization": token,
 	})
 
-	f, err := file.GetFileByID(ctx, file_id, ih.dbclient)
+	f, err := file.GetFileByID(ctx, md5_user_id, file_id, ih.dbclient)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

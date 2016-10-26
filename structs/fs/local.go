@@ -100,7 +100,7 @@ func (lfs *LocalFs) walkDatasourceParents() error {
 		context.Background(),
 		&db_proto.AddAliasRequest{
 			Index: globals.IndexHelper,
-			Alias: globals.FilesAlias,
+			Alias: globals.GetMD5Hash(lfs.Endpoint.UserId),
 		},
 	)
 	if err != nil {

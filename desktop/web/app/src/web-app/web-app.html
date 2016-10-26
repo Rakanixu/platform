@@ -300,7 +300,7 @@
                                                                 class="primary image"
                                                                 sizing="cover"
                                                                 placeholder="src/static/unknown-video.png"
-                                                                src="[[endpoints.web]]/media/preview?file_id=[[item.id]]&width=128&height=128&mode=fit&quality=50&token=[[getToken()]]"
+                                                                src="[[endpoints.web]]/media/preview?user_id=[[md5UserId]]&file_id=[[item.id]]&width=128&height=128&mode=fit&quality=50&token=[[getToken()]]"
                                                                 preload
                                                                 fade></iron-image>
                                                 </template>
@@ -339,7 +339,7 @@
                                         <div class="photoContainer grid">
                                             <div class="photoContent" tabindex$="[[tabIndex]]" on-tap="mainAction">
                                                 <iron-image sizing="cover"
-                                                            src="[[endpoints.web]]/media/preview?file_id=[[item.id]]&width=600&mode=fit&quality=100&token=[[getToken()]]"
+                                                            src="[[endpoints.web]]/media/preview?user_id=[[md5UserId]]&file_id=[[item.id]]&width=600&mode=fit&quality=100&token=[[getToken()]]"
                                                             placeholder="src/static/unknown-img.jpg"
                                                             preload
                                                             fade>
@@ -623,6 +623,10 @@
                             visible: false
                         };
                     }
+                },
+                md5UserId: {
+                    type: String,
+                    notify: false
                 }
             },
             observers: [
@@ -670,6 +674,7 @@
 
                 this.headers = Auth.getHeaders();
                 this.profile = Auth.getProfile();
+                this.md5UserId = Auth.getMD5UserId();
 
                 this.listDatasources();
                 this.$.secondaryMenu.selected = "-1";
@@ -899,14 +904,14 @@
 
                     this.set('selectedDatasource', {
                         type: 'local',
-                        index: 'files'
+                        index: Auth.getMD5UserId()
                     });
                 }
 
                 // depth must be 0 for search
                 // When there is no search term and user didn't selected a category, then browse
                 this.$.filterConverter.setValues({
-                    index: 'files',
+                    index: Auth.getMD5UserId(),
                     from: 0,
                     size: this.size,
                     category: category,
@@ -945,7 +950,7 @@
                     var depth = url.split('/').length;
 
                     this.$.filterConverter.setValues({
-                        index: 'files',
+                        index: Auth.getMD5UserId(),
                         category: '',
                         from: 0,
                         size: this.size,
@@ -985,7 +990,7 @@
                 } else {
                     // Browsing local files
                     this.$.filterConverter.setValues({
-                        index: 'files',
+                        index: Auth.getMD5UserId(),
                         from: 0,
                         size: this.size,
                         file_type: '',
@@ -1060,7 +1065,7 @@
                         this.set('searching', false);
 
                         this.$.filterConverter.setValues({
-                            index: 'files',
+                            index: Auth.getMD5UserId(),
                             from: 0,
                             size: this.size,
                             type: 'file',

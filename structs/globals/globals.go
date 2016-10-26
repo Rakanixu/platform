@@ -31,13 +31,11 @@ const (
 	CrawlerFinishedTopic    string = NAMESPACE + ".topic.crawlerfinished"
 	NotificationTopic       string = NAMESPACE + ".topic.notification"
 
-	IndexDatasources = "datasources"
-	IndexFlags       = "flags"
-	IndexHelper      = "files_helper"
-	FilesAlias       = "files"
-	FileType         = "file"
-	FoldeType        = "folder"
-
+	IndexDatasources  = "datasources"
+	IndexFlags        = "flags"
+	IndexHelper       = "files_helper"
+	FileType          = "file"
+	FoldeType         = "folder"
 	FileTypeFile      = "files"
 	FileTypeDirectory = "directories"
 
