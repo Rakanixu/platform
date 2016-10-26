@@ -82,3 +82,8 @@ func (l *Local) Delete(ctx context.Context, c client.Client) error {
 func (l *Local) Scan(ctx context.Context, c client.Client) error {
 	return ScanDataSource(ctx, c, &l.Endpoint)
 }
+
+// CreateIndeWithAlias creates a index for local datasource
+func (l *Local) CreateIndexWithAlias(ctx context.Context, c client.Client) error {
+	return CreateIndexWithAlias(ctx, c, &l.Endpoint)
+}

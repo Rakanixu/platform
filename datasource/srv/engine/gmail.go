@@ -39,3 +39,8 @@ func (g *Gmail) Delete(ctx context.Context, c client.Client) error {
 func (g *Gmail) Scan(ctx context.Context, c client.Client) error {
 	return ScanDataSource(ctx, c, &g.Endpoint)
 }
+
+// CreateIndeWithAlias creates a index for gmail datasource
+func (g *Gmail) CreateIndexWithAlias(ctx context.Context, c client.Client) error {
+	return CreateIndexWithAlias(ctx, c, &g.Endpoint)
+}

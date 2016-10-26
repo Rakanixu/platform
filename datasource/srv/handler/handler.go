@@ -51,7 +51,7 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 
-	if err := CreateIndexWithAlias(ds, ctx, endpoint); err != nil {
+	if err := eng.CreateIndexWithAlias(ctx, ds.Client); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 

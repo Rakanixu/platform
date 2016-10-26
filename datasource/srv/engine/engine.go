@@ -28,6 +28,7 @@ type Engine interface {
 	Save(ctx context.Context, data interface{}, id string) error
 	Delete(ctx context.Context, c client.Client) error
 	Scan(ctx context.Context, c client.Client) error
+	CreateIndexWithAlias(ctx context.Context, c client.Client) error
 }
 
 // NewDataSourceEngine returns a Engine interface
@@ -175,6 +176,53 @@ func ScanDataSource(ctx context.Context, c client.Client, endpoint *datasource_p
 	)
 
 	if err := c.Publish(ctx, msg); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func CreateIndexWithAlias(ctx context.Context, c client.Client, endpoint *datasource_proto.Endpoint) error {
+	// Create index
+	createIndexSrvReq := c.NewRequest(
+		globals.DB_SERVICE_NAME,
+		"DB.CreateIndexWithSettings",
+		&db_proto.CreateIndexWithSettingsRequest{
+			Index: endpoint.Index,
+		},
+	)
+	createIndexSrvRes := &db_proto.CreateIndexWithSettingsResponse{}
+
+	if err := c.Call(ctx, createIndexSrvReq, createIndexSrvRes); err != nil {
+		return err
+	}
+
+	// Create DS alias
+	addAliasReq := c.NewRequest(
+		globals.DB_SERVICE_NAME,
+		"DB.AddAlias",
+		&db_proto.AddAliasRequest{
+			Index: endpoint.Index,
+			Alias: endpoint.Id,
+		},
+	)
+	addAliasRes := &db_proto.AddAliasResponse{}
+
+	if err := c.Call(ctx, addAliasReq, addAliasRes); err != nil {
+		return err
+	}
+
+	// Create specific "files" alias
+	addAliasReq = c.NewRequest(
+		globals.DB_SERVICE_NAME,
+		"DB.AddAlias",
+		&db_proto.AddAliasRequest{
+			Index: endpoint.Index,
+			Alias: globals.GetMD5Hash(endpoint.UserId),
+		},
+	)
+
+	if err := c.Call(ctx, addAliasReq, addAliasRes); err != nil {
 		return err
 	}
 

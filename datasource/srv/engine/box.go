@@ -39,3 +39,8 @@ func (b *Box) Delete(ctx context.Context, c client.Client) error {
 func (b *Box) Scan(ctx context.Context, c client.Client) error {
 	return ScanDataSource(ctx, c, &b.Endpoint)
 }
+
+// CreateIndeWithAlias creates a index for box datasource
+func (b *Box) CreateIndexWithAlias(ctx context.Context, c client.Client) error {
+	return CreateIndexWithAlias(ctx, c, &b.Endpoint)
+}

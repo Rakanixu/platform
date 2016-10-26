@@ -41,3 +41,8 @@ func (o *Onedrive) Delete(ctx context.Context, c client.Client) error {
 func (o *Onedrive) Scan(ctx context.Context, c client.Client) error {
 	return ScanDataSource(ctx, c, &o.Endpoint)
 }
+
+// CreateIndeWithAlias creates a index for local datasource
+func (o *Onedrive) CreateIndexWithAlias(ctx context.Context, c client.Client) error {
+	return CreateIndexWithAlias(ctx, c, &o.Endpoint)
+}

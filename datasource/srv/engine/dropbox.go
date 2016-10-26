@@ -39,3 +39,8 @@ func (s *Dropbox) Delete(ctx context.Context, c client.Client) error {
 func (s *Dropbox) Scan(ctx context.Context, c client.Client) error {
 	return ScanDataSource(ctx, c, &s.Endpoint)
 }
+
+// CreateIndeWithAlias creates a index for dropbox datasource
+func (s *Dropbox) CreateIndexWithAlias(ctx context.Context, c client.Client) error {
+	return CreateIndexWithAlias(ctx, c, &s.Endpoint)
+}
