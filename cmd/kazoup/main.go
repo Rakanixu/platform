@@ -11,6 +11,7 @@ import (
 	flag "github.com/kazoup/platform/flag"
 	media "github.com/kazoup/platform/media"
 	//notification "github.com/kazoup/platform/notification"
+	"fmt"
 	file "github.com/kazoup/platform/file"
 	scheduler "github.com/kazoup/platform/scheduler"
 	search "github.com/kazoup/platform/search"
@@ -22,7 +23,9 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"runtime"
 	"sync"
+	"time"
 )
 
 func main() {
@@ -83,7 +86,33 @@ func setup(app *ccli.App) {
 func desktop(ctx *ccli.Context) {
 	var wg sync.WaitGroup
 	cmds := ctx.App.Commands
-	binary, _ := osext.Executable()
+	binary, _ := osext.Executable() // TODO: handle errors, or log it at least
+	dir, _ := osext.ExecutableFolder()
+
+	// Execute nats server binary
+	log.Println("MAIN", runtime.GOOS, runtime.GOARCH)
+
+	// TODO: rest of possibilities.. I can add a windows 64bits version running on my laptop
+	// Radek should add the case for his machine
+	// or see how following line works.. binaries in windows plus .exe or.bat.. or what ever extension NATS team realeses binaries
+	// nc := exec.Command(fmt.Sprintf("%s%s%s%s%s", dir, "/nats/gnatsd-", runtime.GOOS, "-", runtime.GOARCH))
+	var nc *exec.Cmd
+	wg.Add(1)
+
+	if runtime.GOOS == "linux" {
+		if runtime.GOARCH == "amd64" {
+			nc = exec.Command(fmt.Sprintf("%s%s%s%s%s/gnatsd", dir, "/nats/gnatsd-", runtime.GOOS, "-", runtime.GOARCH))
+		}
+	}
+
+	nc.Stdout = os.Stdout
+	nc.Stderr = os.Stderr
+	if err := nc.Start(); err != nil {
+		log.Println(err.Error())
+		wg.Done()
+	}
+	time.Sleep(time.Second * 2)
+
 	for _, cmd := range cmds {
 		if cmd.Name != "help" && len(cmd.Subcommands) > 0 {
 			for _, subcmd := range cmd.Subcommands {
