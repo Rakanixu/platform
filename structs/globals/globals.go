@@ -1,22 +1,24 @@
 package globals
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/hex"
+	"errors"
 	"fmt"
-	"io"
-
 	"github.com/dgrijalva/jwt-go"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
-	"github.com/micro/go-micro/errors"
+	micro_errors "github.com/micro/go-micro/errors"
 	"github.com/micro/go-micro/metadata"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"golang.org/x/oauth2/slack"
+	"io"
 )
 
 const (
@@ -85,6 +87,7 @@ const (
 
 	SYSTEM_TOKEN     = "ajsdIgsnaloHFGis823jsdgyjTGDKijfcjk783JDUYFJyggvwejkxsnmbkjwpoj6483"
 	CLIENT_ID_SECRET = "EC1FD9R5t6D3cs9CzPbgJaBJjshoVgrJrTs6U39scYzYF7HYyMlv_mal2IjLLaA9" // Auth0 RPC API client
+	ENCRYTION_KEY_32 = "asjklasd766adfashj22kljasdhyfjkh"
 
 	CODE_REFRESH_DS = "CODE_REFRESH_DS"
 )
@@ -198,14 +201,14 @@ func NewSystemContext() context.Context {
 func ParseJWTToken(ctx context.Context) (string, error) {
 	md, ok := metadata.FromContext(ctx)
 	if !ok {
-		return "", errors.InternalServerError("AuthWrapper", "Unable to retrieve metadata")
+		return "", micro_errors.InternalServerError("AuthWrapper", "Unable to retrieve metadata")
 	}
 
 	token, err := jwt.Parse(md["Authorization"], func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.InternalServerError("Unexpected signing method", token.Header["alg"].(string))
+			return nil, micro_errors.InternalServerError("Unexpected signing method", token.Header["alg"].(string))
 		}
 
 		decoded, err := base64.URLEncoding.DecodeString(CLIENT_ID_SECRET)
@@ -217,11 +220,11 @@ func ParseJWTToken(ctx context.Context) (string, error) {
 	})
 
 	if err != nil {
-		return "", errors.Unauthorized("Token", err.Error())
+		return "", micro_errors.Unauthorized("Token", err.Error())
 	}
 
 	if !token.Valid {
-		return "", errors.Unauthorized("", "Invalid token")
+		return "", micro_errors.Unauthorized("", "Invalid token")
 	}
 
 	return token.Claims.(jwt.MapClaims)["sub"].(string), nil
@@ -316,4 +319,41 @@ func GetDocumentTemplate(fileType string, fullName bool) string {
 	}
 
 	return tmp
+}
+
+// Encrypt slice of bytes
+func Encrypt(key, text []byte) ([]byte, error) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+	b := base64.StdEncoding.EncodeToString(text)
+	ciphertext := make([]byte, aes.BlockSize+len(b))
+	iv := ciphertext[:aes.BlockSize]
+	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+		return nil, err
+	}
+	cfb := cipher.NewCFBEncrypter(block, iv)
+	cfb.XORKeyStream(ciphertext[aes.BlockSize:], []byte(b))
+	return ciphertext, nil
+}
+
+// Decrypt slice of bytes
+func Decrypt(key, text []byte) ([]byte, error) {
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return nil, err
+	}
+	if len(text) < aes.BlockSize {
+		return nil, errors.New("ciphertext too short")
+	}
+	iv := text[:aes.BlockSize]
+	text = text[aes.BlockSize:]
+	cfb := cipher.NewCFBDecrypter(block, iv)
+	cfb.XORKeyStream(text, text)
+	data, err := base64.StdEncoding.DecodeString(string(text))
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
