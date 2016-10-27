@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"github.com/kazoup/platform/structs/globals"
@@ -11,15 +12,32 @@ import (
 )
 
 func HandleGmailLogin(w http.ResponseWriter, r *http.Request) {
-	url := globals.NewGmailOauthConfig().AuthCodeURL(r.URL.Query().Get("user"), oauth2.AccessTypeOffline, oauth2.ApprovalForce)
+	t := []byte(r.URL.Query().Get("user"))                          // String to encrypt
+	nt, err := globals.Encrypt([]byte(globals.ENCRYTION_KEY_32), t) // Encryption
+	if err != nil {
+		log.Printf("Encryption failed with '%s'\n", err)
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		return
+	}
+
+	// Code conversion from bytes to hexadecimal string to be send over the wire
+	url := globals.NewGmailOauthConfig().AuthCodeURL(fmt.Sprintf("%0x", nt), oauth2.AccessTypeOffline, oauth2.ApprovalForce)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
 func HandleGmailCallback(w http.ResponseWriter, r *http.Request) {
 	userInfo := new(GoogleUserInfo)
-	state := r.FormValue("state")
-	if len(state) == 0 {
-		fmt.Printf("invalid oauth state, got '%s'\n", state)
+
+	euID, err := hex.DecodeString(r.FormValue("state"))                 // Convert the code we sent in hex format to bytes
+	uID, err := globals.Decrypt([]byte(globals.ENCRYTION_KEY_32), euID) // Decrypt the bytes into bytes --> string(bytes) was the encrypted string
+	if err != nil {
+		log.Printf("Decryption failed with '%s'\n", err)
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		return
+	}
+
+	if len(uID) == 0 {
+		fmt.Printf("invalid oauth state, got '%s'\n", uID)
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
@@ -40,7 +58,7 @@ func HandleGmailCallback(w http.ResponseWriter, r *http.Request) {
 	}
 	url := fmt.Sprintf("gmail://%s", userInfo.Email)
 
-	if err := SaveDatasource(globals.NewSystemContext(), state, url, token); err != nil {
+	if err := SaveDatasource(globals.NewSystemContext(), string(uID), url, token); err != nil {
 		fmt.Fprintf(w, "Error adding data source %s \n", err.Error())
 	}
 
