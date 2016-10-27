@@ -5,6 +5,7 @@ import (
 	"github.com/kazoup/platform/config/srv/sockets"
 	"github.com/kazoup/platform/structs/wrappers"
 	"github.com/micro/cli"
+	_ "github.com/micro/go-plugins/broker/nats"
 	microweb "github.com/micro/go-web"
 	"golang.org/x/net/websocket"
 	"log"

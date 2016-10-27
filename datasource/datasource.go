@@ -5,6 +5,7 @@ import (
 	"github.com/kazoup/platform/structs/globals"
 	"github.com/kazoup/platform/structs/wrappers"
 	"github.com/micro/cli"
+	_ "github.com/micro/go-plugins/broker/nats"
 	"log"
 )
 
