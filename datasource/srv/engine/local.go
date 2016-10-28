@@ -5,7 +5,6 @@ import (
 	"errors"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	"github.com/kazoup/platform/structs/globals"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"os"
@@ -46,14 +45,8 @@ func (l *Local) Validate(datasources string) (*proto_datasource.Endpoint, error)
 		}
 
 	}
-	s, err := globals.NewUUID()
-	if err != nil {
-		return &l.Endpoint, err
-	}
-	l.Endpoint.Index = "index" + strings.Replace(s, "|", "", 1)
-	l.Endpoint.Id = globals.GetMD5Hash(l.Endpoint.Url + l.Endpoint.UserId)
 
-	return &l.Endpoint, nil
+	return GenerateEndpoint(&l.Endpoint)
 }
 
 // Save local datasource

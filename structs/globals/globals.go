@@ -40,6 +40,7 @@ const (
 	FoldeType         = "folder"
 	FileTypeFile      = "files"
 	FileTypeDirectory = "directories"
+	TypeDatasource    = "datasource"
 
 	Local       = "local"
 	Slack       = "slack"

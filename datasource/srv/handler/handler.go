@@ -24,6 +24,33 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 	if len(req.Endpoint.Url) <= 0 {
 		return errors.BadRequest("go.micro.srv.datasource", "url required")
 	}
+
+	// Search for existing datasource. If exists, use instance.
+	// DB.Search internally filter queries by user_id retrieved from JWT token.
+	// user_id + url makes a constraint, so record should be unique.
+	srvRsp, err := engine.SearchDataSources(ctx, ds.Client, &proto.SearchRequest{
+		Index: globals.IndexDatasources,
+		Type:  globals.TypeDatasource,
+		From:  0,
+		Size:  9999,
+		Url:   req.Endpoint.Url,
+	})
+	if err != nil {
+		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
+	}
+
+	var r []*proto.Endpoint
+	if err := json.Unmarshal([]byte(srvRsp.Result), &r); err != nil {
+		return err
+	}
+
+	if len(r) == 1 {
+		req.Endpoint = r[0]
+	}
+	log.Println("------------")
+	log.Println(srvRsp.Result)
+	log.Println(r)
+
 	eng, err := engine.NewDataSourceEngine(req.Endpoint)
 	if err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())

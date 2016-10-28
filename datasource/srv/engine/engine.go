@@ -80,6 +80,24 @@ func NewDataSourceEngine(endpoint *datasource_proto.Endpoint) (Engine, error) {
 	return nil, err
 }
 
+// GenerateEndpoint assings index and id if data does not exists
+func GenerateEndpoint(endpoint *datasource_proto.Endpoint) (*datasource_proto.Endpoint, error) {
+	if len(endpoint.Index) == 0 {
+		str, err := globals.NewUUID()
+		if err != nil {
+			return endpoint, err
+		}
+
+		endpoint.Index = "index" + strings.Replace(str, "-", "", 1)
+	}
+
+	if len(endpoint.Id) == 0 {
+		endpoint.Id = globals.GetMD5Hash(endpoint.Url + endpoint.UserId)
+	}
+
+	return endpoint, nil
+}
+
 // SaveDataSource is a helper to write DS in ES.
 func SaveDataSource(ctx context.Context, data interface{}, id string) error {
 	b, err := json.Marshal(data)
