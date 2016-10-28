@@ -175,11 +175,18 @@ func (e *elastic) DeleteByQuery(ctx context.Context, req *db.DeleteByQueryReques
 // Search ES index
 func (e *elastic) Search(ctx context.Context, req *db.SearchRequest) (*db.SearchResponse, error) {
 	var results []interface{}
+	var err error
 	var rstr string
+	var uId string
 
-	uId, err := globals.ParseJWTToken(ctx)
-	if err != nil {
-		return &db.SearchResponse{}, err
+	// Get user id implicitly or explicitly
+	if len(req.UserId) == 0 {
+		uId, err = globals.ParseJWTToken(ctx)
+		if err != nil {
+			return &db.SearchResponse{}, err
+		}
+	} else {
+		uId = req.UserId
 	}
 
 	eQuery := ElasticQuery{
