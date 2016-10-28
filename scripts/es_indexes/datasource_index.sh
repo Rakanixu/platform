@@ -51,6 +51,10 @@ curl -XPOST http://localhost:9200/datasources -d '
         "user_id": {
           "type": "string",
           "index": "not_analyzed"
+        },
+        "url": {
+          "type": "string",
+          "index": "not_analyzed"
         }
       }
     }

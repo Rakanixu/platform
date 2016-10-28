@@ -5,7 +5,6 @@ import (
 	"errors"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	"github.com/kazoup/platform/structs/globals"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"os"
@@ -19,7 +18,7 @@ type Local struct {
 }
 
 // Validate local datasource (directory exists) and check for intersections between local datasources
-func (l *Local) Validate(datasources string) (*proto_datasource.Endpoint, error) {
+func (l *Local) Validate(ctx context.Context, c client.Client, datasources string) (*proto_datasource.Endpoint, error) {
 	i := strings.LastIndex(l.Endpoint.Url, "//")
 
 	l.DataOrigin = l.Endpoint.Url[i+1 : len(l.Endpoint.Url)] // Local filesystem path
@@ -46,12 +45,12 @@ func (l *Local) Validate(datasources string) (*proto_datasource.Endpoint, error)
 		}
 
 	}
-	s, err := globals.NewUUID()
+
+	var err error
+	l.Endpoint, err = GenerateEndpoint(ctx, c, l.Endpoint)
 	if err != nil {
-		return &l.Endpoint, err
+		return nil, err
 	}
-	l.Endpoint.Index = "index" + strings.Replace(s, "|", "", 1)
-	l.Endpoint.Id = globals.GetMD5Hash(l.Endpoint.Url + l.Endpoint.UserId)
 
 	return &l.Endpoint, nil
 }

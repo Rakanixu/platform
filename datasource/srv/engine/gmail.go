@@ -2,10 +2,8 @@ package engine
 
 import (
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	"github.com/kazoup/platform/structs/globals"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
-	"strings"
 )
 
 // Gmail struct
@@ -14,13 +12,13 @@ type Gmail struct {
 }
 
 // Validate gmail data  source
-func (g *Gmail) Validate(datasources string) (*datasource_proto.Endpoint, error) {
-	s, err := globals.NewUUID()
+func (g *Gmail) Validate(ctx context.Context, c client.Client, datasources string) (*datasource_proto.Endpoint, error) {
+	var err error
+
+	g.Endpoint, err = GenerateEndpoint(ctx, c, g.Endpoint)
 	if err != nil {
-		return &g.Endpoint, err
+		return nil, err
 	}
-	g.Endpoint.Index = "index" + strings.Replace(s, "-", "", 1)
-	g.Endpoint.Id = globals.GetMD5Hash(g.Endpoint.Url + g.Endpoint.UserId)
 
 	return &g.Endpoint, nil
 }

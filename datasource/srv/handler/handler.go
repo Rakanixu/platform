@@ -24,6 +24,7 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 	if len(req.Endpoint.Url) <= 0 {
 		return errors.BadRequest("go.micro.srv.datasource", "url required")
 	}
+
 	eng, err := engine.NewDataSourceEngine(req.Endpoint)
 	if err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
@@ -42,7 +43,7 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 	}
 
 	// Validate and assigns Id and index
-	endpoint, err := eng.Validate(datasources)
+	endpoint, err := eng.Validate(ctx, ds.Client, datasources)
 	if err != nil {
 		return errors.BadRequest("go.micro.srv.datasource", err.Error())
 	}

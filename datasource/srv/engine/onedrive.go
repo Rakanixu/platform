@@ -2,10 +2,8 @@ package engine
 
 import (
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	"github.com/kazoup/platform/structs/globals"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
-	"strings"
 )
 
 // Onedrive struct
@@ -14,15 +12,13 @@ type Onedrive struct {
 }
 
 // Validate
-func (o *Onedrive) Validate(datasources string) (*datasource_proto.Endpoint, error) {
-	if len(o.Endpoint.Index) == 0 {
-		s, err := globals.NewUUID()
-		if err != nil {
-			return &o.Endpoint, err
-		}
-		o.Endpoint.Index = "index" + strings.Replace(s, "-", "", 1)
+func (o *Onedrive) Validate(ctx context.Context, c client.Client, datasources string) (*datasource_proto.Endpoint, error) {
+	var err error
+
+	o.Endpoint, err = GenerateEndpoint(ctx, c, o.Endpoint)
+	if err != nil {
+		return nil, err
 	}
-	o.Endpoint.Id = globals.GetMD5Hash(o.Endpoint.Url + o.Endpoint.UserId)
 
 	return &o.Endpoint, nil
 }
