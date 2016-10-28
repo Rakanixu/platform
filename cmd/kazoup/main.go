@@ -85,54 +85,38 @@ func setup(app *ccli.App) {
 
 func desktop(ctx *ccli.Context) {
 	var wg sync.WaitGroup
-	cmds := ctx.App.Commands
-	binary, _ := osext.Executable() // TODO: handle errors, or log it at least
-	dir, _ := osext.ExecutableFolder()
-
-	// Execute nats server binary
-	log.Println("MAIN", runtime.GOOS, runtime.GOARCH)
-
-	// TODO: rest of possibilities.. I can add a windows 64bits version running on my laptop
-	// Radek should add the case for his machine
-	// or see how following line works.. binaries in windows plus .exe or.bat.. or what ever extension NATS team realeses binaries
-	// nc := exec.Command(fmt.Sprintf("%s%s%s%s%s", dir, "/nats/gnatsd-", runtime.GOOS, "-", runtime.GOARCH))
 	var nc *exec.Cmd
-	wg.Add(1)
+	cmds := ctx.App.Commands
+	binary, err := osext.Executable()
+	if err != nil {
+		log.Println(err.Error())
+	}
+	dir, err := osext.ExecutableFolder()
+	if err != nil {
+		log.Println(err.Error())
+	}
 
+	// Execute nats server binary. Only linux amd64. Other platforms should run binary manually.
+	// TODO: rest of possibilities..
 	if runtime.GOOS == "linux" {
 		if runtime.GOARCH == "amd64" {
-			nc = exec.Command(fmt.Sprintf("%s%s%s%s%s/gnatsd", dir, "/nats/gnatsd-", runtime.GOOS, "-", runtime.GOARCH))
+			wg.Add(1)
+			nc = exec.Command(fmt.Sprintf("%s%s%s%s%s/gnatsd", dir, "/nats/gnatsd-v0.9.4-", runtime.GOOS, "-", runtime.GOARCH))
+			nc.Stdout = os.Stdout
+			nc.Stderr = os.Stderr
+			if err := nc.Start(); err != nil {
+				log.Println(err.Error())
+				wg.Done()
+			}
+			time.Sleep(time.Second * 2)
 		}
 	}
-
-	nc.Stdout = os.Stdout
-	nc.Stderr = os.Stderr
-	if err := nc.Start(); err != nil {
-		log.Println(err.Error())
-		wg.Done()
-	}
-	time.Sleep(time.Second * 2)
 
 	for _, cmd := range cmds {
 		if cmd.Name != "help" && len(cmd.Subcommands) > 0 {
 			for _, subcmd := range cmd.Subcommands {
 				wg.Add(1)
-
-				//var c *exec.Cmd
-				// TODO: code review
-				// The idea is to use nats as a broker for our kazoup services
-				// Not sure if this is a good approach or not.
-				// I do this way so the nats import it is required just on our services.
-				//TODO: cleanup
-				// Well, now I set nats always as a broker, if srv does not import, probably will fail if does pub/subs operation? probably but no idea, has to test it
-				/*			if subcmd.Name == "srv" {
-								c = exec.Command(binary, "--registry=mdns", "--broker=nats", "--broker_address=127.0.0.1:4222", cmd.Name, subcmd.Name)
-							} else {
-								c = exec.Command(binary, "--registry=mdns", cmd.Name, subcmd.Name)
-							}*/
-
 				c := exec.Command(binary, "--registry=mdns", "--broker=nats", "--broker_address=127.0.0.1:4222", cmd.Name, subcmd.Name)
-
 				c.Stdout = os.Stdout
 				c.Stderr = os.Stderr
 				if err := c.Start(); err != nil {
