@@ -12,8 +12,15 @@ type Box struct {
 }
 
 // Validate box datasource
-func (b *Box) Validate(datasources string) (*proto.Endpoint, error) {
-	return GenerateEndpoint(&b.Endpoint)
+func (b *Box) Validate(ctx context.Context, c client.Client, datasources string) (*proto.Endpoint, error) {
+	var err error
+
+	b.Endpoint, err = GenerateEndpoint(ctx, c, b.Endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	return &b.Endpoint, nil
 }
 
 // Save box data source

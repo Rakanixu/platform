@@ -12,8 +12,15 @@ type Slack struct {
 }
 
 // Validate slack data source
-func (s *Slack) Validate(datasources string) (*proto.Endpoint, error) {
-	return GenerateEndpoint(&s.Endpoint)
+func (s *Slack) Validate(ctx context.Context, c client.Client, datasources string) (*proto.Endpoint, error) {
+	var err error
+
+	s.Endpoint, err = GenerateEndpoint(ctx, c, s.Endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	return &s.Endpoint, nil
 }
 
 // Save slack datasource

@@ -12,8 +12,15 @@ type Googledrive struct {
 }
 
 // Validate google drive data source
-func (g *Googledrive) Validate(datasources string) (*datasource_proto.Endpoint, error) {
-	return GenerateEndpoint(&g.Endpoint)
+func (g *Googledrive) Validate(ctx context.Context, c client.Client, datasources string) (*datasource_proto.Endpoint, error) {
+	var err error
+
+	g.Endpoint, err = GenerateEndpoint(ctx, c, g.Endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	return &g.Endpoint, nil
 }
 
 // Save google drive data source

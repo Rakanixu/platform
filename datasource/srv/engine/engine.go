@@ -24,7 +24,7 @@ const (
 
 // Engine interface implements Validation and Save for datasources, name probably could be better DataSourcerer?? jaja
 type Engine interface {
-	Validate(datasources string) (*datasource_proto.Endpoint, error)
+	Validate(ctx context.Context, c client.Client, datasources string) (*datasource_proto.Endpoint, error)
 	Save(ctx context.Context, data interface{}, id string) error
 	Delete(ctx context.Context, c client.Client) error
 	Scan(ctx context.Context, c client.Client) error
@@ -81,7 +81,31 @@ func NewDataSourceEngine(endpoint *datasource_proto.Endpoint) (Engine, error) {
 }
 
 // GenerateEndpoint assings index and id if data does not exists
-func GenerateEndpoint(endpoint *datasource_proto.Endpoint) (*datasource_proto.Endpoint, error) {
+func GenerateEndpoint(ctx context.Context, c client.Client, endpoint datasource_proto.Endpoint) (datasource_proto.Endpoint, error) {
+	// Search for existing datasource. If exists, use instance.
+	// DB.Search internally tries to get userId explicitly (from request). If not preset, tries to get from context
+	// If context is system context, an error will be trow
+	srvRsp, err := SearchDataSources(ctx, c, &datasource_proto.SearchRequest{
+		Index:  globals.IndexDatasources,
+		Type:   globals.TypeDatasource,
+		From:   0,
+		Size:   9999,
+		Url:    endpoint.Url,
+		UserId: endpoint.UserId,
+	})
+	if err != nil {
+		return datasource_proto.Endpoint{}, err
+	}
+
+	var r []*datasource_proto.Endpoint
+	if err := json.Unmarshal([]byte(srvRsp.Result), &r); err != nil {
+		return datasource_proto.Endpoint{}, err
+	}
+	// user_id + url makes a constraint, so record should be unique.
+	if len(r) == 1 {
+		endpoint = *r[0]
+	}
+
 	if len(endpoint.Index) == 0 {
 		str, err := globals.NewUUID()
 		if err != nil {

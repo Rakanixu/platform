@@ -12,8 +12,15 @@ type Gmail struct {
 }
 
 // Validate gmail data  source
-func (g *Gmail) Validate(datasources string) (*datasource_proto.Endpoint, error) {
-	return GenerateEndpoint(&g.Endpoint)
+func (g *Gmail) Validate(ctx context.Context, c client.Client, datasources string) (*datasource_proto.Endpoint, error) {
+	var err error
+
+	g.Endpoint, err = GenerateEndpoint(ctx, c, g.Endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	return &g.Endpoint, nil
 }
 
 // Save gmail data source

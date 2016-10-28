@@ -18,7 +18,7 @@ type Local struct {
 }
 
 // Validate local datasource (directory exists) and check for intersections between local datasources
-func (l *Local) Validate(datasources string) (*proto_datasource.Endpoint, error) {
+func (l *Local) Validate(ctx context.Context, c client.Client, datasources string) (*proto_datasource.Endpoint, error) {
 	i := strings.LastIndex(l.Endpoint.Url, "//")
 
 	l.DataOrigin = l.Endpoint.Url[i+1 : len(l.Endpoint.Url)] // Local filesystem path
@@ -46,7 +46,13 @@ func (l *Local) Validate(datasources string) (*proto_datasource.Endpoint, error)
 
 	}
 
-	return GenerateEndpoint(&l.Endpoint)
+	var err error
+	l.Endpoint, err = GenerateEndpoint(ctx, c, l.Endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	return &l.Endpoint, nil
 }
 
 // Save local datasource

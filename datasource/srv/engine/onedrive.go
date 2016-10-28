@@ -12,8 +12,15 @@ type Onedrive struct {
 }
 
 // Validate
-func (o *Onedrive) Validate(datasources string) (*datasource_proto.Endpoint, error) {
-	return GenerateEndpoint(&o.Endpoint)
+func (o *Onedrive) Validate(ctx context.Context, c client.Client, datasources string) (*datasource_proto.Endpoint, error) {
+	var err error
+
+	o.Endpoint, err = GenerateEndpoint(ctx, c, o.Endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	return &o.Endpoint, nil
 }
 
 // Save one drive datasource

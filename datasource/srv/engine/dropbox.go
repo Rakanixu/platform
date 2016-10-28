@@ -12,8 +12,15 @@ type Dropbox struct {
 }
 
 // Validate dropbox datasource
-func (s *Dropbox) Validate(datasources string) (*proto.Endpoint, error) {
-	return GenerateEndpoint(&s.Endpoint)
+func (s *Dropbox) Validate(ctx context.Context, c client.Client, datasources string) (*proto.Endpoint, error) {
+	var err error
+
+	s.Endpoint, err = GenerateEndpoint(ctx, c, s.Endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	return &s.Endpoint, nil
 }
 
 // Save dropbox data source
