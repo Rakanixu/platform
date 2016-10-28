@@ -906,6 +906,11 @@
                         type: 'local',
                         index: Auth.getMD5UserId()
                     });
+                } else {
+                    this.set('selectedDatasource', {
+                        type: '',
+                        index: Auth.getMD5UserId()
+                    });
                 }
 
                 // depth must be 0 for search

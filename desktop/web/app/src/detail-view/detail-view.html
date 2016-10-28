@@ -7,6 +7,8 @@
 <link rel="import" href="../../bower_components/mat-avatar/mat-avatar.html">
 <link rel="import" href="../../bower_components/mat-item/mat-item.html">
 
+<link rel="import" href="../../src/third-party-actions/share-file.html">
+
 <link rel="import" href="../../src/behaviors/util-behavior.html">
 <link rel="import" href="../../src/behaviors/endpoints-behavior.html">
 <link rel="import" href="../../src/behaviors/map-behavior.html">
@@ -170,6 +172,8 @@
                 description="[[bytesToSize(aggsInfo.totalSize)]]"
                 tabindex="-1"></mat-item>
     </template>
+
+    <share-file item="{{item}}"></share-file>
 
     <paper-toast id="toast" text=""></paper-toast>
 
