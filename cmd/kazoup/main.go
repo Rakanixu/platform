@@ -11,6 +11,7 @@ import (
 	flag "github.com/kazoup/platform/flag"
 	media "github.com/kazoup/platform/media"
 	//notification "github.com/kazoup/platform/notification"
+	"fmt"
 	file "github.com/kazoup/platform/file"
 	scheduler "github.com/kazoup/platform/scheduler"
 	search "github.com/kazoup/platform/search"
@@ -22,7 +23,9 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"runtime"
 	"sync"
+	"time"
 )
 
 func main() {
@@ -82,32 +85,53 @@ func setup(app *ccli.App) {
 
 func desktop(ctx *ccli.Context) {
 	var wg sync.WaitGroup
+	var nc *exec.Cmd
 	cmds := ctx.App.Commands
-	binary, _ := osext.Executable()
+	binary, err := osext.Executable()
+	if err != nil {
+		log.Println(err.Error())
+	}
+	dir, err := osext.ExecutableFolder()
+	if err != nil {
+		log.Println(err.Error())
+	}
+
+	// Execute nats server binary. Only linux amd64. Other platforms should run binary manually.
+	// TODO: rest of possibilities..
+	if runtime.GOOS == "linux" {
+		if runtime.GOARCH == "amd64" {
+			wg.Add(1)
+			nc = exec.Command(fmt.Sprintf("%s%s%s%s%s/gnatsd", dir, "/nats/gnatsd-v0.9.4-", runtime.GOOS, "-", runtime.GOARCH))
+			nc.Stdout = os.Stdout
+			nc.Stderr = os.Stderr
+			if err := nc.Start(); err != nil {
+				log.Println(err.Error())
+				wg.Done()
+			}
+			time.Sleep(time.Second * 2)
+		}
+	}
+
 	for _, cmd := range cmds {
 		if cmd.Name != "help" && len(cmd.Subcommands) > 0 {
 			for _, subcmd := range cmd.Subcommands {
-				//time.Sleep(time.Second)
 				wg.Add(1)
-				log.Print(cmd.Name, subcmd.Name)
-				c := exec.Command(binary, "--registry=mdns", cmd.Name, subcmd.Name)
+				c := exec.Command(binary, "--registry=mdns", "--broker=nats", "--broker_address=127.0.0.1:4222", cmd.Name, subcmd.Name)
 				c.Stdout = os.Stdout
 				c.Stderr = os.Stderr
 				if err := c.Start(); err != nil {
-					log.Print(err.Error())
+					log.Println(err.Error())
 					wg.Done()
 				}
 			}
 		}
 		if cmd.Name != "help" && len(cmd.Subcommands) == 0 && cmd.Name != "desktop" {
-
 			wg.Add(1)
-			log.Print(cmd.Name)
-			c := exec.Command(binary, "--registry=mdns", cmd.Name)
+			c := exec.Command(binary, "--registry=mdns", "--broker=nats", "--broker_address=127.0.0.1:4222", cmd.Name)
 			c.Stdout = os.Stdout
 			c.Stderr = os.Stderr
 			if err := c.Start(); err != nil {
-				log.Print(err.Error())
+				log.Println(err.Error())
 				wg.Done()
 			}
 		}
