@@ -31,7 +31,7 @@
 
     <template is="dom-if" if="[[!item.is_dir]]" restamp="true">
       <template is="dom-if" if="[[isImage(item.category)]]" restamp="true">
-        <iron-image src="[[endpoints.web]]/media/preview?file_id=[[item.id]]&width=600&mode=fit&quality=100&token=[[getToken()]]"
+        <iron-image src="[[endpoints.web]]/media/preview?user_id=[[md5UserId]]&file_id=[[item.id]]&width=600&mode=fit&quality=100&token=[[getToken()]]"
                     sizing="contain"
                     preload
                     fade></iron-image><!--placeholder="src/static/spinner_256.gif"-->
@@ -219,6 +219,10 @@
             notify: true,
             observer: 'itemChanged'
           },
+          md5UserId: {
+            type: String,
+            notify: false
+          },
           slackUser: {
             type: Object,
             notify: true
@@ -293,6 +297,7 @@
         },
         itemChanged: function(newVal, oldVal) {
           this.headers = Auth.getHeaders();
+          this.md5UserId = Auth.getMD5UserId();
 
           switch(this.item.file_type) {
             case 'local':
