@@ -72,6 +72,35 @@ func (sfs *SlackFs) CreateFile(fileType string) (string, error) {
 	return "", nil
 }
 
+// ShareFile sets a PermalinkPublic available, so everyone with URL has access to the slack file
+func (sfs *SlackFs) ShareFile(id string) (string, error) {
+	data := make(url.Values)
+	data.Add("token", sfs.Endpoint.Token.AccessToken)
+	data.Add("file", id)
+
+	c := &http.Client{}
+	rsp, err := c.PostForm(globals.SlackShareFilesEndpoint, data)
+
+	if err != nil {
+		return "", err
+	}
+	defer rsp.Body.Close()
+
+	var ssr *slack.SlackShareResponse
+	if err := json.NewDecoder(rsp.Body).Decode(&ssr); err != nil {
+		return "", err
+	}
+
+	// Response contains object, permalink_public attr will be modified
+	// Reindex document
+	f := file.NewKazoupFileFromSlackFile(&ssr.File, sfs.Endpoint.Id, sfs.Endpoint.UserId, sfs.Endpoint.Index)
+	if err := file.IndexAsync(f, globals.FilesTopic, sfs.Endpoint.Index); err != nil {
+		return "", err
+	}
+
+	return ssr.File.PermalinkPublic, nil
+}
+
 // getUsers retrieves users from slack team
 func (sfs *SlackFs) getUsers() error {
 	data := make(url.Values)

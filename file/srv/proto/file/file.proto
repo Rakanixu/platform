@@ -4,6 +4,7 @@ package go.micro.srv.file;
 
 service File {
   rpc Create(CreateRequest) returns (CreateResponse) {}
+  rpc Share(ShareRequest) returns (ShareResponse) {}
 }
 
 message CreateRequest {
@@ -15,3 +16,11 @@ message CreateResponse {
   string doc_url = 1;
 }
 
+message ShareRequest {
+  string datasource_id = 1;
+  string original_id = 2;
+}
+
+message ShareResponse {
+  string public_url = 1;
+}

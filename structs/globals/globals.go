@@ -62,9 +62,10 @@ const (
 
 	ONEDRIVE_TEXT = "text/plain"
 
-	SlackFilesEndpoint    = "https://slack.com/api/files.list"
-	SlackUsersEndpoint    = "https://slack.com/api/users.list"
-	SlackChannelsEndpoint = "https://slack.com/api/channels.list"
+	SlackFilesEndpoint      = "https://slack.com/api/files.list"
+	SlackUsersEndpoint      = "https://slack.com/api/users.list"
+	SlackChannelsEndpoint   = "https://slack.com/api/channels.list"
+	SlackShareFilesEndpoint = "https://slack.com/api/files.sharedPublicURL"
 
 	OneDriveEndpoint = "https://api.onedrive.com/v1.0/"
 

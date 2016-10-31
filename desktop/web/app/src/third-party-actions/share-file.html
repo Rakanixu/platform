@@ -2,10 +2,12 @@
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../../bower_components/iron-icons/device-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/social-icons.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 
 <link rel="import" href="../../bower_components/mat-icon/mat-icon.html">
 <link rel="import" href="../../bower_components/mat-icons/mat-icons.html">
@@ -30,15 +32,26 @@
 
     <mat-item label=""
               description=""
+              on-xp-activate="shareFile"
               tabindex="-1">
-      <mat-icon-button id="reset"
-                       icon="mat:clear"
-                       on-xp-activate="resetSearch"
-                       color="white"
-                       hidden$="[[!searching]]"></mat-icon-button>
+      <paper-icon-button id="share"
+                         icon="social:share"
+                         color="black"
+                         hidden$="[[!searching]]"></paper-icon-button>
 
     </mat-item>
 
+    <paper-toast id="toast" duration="6000" text=""></paper-toast>
+
+    <iron-ajax id="rpcShareFile"
+               method="POST"
+               content-type="application/json"
+               url="[[endpoints.endpoint]]"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleShareFile"
+               params="[[rpcShareFileParams]]"
+               headers="[[headers]]"></iron-ajax>
 
   </template>
 
@@ -56,7 +69,61 @@
         properties: {
           item: {
             type: Object,
-            notify: true
+            notify: true,
+            reflectToAttribute: true
+          },
+          rpcShareFileParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: 'com.kazoup.srv.file',
+                method: 'File.Share',
+                request: {
+                  datasource_id: '',
+                  original_id: ''
+                }
+              };
+            }
+          }
+        },
+        shareFile: function() {
+          this.headers = Auth.getHeaders();
+
+          this.rpcShareFileParams.request.datasource_id = this.item.datasource_id;
+          this.rpcShareFileParams.request.original_id = this.item.original.id;
+          this.$.rpcShareFile.body = this.rpcShareFileParams;
+          this.$.rpcShareFile.generateRequest();
+        },
+        _handleShareFile: function(e) {
+          if (e.detail.response) {
+            switch (this.item.file_type) {
+              case 'slack':
+                // http://stackoverflow.com/questions/32648993/polymer-this-set-is-not-updating-parent-element-properties-when-changing-sub-pr
+                // From child to parent, data-binding has an issue, when setting attrs.
+                // this.notifyPath('item.original.permalink_public', e.detail.response.public_url);
+                // this.notifyPath('item.original.public_url_shared', true);
+                // Workaround, set attrs in top parent element
+                if (e.detail.response.public_url) {
+                  document.querySelector('web-app').set('item.original.permalink_public', e.detail.response.public_url);
+                  document.querySelector('web-app').set('item.original.public_url_shared', true);
+
+                  this.$.toast.text = 'Public file link available.';
+                  this.$.toast.show();
+                } else {
+                  this.$.toast.text = 'Public file link alrady exists or you do not have permissions to share it publicly.';
+                  this.$.toast.show();
+                }
+                break;
+            }
+          }
+        },
+        _handleError: function(e) {
+          this.checkUnauthorize(e);
+
+          if (e.detail.request && e.detail.request.response) {
+            this.$.toast.text = e.detail.request.response.detail;
+            this.$.toast.show();
           }
         }
       });

@@ -131,6 +131,7 @@
 
     <mat-item label="Location"
               description="[[item.url]]"
+              on-xp-activate="openFileFromDetailView"
               tabindex="-1"></mat-item>
 
     <template is="dom-if" if="[[hasSlackComments(item.original)]]" restamp="true">
@@ -139,6 +140,13 @@
                 tabindex="-1">
 
       </mat-item>
+    </template>
+
+    <template id="hasSlackPublicUrl" is="dom-if" if="[[hasSlackPublicUrl(item.original, item.original.public_url_shared)]]" restamp="true">
+      <mat-item label="Public Available Location"
+                description="[[item.original.permalink_public]]"
+                on-xp-activate="openPublicFileFromDetailView"
+                tabindex="-1"></mat-item>
     </template>
 
     <mat-item label="Last modified"
@@ -221,6 +229,7 @@
           item: {
             type: Object,
             notify: true,
+            reflectToAttribute: true,
             observer: 'itemChanged'
           },
           md5UserId: {
@@ -420,6 +429,16 @@
 
           this.$.rpcSearchSlackUsers.generateRequest();
           this.$.rpcSearchSlackChannels.generateRequest();
+        },
+        openFileFromDetailView: function(e) {
+          this.openFile(this.item.url);
+        },
+        openPublicFileFromDetailView: function(e) {
+          switch (this.item.file_type) {
+            case 'slack':
+              this.openFile(this.item.original.permalink_public);
+              break;
+          }
         },
         isDropboxFileShared: function(fileType, isShared) {
           return this.isDropbox(fileType) && isShared;

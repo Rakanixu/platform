@@ -71,6 +71,11 @@ func (lfs *LocalFs) CreateFile(fileType string) (string, error) {
 	return "", nil
 }
 
+// ShareFile
+func (lfs *LocalFs) ShareFile(id string) (string, error) {
+	return "", nil
+}
+
 // walkDatasourceParents creates helper index, aliases and push the dirs that makes the root path of the datasource
 func (lfs *LocalFs) walkDatasourceParents() error {
 	// Create index and put mapping if does not exist

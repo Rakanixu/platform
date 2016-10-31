@@ -109,6 +109,11 @@ func (dfs *DropboxFs) CreateFile(fileType string) (string, error) {
 	return kfd.GetURL(), nil
 }
 
+// ShareFile
+func (dfs *DropboxFs) ShareFile(id string) (string, error) {
+	return "", nil
+}
+
 // getFiles discovers files in dropbox account
 func (dfs *DropboxFs) getFiles() error {
 	// We want all avilable info

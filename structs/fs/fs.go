@@ -12,6 +12,7 @@ import (
 type Fs interface {
 	List() (chan file.File, chan bool, error)
 	CreateFile(string) (string, error)
+	ShareFile(string) (string, error)
 	GetDatasourceId() string
 	Token() string
 	GetThumbnail(id string) (string, error)

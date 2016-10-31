@@ -1,12 +1,7 @@
 package handler
 
 import (
-	"encoding/json"
-	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	proto "github.com/kazoup/platform/file/srv/proto/file"
-	"github.com/kazoup/platform/structs/fs"
-	"github.com/kazoup/platform/structs/globals"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
@@ -19,29 +14,12 @@ type File struct {
 
 // Create File handler
 func (f *File) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.CreateResponse) error {
-	var ds *datasource_proto.Endpoint
-
 	if len(req.DatasourceId) == 0 {
 		return errors.BadRequest("com.kazoup.srv.file", "datasource_id required")
 	}
 
-	// Get the datasource
-	c := db_proto.NewDBClient(globals.DB_SERVICE_NAME, f.Client)
-	rr, err := c.Read(ctx, &db_proto.ReadRequest{
-		Index: "datasources",
-		Type:  "datasource",
-		Id:    req.DatasourceId,
-	})
-	if err != nil {
-		return err
-	}
-
-	if err := json.Unmarshal([]byte(rr.Result), &ds); err != nil {
-		return err
-	}
-
-	// Instantiate file system from datasource
-	fsys, err := fs.NewFsFromEndpoint(ds)
+	// Instantiate file system
+	fsys, err := NewFileSystem(f.Client, ctx, req.DatasourceId)
 	if err != nil {
 		return err
 	}
@@ -53,6 +31,32 @@ func (f *File) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.
 	}
 
 	rsp.DocUrl = s
+
+	return nil
+}
+
+// Share file handler
+func (f *File) Share(ctx context.Context, req *proto.ShareRequest, rsp *proto.ShareResponse) error {
+	if len(req.OriginalId) == 0 {
+		return errors.BadRequest("com.kazoup.srv.file", "file original_id required")
+	}
+
+	if len(req.DatasourceId) == 0 {
+		return errors.BadRequest("com.kazoup.srv.file", "datasource_id required")
+	}
+
+	// Instantiate file system
+	fsys, err := NewFileSystem(f.Client, ctx, req.DatasourceId)
+	if err != nil {
+		return err
+	}
+
+	url, err := fsys.ShareFile(req.OriginalId)
+	if err != nil {
+		return err
+	}
+
+	rsp.PublicUrl = url
 
 	return nil
 }

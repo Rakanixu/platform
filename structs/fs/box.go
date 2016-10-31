@@ -182,6 +182,11 @@ func (bfs *BoxFs) CreateFile(fileType string) (string, error) {
 	return kfb.GetURL(), nil
 }
 
+// ShareFile
+func (bfs *BoxFs) ShareFile(id string) (string, error) {
+	return "", nil
+}
+
 // getDirChildren get children from directory
 func (bfs *BoxFs) getDirChildren(id string, offset, limit int) error {
 	c := &http.Client{}

@@ -103,6 +103,11 @@ func (gfs *GoogleDriveFs) CreateFile(fileType string) (string, error) {
 	return kfg.GetURL(), nil
 }
 
+// ShareFile
+func (gfs *GoogleDriveFs) ShareFile(id string) (string, error) {
+	return "", nil
+}
+
 // getFiles discover all files in google drive account
 func (gfs *GoogleDriveFs) getFiles() error {
 	cfg := globals.NewGoogleOautConfig()

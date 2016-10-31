@@ -60,6 +60,11 @@ func (gfs *GmailFs) CreateFile(fileType string) (string, error) {
 	return "", nil
 }
 
+// ShareFile
+func (gfs *GmailFs) ShareFile(id string) (string, error) {
+	return "", nil
+}
+
 // getMessages discover files (attachments)
 func (gfs *GmailFs) getMessages() error {
 	cfg := globals.NewGmailOauthConfig()
