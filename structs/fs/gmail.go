@@ -61,7 +61,7 @@ func (gfs *GmailFs) CreateFile(fileType string) (string, error) {
 }
 
 // ShareFile
-func (gfs *GmailFs) ShareFile(id string) (string, error) {
+func (gfs *GmailFs) ShareFile(id string, sharePublicly bool) (string, error) {
 	return "", nil
 }
 

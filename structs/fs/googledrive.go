@@ -104,7 +104,7 @@ func (gfs *GoogleDriveFs) CreateFile(fileType string) (string, error) {
 }
 
 // ShareFile
-func (gfs *GoogleDriveFs) ShareFile(id string) (string, error) {
+func (gfs *GoogleDriveFs) ShareFile(id string, sharePublicly bool) (string, error) {
 	return "", nil
 }
 

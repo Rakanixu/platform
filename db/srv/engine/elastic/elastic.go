@@ -198,9 +198,15 @@ func (e *elastic) Search(ctx context.Context, req *db.SearchRequest) (*db.Search
 		Category: req.Category,
 		Url:      req.Url,
 		Depth:    req.Depth,
-		Type:     req.FileType,
+		Type:     req.Type,
+		FileType: req.FileType,
 	}
 	query, err := eQuery.Query()
+
+	log.Println("SEARCH")
+	log.Println(query)
+	log.Println(req.Index)
+	log.Println(req.Type)
 
 	if err != nil {
 		return &db.SearchResponse{}, err

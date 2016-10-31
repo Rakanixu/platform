@@ -51,7 +51,7 @@ func (f *File) Share(ctx context.Context, req *proto.ShareRequest, rsp *proto.Sh
 		return err
 	}
 
-	url, err := fsys.ShareFile(req.OriginalId)
+	url, err := fsys.ShareFile(req.OriginalId, req.SharePublicly)
 	if err != nil {
 		return err
 	}

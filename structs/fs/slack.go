@@ -73,32 +73,12 @@ func (sfs *SlackFs) CreateFile(fileType string) (string, error) {
 }
 
 // ShareFile sets a PermalinkPublic available, so everyone with URL has access to the slack file
-func (sfs *SlackFs) ShareFile(id string) (string, error) {
-	data := make(url.Values)
-	data.Add("token", sfs.Endpoint.Token.AccessToken)
-	data.Add("file", id)
-
-	c := &http.Client{}
-	rsp, err := c.PostForm(globals.SlackShareFilesEndpoint, data)
-
-	if err != nil {
-		return "", err
+func (sfs *SlackFs) ShareFile(id string, sharePublicly bool) (string, error) {
+	if sharePublicly {
+		return sfs.shareFilePublicly(id)
+	} else {
+		return sfs.shareFileInsideTeam(id)
 	}
-	defer rsp.Body.Close()
-
-	var ssr *slack.SlackShareResponse
-	if err := json.NewDecoder(rsp.Body).Decode(&ssr); err != nil {
-		return "", err
-	}
-
-	// Response contains object, permalink_public attr will be modified
-	// Reindex document
-	f := file.NewKazoupFileFromSlackFile(&ssr.File, sfs.Endpoint.Id, sfs.Endpoint.UserId, sfs.Endpoint.Index)
-	if err := file.IndexAsync(f, globals.FilesTopic, sfs.Endpoint.Index); err != nil {
-		return "", err
-	}
-
-	return ssr.File.PermalinkPublic, nil
 }
 
 // getUsers retrieves users from slack team
@@ -209,4 +189,79 @@ func (sfs *SlackFs) getFiles(page int) error {
 	}
 
 	return nil
+}
+
+// shareFilePublicly will set a PermalinkPublic available and reachable for a file arcived/ stored in slack
+func (sfs *SlackFs) shareFilePublicly(id string) (string, error) {
+	data := make(url.Values)
+	data.Add("token", sfs.Endpoint.Token.AccessToken)
+	data.Add("file", id)
+
+	c := &http.Client{}
+	rsp, err := c.PostForm(globals.SlackShareFilesEndpoint, data)
+
+	if err != nil {
+		return "", err
+	}
+	defer rsp.Body.Close()
+
+	var ssr *slack.SlackShareResponse
+	if err := json.NewDecoder(rsp.Body).Decode(&ssr); err != nil {
+		return "", err
+	}
+
+	log.Println("SHARE PUBLIC")
+	log.Println(rsp.StatusCode)
+
+	// Response contains object, permalink_public attr will be modified
+	// Reindex document
+	f := file.NewKazoupFileFromSlackFile(&ssr.File, sfs.Endpoint.Id, sfs.Endpoint.UserId, sfs.Endpoint.Index)
+	if err := file.IndexAsync(f, globals.FilesTopic, sfs.Endpoint.Index); err != nil {
+		return "", err
+	}
+
+	return ssr.File.PermalinkPublic, nil
+}
+
+// shareFileInsideTeam will post a message to a channel or team member linking the slack file
+func (sfs *SlackFs) shareFileInsideTeam(id string) (string, error) {
+	data := make(url.Values)
+	data.Add("token", sfs.Endpoint.Token.AccessToken)
+	data.Add("channel", "C02EW2K5U")
+	data.Add("attachments", `[
+		{
+		    "fallback": "fallback attr",
+		    "pretext": "Kazoup backend test, sharing / mentioning a file in slack with a slack channel #ramdom",
+		    "title": "step.mov",
+		    "title_link": "https://kazoup.slack.com/files/pablo.aguirre/F2WBHHNKB/step.mov",
+		    "text": "Yeap, it is working mate! Long live Kazoup",
+		    "color": "#7CD197"
+		}
+	]`)
+
+	c := &http.Client{}
+	rsp, err := c.PostForm(globals.SlackPostMessageEndpoint, data)
+
+	if err != nil {
+		return "", err
+	}
+	defer rsp.Body.Close()
+
+	log.Println("SHARE PRIVATE")
+	log.Println(rsp.StatusCode)
+
+	/*	var ssr *slack.SlackShareResponse
+		if err := json.NewDecoder(rsp.Body).Decode(&ssr); err != nil {
+			return "", err
+		}
+
+		// Response contains object, permalink_public attr will be modified
+		// Reindex document
+		f := file.NewKazoupFileFromSlackFile(&ssr.File, sfs.Endpoint.Id, sfs.Endpoint.UserId, sfs.Endpoint.Index)
+		if err := file.IndexAsync(f, globals.FilesTopic, sfs.Endpoint.Index); err != nil {
+			return "", err
+		}
+
+		return ssr.File.PermalinkPublic, nil*/
+	return "", nil
 }

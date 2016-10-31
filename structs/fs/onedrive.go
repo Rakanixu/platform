@@ -166,7 +166,7 @@ func (ofs *OneDriveFs) CreateFile(fileType string) (string, error) {
 }
 
 // ShareFile
-func (ofs *OneDriveFs) ShareFile(id string) (string, error) {
+func (ofs *OneDriveFs) ShareFile(id string, sharePublicly bool) (string, error) {
 	return "", nil
 }
 

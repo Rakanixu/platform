@@ -28,18 +28,47 @@
       :host {
         display: block;
       }
+
+      mat-dialog {
+        width: 320px;
+      }
     </style>
 
     <mat-item label=""
               description=""
-              on-xp-activate="shareFile"
+              on-xp-activate="openShareFileDialog"
               tabindex="-1">
       <paper-icon-button id="share"
                          icon="social:share"
-                         color="black"
-                         hidden$="[[!searching]]"></paper-icon-button>
+                         color="black"></paper-icon-button>
 
     </mat-item>
+
+    <mat-dialog id="shareFileDialog" label="">
+      <div>
+        <paper-button on-tap="shareFile" data-public="false">
+          <iron-icon class="big" src="../static/"></iron-icon>
+          <mat-item label="Share file with Slack Team"/>
+        </paper-button>
+        <paper-button on-tap="shareFile" data-public="true">
+          <iron-icon class="big" src="../static/"></iron-icon>
+          <mat-item label="Share file publicly"/>
+        </paper-button>
+      </div>
+      <mat-button class="action" label="Cancel" on-tap="closeShareFileDialog"></mat-button>
+    </mat-dialog>
+
+    <mat-dialog id="selectTargetDialog" label="">
+      <div>
+        <template is="dom-repeat" items="[[slackChannels]]">
+          <paper-button on-tap="postFileToSlackChannel" data-id$="[[item.id]]">
+            <iron-icon class="big" src="../static/"></iron-icon>
+            <mat-item label$="#[[item.name]]"/>
+          </paper-button>
+        </template>
+      </div>
+      <mat-button class="action" label="Cancel" on-tap="closeSelectTargetDialog"></mat-button>
+    </mat-dialog>
 
     <paper-toast id="toast" duration="6000" text=""></paper-toast>
 
@@ -51,6 +80,16 @@
                on-error="_handleError"
                on-response="_handleShareFile"
                params="[[rpcShareFileParams]]"
+               headers="[[headers]]"></iron-ajax>
+
+    <iron-ajax id="rpcSlackChannels"
+               method="POST"
+               content-type="application/json"
+               url="[[endpoints.endpoint]]"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleSlackChannels"
+               params="[[rpcSlackChannelsParams]]"
                headers="[[headers]]"></iron-ajax>
 
   </template>
@@ -72,6 +111,14 @@
             notify: true,
             reflectToAttribute: true
           },
+          slackChannels: {
+            type: Array,
+            notify: true
+          },
+          slackUsers: {
+            type: Array,
+            notify: true
+          },
           rpcShareFileParams: {
             type: Object,
             notify: false,
@@ -81,19 +128,87 @@
                 method: 'File.Share',
                 request: {
                   datasource_id: '',
-                  original_id: ''
+                  original_id: '',
+                  destination_id: '', // This can be a channel or user for slack, let's see how it grows...
+                  share_publicly: undefined
+                }
+              };
+            }
+          },
+          rpcSlackChannelsParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: 'com.kazoup.srv.search',
+                method: 'Search.Search',
+                request: {
+                  index: '',
+                  type: '',
+                  from: 0,
+                  size: 999
                 }
               };
             }
           }
         },
-        shareFile: function() {
+        openShareFileDialog: function(e) {
+          this.$.shareFileDialog.show();
+        },
+        closeShareFileDialog: function() {
+          this.$.shareFileDialog.hide();
+        },
+        openSelectTargetDialog: function(e) {
+          this.$.selectTargetDialog.show();
+        },
+        closeSelectTargetDialog: function(e) {
+          this.$.selectTargetDialog.hide();
+        },
+        shareFile: function(e) {
           this.headers = Auth.getHeaders();
 
+          // Always required
           this.rpcShareFileParams.request.datasource_id = this.item.datasource_id;
           this.rpcShareFileParams.request.original_id = this.item.original.id;
+
+          if (e.currentTarget.dataset.public === "true") {
+            this.rpcShareFileParams.request.share_publicly = true;
+
+            // If is a public share link, then we are done, no more params or configuration is required from user
+            this.$.rpcShareFile.body = this.rpcShareFileParams;
+            this.$.rpcShareFile.generateRequest();
+          } else {
+            this.rpcShareFileParams.request.share_publicly = false;
+
+            // Get slack channels and users
+            this.rpcSlackChannelsParams.request.index = this.item.index;
+            this.rpcSlackChannelsParams.request.type = "channel";
+
+            this.$.rpcSlackChannels.body = this.rpcSlackChannelsParams;
+            this.$.rpcSlackChannels.generateRequest();
+
+            // Close previous dialog, open next one
+            this.closeShareFileDialog();
+
+            // Open dialog to show channels and users in the slack team.
+            this.openSelectTargetDialog();
+          }
+        },
+        postFileToSlackChannel: function(e) {
+          this.rpcShareFileParams.request.destination_id = e.currentTarget.dataset.id;
+
           this.$.rpcShareFile.body = this.rpcShareFileParams;
           this.$.rpcShareFile.generateRequest();
+
+          //TODO: we fire the request, _handleShareFile will manage. In proto request, destination_id must be added
+          // In proto response, send back the   bool share_publicly = 3;, and refactor _handleShareFile to know the callback action
+          // public / team..
+
+        },
+        _handleSlackChannels: function(e) {
+          if (e.detail.response && e.detail.response.result) {
+            this.set('slackChannels', JSON.parse(e.detail.response.result));
+          }
         },
         _handleShareFile: function(e) {
           if (e.detail.response) {

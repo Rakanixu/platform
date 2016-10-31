@@ -19,6 +19,7 @@ message CreateResponse {
 message ShareRequest {
   string datasource_id = 1;
   string original_id = 2;
+  bool share_publicly = 3;
 }
 
 message ShareResponse {

@@ -183,7 +183,7 @@ func (bfs *BoxFs) CreateFile(fileType string) (string, error) {
 }
 
 // ShareFile
-func (bfs *BoxFs) ShareFile(id string) (string, error) {
+func (bfs *BoxFs) ShareFile(id string, sharePublicly bool) (string, error) {
 	return "", nil
 }
 

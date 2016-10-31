@@ -110,7 +110,7 @@ func (dfs *DropboxFs) CreateFile(fileType string) (string, error) {
 }
 
 // ShareFile
-func (dfs *DropboxFs) ShareFile(id string) (string, error) {
+func (dfs *DropboxFs) ShareFile(id string, sharePublicly bool) (string, error) {
 	return "", nil
 }
 

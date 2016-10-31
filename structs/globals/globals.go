@@ -62,10 +62,11 @@ const (
 
 	ONEDRIVE_TEXT = "text/plain"
 
-	SlackFilesEndpoint      = "https://slack.com/api/files.list"
-	SlackUsersEndpoint      = "https://slack.com/api/users.list"
-	SlackChannelsEndpoint   = "https://slack.com/api/channels.list"
-	SlackShareFilesEndpoint = "https://slack.com/api/files.sharedPublicURL"
+	SlackFilesEndpoint       = "https://slack.com/api/files.list"
+	SlackUsersEndpoint       = "https://slack.com/api/users.list"
+	SlackChannelsEndpoint    = "https://slack.com/api/channels.list"
+	SlackShareFilesEndpoint  = "https://slack.com/api/files.sharedPublicURL"
+	SlackPostMessageEndpoint = "https://slack.com/api/chat.postMessage"
 
 	OneDriveEndpoint = "https://api.onedrive.com/v1.0/"
 
@@ -125,6 +126,7 @@ func NewSlackOauthConfig() *oauth2.Config {
 			"team:read",
 			"users:read",
 			"channels:read",
+			"chat:write:user",
 		},
 		Endpoint: slack.Endpoint,
 	}
