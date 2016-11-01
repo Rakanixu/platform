@@ -21,7 +21,7 @@
 <link rel="import" href="../../src/behaviors/map-behavior.html">
 <link rel="import" href="../../src/behaviors/util-behavior.html">
 
-<dom-module id="share-file">
+<dom-module id="share-slack-file">
   <template>
     <style include="iron-flex iron-flex-alignment"></style>
     <style>
@@ -128,7 +128,7 @@
 
     (function() {
       Polymer({
-        is: 'share-file',
+        is: 'share-slack-file',
         behaviors: [
           Polymer.EndpointsBehaviorImp,
           Polymer.UtilBehaviorImp,
@@ -285,7 +285,7 @@
                   this.$.toast.show();
                 }
 
-                this.openSelectTargetDialog();
+                this.closeSelectTargetDialog();
                 break;
             }
           }
