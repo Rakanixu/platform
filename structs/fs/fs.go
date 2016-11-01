@@ -3,8 +3,11 @@ package fs
 import (
 	"errors"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/structs/file"
 	"github.com/kazoup/platform/structs/globals"
+	"github.com/micro/go-micro/client"
+	"golang.org/x/net/context"
 	"strings"
 )
 
@@ -12,7 +15,7 @@ import (
 type Fs interface {
 	List() (chan file.File, chan bool, error)
 	CreateFile(string) (string, error)
-	ShareFile(string, bool) (string, error)
+	ShareFile(context.Context, client.Client, file_proto.ShareRequest) (string, error)
 	GetDatasourceId() string
 	Token() string
 	GetThumbnail(id string) (string, error)

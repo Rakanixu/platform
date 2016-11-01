@@ -3,25 +3,29 @@ syntax = "proto3";
 package go.micro.srv.file;
 
 service File {
-  rpc Create(CreateRequest) returns (CreateResponse) {}
-  rpc Share(ShareRequest) returns (ShareResponse) {}
+  rpc Create(CreateRequest) returns (CreateResponse) {}  // Creates a new file
+  rpc Share(ShareRequest) returns (ShareResponse) {}     // Shares a file
 }
 
 message CreateRequest {
-  string datasource_id = 1;
-  string mime_type = 2;
+  string datasource_id = 1; // Our Endpoint identifier
+  string mime_type = 2;     // MimeType for file to be created (MS Word, Spreadsheet, Presentation)
 }
 
 message CreateResponse {
-  string doc_url = 1;
+  string doc_url = 1;       // If provided, url to access file
 }
 
 message ShareRequest {
-  string datasource_id = 1;
-  string original_id = 2;
-  bool share_publicly = 3;
+  string datasource_id = 1; // Our Endpoint identifier
+  string index = 2;         // The ElasticSearch index that stores the file
+  string file_id = 3;       // Kazoup File ID, ElasticSearch reference
+  string original_id = 4;   // Original File ID, third party reference
+  string destination_id = 5;// Destination, can be a slack channel, user..
+  bool share_publicly = 6;  // Option
 }
 
 message ShareResponse {
-  string public_url = 1;
+  string public_url = 1;   // If provided, url to access file
+  bool share_publicly = 2; // Option back from request
 }

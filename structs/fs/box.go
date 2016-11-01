@@ -8,9 +8,12 @@ import (
 	"github.com/kardianos/osext"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
+	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/structs/box"
 	"github.com/kazoup/platform/structs/file"
 	"github.com/kazoup/platform/structs/globals"
+	"github.com/micro/go-micro/client"
+	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"io"
 	"log"
@@ -183,7 +186,7 @@ func (bfs *BoxFs) CreateFile(fileType string) (string, error) {
 }
 
 // ShareFile
-func (bfs *BoxFs) ShareFile(id string, sharePublicly bool) (string, error) {
+func (bfs *BoxFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
 	return "", nil
 }
 

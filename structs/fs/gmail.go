@@ -2,8 +2,10 @@ package fs
 
 import (
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/structs/file"
 	"github.com/kazoup/platform/structs/globals"
+	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	gmail "google.golang.org/api/gmail/v1"
@@ -61,7 +63,7 @@ func (gfs *GmailFs) CreateFile(fileType string) (string, error) {
 }
 
 // ShareFile
-func (gfs *GmailFs) ShareFile(id string, sharePublicly bool) (string, error) {
+func (gfs *GmailFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
 	return "", nil
 }
 

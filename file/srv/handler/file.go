@@ -51,12 +51,13 @@ func (f *File) Share(ctx context.Context, req *proto.ShareRequest, rsp *proto.Sh
 		return err
 	}
 
-	url, err := fsys.ShareFile(req.OriginalId, req.SharePublicly)
+	url, err := fsys.ShareFile(ctx, f.Client, *req)
 	if err != nil {
 		return err
 	}
 
 	rsp.PublicUrl = url
+	rsp.SharePublicly = req.SharePublicly // Return it back for frontend callback handler
 
 	return nil
 }

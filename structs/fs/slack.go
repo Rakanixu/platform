@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	db_proto "github.com/kazoup/platform/db/srv/proto/db"
+	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/structs/file"
 	"github.com/kazoup/platform/structs/globals"
 	"github.com/kazoup/platform/structs/slack"
@@ -73,11 +75,30 @@ func (sfs *SlackFs) CreateFile(fileType string) (string, error) {
 }
 
 // ShareFile sets a PermalinkPublic available, so everyone with URL has access to the slack file
-func (sfs *SlackFs) ShareFile(id string, sharePublicly bool) (string, error) {
-	if sharePublicly {
-		return sfs.shareFilePublicly(id)
+func (sfs *SlackFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
+	if req.SharePublicly {
+		return sfs.shareFilePublicly(req.OriginalId)
 	} else {
-		return sfs.shareFileInsideTeam(id)
+		r := c.NewRequest(
+			globals.DB_SERVICE_NAME,
+			"DB.Read",
+			&db_proto.ReadRequest{
+				Index: req.Index,
+				Type:  "file",
+				Id:    req.FileId,
+			},
+		)
+		rsp := &db_proto.ReadResponse{}
+		if err := c.Call(ctx, r, rsp); err != nil {
+			return "", err
+		}
+
+		var f *file.KazoupSlackFile
+		if err := json.Unmarshal([]byte(rsp.Result), &f); err != nil {
+			return "", err
+		}
+
+		return sfs.shareFileInsideTeam(f, req.DestinationId)
 	}
 }
 
@@ -210,9 +231,6 @@ func (sfs *SlackFs) shareFilePublicly(id string) (string, error) {
 		return "", err
 	}
 
-	log.Println("SHARE PUBLIC")
-	log.Println(rsp.StatusCode)
-
 	// Response contains object, permalink_public attr will be modified
 	// Reindex document
 	f := file.NewKazoupFileFromSlackFile(&ssr.File, sfs.Endpoint.Id, sfs.Endpoint.UserId, sfs.Endpoint.Index)
@@ -224,18 +242,15 @@ func (sfs *SlackFs) shareFilePublicly(id string) (string, error) {
 }
 
 // shareFileInsideTeam will post a message to a channel or team member linking the slack file
-func (sfs *SlackFs) shareFileInsideTeam(id string) (string, error) {
+func (sfs *SlackFs) shareFileInsideTeam(f *file.KazoupSlackFile, destId string) (string, error) {
 	data := make(url.Values)
 	data.Add("token", sfs.Endpoint.Token.AccessToken)
-	data.Add("channel", "C02EW2K5U")
+	data.Add("channel", destId)
 	data.Add("attachments", `[
 		{
-		    "fallback": "fallback attr",
-		    "pretext": "Kazoup backend test, sharing / mentioning a file in slack with a slack channel #ramdom",
-		    "title": "step.mov",
-		    "title_link": "https://kazoup.slack.com/files/pablo.aguirre/F2WBHHNKB/step.mov",
-		    "text": "Yeap, it is working mate! Long live Kazoup",
-		    "color": "#7CD197"
+		    "title": "`+f.Original.Name+`",
+		    "title_link": "`+f.Original.Permalink+`",
+		    "color": "#21a9f5"
 		}
 	]`)
 
@@ -247,21 +262,5 @@ func (sfs *SlackFs) shareFileInsideTeam(id string) (string, error) {
 	}
 	defer rsp.Body.Close()
 
-	log.Println("SHARE PRIVATE")
-	log.Println(rsp.StatusCode)
-
-	/*	var ssr *slack.SlackShareResponse
-		if err := json.NewDecoder(rsp.Body).Decode(&ssr); err != nil {
-			return "", err
-		}
-
-		// Response contains object, permalink_public attr will be modified
-		// Reindex document
-		f := file.NewKazoupFileFromSlackFile(&ssr.File, sfs.Endpoint.Id, sfs.Endpoint.UserId, sfs.Endpoint.Index)
-		if err := file.IndexAsync(f, globals.FilesTopic, sfs.Endpoint.Index); err != nil {
-			return "", err
-		}
-
-		return ssr.File.PermalinkPublic, nil*/
 	return "", nil
 }

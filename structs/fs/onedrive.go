@@ -6,9 +6,11 @@ import (
 	"github.com/kardianos/osext"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
+	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/structs/file"
 	"github.com/kazoup/platform/structs/globals"
 	"github.com/kazoup/platform/structs/onedrive"
+	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"log"
@@ -166,7 +168,7 @@ func (ofs *OneDriveFs) CreateFile(fileType string) (string, error) {
 }
 
 // ShareFile
-func (ofs *OneDriveFs) ShareFile(id string, sharePublicly bool) (string, error) {
+func (ofs *OneDriveFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
 	return "", nil
 }
 
