@@ -134,7 +134,8 @@
               on-xp-activate="openFileFromDetailView"
               tabindex="-1"></mat-item>
 
-    <template is="dom-if" if="[[hasSlackComments(item.original)]]" restamp="true">
+    <!-- Second parameter force expression to be reevaluated -->
+    <template is="dom-if" if$="[[hasSlackComments(item.original, item.original.id)]]" restamp="true">
       <mat-item label="Description"
                 description="[[item.original.initial_comment.comment]]"
                 tabindex="-1">
@@ -142,7 +143,8 @@
       </mat-item>
     </template>
 
-    <template id="hasSlackPublicUrl" is="dom-if" if="[[hasSlackPublicUrl(item.original, item.original.public_url_shared)]]" restamp="true">
+    <!-- Second parameter force expression to be reevaluated -->
+    <template id="hasSlackPublicUrl" is="dom-if" if$="[[hasSlackPublicUrl(item.original, item.original.id)]]" restamp="true">
       <mat-item label="Public Available Location"
                 description="[[item.original.permalink_public]]"
                 on-xp-activate="openPublicFileFromDetailView"
