@@ -30,7 +30,16 @@
       }
 
       mat-dialog {
-        width: 320px;
+        width: 340px;
+      }
+
+      #selectTargetDialog paper-button {
+        padding: 0;
+        width: 100%;
+      }
+
+      #selectTargetDialog paper-button mat-item {
+        width: 100%;
       }
     </style>
 
@@ -47,22 +56,32 @@
     <mat-dialog id="shareFileDialog" label="">
       <div>
         <paper-button on-tap="shareFile" data-public="false">
-          <iron-icon class="big" src="../static/"></iron-icon>
+          <iron-icon class="big" icon="kazoup:slack"></iron-icon>
           <mat-item label="Share file with Slack Team"/>
         </paper-button>
         <paper-button on-tap="shareFile" data-public="true">
-          <iron-icon class="big" src="../static/"></iron-icon>
+          <iron-icon class="big" icon="kazoup:web"></iron-icon>
           <mat-item label="Share file publicly"/>
         </paper-button>
       </div>
       <mat-button class="action" label="Cancel" on-tap="closeShareFileDialog"></mat-button>
     </mat-dialog>
 
-    <mat-dialog id="selectTargetDialog" label="">
+    <mat-dialog id="selectTargetDialog" label="" height="420">
       <div>
+        <h3>Slack Team Channels</h3>
         <template is="dom-repeat" items="[[slackChannels]]">
-          <paper-button on-tap="postFileToSlackChannel" data-id$="[[item.id]]">
-            <iron-icon class="big" src="../static/"></iron-icon>
+          <paper-button on-tap="postFileToSlack" data-id$="[[item.id]]">
+            <iron-icon class="big" icon="kazoup:slack"></iron-icon>
+            <mat-item label$="#[[item.name]]"/>
+          </paper-button>
+        </template>
+      </div>
+      <div>
+        <h3>Slack Team Members</h3>
+        <template is="dom-repeat" items="[[slackUsers]]">
+          <paper-button on-tap="postFileToSlack" data-id$="[[item.id]]">
+            <iron-icon class="big" src$="[[item.profile.image_32]]"></iron-icon>
             <mat-item label$="#[[item.name]]"/>
           </paper-button>
         </template>
@@ -90,6 +109,16 @@
                on-error="_handleError"
                on-response="_handleSlackChannels"
                params="[[rpcSlackChannelsParams]]"
+               headers="[[headers]]"></iron-ajax>
+
+    <iron-ajax id="rpcSlackUsers"
+               method="POST"
+               content-type="application/json"
+               url="[[endpoints.endpoint]]"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleSlackUsers"
+               params="[[rpcSlackUsersParams]]"
                headers="[[headers]]"></iron-ajax>
 
   </template>
@@ -146,7 +175,23 @@
                 method: 'Search.Search',
                 request: {
                   index: '',
-                  type: '',
+                  type: 'channel',
+                  from: 0,
+                  size: 999
+                }
+              };
+            }
+          },
+          rpcSlackUsersParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: 'com.kazoup.srv.search',
+                method: 'Search.Search',
+                request: {
+                  index: '',
+                  type: 'user',
                   from: 0,
                   size: 999
                 }
@@ -184,10 +229,12 @@
 
             // Get slack channels and users
             this.rpcSlackChannelsParams.request.index = this.item.index;
-            this.rpcSlackChannelsParams.request.type = "channel";
+            this.rpcSlackUsersParams.request.index = this.item.index;
 
             this.$.rpcSlackChannels.body = this.rpcSlackChannelsParams;
+            this.$.rpcSlackUsers.body = this.rpcSlackUsersParams;
             this.$.rpcSlackChannels.generateRequest();
+            this.$.rpcSlackUsers.generateRequest();
 
             // Close previous dialog, open next one
             this.closeShareFileDialog();
@@ -196,21 +243,21 @@
             this.openSelectTargetDialog();
           }
         },
-        postFileToSlackChannel: function(e) {
+        postFileToSlack: function(e) {
           this.rpcShareFileParams.request.destination_id = e.currentTarget.dataset.id;
           this.rpcShareFileParams.request.index = this.item.index;
           this.rpcShareFileParams.request.file_id = this.item.id;
           this.$.rpcShareFile.body = this.rpcShareFileParams;
           this.$.rpcShareFile.generateRequest();
-
-          //TODO: we fire the request, _handleShareFile will manage. In proto request, destination_id must be added
-          // In proto response, send back the   bool share_publicly = 3;, and refactor _handleShareFile to know the callback action
-          // public / team..
-
         },
         _handleSlackChannels: function(e) {
           if (e.detail.response && e.detail.response.result) {
             this.set('slackChannels', JSON.parse(e.detail.response.result));
+          }
+        },
+        _handleSlackUsers: function(e) {
+          if (e.detail.response && e.detail.response.result) {
+            this.set('slackUsers', JSON.parse(e.detail.response.result));
           }
         },
         _handleShareFile: function(e) {
@@ -237,6 +284,8 @@
                   this.$.toast.text = 'File link sent to slack channel or user';
                   this.$.toast.show();
                 }
+
+                this.openSelectTargetDialog();
                 break;
             }
           }
