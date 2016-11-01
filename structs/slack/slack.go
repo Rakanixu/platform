@@ -1,10 +1,5 @@
 package slack
 
-import (
-	"crypto/md5"
-	"encoding/hex"
-)
-
 // FilesListResponse represents https://slack.com/api/files.list response
 type FilesListResponse struct {
 	Ok     bool `json:"ok"`
@@ -146,7 +141,7 @@ type SlackUser struct {
 	TwoFactorType     string `json:"two_factor_type,omitempty"`
 }
 
-func getMD5Hash(text string) string {
-	hash := md5.Sum([]byte(text))
-	return hex.EncodeToString(hash[:])
+type SlackShareResponse struct {
+	Ok   bool      `json:"ok"`
+	File SlackFile `json:"file"`
 }

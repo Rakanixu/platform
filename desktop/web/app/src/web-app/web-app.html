@@ -531,6 +531,7 @@
                 item: {
                     type: Object,
                     notify: true,
+                    reflectToAttribute: true,
                     value: function() {
                         return {};
                     }
@@ -906,6 +907,11 @@
                         type: 'local',
                         index: Auth.getMD5UserId()
                     });
+                } else {
+                    this.set('selectedDatasource', {
+                        type: '',
+                        index: Auth.getMD5UserId()
+                    });
                 }
 
                 // depth must be 0 for search
@@ -1083,7 +1089,7 @@
                 } else {
                     // Primary action, open file
                     if (!e.target.classList.contains('info-icon')) {
-                        this.openFile(e.model.__data__.item);
+                        this.openFile(e.model.__data__.item.url);
                         this.closeDetails();
                     // Secondary action, show details
                     } else {
@@ -1104,15 +1110,6 @@
                             document.querySelector('wave-player wave').remove();
                         }
                     }
-                }
-            },
-            openFile: function(item) {
-                if (window && window.process && window.process.type) {
-                    ipcRenderer.send('open-file-message', {
-                        url: this.getLocalAsset(item.url)
-                    });
-                } else {
-                    window.open(this.getLocalAsset(item.url));
                 }
             },
             closeDetails: function(e, detail) {

@@ -6,9 +6,12 @@ import (
 	"fmt"
 	"github.com/kardianos/osext"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/structs/dropbox"
 	"github.com/kazoup/platform/structs/file"
 	"github.com/kazoup/platform/structs/globals"
+	"github.com/micro/go-micro/client"
+	"golang.org/x/net/context"
 	"log"
 	"net/http"
 	"net/url"
@@ -107,6 +110,11 @@ func (dfs *DropboxFs) CreateFile(fileType string) (string, error) {
 	}
 
 	return kfd.GetURL(), nil
+}
+
+// ShareFile
+func (dfs *DropboxFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
+	return "", nil
 }
 
 // getFiles discovers files in dropbox account

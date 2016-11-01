@@ -4,9 +4,11 @@ import (
 	"errors"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
+	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/structs/file"
 	"github.com/kazoup/platform/structs/globals"
 	"github.com/kazoup/platform/structs/local"
+	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"log"
 	"os"
@@ -68,6 +70,11 @@ func (lfs *LocalFs) GetThumbnail(id string) (string, error) {
 
 // CreateFile belongs to Fs interface
 func (lfs *LocalFs) CreateFile(fileType string) (string, error) {
+	return "", nil
+}
+
+// ShareFile
+func (lfs *LocalFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
 	return "", nil
 }
 

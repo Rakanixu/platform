@@ -7,6 +7,8 @@
 <link rel="import" href="../../bower_components/mat-avatar/mat-avatar.html">
 <link rel="import" href="../../bower_components/mat-item/mat-item.html">
 
+<link rel="import" href="../../src/third-party-actions/share-file.html">
+
 <link rel="import" href="../../src/behaviors/util-behavior.html">
 <link rel="import" href="../../src/behaviors/endpoints-behavior.html">
 <link rel="import" href="../../src/behaviors/map-behavior.html">
@@ -129,14 +131,24 @@
 
     <mat-item label="Location"
               description="[[item.url]]"
+              on-xp-activate="openFileFromDetailView"
               tabindex="-1"></mat-item>
 
-    <template is="dom-if" if="[[hasSlackComments(item.original)]]" restamp="true">
+    <!-- Second parameter force expression to be reevaluated -->
+    <template is="dom-if" if$="[[hasSlackComments(item.original, item.original.id)]]" restamp="true">
       <mat-item label="Description"
                 description="[[item.original.initial_comment.comment]]"
                 tabindex="-1">
 
       </mat-item>
+    </template>
+
+    <!-- Second parameter force expression to be reevaluated -->
+    <template id="hasSlackPublicUrl" is="dom-if" if$="[[hasSlackPublicUrl(item.original, item.original.id)]]" restamp="true">
+      <mat-item label="Public Available Location"
+                description="[[item.original.permalink_public]]"
+                on-xp-activate="openPublicFileFromDetailView"
+                tabindex="-1"></mat-item>
     </template>
 
     <mat-item label="Last modified"
@@ -170,6 +182,8 @@
                 description="[[bytesToSize(aggsInfo.totalSize)]]"
                 tabindex="-1"></mat-item>
     </template>
+
+    <share-file item="{{item}}"></share-file>
 
     <paper-toast id="toast" text=""></paper-toast>
 
@@ -217,6 +231,7 @@
           item: {
             type: Object,
             notify: true,
+            reflectToAttribute: true,
             observer: 'itemChanged'
           },
           md5UserId: {
@@ -416,6 +431,16 @@
 
           this.$.rpcSearchSlackUsers.generateRequest();
           this.$.rpcSearchSlackChannels.generateRequest();
+        },
+        openFileFromDetailView: function(e) {
+          this.openFile(this.item.url);
+        },
+        openPublicFileFromDetailView: function(e) {
+          switch (this.item.file_type) {
+            case 'slack':
+              this.openFile(this.item.original.permalink_public);
+              break;
+          }
         },
         isDropboxFileShared: function(fileType, isShared) {
           return this.isDropbox(fileType) && isShared;

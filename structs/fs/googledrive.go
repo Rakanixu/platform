@@ -3,8 +3,10 @@ package fs
 import (
 	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/structs/file"
 	"github.com/kazoup/platform/structs/globals"
+	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"google.golang.org/api/drive/v3"
@@ -101,6 +103,11 @@ func (gfs *GoogleDriveFs) CreateFile(fileType string) (string, error) {
 	}
 
 	return kfg.GetURL(), nil
+}
+
+// ShareFile
+func (gfs *GoogleDriveFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
+	return "", nil
 }
 
 // getFiles discover all files in google drive account

@@ -40,6 +40,15 @@
       openMenu: function() {
         this.$.navDrawerPanel.openDrawer()
       },
+      openFile: function(url) {
+        if (window && window.process && window.process.type) {
+          ipcRenderer.send('open-file-message', {
+            url: this.getLocalAsset(url)
+          });
+        } else {
+          window.open(this.getLocalAsset(url));
+        }
+      },
       bytesToSize: function(bytes, withPreComma) {
         if (typeof bytes === 'number' && bytes > 0) {
           return (withPreComma === 'with_comma' && bytes > 0 ? ', ' : '') + window.filesize(bytes);
@@ -253,8 +262,21 @@
       },
       hasSlackComments: function(original) {
         if (!_.isEmpty(original)) {
-          return (original.comments_count > 0);
+          return (
+            original.comments_count > 0 &&
+            original.initial_comment.comment !== "" &&
+            original.initial_comment.comment.length
+          );
         }
+
+        return false;
+      },
+      hasSlackPublicUrl: function(original) {
+        if (!_.isEmpty(original)) {
+          return (original.permalink_public && original.permalink_public.length && original.public_url_shared);
+        }
+
+        return false;
       },
       profilePicture: function(url) {
         return (url && url.length) ? url : '../app/src/static/unknown-pic-profile.gif';
