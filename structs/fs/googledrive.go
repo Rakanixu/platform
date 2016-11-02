@@ -2,6 +2,7 @@ package fs
 
 import (
 	"fmt"
+	"encoding/json"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/structs/file"
@@ -127,20 +128,19 @@ func (gfs *GoogleDriveFs) ShareFile(ctx context.Context, c client.Client, req fi
 	}).Do(); err != nil {
 		return "", err
 	}
-	// TODO:
-	// If successfull, reindex the file would be nice as user see straight away that the user he added appear on "People"
 
-	gf, err := srv.Files.Get(req.OriginalId).Do()
+	gf, err := srv.Files.Get(req.OriginalId).Fields("*").Do()
 	if err != nil {
 		return "", err
 	}
+
+	test, _ := json.Marshal(gf)
+	log.Println(string(test))
 
 	kfg := file.NewKazoupFileFromGoogleDriveFile(gf, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
 	if err := file.IndexAsync(kfg, globals.FilesTopic, gfs.Endpoint.Index); err != nil {
 		return "", err
 	}
-
-	//This bit not working after refresh. Check tomorrow why, may be eventually consistent?
 
 	return "", nil
 }
