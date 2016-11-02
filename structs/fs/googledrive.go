@@ -2,7 +2,6 @@ package fs
 
 import (
 	"fmt"
-	"encoding/json"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/structs/file"
@@ -133,9 +132,6 @@ func (gfs *GoogleDriveFs) ShareFile(ctx context.Context, c client.Client, req fi
 	if err != nil {
 		return "", err
 	}
-
-	test, _ := json.Marshal(gf)
-	log.Println(string(test))
 
 	kfg := file.NewKazoupFileFromGoogleDriveFile(gf, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
 	if err := file.IndexAsync(kfg, globals.FilesTopic, gfs.Endpoint.Index); err != nil {

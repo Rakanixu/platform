@@ -15,6 +15,7 @@ import (
 	"golang.org/x/oauth2"
 	"log"
 	"net/http"
+	"bytes"
 	"os"
 	"time"
 )
@@ -169,6 +170,38 @@ func (ofs *OneDriveFs) CreateFile(fileType string) (string, error) {
 
 // ShareFile
 func (ofs *OneDriveFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
+	//POST /drive/items/{item-id}/action.invite
+	if err := ofs.refreshToken(); err != nil {
+		log.Println(err)
+	}
+
+	oc := &http.Client{}
+	body := []byte(`{
+		"requireSignIn": true,
+		"sendInvitation": true,
+		"roles": ["write"],
+		"recipients": [
+			{ "email": "` + req.DestinationId + `" }
+		]
+	}`)
+
+	// https://dev.onedrive.com/items/invite.htm
+	url := globals.OneDriveEndpoint + Drive + "items/" + req.OriginalId + "/action.invite"
+	oreq, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
+	oreq.Header.Set("Authorization", ofs.Endpoint.Token.TokenType+" "+ofs.Endpoint.Token.AccessToken)
+	oreq.Header.Set("Content-Type", "application/json")
+	if err != nil {
+		return "", err
+	}
+	res, err := oc.Do(oreq)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+
+	log.Println("*****")
+	log.Println(res.StatusCode)
+
 	return "", nil
 }
 
