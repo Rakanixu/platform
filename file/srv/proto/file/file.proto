@@ -9,11 +9,13 @@ service File {
 
 message CreateRequest {
   string datasource_id = 1; // Our Endpoint identifier
-  string mime_type = 2;     // MimeType for file to be created (MS Word, Spreadsheet, Presentation)
+  string file_name = 2;     // Name for the new file
+  string mime_type = 3;     // MimeType for file to be created (MS Word, Spreadsheet, Presentation)
 }
 
 message CreateResponse {
   string doc_url = 1;       // If provided, url to access file
+  string data = 2;          // Stringify file
 }
 
 message ShareRequest {

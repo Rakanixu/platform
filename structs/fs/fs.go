@@ -14,7 +14,7 @@ import (
 // Fs File System interface. Fyle system is responsible to manage its own files
 type Fs interface {
 	List() (chan file.File, chan bool, error)
-	CreateFile(string) (string, error)
+	CreateFile(file_proto.CreateRequest) (*file_proto.CreateResponse, error)
 	ShareFile(context.Context, client.Client, file_proto.ShareRequest) (string, error)
 	GetDatasourceId() string
 	Token() string

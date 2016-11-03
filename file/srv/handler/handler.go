@@ -25,12 +25,13 @@ func (f *File) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.
 	}
 
 	// Create a file for given file system
-	s, err := fsys.CreateFile(req.MimeType)
+	r, err := fsys.CreateFile(*req)
 	if err != nil {
 		return err
 	}
 
-	rsp.DocUrl = s
+	rsp.Data = r.Data
+	rsp.DocUrl = r.DocUrl
 
 	return nil
 }
