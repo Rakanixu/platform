@@ -156,7 +156,7 @@
     </template>
 
     <!-- Second parameter force expression to be reevaluated -->
-    <template id="hasBoxPublicUrl" is="dom-if" if$="[[hasBoxPublicUrl(item.file_type, item.original, item.original.id)]]" restamp="true">
+    <template id="hasBoxPublicUrl" is="dom-if" if$="[[hasBoxPublicUrl(item.file_type, item.original, item.original.shared_link.url)]]" restamp="true">
       <mat-item label="Public Available Location"
                 description="[[item.original.shared_link.url]]"
                 on-xp-activate="openPublicFileFromDetailView"
