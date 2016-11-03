@@ -271,9 +271,16 @@
 
         return false;
       },
-      hasSlackPublicUrl: function(original) {
-        if (!_.isEmpty(original)) {
-          return (original.permalink_public && original.permalink_public.length && original.public_url_shared);
+      hasSlackPublicUrl: function(fileType, original) {
+        if (!_.isEmpty(original) && this.isSlack(fileType)) {
+          return (original.permalink_public && original.permalink_public.length > 0 && original.public_url_shared);
+        }
+
+        return false;
+      },
+      hasBoxPublicUrl: function(fileType, original) {
+        if (!_.isEmpty(original) && this.isBox(fileType)) {
+          return (original.shared_link && !_.isEmpty(original.shared_link.url) && original.shared_link.url.length > 0);
         }
 
         return false;

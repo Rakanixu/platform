@@ -7,7 +7,11 @@
 <link rel="import" href="../../bower_components/mat-avatar/mat-avatar.html">
 <link rel="import" href="../../bower_components/mat-item/mat-item.html">
 
-<link rel="import" href="../../src/third-party-actions/share-file.html">
+<link rel="import" href="../../src/third-party-actions/share-slack-file.html">
+<link rel="import" href="../../src/third-party-actions/share-google-drive-file.html">
+<link rel="import" href="../../src/third-party-actions/share-one-drive-file.html">
+<link rel="import" href="../../src/third-party-actions/share-dropbox-file.html">
+<link rel="import" href="../../src/third-party-actions/share-box-file.html">
 
 <link rel="import" href="../../src/behaviors/util-behavior.html">
 <link rel="import" href="../../src/behaviors/endpoints-behavior.html">
@@ -56,7 +60,7 @@
     <template is="dom-if" if="[[isSlack(item.file_type)]]" restamp="true">
       <mat-item label="Owner"
                 href="slack://user?team=[[slackUser.team_id]]&id=[[slackUser.id]]"
-                tabindex="-1">`
+                tabindex="-1">
         <mat-avatar id="slackFileOwner"
                     background="light"
                     icon-src="[[slackUser.profile.image_48]]"></mat-avatar>
@@ -144,9 +148,17 @@
     </template>
 
     <!-- Second parameter force expression to be reevaluated -->
-    <template id="hasSlackPublicUrl" is="dom-if" if$="[[hasSlackPublicUrl(item.original, item.original.id)]]" restamp="true">
+    <template id="hasSlackPublicUrl" is="dom-if" if$="[[hasSlackPublicUrl(item.file_type, item.original, item.original.id)]]" restamp="true">
       <mat-item label="Public Available Location"
                 description="[[item.original.permalink_public]]"
+                on-xp-activate="openPublicFileFromDetailView"
+                tabindex="-1"></mat-item>
+    </template>
+
+    <!-- Second parameter force expression to be reevaluated -->
+    <template id="hasBoxPublicUrl" is="dom-if" if$="[[hasBoxPublicUrl(item.file_type, item.original, item.original.id)]]" restamp="true">
+      <mat-item label="Public Available Location"
+                description="[[item.original.shared_link.url]]"
                 on-xp-activate="openPublicFileFromDetailView"
                 tabindex="-1"></mat-item>
     </template>
@@ -183,7 +195,26 @@
                 tabindex="-1"></mat-item>
     </template>
 
-    <share-file item="{{item}}"></share-file>
+    <!-- Share functionality specific for every integration, this way any of the elements becames unnecessary complex -->
+    <template is="dom-if" if="[[isSlack(item.file_type)]]">
+      <share-slack-file item="{{item}}"></share-slack-file>
+    </template>
+
+    <template is="dom-if" if="[[isGoogleDrive(item.file_type)]]">
+      <share-google-drive-file item="{{item}}"></share-google-drive-file>
+    </template>
+
+    <template is="dom-if" if="[[isOneDrive(item.file_type)]]">
+      <share-one-drive-file item="{{item}}"></share-one-drive-file>
+    </template>
+
+    <template is="dom-if" if="[[isDropbox(item.file_type)]]">
+      <share-dropbox-file item="{{item}}"></share-dropbox-file>
+    </template>
+
+    <template is="dom-if" if="[[isBox(item.file_type)]]">
+      <share-box-file item="{{item}}"></share-box-file>
+    </template>
 
     <paper-toast id="toast" text=""></paper-toast>
 
@@ -439,6 +470,9 @@
           switch (this.item.file_type) {
             case 'slack':
               this.openFile(this.item.original.permalink_public);
+              break;
+            case 'box':
+              this.openFile(this.item.original.shared_link.url);
               break;
           }
         },

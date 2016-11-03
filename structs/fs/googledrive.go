@@ -107,6 +107,37 @@ func (gfs *GoogleDriveFs) CreateFile(fileType string) (string, error) {
 
 // ShareFile
 func (gfs *GoogleDriveFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
+	cfg := globals.NewGoogleOautConfig()
+	gc := cfg.Client(context.Background(), &oauth2.Token{
+		AccessToken:  gfs.Endpoint.Token.AccessToken,
+		TokenType:    gfs.Endpoint.Token.TokenType,
+		RefreshToken: gfs.Endpoint.Token.RefreshToken,
+		Expiry:       time.Unix(gfs.Endpoint.Token.Expiry, 0),
+	})
+
+	srv, err := drive.New(gc)
+	if err != nil {
+		return "", err
+	}
+
+	if _, err := srv.Permissions.Create(req.OriginalId, &drive.Permission{
+		Role:         "writer",
+		Type:         "user",
+		EmailAddress: req.DestinationId,
+	}).Do(); err != nil {
+		return "", err
+	}
+
+	gf, err := srv.Files.Get(req.OriginalId).Fields("*").Do()
+	if err != nil {
+		return "", err
+	}
+
+	kfg := file.NewKazoupFileFromGoogleDriveFile(gf, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
+	if err := file.IndexAsync(kfg, globals.FilesTopic, gfs.Endpoint.Index); err != nil {
+		return "", err
+	}
+
 	return "", nil
 }
 
