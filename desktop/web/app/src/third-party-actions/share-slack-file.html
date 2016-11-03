@@ -262,32 +262,28 @@
         },
         _handleShareFile: function(e) {
           if (e.detail.response) {
-            switch (this.item.file_type) {
-              case 'slack':
-                if (e.detail.response.share_publicly) {
-                  // http://stackoverflow.com/questions/32648993/polymer-this-set-is-not-updating-parent-element-properties-when-changing-sub-pr
-                  // From child to parent, data-binding has an issue, when setting attrs.
-                  // this.notifyPath('item.original.permalink_public', e.detail.response.public_url);
-                  // this.notifyPath('item.original.public_url_shared', true);
-                  // Workaround, set attrs in top parent element
-                  if (e.detail.response.public_url) {
-                    document.querySelector('web-app').set('item.original.permalink_public', e.detail.response.public_url);
-                    document.querySelector('web-app').set('item.original.public_url_shared', true);
+            if (e.detail.response.share_publicly) {
+              // http://stackoverflow.com/questions/32648993/polymer-this-set-is-not-updating-parent-element-properties-when-changing-sub-pr
+              // From child to parent, data-binding has an issue, when setting attrs.
+              // this.notifyPath('item.original.permalink_public', e.detail.response.public_url);
+              // this.notifyPath('item.original.public_url_shared', true);
+              // Workaround, set attrs in top parent element
+              if (e.detail.response.public_url) {
+                document.querySelector('web-app').set('item.original.permalink_public', e.detail.response.public_url);
+                document.querySelector('web-app').set('item.original.public_url_shared', true);
 
-                    this.$.toast.text = 'Public file link available.';
-                    this.$.toast.show();
-                  } else {
-                    this.$.toast.text = 'Public file link already exists or you do not have permissions to share it publicly.';
-                    this.$.toast.show();
-                  }
-                } else {
-                  this.$.toast.text = 'File link sent to slack channel or user';
-                  this.$.toast.show();
-                }
-
-                this.closeSelectTargetDialog();
-                break;
+                this.$.toast.text = 'Public file link available.';
+                this.$.toast.show();
+              } else {
+                this.$.toast.text = 'Public file link already exists or you do not have permissions to share it publicly.';
+                this.$.toast.show();
+              }
+            } else {
+              this.$.toast.text = 'File link sent to slack channel or user';
+              this.$.toast.show();
             }
+
+            this.closeSelectTargetDialog();
           }
         },
         _handleError: function(e) {

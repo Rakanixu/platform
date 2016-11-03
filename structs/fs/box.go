@@ -187,7 +187,41 @@ func (bfs *BoxFs) CreateFile(fileType string) (string, error) {
 
 // ShareFile
 func (bfs *BoxFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
-	return "", nil
+	b := []byte(`{
+		"shared_link": {
+			"access": "open"
+		}
+	}`)
+
+	bc := &http.Client{}
+	url := fmt.Sprintf("%s%s", globals.BoxFileMetadataEndpoint, req.OriginalId)
+	r, err := http.NewRequest("PUT", url, bytes.NewBuffer(b))
+	if err != nil {
+		return "", err
+	}
+	r.Header.Set("Authorization", bfs.Token())
+	rsp, err := bc.Do(r)
+	if err != nil {
+		return "", err
+	}
+	defer rsp.Body.Close()
+
+	if rsp.StatusCode != http.StatusOK {
+		return "", errors.New(fmt.Sprintf("Sharing Box file failed with status code %d", rsp.StatusCode))
+	}
+
+	var f *box.BoxFileMeta
+	if err := json.NewDecoder(rsp.Body).Decode(&f); err != nil {
+		return "", err
+	}
+
+	// Reindex modified file
+	kbf := file.NewKazoupFileFromBoxFile(f, bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
+	if err := file.IndexAsync(kbf, globals.FilesTopic, bfs.Endpoint.Index); err != nil {
+		return "", err
+	}
+
+	return kbf.Original.SharedLink.URL, nil
 }
 
 // getDirChildren get children from directory

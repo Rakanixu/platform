@@ -11,6 +11,7 @@
 <link rel="import" href="../../src/third-party-actions/share-google-drive-file.html">
 <link rel="import" href="../../src/third-party-actions/share-one-drive-file.html">
 <link rel="import" href="../../src/third-party-actions/share-dropbox-file.html">
+<link rel="import" href="../../src/third-party-actions/share-box-file.html">
 
 <link rel="import" href="../../src/behaviors/util-behavior.html">
 <link rel="import" href="../../src/behaviors/endpoints-behavior.html">
@@ -147,9 +148,17 @@
     </template>
 
     <!-- Second parameter force expression to be reevaluated -->
-    <template id="hasSlackPublicUrl" is="dom-if" if$="[[hasSlackPublicUrl(item.original, item.original.id)]]" restamp="true">
+    <template id="hasSlackPublicUrl" is="dom-if" if$="[[hasSlackPublicUrl(item.file_type, item.original, item.original.id)]]" restamp="true">
       <mat-item label="Public Available Location"
                 description="[[item.original.permalink_public]]"
+                on-xp-activate="openPublicFileFromDetailView"
+                tabindex="-1"></mat-item>
+    </template>
+
+    <!-- Second parameter force expression to be reevaluated -->
+    <template id="hasBoxPublicUrl" is="dom-if" if$="[[hasBoxPublicUrl(item.file_type, item.original, item.original.id)]]" restamp="true">
+      <mat-item label="Public Available Location"
+                description="[[item.original.shared_link.url]]"
                 on-xp-activate="openPublicFileFromDetailView"
                 tabindex="-1"></mat-item>
     </template>
@@ -201,6 +210,10 @@
 
     <template is="dom-if" if="[[isDropbox(item.file_type)]]">
       <share-dropbox-file item="{{item}}"></share-dropbox-file>
+    </template>
+
+    <template is="dom-if" if="[[isBox(item.file_type)]]">
+      <share-box-file item="{{item}}"></share-box-file>
     </template>
 
     <paper-toast id="toast" text=""></paper-toast>
@@ -457,6 +470,9 @@
           switch (this.item.file_type) {
             case 'slack':
               this.openFile(this.item.original.permalink_public);
+              break;
+            case 'box':
+              this.openFile(this.item.original.shared_link.url);
               break;
           }
         },

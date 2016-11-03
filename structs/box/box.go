@@ -120,8 +120,22 @@ type BoxFileMeta struct {
 		Name  string `json:"name"`
 		Login string `json:"login"`
 	} `json:"owned_by"`
-	SharedLink interface{} `json:"shared_link"`
-	Parent     struct {
+	SharedLink struct {
+		Access            string `json:"access"`
+		DownloadCount     int    `json:"download_count"`
+		DownloadURL       string `json:"download_url"`
+		EffectiveAccess   string `json:"effective_access"`
+		IsPasswordEnabled bool   `json:"is_password_enabled"`
+		Permissions       struct {
+			CanDownload bool `json:"can_download"`
+			CanPreview  bool `json:"can_preview"`
+		} `json:"permissions"`
+		PreviewCount int         `json:"preview_count"`
+		UnsharedAt   interface{} `json:"unshared_at"`
+		URL          string      `json:"url"`
+		VanityURL    interface{} `json:"vanity_url"`
+	} `json:"shared_link"`
+	Parent struct {
 		Type       string      `json:"type"`
 		ID         string      `json:"id"`
 		SequenceID interface{} `json:"sequence_id"`
