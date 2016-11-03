@@ -3,6 +3,7 @@ package fs
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/kardianos/osext"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
@@ -114,7 +115,80 @@ func (dfs *DropboxFs) CreateFile(fileType string) (string, error) {
 
 // ShareFile
 func (dfs *DropboxFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
+	// https://www.dropbox.com/developers/documentation/http/documentation#sharing-add_file_member
+	// access_level cannot be editor, Dropbox API fails. Role will be set on frontend
+	b := []byte(`{
+		"file": "` + req.OriginalId + `",
+		"members": [
+			{
+				".tag": "email",
+				"email": "` + req.DestinationId + `"
+			}
+		],
+		"quiet": false,
+		"access_level": "viewer",
+		"add_message_as_comment": false
+	}`)
+	dc := &http.Client{}
+	r, err := http.NewRequest("POST", globals.DropboxFileShare, bytes.NewBuffer(b))
+	if err != nil {
+		return "", err
+	}
+	r.Header.Set("Authorization", dfs.Token())
+	r.Header.Set("Content-Type", "application/json")
+	rsp, err := dc.Do(r)
+	if err != nil {
+		return "", err
+	}
+	defer rsp.Body.Close()
+
+	if rsp.StatusCode != http.StatusOK {
+		return "", errors.New(fmt.Sprintf("Sharing Dropbox file failed with status code %d", rsp.StatusCode))
+	}
+
+	// Get the modified file to reindex
+	f, err := dfs.getFile(req.OriginalId)
+	if err != nil {
+		return "", err
+	}
+
+	if err := file.IndexAsync(f, globals.FilesTopic, dfs.Endpoint.Index); err != nil {
+		return "", err
+	}
+
 	return "", nil
+}
+
+// getFile retrieves a single file from dorpbox
+func (dfs *DropboxFs) getFile(id string) (*file.KazoupDropboxFile, error) {
+	b := []byte(`{
+		"path": "` + id + `",
+		"include_media_info": true,
+		"include_deleted": true,
+		"include_has_explicit_shared_members": true
+	}`)
+
+	dc := &http.Client{}
+	r, err := http.NewRequest("POST", globals.DropboxFileEndpoint, bytes.NewBuffer(b))
+	if err != nil {
+		return nil, err
+	}
+	r.Header.Set("Authorization", dfs.Token())
+	r.Header.Set("Content-Type", "application/json")
+	rsp, err := dc.Do(r)
+	if err != nil {
+		return nil, err
+	}
+	defer rsp.Body.Close()
+
+	var f *dropbox.DropboxFile
+	if err := json.NewDecoder(rsp.Body).Decode(&f); err != nil {
+		return nil, err
+	}
+
+	kfd := file.NewKazoupFileFromDropboxFile(f, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
+
+	return dfs.getFileMembers(kfd)
 }
 
 // getFiles discovers files in dropbox account

@@ -1,6 +1,7 @@
 package fs
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/kardianos/osext"
@@ -15,7 +16,6 @@ import (
 	"golang.org/x/oauth2"
 	"log"
 	"net/http"
-	"bytes"
 	"os"
 	"time"
 )

@@ -10,6 +10,7 @@
 <link rel="import" href="../../src/third-party-actions/share-slack-file.html">
 <link rel="import" href="../../src/third-party-actions/share-google-drive-file.html">
 <link rel="import" href="../../src/third-party-actions/share-one-drive-file.html">
+<link rel="import" href="../../src/third-party-actions/share-dropbox-file.html">
 
 <link rel="import" href="../../src/behaviors/util-behavior.html">
 <link rel="import" href="../../src/behaviors/endpoints-behavior.html">
@@ -196,6 +197,10 @@
 
     <template is="dom-if" if="[[isOneDrive(item.file_type)]]">
       <share-one-drive-file item="{{item}}"></share-one-drive-file>
+    </template>
+
+    <template is="dom-if" if="[[isDropbox(item.file_type)]]">
+      <share-dropbox-file item="{{item}}"></share-dropbox-file>
     </template>
 
     <paper-toast id="toast" text=""></paper-toast>
