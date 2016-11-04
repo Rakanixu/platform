@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/structs/file"
 	"github.com/kazoup/platform/structs/globals"
@@ -100,28 +99,24 @@ func (gfs *GoogleDriveFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.C
 	}, nil
 }
 
-// DeleteFile deletes a google drive file
+// DeleteFile moves a google drive file to trash
 func (gfs *GoogleDriveFs) DeleteFile(ctx context.Context, c client.Client, rq file_proto.DeleteRequest) (*file_proto.DeleteResponse, error) {
 	srv, err := gfs.getDriveService()
 	if err != nil {
 		return nil, err
 	}
-	// TODO: does fail always, from google web fail too
-	if err := srv.Files.Delete(rq.OriginalId).Do(); err != nil {
+
+	// Trash file
+	f, err := srv.Files.Update(rq.OriginalId, &drive.File{
+		Trashed: true,
+	}).Fields("*").Do()
+	if err != nil {
 		return nil, err
 	}
 
-	req := c.NewRequest(
-		globals.DB_SERVICE_NAME,
-		"DB.Delete",
-		&db_proto.DeleteRequest{
-			Index: rq.Index,
-			Type:  globals.FileType,
-			Id:    rq.FileId,
-		},
-	)
-	rsp := &db_proto.DeleteResponse{}
-	if err := c.Call(ctx, req, rsp); err != nil {
+	// Reindex file
+	kfg := file.NewKazoupFileFromGoogleDriveFile(f, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
+	if err := file.IndexAsync(kfg, globals.FilesTopic, gfs.Endpoint.Index); err != nil {
 		return nil, err
 	}
 
