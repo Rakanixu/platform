@@ -67,28 +67,28 @@ func (dfs *DropboxFs) GetThumbnail(id string) (string, error) {
 }
 
 // CreateFile creates a file in dropbox and index it on Elastic Search
-func (dfs *DropboxFs) CreateFile(fileType string) (string, error) {
+func (dfs *DropboxFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.CreateResponse, error) {
 	// https://www.dropbox.com/developers/documentation/http/documentation#files-upload
 	folderPath, err := osext.ExecutableFolder()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	p := fmt.Sprintf("%s%s%s", folderPath, "/doc_templates/", globals.GetDocumentTemplate(fileType, true))
+	p := fmt.Sprintf("%s%s%s", folderPath, "/doc_templates/", globals.GetDocumentTemplate(rq.MimeType, true))
 	t, err := os.Open(p)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer t.Close()
 
 	c := &http.Client{}
 	req, err := http.NewRequest("POST", globals.DropboxFileUpload, t)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	req.Header.Set("Authorization", dfs.Token())
 	req.Header.Set("Dropbox-API-Arg", `{
-		"path": "/untitle.`+globals.GetDocumentTemplate(fileType, false)+`",
+		"path": "/`+rq.FileName+`.`+globals.GetDocumentTemplate(rq.MimeType, false)+`",
 		"mode": "add",
 		"autorename": true,
 		"mute": false
@@ -96,21 +96,29 @@ func (dfs *DropboxFs) CreateFile(fileType string) (string, error) {
 	req.Header.Set("Content-Type", "application/octet-stream")
 	rsp, err := c.Do(req)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer rsp.Body.Close()
 
 	var df *dropbox.DropboxFile
 	if err := json.NewDecoder(rsp.Body).Decode(&df); err != nil {
-		return "", err
+		return nil, err
 	}
 
 	kfd := file.NewKazoupFileFromDropboxFile(df, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
 	if err := file.IndexAsync(kfd, globals.FilesTopic, dfs.Endpoint.Index); err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return kfd.GetURL(), nil
+	b, err := json.Marshal(kfd)
+	if err != nil {
+		return nil, err
+	}
+
+	return &file_proto.CreateResponse{
+		DocUrl: kfd.GetURL(),
+		Data:   string(b),
+	}, nil
 }
 
 // ShareFile

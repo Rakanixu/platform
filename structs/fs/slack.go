@@ -70,8 +70,8 @@ func (sfs *SlackFs) GetThumbnail(id string) (string, error) {
 }
 
 // CreateFile belongs to Fs interface
-func (sfs *SlackFs) CreateFile(fileType string) (string, error) {
-	return "", nil
+func (sfs *SlackFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.CreateResponse, error) {
+	return &file_proto.CreateResponse{}, nil
 }
 
 // ShareFile sets a PermalinkPublic available, so everyone with URL has access to the slack file

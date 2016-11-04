@@ -1,6 +1,7 @@
 package fs
 
 import (
+	"encoding/json"
 	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
@@ -76,7 +77,7 @@ func (gfs *GoogleDriveFs) GetThumbnail(id string) (string, error) {
 }
 
 // CreateFile creates a google file and index it on Elastic Search
-func (gfs *GoogleDriveFs) CreateFile(fileType string) (string, error) {
+func (gfs *GoogleDriveFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.CreateResponse, error) {
 	cfg := globals.NewGoogleOautConfig()
 	c := cfg.Client(context.Background(), &oauth2.Token{
 		AccessToken:  gfs.Endpoint.Token.AccessToken,
@@ -87,22 +88,31 @@ func (gfs *GoogleDriveFs) CreateFile(fileType string) (string, error) {
 
 	srv, err := drive.New(c)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	f, err := srv.Files.Create(&drive.File{
-		MimeType: globals.GetMimeType(globals.GoogleDrive, fileType),
+		Name:     rq.FileName,
+		MimeType: globals.GetMimeType(globals.GoogleDrive, rq.MimeType),
 	}).Fields("*").Do()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	kfg := file.NewKazoupFileFromGoogleDriveFile(f, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
 	if err := file.IndexAsync(kfg, globals.FilesTopic, gfs.Endpoint.Index); err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return kfg.GetURL(), nil
+	b, err := json.Marshal(kfg)
+	if err != nil {
+		return nil, err
+	}
+
+	return &file_proto.CreateResponse{
+		DocUrl: kfg.GetURL(),
+		Data:   string(b),
+	}, nil
 }
 
 // ShareFile
