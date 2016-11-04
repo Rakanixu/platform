@@ -278,12 +278,8 @@
 
         return false;
       },
-      hasBoxPublicUrl: function(fileType, original) {
-        if (!_.isEmpty(original) && this.isBox(fileType)) {
-          return (original.shared_link && !_.isEmpty(original.shared_link.url) && original.shared_link.url.length > 0);
-        }
-
-        return false;
+      hasBoxPublicUrl: function(fileType, url) {
+        return this.isBox(fileType) && !_.isEmpty(url);
       },
       profilePicture: function(url) {
         return (url && url.length) ? url : '../app/src/static/unknown-pic-profile.gif';

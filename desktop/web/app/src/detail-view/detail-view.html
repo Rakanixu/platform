@@ -119,6 +119,14 @@
       </mat-item>
     </template>
 
+    <!-- Second parameter force expression to be reevaluated -->
+    <template is="dom-if" if="[[isGoogleDriveFileDeleted(item.file_type, googleDriveInfo.trashed)]]" restamp="true">
+      <mat-item label="This file is trashed on Google Drive"
+                class="overflow-visible"
+                tabindex="-1">
+      </mat-item>
+    </template>
+
     <template is="dom-if" if="[[isDropboxFileDeleted(item.file_type, dropboxInfo.dropboxTag)]]" restamp="true">
       <mat-item label="This file is trashed on Dropbox"
                 class="overflow-visible"
@@ -156,10 +164,9 @@
                 tabindex="-1"></mat-item>
     </template>
 
-    <!-- Second parameter force expression to be reevaluated -->
-    <template id="hasBoxPublicUrl" is="dom-if" if$="[[hasBoxPublicUrl(item.file_type, item.original, item.original.shared_link.url)]]" restamp="true">
+    <template id="hasBoxPublicUrl" is="dom-if" if$="[[hasBoxPublicUrl(item.file_type, boxInfo.shared_link)]]" restamp="true">
       <mat-item label="Public Available Location"
-                description="[[item.original.shared_link.url]]"
+                description="[[boxInfo.shared_link]]"
                 on-xp-activate="openPublicFileFromDetailView"
                 tabindex="-1"></mat-item>
     </template>
@@ -296,6 +303,10 @@
             type: Object,
             notify: true
           },
+          boxInfo: {
+            type: Object,
+            notify: true
+          },
           rpcSearchSlackUsersParams: {
             type: Object,
             notify: false,
@@ -364,6 +375,9 @@
             case 'dropbox':
               this.getMoreInfoFromDropbox();
               break;
+            case 'box':
+              this.getMoreInfoFromBox();
+              break;
           }
 
           this.async(function() {
@@ -402,7 +416,8 @@
             people: people,
             createdDateTime: this.timestampToHumanTime(this.item.original.createdTime),
             lastModifiedBy: this.item.original.lastModifyingUser.displayName,
-            lastModifiedDateTime: this.timestampToHumanTime(this.item.original.modifiedTime)
+            lastModifiedDateTime: this.timestampToHumanTime(this.item.original.modifiedTime),
+            trashed: this.item.original.trashed ? true : false
           });
         },
         getMoreInfoFromOneDrive: function() {
@@ -466,6 +481,11 @@
           this.$.rpcSearchSlackUsers.generateRequest();
           this.$.rpcSearchSlackChannels.generateRequest();
         },
+        getMoreInfoFromBox: function() {
+          this.set('boxInfo', {
+            shared_link: this.item.original.shared_link.url
+          });
+        },
         openFileFromDetailView: function(e) {
           this.openFile(this.item.url);
         },
@@ -484,6 +504,9 @@
         },
         isDropboxFileDeleted: function(fileType, dTag) {
           return this.isDropbox(fileType) && dTag == 'deleted';
+        },
+        isGoogleDriveFileDeleted: function(fileType, trashed) {
+          return this.isGoogleDrive(fileType) && trashed;
         },
         _handleAggregate: function(e) {
           var aggs = {};
