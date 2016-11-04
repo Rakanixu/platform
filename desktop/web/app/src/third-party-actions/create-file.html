@@ -38,6 +38,12 @@
       mat-dialog {
         width: 320px;
       }
+
+      @media screen and (max-width: 601px) {
+        paper-fab {
+          top: 84px;
+        }
+      }
     </style>
 
     <paper-fab id="createFileIcon"
@@ -141,6 +147,16 @@
     </mat-dialog>
 
     <paper-toast id="toast" duration="6000" text=""></paper-toast>
+
+    <iron-media-query query="(min-width: 601px)"
+                      query-matches="{{mediaQuerySmall}}"></iron-media-query>
+
+    <iron-media-query query="(min-width: 961px)"
+                      query-matches="{{mediaQueryMedium}}"></iron-media-query>
+
+    <iron-media-query query="(min-width: 1281px)"
+                      query-matches="{{mediaQueryLarge}}"></iron-media-query>
+
 
     <iron-ajax id="rpcCreateFile"
                method="POST"
