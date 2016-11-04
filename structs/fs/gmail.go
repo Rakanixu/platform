@@ -62,6 +62,11 @@ func (gfs *GmailFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.CreateR
 	return &file_proto.CreateResponse{}, nil
 }
 
+// DeleteFile deletes a email and therefore its attachments. Be careful.
+func (gfs *GmailFs) DeleteFile(ctx context.Context, c client.Client, rq file_proto.DeleteRequest) (*file_proto.DeleteResponse, error) {
+	return &file_proto.DeleteResponse{}, nil
+}
+
 // ShareFile
 func (gfs *GmailFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
 	return "", nil

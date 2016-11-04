@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/kardianos/osext"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/structs/dropbox"
 	"github.com/kazoup/platform/structs/file"
@@ -121,10 +122,100 @@ func (dfs *DropboxFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.Creat
 	}, nil
 }
 
+// DeleteFile deletes a dropbox file
+func (dfs *DropboxFs) DeleteFile(ctx context.Context, c client.Client, rq file_proto.DeleteRequest) (*file_proto.DeleteResponse, error) {
+	// https://www.dropbox.com/developers/documentation/http/documentation#files-delete
+	b := []byte(`{
+		"path": "` + rq.OriginalFilePath + `"
+	}`)
+
+	// Move file to trash in dropbox
+	dc := &http.Client{}
+	r, err := http.NewRequest("POST", globals.DropboxFileDelete, bytes.NewBuffer(b))
+	if err != nil {
+		return nil, err
+	}
+	r.Header.Set("Authorization", dfs.Token())
+	r.Header.Set("Content-Type", "application/json")
+	rsp, err := dc.Do(r)
+	if err != nil {
+		return nil, err
+	}
+	// From Dropbox docs:
+	// The returned metadata will be the corresponding FileMetadata or FolderMetadata for the item
+	// at time of deletion, and not a DeletedMetadata object.
+	// Obviously, we need the DeletedMetadata, so we have to get it by doing fucking extra request
+	defer rsp.Body.Close()
+
+	if rsp.StatusCode != http.StatusOK {
+		return nil, errors.New(fmt.Sprintf("Deleting Dropbox file failed with status code %d", rsp.StatusCode))
+	}
+
+	// Reindex trashed file
+	// TODO: this fails and do not see why it should
+	/*	kfd, err := dfs.getFile(rq.OriginalId)
+		if err != nil {
+			return nil, err
+		}
+
+		log.Println(kfd)
+		//log.Println(df.Tag)
+
+		if err := file.IndexAsync(kfd, globals.FilesTopic, dfs.Endpoint.Index); err != nil {
+			return nil, err
+		}*/
+
+	// HACK: read the file and update manually, well, it works, but timestamps are old ones
+	// FIXME: Try to debug commented code because it should work.
+	rreq := c.NewRequest(
+		globals.DB_SERVICE_NAME,
+		"DB.Read",
+		&db_proto.ReadRequest{
+			Index: rq.Index,
+			Type:  globals.FileType,
+			Id:    rq.FileId,
+		},
+	)
+	rres := &db_proto.ReadResponse{}
+	if err := c.Call(ctx, rreq, rres); err != nil {
+		return nil, err
+	}
+
+	var df *file.KazoupDropboxFile
+	if err := json.Unmarshal([]byte(rres.Result), &df); err != nil {
+		return nil, err
+	}
+
+	// HACK HACK HACK!
+	df.Original.DropboxTag = "deleted"
+
+	bb, err := json.Marshal(df)
+	if err != nil {
+		return nil, err
+	}
+
+	ureq := c.NewRequest(
+		globals.DB_SERVICE_NAME,
+		"DB.Update",
+		&db_proto.UpdateRequest{
+			Index: rq.Index,
+			Type:  globals.FileType,
+			Id:    rq.FileId,
+			Data:  string(bb),
+		},
+	)
+	ures := &db_proto.UpdateResponse{}
+	if err := c.Call(ctx, ureq, ures); err != nil {
+		return nil, err
+	}
+
+	return &file_proto.DeleteResponse{}, nil
+}
+
 // ShareFile
 func (dfs *DropboxFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
 	// https://www.dropbox.com/developers/documentation/http/documentation#sharing-add_file_member
-	// access_level cannot be editor, Dropbox API fails. Role will be set on frontend
+	// access_level cannot be editor, Dropbox API fails. Role should be selected on frontend
 	b := []byte(`{
 		"file": "` + req.OriginalId + `",
 		"members": [

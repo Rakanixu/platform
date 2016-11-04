@@ -3,6 +3,7 @@ package fs
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/kardianos/osext"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
@@ -174,6 +175,48 @@ func (ofs *OneDriveFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.Crea
 		DocUrl: kfo.GetURL(),
 		Data:   string(b),
 	}, nil
+}
+
+// DeleteFile deletes an onedrive file
+func (ofs *OneDriveFs) DeleteFile(ctx context.Context, c client.Client, rq file_proto.DeleteRequest) (*file_proto.DeleteResponse, error) {
+	if err := ofs.refreshToken(); err != nil {
+		log.Println(err)
+	}
+
+	oc := &http.Client{}
+	// https://dev.onedrive.com/items/delete.htm
+	url := globals.OneDriveEndpoint + Drive + "items/" + rq.OriginalId
+	oreq, err := http.NewRequest("DELETE", url, nil)
+	oreq.Header.Set("Authorization", ofs.Endpoint.Token.TokenType+" "+ofs.Endpoint.Token.AccessToken)
+	if err != nil {
+		return nil, err
+	}
+	res, err := oc.Do(oreq)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusNoContent {
+		return nil, errors.New(fmt.Sprintf("Deleting Onedrive file failed with status code %d", res.StatusCode))
+	}
+
+	// Remove file from index
+	req := c.NewRequest(
+		globals.DB_SERVICE_NAME,
+		"DB.Delete",
+		&db_proto.DeleteRequest{
+			Index: rq.Index,
+			Type:  globals.FileType,
+			Id:    rq.FileId,
+		},
+	)
+	rsp := &db_proto.DeleteResponse{}
+	if err := c.Call(ctx, req, rsp); err != nil {
+		return nil, err
+	}
+
+	return &file_proto.DeleteResponse{}, nil
 }
 
 // ShareFile

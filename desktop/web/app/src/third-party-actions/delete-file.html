@@ -1,0 +1,182 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/device-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+
+<link rel="import" href="../../bower_components/mat-icon/mat-icon.html">
+<link rel="import" href="../../bower_components/mat-icons/mat-icons.html">
+<link rel="import" href="../../bower_components/mat-icons/hardware-icons.html">
+<link rel="import" href="../../bower_components/mat-icons/action-icons.html">
+<link rel="import" href="../../bower_components/mat-icon-button/mat-icon-button.html">
+
+<link rel="import" href="../../bower_components/mat-dialog/mat-dialog.html">
+
+<link rel="import" href="../../src/behaviors/endpoints-behavior.html">
+<link rel="import" href="../../src/behaviors/map-behavior.html">
+<link rel="import" href="../../src/behaviors/util-behavior.html">
+
+<dom-module id="delete-file">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style>
+      :host {
+        display: block;
+      }
+
+      mat-dialog {
+        width: 340px;
+      }
+
+      #selectTargetDialog paper-button {
+        padding: 0;
+        width: 100%;
+      }
+
+      #selectTargetDialog paper-button mat-item {
+        width: 100%;
+      }
+    </style>
+
+    <mat-item label=""
+              description=""
+              on-xp-activate="openDeleteConfirmationDialog"
+              tabindex="-1">
+      <paper-icon-button id="delete"
+                         icon="icons:delete"
+                         color="black"></paper-icon-button>
+
+    </mat-item>
+
+    <mat-dialog id="deleteConfirmationDialog" label="">
+      <div>
+        <p>[[deleteMsg]]</p>
+      </div>
+      <mat-button class="action" label="Delete" on-tap="deleteFile"></mat-button>
+      <mat-button class="action" label="Cancel" on-tap="closeDeleteConfirmationDialog"></mat-button>
+    </mat-dialog>
+
+
+    <paper-toast id="toast" duration="6000" text=""></paper-toast>
+
+    <iron-ajax id="rpcShareFile"
+               method="POST"
+               content-type="application/json"
+               url="[[endpoints.endpoint]]"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleDeleteFile"
+               params="[[rpcDeleteFileParams]]"
+               headers="[[headers]]"></iron-ajax>
+
+  </template>
+
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'delete-file',
+        behaviors: [
+          Polymer.EndpointsBehaviorImp,
+          Polymer.UtilBehaviorImp
+        ],
+        properties: {
+          item: {
+            type: Object,
+            notify: true,
+            reflectToAttribute: true
+          },
+          deleteMsg: {
+            type: String,
+            notify: false,
+            value: ''
+          },
+          rpcDeleteFileParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: 'com.kazoup.srv.file',
+                method: 'File.Delete',
+                request: {
+                  datasource_id: '',     // Datasource ID (file belongs to)
+                  index: '',             // Datasource index (file belongs to)
+                  file_id: '',           // Kazoup file ID
+                  original_id: '',       // Original file ID
+                  original_file_path: '' // Original file path (required fro dropbox)
+                }
+              };
+            }
+          }
+        },
+        openDeleteConfirmationDialog: function(e) {
+          this.set('deleteMsg', this.item.name + ' will be deleted. \nAre you sure?');
+
+          this.$.deleteConfirmationDialog.show();
+        },
+        closeDeleteConfirmationDialog: function() {
+          this.$.deleteConfirmationDialog.hide();
+        },
+        deleteFile: function(e) {
+          this.headers = Auth.getHeaders();
+
+          this.rpcDeleteFileParams.request.datasource_id = this.item.datasource_id;
+          this.rpcDeleteFileParams.request.index = this.item.index;
+          this.rpcDeleteFileParams.request.file_id = this.item.id;
+          this.rpcDeleteFileParams.request.original_id = this.item.original.id;
+
+          if (this.item.file_type === "dropbox") {
+            this.rpcDeleteFileParams.request.original_file_path = this.item.original.path_display;
+          } else {
+            this.rpcDeleteFileParams.request.original_file_path = '';
+          }
+
+          this.$.rpcShareFile.body = this.rpcDeleteFileParams;
+          this.$.rpcShareFile.generateRequest();
+        },
+        _handleDeleteFile: function(e) {
+          if (e.detail.response) {
+            this.closeDeleteConfirmationDialog();
+
+            this.$.toast.text = this.item.name + ' deleted successfully.';
+            this.$.toast.show();
+
+            this.async(function() {
+              _.forEach(document.querySelector('web-app').datasourceResults, function(ds) {
+                if (ds.id === document.querySelector('web-app').selectedDatasource.id) {
+
+                  // Reload documents in selected data source expecting deleted one does not appear.
+                  document.querySelector('web-app').browseDatasource({
+                    model: {
+                      __data__: {
+                        item: ds
+                      }
+                    }
+                  })
+                  return false;
+                }
+              }, this);
+              // TODO: Will not ensure that the file has been removed from index
+              // We need push notifications or sockets. Problem with sockets, backend has to handle correctly
+              // This has to be trigger in a clever way when notification received, this is bullshit for users.
+            }, 1000);
+          }
+        },
+        _handleError: function(e) {
+          this.checkUnauthorize(e);
+
+          if (e.detail.request && e.detail.request.response) {
+            this.$.toast.text = e.detail.request.response.detail;
+            this.$.toast.show();
+          }
+        }
+      });
+    }());
+  </script>
+</dom-module>

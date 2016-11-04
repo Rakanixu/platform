@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/structs/file"
 	"github.com/kazoup/platform/structs/globals"
@@ -56,15 +57,7 @@ func (gfs *GoogleDriveFs) GetDatasourceId() string {
 
 // GetThumbnail returns a URI pointing to a thumbnail
 func (gfs *GoogleDriveFs) GetThumbnail(id string) (string, error) {
-	cfg := globals.NewGoogleOautConfig()
-	c := cfg.Client(context.Background(), &oauth2.Token{
-		AccessToken:  gfs.Endpoint.Token.AccessToken,
-		TokenType:    gfs.Endpoint.Token.TokenType,
-		RefreshToken: gfs.Endpoint.Token.RefreshToken,
-		Expiry:       time.Unix(gfs.Endpoint.Token.Expiry, 0),
-	})
-
-	srv, err := drive.New(c)
+	srv, err := gfs.getDriveService()
 	if err != nil {
 		return "", err
 	}
@@ -78,15 +71,7 @@ func (gfs *GoogleDriveFs) GetThumbnail(id string) (string, error) {
 
 // CreateFile creates a google file and index it on Elastic Search
 func (gfs *GoogleDriveFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.CreateResponse, error) {
-	cfg := globals.NewGoogleOautConfig()
-	c := cfg.Client(context.Background(), &oauth2.Token{
-		AccessToken:  gfs.Endpoint.Token.AccessToken,
-		TokenType:    gfs.Endpoint.Token.TokenType,
-		RefreshToken: gfs.Endpoint.Token.RefreshToken,
-		Expiry:       time.Unix(gfs.Endpoint.Token.Expiry, 0),
-	})
-
-	srv, err := drive.New(c)
+	srv, err := gfs.getDriveService()
 	if err != nil {
 		return nil, err
 	}
@@ -115,17 +100,37 @@ func (gfs *GoogleDriveFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.C
 	}, nil
 }
 
+// DeleteFile deletes a google drive file
+func (gfs *GoogleDriveFs) DeleteFile(ctx context.Context, c client.Client, rq file_proto.DeleteRequest) (*file_proto.DeleteResponse, error) {
+	srv, err := gfs.getDriveService()
+	if err != nil {
+		return nil, err
+	}
+	// TODO: does fail always, from google web fail too
+	if err := srv.Files.Delete(rq.OriginalId).Do(); err != nil {
+		return nil, err
+	}
+
+	req := c.NewRequest(
+		globals.DB_SERVICE_NAME,
+		"DB.Delete",
+		&db_proto.DeleteRequest{
+			Index: rq.Index,
+			Type:  globals.FileType,
+			Id:    rq.FileId,
+		},
+	)
+	rsp := &db_proto.DeleteResponse{}
+	if err := c.Call(ctx, req, rsp); err != nil {
+		return nil, err
+	}
+
+	return &file_proto.DeleteResponse{}, nil
+}
+
 // ShareFile
 func (gfs *GoogleDriveFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
-	cfg := globals.NewGoogleOautConfig()
-	gc := cfg.Client(context.Background(), &oauth2.Token{
-		AccessToken:  gfs.Endpoint.Token.AccessToken,
-		TokenType:    gfs.Endpoint.Token.TokenType,
-		RefreshToken: gfs.Endpoint.Token.RefreshToken,
-		Expiry:       time.Unix(gfs.Endpoint.Token.Expiry, 0),
-	})
-
-	srv, err := drive.New(gc)
+	srv, err := gfs.getDriveService()
 	if err != nil {
 		return "", err
 	}
@@ -153,15 +158,7 @@ func (gfs *GoogleDriveFs) ShareFile(ctx context.Context, c client.Client, req fi
 
 // getFiles discover all files in google drive account
 func (gfs *GoogleDriveFs) getFiles() error {
-	cfg := globals.NewGoogleOautConfig()
-	c := cfg.Client(context.Background(), &oauth2.Token{
-		AccessToken:  gfs.Endpoint.Token.AccessToken,
-		TokenType:    gfs.Endpoint.Token.TokenType,
-		RefreshToken: gfs.Endpoint.Token.RefreshToken,
-		Expiry:       time.Unix(gfs.Endpoint.Token.Expiry, 0),
-	})
-
-	srv, err := drive.New(c)
+	srv, err := gfs.getDriveService()
 	if err != nil {
 		return err
 	}
@@ -217,4 +214,17 @@ func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
 	}
 
 	return nil
+}
+
+// getDriveService return a google drive service instance
+func (gfs *GoogleDriveFs) getDriveService() (*drive.Service, error) {
+	cfg := globals.NewGoogleOautConfig()
+	c := cfg.Client(context.Background(), &oauth2.Token{
+		AccessToken:  gfs.Endpoint.Token.AccessToken,
+		TokenType:    gfs.Endpoint.Token.TokenType,
+		RefreshToken: gfs.Endpoint.Token.RefreshToken,
+		Expiry:       time.Unix(gfs.Endpoint.Token.Expiry, 0),
+	})
+
+	return drive.New(c)
 }

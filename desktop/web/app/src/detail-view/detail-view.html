@@ -12,6 +12,7 @@
 <link rel="import" href="../../src/third-party-actions/share-one-drive-file.html">
 <link rel="import" href="../../src/third-party-actions/share-dropbox-file.html">
 <link rel="import" href="../../src/third-party-actions/share-box-file.html">
+<link rel="import" href="../../src/third-party-actions/delete-file.html">
 
 <link rel="import" href="../../src/behaviors/util-behavior.html">
 <link rel="import" href="../../src/behaviors/endpoints-behavior.html">
@@ -215,6 +216,8 @@
     <template is="dom-if" if="[[isBox(item.file_type)]]">
       <share-box-file item="{{item}}"></share-box-file>
     </template>
+
+    <delete-file item="{{item}}"></delete-file>
 
     <paper-toast id="toast" text=""></paper-toast>
 
