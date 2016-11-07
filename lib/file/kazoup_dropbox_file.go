@@ -1,7 +1,7 @@
 package file
 
 import (
-	"github.com/kazoup/platform/structs/dropbox"
+	"github.com/kazoup/platform/lib/dropbox"
 )
 
 type KazoupDropboxFile struct {

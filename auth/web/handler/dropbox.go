@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/kazoup/platform/structs/globals"
+	"github.com/kazoup/platform/lib/globals"
 	"golang.org/x/oauth2"
 	"io/ioutil"
 	"log"

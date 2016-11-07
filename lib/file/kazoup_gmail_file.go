@@ -2,7 +2,7 @@ package file
 
 import (
 	"fmt"
-	"github.com/kazoup/platform/structs/globals"
+	"github.com/kazoup/platform/lib/globals"
 	gmail "google.golang.org/api/gmail/v1"
 )
 

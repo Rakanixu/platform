@@ -2,7 +2,7 @@ package categories
 
 import (
 	"encoding/json"
-	data "github.com/kazoup/platform/structs/categories/data"
+	data "github.com/kazoup/platform/lib/categories/data"
 	"log"
 )
 

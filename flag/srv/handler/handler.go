@@ -5,7 +5,7 @@ import (
 	"fmt"
 	db "github.com/kazoup/platform/db/srv/proto/db"
 	proto "github.com/kazoup/platform/flag/srv/proto/flag"
-	"github.com/kazoup/platform/structs/globals"
+	"github.com/kazoup/platform/lib/globals"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"

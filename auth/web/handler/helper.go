@@ -2,7 +2,7 @@ package handler
 
 import (
 	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	"github.com/kazoup/platform/structs/globals"
+	"github.com/kazoup/platform/lib/globals"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 )

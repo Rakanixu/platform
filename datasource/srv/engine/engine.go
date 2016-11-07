@@ -5,7 +5,7 @@ import (
 	"errors"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
-	"github.com/kazoup/platform/structs/globals"
+	"github.com/kazoup/platform/lib/globals"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"strings"

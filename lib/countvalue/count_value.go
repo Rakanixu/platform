@@ -1,7 +1,7 @@
 package countvalue
 
 import (
-	"github.com/kazoup/platform/structs/intmap"
+	"github.com/kazoup/platform/lib/intmap"
 )
 
 // CountValue data struct

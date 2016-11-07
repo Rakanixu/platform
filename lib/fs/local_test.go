@@ -2,7 +2,7 @@ package fs_test
 
 import (
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	"github.com/kazoup/platform/structs/fs"
+	"github.com/kazoup/platform/lib/fs"
 	"log"
 	"testing"
 )

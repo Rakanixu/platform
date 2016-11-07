@@ -2,7 +2,7 @@ package file
 
 import (
 	"fmt"
-	"github.com/kazoup/platform/structs/globals"
+	"github.com/kazoup/platform/lib/globals"
 	"strings"
 )
 

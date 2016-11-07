@@ -1,8 +1,8 @@
 package scheduler
 
 import (
+	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/kazoup/platform/scheduler/srv/handler"
-	"github.com/kazoup/platform/structs/wrappers"
 	"github.com/micro/cli"
 	_ "github.com/micro/go-plugins/broker/nats"
 	"log"

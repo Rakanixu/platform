@@ -1,8 +1,8 @@
 package file
 
 import (
-	"github.com/kazoup/platform/structs/globals"
-	"github.com/kazoup/platform/structs/onedrive"
+	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/onedrive"
 )
 
 type KazoupOneDriveFile struct {

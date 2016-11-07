@@ -1,10 +1,10 @@
 package search
 
 import (
+	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/kazoup/platform/search/srv/engine"
 	_ "github.com/kazoup/platform/search/srv/engine/db_search"
 	"github.com/kazoup/platform/search/srv/handler"
-	"github.com/kazoup/platform/structs/wrappers"
 	"github.com/micro/cli"
 	"log"
 )

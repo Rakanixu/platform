@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/Pallinder/go-randomdata"
-	"github.com/kazoup/platform/structs/categories"
-	"github.com/kazoup/platform/structs/intmap"
+	"github.com/kazoup/platform/lib/categories"
+	"github.com/kazoup/platform/lib/intmap"
 )
 
 const (

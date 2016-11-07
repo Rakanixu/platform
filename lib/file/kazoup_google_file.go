@@ -1,7 +1,7 @@
 package file
 
 import (
-	"github.com/kazoup/platform/structs/globals"
+	"github.com/kazoup/platform/lib/globals"
 	googledrive "google.golang.org/api/drive/v3"
 )
 

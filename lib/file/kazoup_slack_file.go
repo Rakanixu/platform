@@ -1,6 +1,6 @@
 package file
 
-import "github.com/kazoup/platform/structs/slack"
+import "github.com/kazoup/platform/lib/slack"
 
 type KazoupSlackFile struct {
 	KazoupFile
