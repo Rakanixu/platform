@@ -245,6 +245,8 @@
                                          color="white"
                                          hidden$="[[!searching]]"></mat-icon-button>
 
+                        <create-file selected-datasource="[[selectedDatasource]]" item-selected="{{itemSelected}}"></create-file>
+
                         <div class="middle breadcrumbs">
                             <!-- Breadcrumbs while browsing. Breadcrumbs fits into screen -->
                             <mat-breadcrumb id="fitBreadcrumbs"
@@ -416,8 +418,6 @@
 
             </paper-drawer-panel>
         </paper-drawer-panel>
-
-        <create-file selected-datasource="[[selectedDatasource]]"></create-file>
 
         <filter-converter id="filterConverter"></filter-converter>
 

@@ -28,9 +28,9 @@
       }
 
       paper-fab {
-        position: fixed;
-        right: 36px;
+        position: absolute;
         top: 99px;
+        right: 24px;
         z-index: 9999;
         background-color: var(--accent);
       }
@@ -206,6 +206,9 @@
           selectedDatasource: {
             observer: 'selectedDatasourceChanged'
           },
+          itemSelected: {
+            observer: 'itemSeletedChanged'
+          },
           createFileIconVisible: {
             type: Boolean,
             notify: true,
@@ -222,6 +225,16 @@
               newVal.type === 'box'
             )
           );
+        },
+        itemSeletedChanged: function(newVal, oldVal) {
+          // Handle paper-fab visibility
+          if (this.itemSelected !== undefined) {
+            if (this.mediaQueryMedium === false && this.itemSelected) {
+              this.$.createFileIcon.style.display = 'none';
+            } else {
+              this.$.createFileIcon.style.display = 'block';
+            }
+          }
         },
         openCreateFileDialog: function(e) {
           this.$.createFileDialog.show();
