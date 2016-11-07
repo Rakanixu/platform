@@ -33,6 +33,10 @@
         width: 340px;
       }
 
+      paper-icon-button {
+        color: #fff;
+      }
+
       #selectTargetDialog paper-button {
         padding: 0;
         width: 100%;
@@ -43,15 +47,10 @@
       }
     </style>
 
-    <mat-item label=""
-              description=""
-              on-xp-activate="openShareFileDialog"
-              tabindex="-1">
-      <paper-icon-button id="share"
-                         icon="social:share"
-                         color="black"></paper-icon-button>
-
-    </mat-item>
+    <paper-icon-button id="share"
+                       icon="social:share"
+                       on-tap="openShareFileDialog"
+                       color="white"></paper-icon-button>
 
     <mat-dialog id="shareFileDialog" label="">
       <div>

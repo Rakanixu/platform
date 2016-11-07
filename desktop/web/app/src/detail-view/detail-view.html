@@ -134,7 +134,6 @@
       </mat-item>
     </template>
 
-
     <template is="dom-if" if="[[item.is_dir]]" restamp="true">
       <mat-item label="Total number of files"
                 description="[[aggsInfo.count]]"
@@ -202,29 +201,6 @@
                 description="[[bytesToSize(aggsInfo.totalSize)]]"
                 tabindex="-1"></mat-item>
     </template>
-
-    <!-- Share functionality specific for every integration, this way any of the elements becames unnecessary complex -->
-    <template is="dom-if" if="[[isSlack(item.file_type)]]">
-      <share-slack-file item="{{item}}"></share-slack-file>
-    </template>
-
-    <template is="dom-if" if="[[isGoogleDrive(item.file_type)]]">
-      <share-google-drive-file item="{{item}}"></share-google-drive-file>
-    </template>
-
-    <template is="dom-if" if="[[isOneDrive(item.file_type)]]">
-      <share-one-drive-file item="{{item}}"></share-one-drive-file>
-    </template>
-
-    <template is="dom-if" if="[[isDropbox(item.file_type)]]">
-      <share-dropbox-file item="{{item}}"></share-dropbox-file>
-    </template>
-
-    <template is="dom-if" if="[[isBox(item.file_type)]]">
-      <share-box-file item="{{item}}"></share-box-file>
-    </template>
-
-    <delete-file item="{{item}}"></delete-file>
 
     <paper-toast id="toast" text=""></paper-toast>
 

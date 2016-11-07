@@ -378,6 +378,31 @@
 
                         <div class="flex"></div>
 
+                        <!-- Share functionality specific for every integration, this way any of the elements becomes unnecessary complex -->
+                        <template is="dom-if" if="[[isSlack(item.file_type)]]">
+                            <share-slack-file item="{{item}}"></share-slack-file>
+                        </template>
+
+                        <template is="dom-if" if="[[isGoogleDrive(item.file_type)]]">
+                            <share-google-drive-file item="{{item}}"></share-google-drive-file>
+                        </template>
+
+                        <template is="dom-if" if="[[isOneDrive(item.file_type)]]">
+                            <share-one-drive-file item="{{item}}"></share-one-drive-file>
+                        </template>
+
+                        <template is="dom-if" if="[[isDropbox(item.file_type)]]">
+                            <share-dropbox-file item="{{item}}"></share-dropbox-file>
+                        </template>
+
+                        <template is="dom-if" if="[[isBox(item.file_type)]]">
+                            <share-box-file item="{{item}}"></share-box-file>
+                        </template>
+
+                        <template is="dom-if" if="[[isDeleteFileAvailable(item.file_type)]]">
+                            <delete-file item="{{item}}"></delete-file>
+                        </template>
+
                         <div class="bottom fit">
                             <mat-item label="[[item.name]]" class="light" focused="false"></mat-item>
                         </div>

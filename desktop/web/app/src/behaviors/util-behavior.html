@@ -281,6 +281,9 @@
       hasBoxPublicUrl: function(fileType, url) {
         return this.isBox(fileType) && !_.isEmpty(url);
       },
+      isDeleteFileAvailable: function(fileType) {
+        return this.isBox(fileType) || this.isDropbox(fileType) || this.isOneDrive(fileType) || this.isGoogleDrive(fileType);
+      },
       profilePicture: function(url) {
         return (url && url.length) ? url : '../app/src/static/unknown-pic-profile.gif';
       },
