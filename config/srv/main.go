@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/kazoup/platform/config/srv/handler"
-	"github.com/kazoup/platform/structs/wrappers"
+	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/go-micro/cmd"
 	"log"
 )

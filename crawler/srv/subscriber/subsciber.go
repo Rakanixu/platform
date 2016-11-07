@@ -3,10 +3,10 @@ package subscriber
 import (
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/lib/file"
+	"github.com/kazoup/platform/lib/fs"
+	"github.com/kazoup/platform/lib/globals"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
-	"github.com/kazoup/platform/structs/file"
-	"github.com/kazoup/platform/structs/fs"
-	"github.com/kazoup/platform/structs/globals"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"log"

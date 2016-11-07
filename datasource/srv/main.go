@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/kazoup/platform/datasource/srv/handler"
-	"github.com/kazoup/platform/structs/globals"
-	"github.com/kazoup/platform/structs/wrappers"
+	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/wrappers"
 	"log"
 )
 

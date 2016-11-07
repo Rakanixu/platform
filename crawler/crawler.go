@@ -2,9 +2,9 @@ package auth
 
 import (
 	"github.com/kazoup/platform/crawler/srv/subscriber"
-	"github.com/kazoup/platform/structs/categories"
-	"github.com/kazoup/platform/structs/globals"
-	"github.com/kazoup/platform/structs/wrappers"
+	"github.com/kazoup/platform/lib/categories"
+	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/cli"
 	_ "github.com/micro/go-plugins/broker/nats"
 	"log"

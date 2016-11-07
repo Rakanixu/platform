@@ -1,9 +1,9 @@
 package main
 
 import (
+	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/kazoup/platform/notification/srv/subscriber"
-	"github.com/kazoup/platform/structs/globals"
-	"github.com/kazoup/platform/structs/wrappers"
 	"github.com/micro/go-micro/server"
 	_ "github.com/micro/go-plugins/broker/nats"
 	"log"
