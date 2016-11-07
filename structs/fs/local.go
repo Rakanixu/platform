@@ -73,6 +73,11 @@ func (lfs *LocalFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.CreateR
 	return &file_proto.CreateResponse{}, nil
 }
 
+// DeleteFile deletes a local file
+func (lfs *LocalFs) DeleteFile(ctx context.Context, c client.Client, rq file_proto.DeleteRequest) (*file_proto.DeleteResponse, error) {
+	return &file_proto.DeleteResponse{}, nil
+}
+
 // ShareFile
 func (lfs *LocalFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
 	return "", nil

@@ -56,15 +56,7 @@ func (gfs *GoogleDriveFs) GetDatasourceId() string {
 
 // GetThumbnail returns a URI pointing to a thumbnail
 func (gfs *GoogleDriveFs) GetThumbnail(id string) (string, error) {
-	cfg := globals.NewGoogleOautConfig()
-	c := cfg.Client(context.Background(), &oauth2.Token{
-		AccessToken:  gfs.Endpoint.Token.AccessToken,
-		TokenType:    gfs.Endpoint.Token.TokenType,
-		RefreshToken: gfs.Endpoint.Token.RefreshToken,
-		Expiry:       time.Unix(gfs.Endpoint.Token.Expiry, 0),
-	})
-
-	srv, err := drive.New(c)
+	srv, err := gfs.getDriveService()
 	if err != nil {
 		return "", err
 	}
@@ -78,15 +70,7 @@ func (gfs *GoogleDriveFs) GetThumbnail(id string) (string, error) {
 
 // CreateFile creates a google file and index it on Elastic Search
 func (gfs *GoogleDriveFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.CreateResponse, error) {
-	cfg := globals.NewGoogleOautConfig()
-	c := cfg.Client(context.Background(), &oauth2.Token{
-		AccessToken:  gfs.Endpoint.Token.AccessToken,
-		TokenType:    gfs.Endpoint.Token.TokenType,
-		RefreshToken: gfs.Endpoint.Token.RefreshToken,
-		Expiry:       time.Unix(gfs.Endpoint.Token.Expiry, 0),
-	})
-
-	srv, err := drive.New(c)
+	srv, err := gfs.getDriveService()
 	if err != nil {
 		return nil, err
 	}
@@ -115,17 +99,33 @@ func (gfs *GoogleDriveFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.C
 	}, nil
 }
 
+// DeleteFile moves a google drive file to trash
+func (gfs *GoogleDriveFs) DeleteFile(ctx context.Context, c client.Client, rq file_proto.DeleteRequest) (*file_proto.DeleteResponse, error) {
+	srv, err := gfs.getDriveService()
+	if err != nil {
+		return nil, err
+	}
+
+	// Trash file
+	f, err := srv.Files.Update(rq.OriginalId, &drive.File{
+		Trashed: true,
+	}).Fields("*").Do()
+	if err != nil {
+		return nil, err
+	}
+
+	// Reindex file
+	kfg := file.NewKazoupFileFromGoogleDriveFile(f, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
+	if err := file.IndexAsync(kfg, globals.FilesTopic, gfs.Endpoint.Index); err != nil {
+		return nil, err
+	}
+
+	return &file_proto.DeleteResponse{}, nil
+}
+
 // ShareFile
 func (gfs *GoogleDriveFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
-	cfg := globals.NewGoogleOautConfig()
-	gc := cfg.Client(context.Background(), &oauth2.Token{
-		AccessToken:  gfs.Endpoint.Token.AccessToken,
-		TokenType:    gfs.Endpoint.Token.TokenType,
-		RefreshToken: gfs.Endpoint.Token.RefreshToken,
-		Expiry:       time.Unix(gfs.Endpoint.Token.Expiry, 0),
-	})
-
-	srv, err := drive.New(gc)
+	srv, err := gfs.getDriveService()
 	if err != nil {
 		return "", err
 	}
@@ -153,15 +153,7 @@ func (gfs *GoogleDriveFs) ShareFile(ctx context.Context, c client.Client, req fi
 
 // getFiles discover all files in google drive account
 func (gfs *GoogleDriveFs) getFiles() error {
-	cfg := globals.NewGoogleOautConfig()
-	c := cfg.Client(context.Background(), &oauth2.Token{
-		AccessToken:  gfs.Endpoint.Token.AccessToken,
-		TokenType:    gfs.Endpoint.Token.TokenType,
-		RefreshToken: gfs.Endpoint.Token.RefreshToken,
-		Expiry:       time.Unix(gfs.Endpoint.Token.Expiry, 0),
-	})
-
-	srv, err := drive.New(c)
+	srv, err := gfs.getDriveService()
 	if err != nil {
 		return err
 	}
@@ -217,4 +209,17 @@ func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
 	}
 
 	return nil
+}
+
+// getDriveService return a google drive service instance
+func (gfs *GoogleDriveFs) getDriveService() (*drive.Service, error) {
+	cfg := globals.NewGoogleOautConfig()
+	c := cfg.Client(context.Background(), &oauth2.Token{
+		AccessToken:  gfs.Endpoint.Token.AccessToken,
+		TokenType:    gfs.Endpoint.Token.TokenType,
+		RefreshToken: gfs.Endpoint.Token.RefreshToken,
+		Expiry:       time.Unix(gfs.Endpoint.Token.Expiry, 0),
+	})
+
+	return drive.New(c)
 }

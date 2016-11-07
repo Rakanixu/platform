@@ -74,6 +74,11 @@ func (sfs *SlackFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.CreateR
 	return &file_proto.CreateResponse{}, nil
 }
 
+// DeleteFile deletes a slack file
+func (sfs *SlackFs) DeleteFile(ctx context.Context, c client.Client, rq file_proto.DeleteRequest) (*file_proto.DeleteResponse, error) {
+	return &file_proto.DeleteResponse{}, nil
+}
+
 // ShareFile sets a PermalinkPublic available, so everyone with URL has access to the slack file
 func (sfs *SlackFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
 	if req.SharePublicly {

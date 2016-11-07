@@ -193,6 +193,44 @@ func (bfs *BoxFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.CreateRes
 	}, nil
 }
 
+// DeleteFile deletes a box file
+func (bfs *BoxFs) DeleteFile(ctx context.Context, c client.Client, rq file_proto.DeleteRequest) (*file_proto.DeleteResponse, error) {
+	// https://docs.box.com/reference#delete-a-file
+	// Depending on the enterprise settings for this user, the item will either be actually deleted from Box or moved to the trash.
+	bc := &http.Client{}
+	url := fmt.Sprintf("%s%s", globals.BoxFileMetadataEndpoint, rq.OriginalId)
+	r, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	r.Header.Set("Authorization", bfs.Token())
+	rsp, err := bc.Do(r)
+	if err != nil {
+		return nil, err
+	}
+	defer rsp.Body.Close()
+
+	if rsp.StatusCode != http.StatusNoContent {
+		return nil, errors.New(fmt.Sprintf("Deleting Box file failed with status code %d", rsp.StatusCode))
+	}
+
+	dreq := c.NewRequest(
+		globals.DB_SERVICE_NAME,
+		"DB.Delete",
+		&db_proto.DeleteRequest{
+			Index: rq.Index,
+			Type:  globals.FileType,
+			Id:    rq.FileId,
+		},
+	)
+	drsp := &db_proto.DeleteResponse{}
+	if err := c.Call(ctx, dreq, drsp); err != nil {
+		return nil, err
+	}
+
+	return &file_proto.DeleteResponse{}, nil
+}
+
 // ShareFile
 func (bfs *BoxFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
 	b := []byte(`{

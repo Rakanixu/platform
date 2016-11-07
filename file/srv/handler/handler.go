@@ -36,6 +36,26 @@ func (f *File) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.
 	return nil
 }
 
+// Delete File handler
+func (f *File) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *proto.DeleteResponse) error {
+	if len(req.DatasourceId) == 0 {
+		return errors.BadRequest("com.kazoup.srv.file", "datasource_id required")
+	}
+
+	// Instantiate file system
+	fsys, err := NewFileSystem(f.Client, ctx, req.DatasourceId)
+	if err != nil {
+		return err
+	}
+
+	_, err = fsys.DeleteFile(ctx, f.Client, *req)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Share file handler
 func (f *File) Share(ctx context.Context, req *proto.ShareRequest, rsp *proto.ShareResponse) error {
 	if len(req.OriginalId) == 0 {
