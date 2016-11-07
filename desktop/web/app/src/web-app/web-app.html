@@ -298,7 +298,7 @@
                                                       description="[[item.url]]">
 
                                                 <template is="dom-if" if="[[isVideoPreview(item.category, bigVideoClass)]]" restamp="true">
-                                                    <iron-image background="[[documentType(item.name)]]"
+                                                    <iron-image background="[[documentType(item.name, item.original)]]"
                                                                 class="primary image"
                                                                 sizing="cover"
                                                                 placeholder="src/static/unknown-video.png"
@@ -307,7 +307,7 @@
                                                                 fade></iron-image>
                                                 </template>
                                                 <template is="dom-if" if="[[!isVideoPreview(item.category, bigVideoClass)]]">
-                                                    <mat-avatar background="[[documentType(item.name)]]"
+                                                    <mat-avatar background="[[documentType(item.name, item.original)]]"
                                                                 class="primary"
                                                                 icon="[[getIcon(item.is_dir, item.category, item.file_type)]]"></mat-avatar>
                                                 </template>
@@ -322,7 +322,7 @@
                                             <mat-item on-tap="mainAction"
                                                       label="[[item.name]]"
                                                       description="[[item.url]]">
-                                                <mat-avatar background="[[documentType(item.name)]]"
+                                                <mat-avatar background="[[documentType(item.name, item.original)]]"
                                                             class="primary"
                                                             icon="[[getIcon(item.is_dir, item.category, item.file_type)]]"></mat-avatar>
                                                 <iron-icon class="secondary info info-icon"

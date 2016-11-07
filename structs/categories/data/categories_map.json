@@ -327,7 +327,9 @@
     "color": "#1f77b4",
     "extensions": [
       ".pdf", ".doc", ".rtf", ".odt", ".docx", ".xlsx", ".xls", ".ppt",
-      ".pptx", ".ppsx", ".odp"
+      ".pptx", ".ppsx", ".odp", "application/vnd.google-apps.document",
+      "application/vnd.google-apps.spreadsheet",
+      "application/vnd.google-apps.presentation"
     ]
   },
   {

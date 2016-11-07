@@ -222,8 +222,8 @@
       getPrepopulatedClass: function(record) {
         return record ? 'prepopulated' : '';
       },
-      documentType: function(fileName) {
-        var extension;
+      documentType: function(fileName, original) {
+        var extension, result = '';
 
         if (fileName) {
           extension = fileName.split('.')[fileName.split('.').length - 1];
@@ -232,18 +232,36 @@
         switch (extension) {
           case 'doc':
           case 'docx':
-            return 'blue';
+            result = 'blue';
+            break;
           case 'xls':
           case 'xlsx':
-            return 'green';
+            result = 'green';
+            break;
           case 'pdf':
-            return 'red';
+            result = 'red';
+            break;
           case 'ppt':
           case 'pptx':
-            return 'amber-900';
-          default:
-            return '';
+            result = 'amber-900';
+            break;
         }
+
+        if (result.length === 0) {
+          switch (original.mimeType) {
+            case 'application/vnd.google-apps.document':
+              result = 'blue';
+              break;
+            case 'application/vnd.google-apps.spreadsheet':
+              result = 'green';
+              break;
+            case 'application/vnd.google-apps.presentation':
+              result = 'amber-900';
+              break;
+          }
+        }
+
+        return result;
       },
       isGoogleDrive: function(fileType) {
         return (fileType === 'googledrive');
