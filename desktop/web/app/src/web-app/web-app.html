@@ -245,6 +245,8 @@
                                          color="white"
                                          hidden$="[[!searching]]"></mat-icon-button>
 
+                        <create-file selected-datasource="[[selectedDatasource]]" item-selected="{{itemSelected}}"></create-file>
+
                         <div class="middle breadcrumbs">
                             <!-- Breadcrumbs while browsing. Breadcrumbs fits into screen -->
                             <mat-breadcrumb id="fitBreadcrumbs"
@@ -296,7 +298,7 @@
                                                       description="[[item.url]]">
 
                                                 <template is="dom-if" if="[[isVideoPreview(item.category, bigVideoClass)]]" restamp="true">
-                                                    <iron-image background="[[documentType(item.name)]]"
+                                                    <iron-image background="[[documentType(item.name, item.original)]]"
                                                                 class="primary image"
                                                                 sizing="cover"
                                                                 placeholder="src/static/unknown-video.png"
@@ -305,7 +307,7 @@
                                                                 fade></iron-image>
                                                 </template>
                                                 <template is="dom-if" if="[[!isVideoPreview(item.category, bigVideoClass)]]">
-                                                    <mat-avatar background="[[documentType(item.name)]]"
+                                                    <mat-avatar background="[[documentType(item.name, item.original)]]"
                                                                 class="primary"
                                                                 icon="[[getIcon(item.is_dir, item.category, item.file_type)]]"></mat-avatar>
                                                 </template>
@@ -320,7 +322,7 @@
                                             <mat-item on-tap="mainAction"
                                                       label="[[item.name]]"
                                                       description="[[item.url]]">
-                                                <mat-avatar background="[[documentType(item.name)]]"
+                                                <mat-avatar background="[[documentType(item.name, item.original)]]"
                                                             class="primary"
                                                             icon="[[getIcon(item.is_dir, item.category, item.file_type)]]"></mat-avatar>
                                                 <iron-icon class="secondary info info-icon"
@@ -378,6 +380,31 @@
 
                         <div class="flex"></div>
 
+                        <!-- Share functionality specific for every integration, this way any of the elements becomes unnecessary complex -->
+                        <template is="dom-if" if="[[isSlack(item.file_type)]]">
+                            <share-slack-file item="{{item}}"></share-slack-file>
+                        </template>
+
+                        <template is="dom-if" if="[[isGoogleDrive(item.file_type)]]">
+                            <share-google-drive-file item="{{item}}"></share-google-drive-file>
+                        </template>
+
+                        <template is="dom-if" if="[[isOneDrive(item.file_type)]]">
+                            <share-one-drive-file item="{{item}}"></share-one-drive-file>
+                        </template>
+
+                        <template is="dom-if" if="[[isDropbox(item.file_type)]]">
+                            <share-dropbox-file item="{{item}}"></share-dropbox-file>
+                        </template>
+
+                        <template is="dom-if" if="[[isBox(item.file_type)]]">
+                            <share-box-file item="{{item}}"></share-box-file>
+                        </template>
+
+                        <template is="dom-if" if="[[isDeleteFileAvailable(item.file_type)]]">
+                            <delete-file item="{{item}}"></delete-file>
+                        </template>
+
                         <div class="bottom fit">
                             <mat-item label="[[item.name]]" class="light" focused="false"></mat-item>
                         </div>
@@ -391,8 +418,6 @@
 
             </paper-drawer-panel>
         </paper-drawer-panel>
-
-        <create-file selected-datasource="[[selectedDatasource]]"></create-file>
 
         <filter-converter id="filterConverter"></filter-converter>
 

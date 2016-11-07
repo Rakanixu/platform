@@ -33,6 +33,10 @@
         width: 340px;
       }
 
+      paper-icon-button {
+        color: #fff;
+      }
+
       #selectTargetDialog paper-button {
         padding: 0;
         width: 100%;
@@ -43,15 +47,10 @@
       }
     </style>
 
-    <mat-item label=""
-              description=""
-              on-xp-activate="openDeleteConfirmationDialog"
-              tabindex="-1">
-      <paper-icon-button id="delete"
-                         icon="icons:delete"
-                         color="black"></paper-icon-button>
-
-    </mat-item>
+    <paper-icon-button id="delete"
+                       on-tap="openDeleteConfirmationDialog"
+                       icon="icons:delete"
+                       color="black"></paper-icon-button>
 
     <mat-dialog id="deleteConfirmationDialog" label="">
       <div>

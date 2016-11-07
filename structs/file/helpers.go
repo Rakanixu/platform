@@ -97,9 +97,15 @@ func NewFileFromString(s string) (File, error) {
 // NewKazoupFileFromGoogleDriveFile constructor
 func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId, uId, index string) *KazoupGoogleFile {
 	t, _ := time.Parse("2006-01-02T15:04:05.000Z", g.ModifiedTime)
+
 	d := false
 	if len(g.FolderColorRgb) > 0 {
 		d = true
+	}
+
+	c := categories.GetDocType("." + g.FullFileExtension)
+	if len(g.FullFileExtension) == 0 {
+		c = categories.GetDocType(g.MimeType)
 	}
 
 	kf := &KazoupFile{
@@ -110,7 +116,7 @@ func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId, uId, index stri
 		Modified:     t,
 		FileSize:     g.Size,
 		IsDir:        d,
-		Category:     categories.GetDocType("." + g.FullFileExtension),
+		Category:     c,
 		Depth:        0,
 		FileType:     globals.GoogleDrive,
 		LastSeen:     time.Now().Unix(),
