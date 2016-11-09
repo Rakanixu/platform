@@ -40,7 +40,8 @@ window.Auth = (function() {
     }, {
       headers: {
         'Cache-Control': ''
-      }
+      },
+      cache:true
     });
   }
 

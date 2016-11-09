@@ -56,6 +56,21 @@ func main() {
 func setup(app *ccli.App) {
 	// common flags
 	app.Flags = append(app.Flags,
+		ccli.BoolFlag{
+			Name:   "enable_tls",
+			Usage:  "Enable TLS",
+			EnvVar: "MICRO_ENABLE_TLS",
+		},
+		ccli.StringFlag{
+			Name:   "tls_cert_file",
+			Usage:  "TLS Certificate file",
+			EnvVar: "MICRO_TLS_CERT_FILE",
+		},
+		ccli.StringFlag{
+			Name:   "tls_key_file",
+			Usage:  "TLS Key file",
+			EnvVar: "MICRO_TLS_KEY_FILE",
+		},
 		ccli.IntFlag{
 			Name:   "register_ttl",
 			EnvVar: "MICRO_REGISTER_TTL",
@@ -116,7 +131,17 @@ func desktop(ctx *ccli.Context) {
 		if cmd.Name != "help" && len(cmd.Subcommands) > 0 {
 			for _, subcmd := range cmd.Subcommands {
 				wg.Add(1)
-				c := exec.Command(binary, "--registry=mdns", "--broker=nats", "--broker_address=127.0.0.1:4222", cmd.Name, subcmd.Name)
+				c := exec.Command(
+					binary,
+					"--registry=mdns",
+					"--broker=nats",
+					"--broker_address=127.0.0.1:4222",
+					"--enable_tls",
+					"--tls_cert_file=ssl/cert.pem",
+					"--tls_key_file=ssl/key.pem",
+					cmd.Name,
+					subcmd.Name,
+				)
 				c.Stdout = os.Stdout
 				c.Stderr = os.Stderr
 				if err := c.Start(); err != nil {
@@ -127,7 +152,15 @@ func desktop(ctx *ccli.Context) {
 		}
 		if cmd.Name != "help" && len(cmd.Subcommands) == 0 && cmd.Name != "desktop" {
 			wg.Add(1)
-			c := exec.Command(binary, "--registry=mdns", "--broker=nats", "--broker_address=127.0.0.1:4222", cmd.Name)
+			c := exec.Command(
+				binary,
+				"--registry=mdns",
+				"--broker=nats",
+				"--broker_address=127.0.0.1:4222",
+				"--enable_tls",
+				"--tls_cert_file=ssl/cert.pem",
+				"--tls_key_file=ssl/key.pem",
+				cmd.Name)
 			c.Stdout = os.Stdout
 			c.Stderr = os.Stderr
 			if err := c.Start(); err != nil {
