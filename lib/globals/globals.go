@@ -100,7 +100,7 @@ const (
 
 func NewGoogleOautConfig() *oauth2.Config {
 	return &oauth2.Config{
-		RedirectURL:  SERVER_ADDRESS + "/auth/google/callback",
+		RedirectURL:  SECURE_SERVER_ADDRESS + "/auth/google/callback",
 		ClientID:     "928848534435-kjubrqvl1sp50sfs3icemj2ma6v2an5j.apps.googleusercontent.com",
 		ClientSecret: "zZAQz3zP5xnpLaA1S_q6YNhy",
 		Scopes: []string{
@@ -120,7 +120,7 @@ func NewGoogleOautConfig() *oauth2.Config {
 
 func NewSlackOauthConfig() *oauth2.Config {
 	return &oauth2.Config{
-		RedirectURL:  SERVER_ADDRESS + "/auth/slack/callback",
+		RedirectURL:  SECURE_SERVER_ADDRESS + "/auth/slack/callback",
 		ClientID:     "2506087186.66729631906",
 		ClientSecret: "53ea1f0afa4560b7e070964fb2b0c5d6",
 		Scopes: []string{
@@ -137,8 +137,7 @@ func NewSlackOauthConfig() *oauth2.Config {
 
 func NewMicrosoftOauthConfig() *oauth2.Config {
 	return &oauth2.Config{
-		//TODO: switch to SSl
-		RedirectURL:  "http://localhost:8082/auth/microsoft/callback",
+		RedirectURL:  SECURE_SERVER_ADDRESS + "/auth/microsoft/callback",
 		ClientID:     "60f54c2b-6631-4bf4-ae45-01b5715cb881",
 		ClientSecret: "COC67cMupbGdSCx1Omc3Z5g",
 		Endpoint: oauth2.Endpoint{
@@ -156,8 +155,7 @@ func NewMicrosoftOauthConfig() *oauth2.Config {
 
 func NewDropboxOauthConfig() *oauth2.Config {
 	return &oauth2.Config{
-		//TODO: switch to SSl
-		RedirectURL: "http://localhost:8082/auth/dropbox/callback",
+		RedirectURL: SECURE_SERVER_ADDRESS + "/auth/dropbox/callback",
 		//ClientID:     "6l5aj1fombrp6i7",
 		ClientID: "882k4mhdmtza7y1",
 		//ClientSecret: "nf8xar3qc1f32li",
@@ -172,8 +170,7 @@ func NewDropboxOauthConfig() *oauth2.Config {
 
 func NewBoxOauthConfig() *oauth2.Config {
 	return &oauth2.Config{
-		//TODO: switch to SSl
-		RedirectURL:  "http://localhost:8082/auth/box/callback",
+		RedirectURL:  SECURE_SERVER_ADDRESS + "/auth/box/callback",
 		ClientID:     "8ryeu572aa5rk7iun56hsb0g7ta1oblp",
 		ClientSecret: "An5sAtmY5KzlCvrAZgQ4rXQtBY3v6TwT",
 		Endpoint: oauth2.Endpoint{
@@ -186,7 +183,7 @@ func NewBoxOauthConfig() *oauth2.Config {
 
 func NewGmailOauthConfig() *oauth2.Config {
 	return &oauth2.Config{
-		RedirectURL:  SERVER_ADDRESS + "/auth/gmail/callback",
+		RedirectURL:  SECURE_SERVER_ADDRESS + "/auth/gmail/callback",
 		ClientID:     "928848534435-kjubrqvl1sp50sfs3icemj2ma6v2an5j.apps.googleusercontent.com",
 		ClientSecret: "zZAQz3zP5xnpLaA1S_q6YNhy",
 		Scopes: []string{
