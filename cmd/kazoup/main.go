@@ -112,17 +112,16 @@ func desktop(ctx *ccli.Context) {
 	}
 
 	// Execute nats server binary. Only linux amd64. Other platforms should run binary manually.
-	
-			wg.Add(1)
-			nc = exec.Command(fmt.Sprintf("%s%s%s%s%s/gnatsd", dir, "/nats/gnatsd-v0.9.4-", runtime.GOOS, "-", runtime.GOARCH))
-			nc.Stdout = os.Stdout
-			nc.Stderr = os.Stderr
-			if err := nc.Start(); err != nil {
-				log.Println(err.Error())
-				wg.Done()
-			}
-			time.Sleep(time.Second * 2)
-	
+
+	wg.Add(1)
+	nc = exec.Command(fmt.Sprintf("%s%s%s%s%s/gnatsd", dir, "/nats/gnatsd-v0.9.4-", runtime.GOOS, "-", runtime.GOARCH))
+	nc.Stdout = os.Stdout
+	nc.Stderr = os.Stderr
+	if err := nc.Start(); err != nil {
+		log.Println(err.Error())
+		wg.Done()
+	}
+	time.Sleep(time.Second * 2)
 
 	for _, cmd := range cmds {
 		if cmd.Name != "help" && len(cmd.Subcommands) > 0 {

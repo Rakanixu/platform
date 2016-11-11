@@ -16,6 +16,7 @@ const (
 type File interface {
 	PreviewURL(width, height, mode, quality string) string
 	GetID() string
+	GetUserID() string
 	GetIDFromOriginal() string
 	GetIndex() string
 	GetDatasourceID() string
@@ -24,16 +25,18 @@ type File interface {
 	GetURL() string
 }
 
-func IndexAsync(file File, topic, index string) error {
+func IndexAsync(file File, topic, index string, notify bool) error {
 	b, err := json.Marshal(file)
 	if err != nil {
 		return err
 	}
 
 	msg := &crawler.FileMessage{
-		Id:    file.GetID(),
-		Index: index,
-		Data:  string(b),
+		Id:     file.GetID(),
+		UserId: file.GetUserID(),
+		Index:  index,
+		Notify: notify,
+		Data:   string(b),
 	}
 
 	if err := client.Publish(context.Background(), client.NewPublication(topic, msg)); err != nil {

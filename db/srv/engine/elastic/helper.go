@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/kazoup/platform/lib/globals"
+	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	search_proto "github.com/kazoup/platform/search/srv/proto/search"
 	lib "github.com/mattbaird/elastigo/lib"
+	"github.com/micro/go-micro/client"
 	"log"
 	"strconv"
 )
@@ -19,6 +21,20 @@ func indexer(e *elastic) error {
 			case v := <-e.filesChannel:
 				if err := e.bulk.Index(v.Index, "file", v.Id, "", "", nil, v.Data); err != nil {
 					log.Print("Bulk Indexer error %s", err)
+				}
+
+				// File message can be notified, when a file is create, deleted or shared within kazoup
+				if v.Notify {
+					c := client.NewClient()
+					n := &notification_proto.NotificationMessage{
+						Method: globals.NOTIFY_REFRESH_SEARCH,
+						UserId: v.UserId,
+					}
+
+					// Publish scan topic, crawlers should pick up message and start scanning
+					if err := c.Publish(globals.NewSystemContext(), c.NewPublication(globals.NotificationTopic, n)); err != nil {
+						log.Print("Publishing (notify file) error %s", err)
+					}
 				}
 			}
 

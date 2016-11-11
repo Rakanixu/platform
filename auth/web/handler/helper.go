@@ -3,13 +3,12 @@ package handler
 import (
 	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/wrappers"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
-	"github.com/kazoup/platform/lib/wrappers"
 	"log"
-
 )
 
 func SaveDatasource(ctx context.Context, user string, url string, token *oauth2.Token) error {

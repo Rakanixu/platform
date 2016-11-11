@@ -4,8 +4,8 @@ import (
 	"github.com/kazoup/platform/datasource/srv/handler"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/wrappers"
-	"log"
 	_ "github.com/micro/go-plugins/broker/nats"
+	"log"
 )
 
 func main() {

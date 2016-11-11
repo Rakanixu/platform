@@ -17,6 +17,10 @@ func (kf *KazoupDropboxFile) GetID() string {
 	return kf.ID
 }
 
+func (kf *KazoupDropboxFile) GetUserID() string {
+	return kf.UserId
+}
+
 func (kf *KazoupDropboxFile) GetIDFromOriginal() string {
 	return kf.Original.ID
 }

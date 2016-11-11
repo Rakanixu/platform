@@ -48,7 +48,7 @@ func Scans(ctx context.Context, endpoint *datasource.Endpoint) error {
 			return nil
 		// Channel receives File to be indexed by Elastic Search
 		case f := <-c:
-			if err := file.IndexAsync(f, globals.FilesTopic, f.GetIndex()); err != nil {
+			if err := file.IndexAsync(f, globals.FilesTopic, f.GetIndex(), false); err != nil {
 				log.Println("Error indexing async file")
 			}
 		}

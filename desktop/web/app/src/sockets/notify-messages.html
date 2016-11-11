@@ -49,8 +49,10 @@
         _onMessage: function(e) {
           // Check for user ID message is for, right now we are broadcasting from notification srv
           if (e.detail.user_id === Auth.getUserId()) {
-            this.$.toast.text = e.detail.info;
-            this.$.toast.show();
+            if (e.detail.info && e.detail.info.length) {
+              this.$.toast.text = e.detail.info;
+              this.$.toast.show();
+            }
 
             if (e.detail.method) {
               var data = {};
@@ -60,6 +62,11 @@
               }
 
               this.async(function() {
+                //TODO: FIX: e.detail.method ==
+                //	NOTIFY_REFRESH_DATASOURCES = "refreshDatasources"
+                //  NOTIFY_REFRESH_SEARCH      = "refreshSearch"
+                // For datasources, call datasource-page, for refresh search call web-app.. I may need a map in backend {method & target}, or stupid ifs in front
+
                 document.querySelector('datasources-page')[e.detail.method](data);
               }, 1000);
             }

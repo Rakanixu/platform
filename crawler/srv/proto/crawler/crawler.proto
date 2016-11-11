@@ -55,8 +55,10 @@ message Metric {
 
 message FileMessage {
   string id = 1;
-  string index = 2;
-  string data = 3;
+  string user_id = 2;
+  string index = 3;
+  bool notify = 4;
+  string data = 5;
 }
 
 message SlackUserMessage {

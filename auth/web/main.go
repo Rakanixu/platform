@@ -17,7 +17,7 @@ func main() {
 	service.HandleFunc("/microsoft/callback", handler.HandleMicrosoftCallback)
 	service.HandleFunc("/slack/login", handler.HandleSlackLogin)
 	service.HandleFunc("/slack/callback", handler.HandleSlackCallback)
-	
+
 	if err := service.Init(); err != nil {
 		log.Panic(err)
 	}

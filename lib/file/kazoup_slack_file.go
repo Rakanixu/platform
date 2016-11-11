@@ -32,6 +32,10 @@ func (kf *KazoupSlackFile) GetID() string {
 	return kf.ID
 }
 
+func (kf *KazoupSlackFile) GetUserID() string {
+	return kf.UserId
+}
+
 func (kf *KazoupSlackFile) GetIDFromOriginal() string {
 	return kf.Original.ID
 }

@@ -84,7 +84,7 @@ func (gfs *GoogleDriveFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.C
 	}
 
 	kfg := file.NewKazoupFileFromGoogleDriveFile(f, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
-	if err := file.IndexAsync(kfg, globals.FilesTopic, gfs.Endpoint.Index); err != nil {
+	if err := file.IndexAsync(kfg, globals.FilesTopic, gfs.Endpoint.Index, true); err != nil {
 		return nil, err
 	}
 
@@ -116,7 +116,7 @@ func (gfs *GoogleDriveFs) DeleteFile(ctx context.Context, c client.Client, rq fi
 
 	// Reindex file
 	kfg := file.NewKazoupFileFromGoogleDriveFile(f, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
-	if err := file.IndexAsync(kfg, globals.FilesTopic, gfs.Endpoint.Index); err != nil {
+	if err := file.IndexAsync(kfg, globals.FilesTopic, gfs.Endpoint.Index, true); err != nil {
 		return nil, err
 	}
 
@@ -144,7 +144,7 @@ func (gfs *GoogleDriveFs) ShareFile(ctx context.Context, c client.Client, req fi
 	}
 
 	kfg := file.NewKazoupFileFromGoogleDriveFile(gf, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
-	if err := file.IndexAsync(kfg, globals.FilesTopic, gfs.Endpoint.Index); err != nil {
+	if err := file.IndexAsync(kfg, globals.FilesTopic, gfs.Endpoint.Index, true); err != nil {
 		return "", err
 	}
 
