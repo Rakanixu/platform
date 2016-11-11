@@ -1,10 +1,12 @@
 package main
 
 import (
+	"log"
+
 	"github.com/kazoup/platform/flag/srv/handler"
 	"github.com/kazoup/platform/lib/wrappers"
 	_ "github.com/micro/go-plugins/broker/nats"
-	"log"
+	_ "github.com/micro/go-plugins/transport/tcp"
 )
 
 func main() {

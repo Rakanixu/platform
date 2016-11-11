@@ -1,11 +1,13 @@
 package main
 
 import (
+	"log"
+
 	"github.com/kazoup/platform/config/srv/handler"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/go-micro/cmd"
 	_ "github.com/micro/go-plugins/broker/nats"
-	"log"
+	_ "github.com/micro/go-plugins/transport/tcp"
 )
 
 //go-bindata -o data/bindata.go -pkg data data

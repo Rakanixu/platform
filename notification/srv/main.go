@@ -9,6 +9,7 @@ import (
 	proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/kazoup/platform/notification/srv/subscriber"
 	_ "github.com/micro/go-plugins/broker/nats"
+	_ "github.com/micro/go-plugins/transport/tcp"
 )
 
 func main() {
