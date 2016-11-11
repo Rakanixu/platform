@@ -22,16 +22,17 @@ import (
 )
 
 const (
-	NAMESPACE               string = "com.kazoup"
-	FLAG_SERVICE_NAME       string = NAMESPACE + ".srv.flag"
-	DB_SERVICE_NAME         string = NAMESPACE + ".srv.db"
-	DATASOURCE_SERVICE_NAME string = NAMESPACE + ".srv.datasource"
-	FilesTopic              string = NAMESPACE + ".topic.files"
-	SlackChannelsTopic      string = NAMESPACE + ".topic.slackchannels"
-	SlackUsersTopic         string = NAMESPACE + ".topic.slackusers"
-	ScanTopic               string = NAMESPACE + ".topic.scan"
-	CrawlerFinishedTopic    string = NAMESPACE + ".topic.crawlerfinished"
-	NotificationTopic       string = NAMESPACE + ".topic.notification"
+	NAMESPACE                 string = "com.kazoup"
+	FLAG_SERVICE_NAME         string = NAMESPACE + ".srv.flag"
+	DB_SERVICE_NAME           string = NAMESPACE + ".srv.db"
+	DATASOURCE_SERVICE_NAME   string = NAMESPACE + ".srv.datasource"
+	NOTIFICATION_SERVICE_NAME string = NAMESPACE + ".srv.notification"
+	FilesTopic                string = NAMESPACE + ".topic.files"
+	SlackChannelsTopic        string = NAMESPACE + ".topic.slackchannels"
+	SlackUsersTopic           string = NAMESPACE + ".topic.slackusers"
+	ScanTopic                 string = NAMESPACE + ".topic.scan"
+	CrawlerFinishedTopic      string = NAMESPACE + ".topic.crawlerfinished"
+	NotificationTopic         string = NAMESPACE + ".topic.notification"
 
 	IndexDatasources  = "datasources"
 	IndexFlags        = "flags"
@@ -96,6 +97,9 @@ const (
 	ENCRYTION_KEY_32 = "asjklasd766adfashj22kljasdhyfjkh"
 
 	CODE_REFRESH_DS = "CODE_REFRESH_DS"
+
+	NOTIFY_REFRESH_DATASOURCES = "refreshDatasources"
+	NOTIFY_REFRESH_SEARCH      = "refreshSearch"
 )
 
 func NewGoogleOautConfig() *oauth2.Config {

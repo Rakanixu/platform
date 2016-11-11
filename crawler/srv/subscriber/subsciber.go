@@ -6,7 +6,6 @@ import (
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
-	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"log"
@@ -23,15 +22,6 @@ func Scans(ctx context.Context, endpoint *datasource.Endpoint) error {
 	// Receive files founded by FileSystem
 	c, r, err := fs.List()
 	if err != nil {
-		return err
-	}
-
-	// Publish notification
-	msg := &notification_proto.NotificationMessage{
-		Info: "Scan started on " + endpoint.Url + " datasource.",
-	}
-
-	if err := client.Publish(ctx, client.NewPublication(globals.NotificationTopic, msg)); err != nil {
 		return err
 	}
 
@@ -58,7 +48,7 @@ func Scans(ctx context.Context, endpoint *datasource.Endpoint) error {
 			return nil
 		// Channel receives File to be indexed by Elastic Search
 		case f := <-c:
-			if err := file.IndexAsync(f, globals.FilesTopic, f.GetIndex()); err != nil {
+			if err := file.IndexAsync(f, globals.FilesTopic, f.GetIndex(), false); err != nil {
 				log.Println("Error indexing async file")
 			}
 		}

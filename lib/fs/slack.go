@@ -239,7 +239,7 @@ func (sfs *SlackFs) shareFilePublicly(id string) (string, error) {
 	// Response contains object, permalink_public attr will be modified
 	// Reindex document
 	f := file.NewKazoupFileFromSlackFile(&ssr.File, sfs.Endpoint.Id, sfs.Endpoint.UserId, sfs.Endpoint.Index)
-	if err := file.IndexAsync(f, globals.FilesTopic, sfs.Endpoint.Index); err != nil {
+	if err := file.IndexAsync(f, globals.FilesTopic, sfs.Endpoint.Index, true); err != nil {
 		return "", err
 	}
 

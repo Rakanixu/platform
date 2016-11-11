@@ -88,4 +88,8 @@ func HandleMicrosoftCallback(w http.ResponseWriter, r *http.Request) {
 			}());
 		</script>
 	`)
+
+	if err := PublishNotification(string(uID)); err != nil {
+		fmt.Fprintf(w, "Error publishing notification msg %s \n", err.Error())
+	}
 }

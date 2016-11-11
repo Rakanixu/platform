@@ -285,6 +285,9 @@
 
           this.closeDatasourceDialog();
         },
+        refreshDatasources: function(data) {
+          this.$.rpcGetDatasources.generateRequest();
+        },
         startScan: function(e) {
           this.set('loading', true);
           this.rpcStartScanParams.request.id = e.model.__data__.item.id;
@@ -321,7 +324,6 @@
               localStorage.setItem(attr, detail[attr]);
             }
           }
-          this.init();
         },
         _handleStartScan: function(e) {
           this.set('loading', false);

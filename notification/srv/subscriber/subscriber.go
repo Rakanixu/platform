@@ -1,30 +1,27 @@
 package subscriber
 
 import (
-	"errors"
+	"encoding/json"
 	"github.com/kazoup/platform/lib/globals"
-	"github.com/kazoup/platform/notification/srv/helpers"
 	proto "github.com/kazoup/platform/notification/srv/proto/notification"
+	"github.com/micro/go-micro/broker"
 	"golang.org/x/net/context"
-	"log"
 )
 
-func Notify(ctx context.Context, nMsg *proto.NotificationMessage) error {
-	if len(nMsg.UserId) == 0 {
-		return errors.New("ERROR UserId empty")
+var Broker broker.Broker
+
+// SubscriberProxy listens for messages and proxys to service Broker to be streamed to clients afterwards
+func SubscriberProxy(ctx context.Context, notificationMsg *proto.NotificationMessage) error {
+	b, err := json.Marshal(notificationMsg)
+	if err != nil {
+		return err
+	}
+	// Publish on the broker, it allows to handle data properly in broker Handler
+	if err := Broker.Publish(globals.NotificationTopic, &broker.Message{
+		Body: b,
+	}); err != nil {
+		return err
 	}
 
-	log.Println("NOTIFY SUBSCRIPTOR", nMsg.UserId, len(helpers.GetSocketClients().Sockets))
-
-	for _, v := range helpers.GetSocketClients().Sockets {
-		log.Println(v.ID)
-		if v.ID == nMsg.UserId {
-			log.Println("NOTIFY", globals.CODE_REFRESH_DS)
-			v.Codes <- globals.CODE_REFRESH_DS
-			break
-		}
-	}
-
-	log.Println("NOTIFY SUBSCRIPTOR, OK")
 	return nil
 }

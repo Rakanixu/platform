@@ -4,8 +4,8 @@ import (
 	"github.com/kazoup/platform/config/srv/handler"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/go-micro/cmd"
-	"log"
 	_ "github.com/micro/go-plugins/broker/nats"
+	"log"
 )
 
 //go-bindata -o data/bindata.go -pkg data data

@@ -7,14 +7,14 @@ import (
 	"github.com/kazoup/platform/db/srv/handler"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/wrappers"
-	"log"
 	_ "github.com/micro/go-plugins/broker/nats"
+	"log"
 )
 
 func main() {
 	// New Service
 	service := wrappers.NewKazoupService("db")
-	
+
 	// Register Handler
 	service.Server().Handle(
 		service.Server().NewHandler(new(handler.DB)),

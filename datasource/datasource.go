@@ -2,6 +2,7 @@ package datasource
 
 import (
 	"github.com/kazoup/platform/datasource/srv/handler"
+	"github.com/kazoup/platform/datasource/srv/subscriber"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/cli"
@@ -12,9 +13,14 @@ import (
 func srv(ctx *cli.Context) {
 	service := wrappers.NewKazoupService("datasource")
 
+	// Init broker on subscriber
+	// This is required to be able to handle the data properly when
+	// we want to stream the messages over the notification socket
+	subscriber.Broker = service.Server().Options().Broker
+
 	// Attach crawler finished subscriber
 	if err := service.Server().Subscribe(
-		service.Server().NewSubscriber(globals.CrawlerFinishedTopic, handler.SubscribeCrawlerFinished)); err != nil {
+		service.Server().NewSubscriber(globals.CrawlerFinishedTopic, subscriber.SubscribeCrawlerFinished)); err != nil {
 		log.Fatal(err)
 	}
 

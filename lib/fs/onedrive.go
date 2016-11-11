@@ -162,7 +162,7 @@ func (ofs *OneDriveFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.Crea
 	}
 
 	kfo := file.NewKazoupFileFromOneDriveFile(f, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)
-	if err := file.IndexAsync(kfo, globals.FilesTopic, ofs.Endpoint.Index); err != nil {
+	if err := file.IndexAsync(kfo, globals.FilesTopic, ofs.Endpoint.Index, true); err != nil {
 		return nil, err
 	}
 

@@ -178,7 +178,7 @@ func (bfs *BoxFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.CreateRes
 
 	// Construct Kazoup file from box created file and index it
 	kfb := file.NewKazoupFileFromBoxFile(&bf.Entries[0], bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
-	if err := file.IndexAsync(kfb, globals.FilesTopic, bfs.Endpoint.Index); err != nil {
+	if err := file.IndexAsync(kfb, globals.FilesTopic, bfs.Endpoint.Index, true); err != nil {
 		return nil, err
 	}
 
@@ -263,7 +263,7 @@ func (bfs *BoxFs) ShareFile(ctx context.Context, c client.Client, req file_proto
 
 	// Reindex modified file
 	kbf := file.NewKazoupFileFromBoxFile(f, bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
-	if err := file.IndexAsync(kbf, globals.FilesTopic, bfs.Endpoint.Index); err != nil {
+	if err := file.IndexAsync(kbf, globals.FilesTopic, bfs.Endpoint.Index, true); err != nil {
 		return "", err
 	}
 

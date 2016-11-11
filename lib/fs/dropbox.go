@@ -107,7 +107,7 @@ func (dfs *DropboxFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.Creat
 	}
 
 	kfd := file.NewKazoupFileFromDropboxFile(df, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
-	if err := file.IndexAsync(kfd, globals.FilesTopic, dfs.Endpoint.Index); err != nil {
+	if err := file.IndexAsync(kfd, globals.FilesTopic, dfs.Endpoint.Index, true); err != nil {
 		return nil, err
 	}
 
@@ -251,7 +251,7 @@ func (dfs *DropboxFs) ShareFile(ctx context.Context, c client.Client, req file_p
 		return "", err
 	}
 
-	if err := file.IndexAsync(f, globals.FilesTopic, dfs.Endpoint.Index); err != nil {
+	if err := file.IndexAsync(f, globals.FilesTopic, dfs.Endpoint.Index, true); err != nil {
 		return "", err
 	}
 
