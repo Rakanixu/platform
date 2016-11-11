@@ -4,6 +4,7 @@ import (
 	"github.com/kazoup/platform/flag/srv/handler"
 	"github.com/kazoup/platform/lib/wrappers"
 	"log"
+	_ "github.com/micro/go-plugins/broker/nats"
 )
 
 func main() {

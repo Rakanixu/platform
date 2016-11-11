@@ -5,6 +5,7 @@ import (
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/go-micro/cmd"
 	"log"
+	_ "github.com/micro/go-plugins/broker/nats"
 )
 
 //go-bindata -o data/bindata.go -pkg data data

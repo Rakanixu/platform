@@ -5,6 +5,7 @@ import (
 
 	"github.com/kazoup/platform/policy/srv/handler"
 	"github.com/micro/go-micro"
+	_ "github.com/micro/go-plugins/broker/nats"
 )
 
 func main() {
