@@ -7,9 +7,11 @@
   <template>
     <style>
       :host {
-        display: none;
+        display: block;
       }
     </style>
+
+    <paper-toast id="toast" text=""></paper-toast>
 
     <web-socket id="socket"
                 url="[[endpoints.socket]]/notification/platform/notify"
@@ -30,13 +32,13 @@
           Polymer.EndpointsBehaviorImp
         ],
         init: function(userId) {
-/*          this.$.socket.open();
+          this.$.socket.open();
 
           this.async(function() {
             this.$.socket.send({
               user_id: userId
             });
-          }, 2500);*/
+          }, 2500);
         },
         _onOpen: function(e) {
           console.log('_onOpen', e.detail);
@@ -45,7 +47,23 @@
           console.log('_onClose', e.detail);
         },
         _onMessage: function(e) {
-          console.log('_onMessage', e.detail);
+          // Check for user ID message is for, right now we are broadcasting from notification srv
+          if (e.detail.user_id === Auth.getUserId()) {
+            this.$.toast.text = e.detail.info;
+            this.$.toast.show();
+
+            if (e.detail.method) {
+              var data = {};
+
+              if (e.detail.data && e.detail.data.length) {
+                data = Object(e.detail.data);
+              }
+
+              this.async(function() {
+                document.querySelector('datasources-page')[e.detail.method](data);
+              }, 1000);
+            }
+          }
         },
         _onError: function(e) {
           console.log('_onError', e.detail);

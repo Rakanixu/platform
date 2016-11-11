@@ -3,12 +3,20 @@ syntax = "proto3";
 package go.micro.srv.notification;
 
 service Notification {
-
+  rpc Stream(StreamRequest) returns (stream StreamResponse) {}
 }
 
 message NotificationMessage {
   string info = 1;
-  string code = 2;
+  string method = 2;
   string data = 3;
   string user_id = 4;
+}
+
+message StreamRequest {
+  string user_id = 1;
+}
+
+message StreamResponse {
+  NotificationMessage message = 1;
 }

@@ -3,6 +3,8 @@ package handler
 import (
 	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/lib/globals"
+	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
+	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"github.com/kazoup/platform/lib/wrappers"
@@ -35,4 +37,16 @@ func SaveDatasource(ctx context.Context, user string, url string, token *oauth2.
 		return err
 	}
 	return nil
+}
+
+func PublishNotification(uID string) error {
+	c := client.NewClient()
+	n := &notification_proto.NotificationMessage{
+		Info:   "Datasource created succesfully",
+		Method: globals.NOTIFY_REFRESH_DATASOURCES,
+		UserId: string(uID),
+	}
+
+	// Publish scan topic, crawlers should pick up message and start scanning
+	return c.Publish(globals.NewSystemContext(), c.NewPublication(globals.NotificationTopic, n))
 }

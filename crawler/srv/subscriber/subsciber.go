@@ -6,7 +6,6 @@ import (
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
-	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"log"
@@ -23,15 +22,6 @@ func Scans(ctx context.Context, endpoint *datasource.Endpoint) error {
 	// Receive files founded by FileSystem
 	c, r, err := fs.List()
 	if err != nil {
-		return err
-	}
-
-	// Publish notification
-	msg := &notification_proto.NotificationMessage{
-		Info: "Scan started on " + endpoint.Url + " datasource.",
-	}
-
-	if err := client.Publish(ctx, client.NewPublication(globals.NotificationTopic, msg)); err != nil {
 		return err
 	}
 

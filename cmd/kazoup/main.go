@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/kardianos/osext"
 	auth "github.com/kazoup/platform/auth"
 	config "github.com/kazoup/platform/config"
@@ -8,12 +9,11 @@ import (
 	datasource "github.com/kazoup/platform/datasource"
 	db "github.com/kazoup/platform/db"
 	ui "github.com/kazoup/platform/desktop"
-	flag "github.com/kazoup/platform/flag"
-	media "github.com/kazoup/platform/media"
-	//notification "github.com/kazoup/platform/notification"
-	"fmt"
 	file "github.com/kazoup/platform/file"
+	flag "github.com/kazoup/platform/flag"
 	"github.com/kazoup/platform/lib/globals"
+	media "github.com/kazoup/platform/media"
+	notification "github.com/kazoup/platform/notification"
 	scheduler "github.com/kazoup/platform/scheduler"
 	search "github.com/kazoup/platform/search"
 	"github.com/micro/cli"
@@ -41,7 +41,7 @@ func main() {
 	app.Commands = append(app.Commands, search.Commands()...)
 	app.Commands = append(app.Commands, scheduler.Commands()...)
 	app.Commands = append(app.Commands, file.Commands()...)
-	//app.Commands = append(app.Commands, notification.Commands()...)
+	app.Commands = append(app.Commands, notification.Commands()...)
 	app.Commands = append(app.Commands, web.Commands()...)
 	app.Commands = append(app.Commands, desktopCommands()...)
 	app.Action = func(context *cli.Context) { cli.ShowAppHelp(context) }
@@ -169,7 +169,6 @@ func desktop(ctx *ccli.Context) {
 	//TODO:Start elasticsearch
 
 	wg.Wait()
-
 }
 
 func desktopCommands() []cli.Command {

@@ -3,9 +3,12 @@ package notification
 import (
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/wrappers"
+	"github.com/kazoup/platform/notification/srv/handler"
+	proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/kazoup/platform/notification/srv/sockets"
 	"github.com/kazoup/platform/notification/srv/subscriber"
 	"github.com/micro/cli"
+	"github.com/micro/go-micro/client"
 	_ "github.com/micro/go-plugins/broker/nats"
 	microweb "github.com/micro/go-web"
 	"golang.org/x/net/websocket"
@@ -15,15 +18,23 @@ import (
 func srv(ctx *cli.Context) {
 	service := wrappers.NewKazoupService("notification")
 
-	// Attach subscriber
+	subscriber.Broker = service.Server().Options().Broker
+
+	// This subscriber receives notification messages and publish same message but over the broker directly
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.NotificationTopic,
-			subscriber.Notify,
+			subscriber.SubscriberProxy,
 		),
 	); err != nil {
 		log.Fatal(err)
 	}
+
+	// Notification handler instantiate with service broker
+	// It will allow to subscribe to topics and then stream actions back to clients
+	proto.RegisterNotificationHandler(service.Server(), &handler.Notification{
+		Server: service.Server(),
+	})
 
 	// Run server
 	if err := service.Run(); err != nil {
@@ -34,9 +45,17 @@ func srv(ctx *cli.Context) {
 func web(ctx *cli.Context) {
 	web := microweb.NewService(microweb.Name("go.micro.web.notification"))
 
-	// Attach web handler (socket)
-	web.Handle("/platform/notify", websocket.Handler(sockets.Notify))
-	web.Run()
+	// Attach socket stream
+	web.Handle("/platform/notify", websocket.Handler(sockets.Stream))
+
+	sockets.NotificationClient = proto.NewNotificationClient(
+		"com.kazoup.srv.notification",
+		client.DefaultClient,
+	)
+
+	if err := web.Run(); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func notificationCommands() []cli.Command {
