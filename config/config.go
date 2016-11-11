@@ -5,10 +5,13 @@ import (
 	"github.com/kazoup/platform/config/srv/sockets"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/cli"
-	_ "github.com/micro/go-plugins/broker/nats"
 	microweb "github.com/micro/go-web"
 	"golang.org/x/net/websocket"
 	"log"
+
+	_ "github.com/micro/go-plugins/broker/nats"
+	_ "github.com/micro/go-plugins/transport/tcp"
+	
 )
 
 func srv(ctx *cli.Context) {

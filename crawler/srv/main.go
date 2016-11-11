@@ -7,6 +7,7 @@ import (
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/go-micro/server"
 	_ "github.com/micro/go-plugins/broker/nats"
+	_ "github.com/micro/go-plugins/transport/tcp"
 	"log"
 )
 

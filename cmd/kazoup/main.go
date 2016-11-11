@@ -130,6 +130,7 @@ func desktop(ctx *ccli.Context) {
 				c := exec.Command(
 					binary,
 					"--registry=mdns",
+					"--transport=tcp",
 					"--broker=nats",
 					"--broker_address=127.0.0.1:4222",
 					"--enable_tls",
@@ -152,6 +153,7 @@ func desktop(ctx *ccli.Context) {
 				binary,
 				"--registry=mdns",
 				"--broker=nats",
+				"--transport=tcp",
 				"--broker_address=127.0.0.1:4222",
 				"--enable_tls",
 				"--tls_cert_file=ssl/cert.pem",

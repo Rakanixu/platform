@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/kazoup/platform/db/srv/engine"
 	//_ "github.com/kazoup/platform/db/srv/engine/bleve"
 	_ "github.com/kazoup/platform/db/srv/engine/elastic"
@@ -8,7 +10,7 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/wrappers"
 	_ "github.com/micro/go-plugins/broker/nats"
-	"log"
+	_ "github.com/micro/go-plugins/transport/tcp"
 )
 
 func main() {

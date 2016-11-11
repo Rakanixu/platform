@@ -5,6 +5,7 @@ import (
 	"github.com/kazoup/platform/scheduler/srv/handler"
 	"github.com/micro/cli"
 	_ "github.com/micro/go-plugins/broker/nats"
+	_ "github.com/micro/go-plugins/transport/tcp"
 	"log"
 )
 
