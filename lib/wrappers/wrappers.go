@@ -16,7 +16,6 @@ import (
 	"github.com/micro/go-micro/server"
 	"golang.org/x/net/context"
 	"os"
-	"os/user"
 	"time"
 )
 
@@ -158,10 +157,10 @@ func DesktopWrap(c client.Client) client.Client {
 }
 
 func NewKazoupClient() client.Client {
-	c := client.NewClient(
-		client.Wrap(DesktopWrap),
-	)
-	return c
+	// c := client.NewClient(
+	// 	client.Wrap(DesktopWrap),
+	// )
+	return client.NewClient()
 }
 
 func NewKazoupService(name string) micro.Service {
@@ -170,14 +169,9 @@ func NewKazoupService(name string) micro.Service {
 	if err != nil {
 		log.Fatal("oops can't get hostname")
 	}
-	u, err := user.Current()
-	if err != nil {
-		log.Fatal("oops can't get username")
-	}
 
 	md := map[string]string{
 		"hostname": hostname,
-		"username": u.Username,
 	}
 
 	if name == "db" {
@@ -186,6 +180,8 @@ func NewKazoupService(name string) micro.Service {
 			micro.Name(sn),
 			micro.Version("latest"),
 			micro.Metadata(md),
+			micro.RegisterTTL(time.Minute),
+			micro.RegisterInterval(time.Second*30),
 			micro.Client(NewKazoupClient()),
 			micro.WrapSubscriber(SubscriberWrapper),
 			micro.WrapHandler(AuthWrapper),
@@ -194,7 +190,7 @@ func NewKazoupService(name string) micro.Service {
 					Name:   "elasticsearch_hosts",
 					EnvVar: "ELASTICSEARCH_HOSTS",
 					Usage:  "Comma separated list of elasticsearch hosts",
-					Value:  "localhost:9200",
+					Value:  "elasticsearch:9200",
 				},
 			),
 			micro.Action(func(c *cli.Context) {
@@ -202,7 +198,6 @@ func NewKazoupService(name string) micro.Service {
 				//elastic.Hosts = parts
 			}),
 		)
-
 		return service
 	}
 	sn := fmt.Sprintf("%s.srv.%s", globals.NAMESPACE, name)

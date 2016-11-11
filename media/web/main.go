@@ -13,7 +13,7 @@ func main() {
 
 	log.Printf("volume name: %s  path :%s", filepath.VolumeName(wd), wd)
 
-	service := microweb.NewService(microweb.Name("go.micro.web.media"))
+	service := microweb.NewService(microweb.Name("com.kazoup.web.media"))
 
 	service.Handle("/preview", handler.NewImageHandler())
 

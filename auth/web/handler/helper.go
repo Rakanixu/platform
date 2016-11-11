@@ -5,11 +5,15 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
+	"github.com/kazoup/platform/lib/wrappers"
+	"log"
+
 )
 
 func SaveDatasource(ctx context.Context, user string, url string, token *oauth2.Token) error {
-	c := proto_datasource.NewDataSourceClient(globals.DATASOURCE_SERVICE_NAME, nil)
 
+	c := proto_datasource.NewDataSourceClient(globals.DATASOURCE_SERVICE_NAME, wrappers.NewKazoupClient())
+	log.Print(c)
 	req := &proto_datasource.CreateRequest{
 		Endpoint: &proto_datasource.Endpoint{
 			UserId:          user,

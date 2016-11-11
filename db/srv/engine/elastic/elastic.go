@@ -58,7 +58,7 @@ func init() {
 // Init elastic db
 func (e *elastic) Init() error {
 	e.conn = lib.NewConn()
-	e.conn.SetHosts([]string{"localhost:9200"}) //TODO: replace for enterprise version, get flag
+	e.conn.SetHosts([]string{"elasticsearch:9200"}) //TODO: replace for enterprise version, get flag
 	e.bulk = e.conn.NewBulkIndexerErrors(100, 5)
 	e.bulk.BulkMaxDocs = 100000
 	e.bulk.Start()
