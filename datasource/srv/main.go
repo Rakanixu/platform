@@ -1,21 +1,26 @@
 package main
 
 import (
+	"log"
+
 	"github.com/kazoup/platform/datasource/srv/handler"
+	"github.com/kazoup/platform/datasource/srv/subscriber"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/wrappers"
 	_ "github.com/micro/go-plugins/broker/nats"
-	"log"
 )
 
 func main() {
-	// New service
-
 	service := wrappers.NewKazoupService("datasource")
+
+	// Init broker on subscriber
+	// This is required to be able to handle the data properly when
+	// we want to stream the messages over the notification socket
+	subscriber.Broker = service.Server().Options().Broker
 
 	// Attach crawler finished subscriber
 	if err := service.Server().Subscribe(
-		service.Server().NewSubscriber(globals.CrawlerFinishedTopic, handler.SubscribeCrawlerFinished)); err != nil {
+		service.Server().NewSubscriber(globals.CrawlerFinishedTopic, subscriber.SubscribeCrawlerFinished)); err != nil {
 		log.Fatal(err)
 	}
 
@@ -25,12 +30,8 @@ func main() {
 			Client: service.Client(),
 		}),
 	)
-
-	// Init service
 	service.Init()
-
-	// Run service
 	if err := service.Run(); err != nil {
-		log.Fatal(err)
+		log.Fatalf("%v", err)
 	}
 }

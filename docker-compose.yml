@@ -78,6 +78,13 @@ db-srv:
   - registry
   - elasticsearch
   - nats
+  
+file-srv:
+  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 --transport=tcp
+  image: kazoup/flag-srv:latest
+  links:
+  - registry
+  - nats
 
 ui-web:
    command: --registry_address=registry:8500 --selector=cache 
