@@ -44,7 +44,11 @@
           console.log('_onOpen', e.detail);
         },
         _onClose: function(e) {
-          console.log('_onClose', e.detail);
+          clearTimeout(this.reconnectTimeout);
+
+          this.reconnectTimeout = setTimeout(function() {
+            this.$.socket.open();
+          }.bind(this), 2000);
         },
         _onMessage: function(e) {
           // Check for user ID message is for, right now we are broadcasting from notification srv
