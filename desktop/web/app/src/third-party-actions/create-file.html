@@ -281,27 +281,6 @@
 
             this.$.toast.text = "File created succesfully, it will appear shortly on Kazoup";
             this.$.toast.show();
-
-            this.async(function() {
-              _.forEach(document.querySelector('web-app').datasourceResults, function(ds) {
-                if (ds.id === this.selectedDatasource.id) {
-
-                  // Reload documents in selected data source expecting created one appears.
-                  // Usually the created element should appear on top of the listing, as it's timestamp is from milliseconds ago.
-                  document.querySelector('web-app').browseDatasource({
-                    model: {
-                      __data__: {
-                        item: ds
-                      }
-                    }
-                  })
-                  return false;
-                }
-              }, this);
-              // TODO: Will not ensure that the document has been indexed yet, at low backend load should already be searchable. I always index things async.
-              // We need push notifications or sockets. Problem with sockets, backend has to handle correctly
-              // This has to be trigger in a clever way when notification received, this is bullshit for users.
-            }, 4000);
           }
 
           this.closeCreateFileDialog();

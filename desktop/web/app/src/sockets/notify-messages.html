@@ -44,7 +44,11 @@
           console.log('_onOpen', e.detail);
         },
         _onClose: function(e) {
-          console.log('_onClose', e.detail);
+          clearTimeout(this.reconnectTimeout);
+
+          this.reconnectTimeout = setTimeout(function() {
+            this.$.socket.open();
+          }.bind(this), 2000);
         },
         _onMessage: function(e) {
           // Check for user ID message is for, right now we are broadcasting from notification srv
@@ -62,13 +66,14 @@
               }
 
               this.async(function() {
-                //TODO: FIX: e.detail.method ==
-                //	NOTIFY_REFRESH_DATASOURCES = "refreshDatasources"
-                //  NOTIFY_REFRESH_SEARCH      = "refreshSearch"
-                // For datasources, call datasource-page, for refresh search call web-app.. I may need a map in backend {method & target}, or stupid ifs in front
+                if (document.querySelector('datasources-page')[e.detail.method]) {
+                  document.querySelector('datasources-page')[e.detail.method](data);
+                }
 
-                document.querySelector('datasources-page')[e.detail.method](data);
-              }, 1000);
+                if (document.querySelector('web-app')[e.detail.method]) {
+                  document.querySelector('web-app')[e.detail.method](data);
+                }
+              }, 1200);
             }
           }
         },

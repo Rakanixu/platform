@@ -1,0 +1,59 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<dom-module id="time-ago">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+
+    <span>[[message]]</span>
+
+  </template>
+
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'time-ago',
+        behaviors: [
+          Polymer.UtilBehaviorImp
+        ],
+        properties: {
+          message: {
+            type: String,
+            notify: true
+          },
+          interval: {
+            type: Function
+          },
+          datasource: {
+            type: Object,
+            notify: true,
+            reflect: true,
+            observer: 'datasourceChanged'
+          }
+        },
+        datasourceChanged: function(newVal, oldVal) {
+          this.set('message', this.crawlerRunningMsg(this.datasource));
+
+          /*
+          clearInterval(this.interval);
+
+          // Minutes interval
+          this.interval = setInterval(function() {
+            this.datasource.last_scan_started -= 59.9;
+            this.datasource.last_scan -= 59.9;
+
+            this.set('message', this.crawlerRunningMsg(this.datasource));
+          }.bind(this), 59999);
+          */
+        }
+      });
+    }());
+  </script>
+</dom-module>
