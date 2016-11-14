@@ -1,1 +1,0 @@
-!function(){"use strict";var r=require("../assert/assertArgument"),e=require("../tester/isIndex"),t=require("../caster/toArray");module.exports=function(s,u,n){for(r(s=t(s),1,"Arrayable"),r(e(u),2,"number");s.length<u;)s.push(n);return s}}();

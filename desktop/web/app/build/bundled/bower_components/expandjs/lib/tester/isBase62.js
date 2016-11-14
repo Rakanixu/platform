@@ -1,1 +1,0 @@
-!function(){"use strict";var t=require("../tester/isString");module.exports=function(e){return t(e)&&/^[0-9A-Za-z]+$/.test(e)}}();

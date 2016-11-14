@@ -1,1 +1,0 @@
-!function(){"use strict";module.exports=function(t){return void 0!==t}}();

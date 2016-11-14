@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("../assert/assertArgument"),r=require("../tester/isNumber");module.exports=function(t,u,n){return e(r(t),1,"number"),e(r(u),2,"number"),e(r(n),3,"number"),Math.max(Math.min(t,n),u)}}();

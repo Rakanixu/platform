@@ -1,1 +1,0 @@
-!function(){"use strict";module.exports=function(u){return Buffer.isBuffer(u)}}();

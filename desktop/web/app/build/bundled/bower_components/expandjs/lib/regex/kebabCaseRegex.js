@@ -1,1 +1,0 @@
-!function(){"use strict";module.exports=/^([a-z](?![\d])|[\d](?![a-z]))+(-?([a-z](?![\d])|[\d](?![a-z])))*$|^$/}();

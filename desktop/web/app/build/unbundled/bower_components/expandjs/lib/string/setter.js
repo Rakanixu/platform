@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("../assert/assertArgument"),r=require("../string/camelCase"),t=require("../tester/isString"),s=require("../tester/isVoid");module.exports=function(i,u){return e(s(i)||t(i),1,"string"),i?(u?"_":"")+r("set-"+i):""}}();

@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("../assert/assertArgument"),t=require("../tester/isFunction");module.exports=function(r,n){return e(t(n),2,"Function"),r instanceof n}}();

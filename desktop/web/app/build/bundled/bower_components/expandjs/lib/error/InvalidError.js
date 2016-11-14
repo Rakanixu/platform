@@ -1,1 +1,0 @@
-!function(){"use strict";var r=require("../error/CustomError");module.exports=function(o,i){r.call(this,"InvalidError",o+" is not valid",i)}}();

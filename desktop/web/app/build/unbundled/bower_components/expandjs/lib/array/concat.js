@@ -1,1 +1,0 @@
-!function(){"use strict";var r=require("../assert/assertArgument"),e=require("../tester/isDefined"),t=require("../array/slice"),u=require("../caster/toArray");module.exports=function(i,s){return r(i=u(i),1,"Arrayable"),t(arguments,1).forEach(function(r){e(r=u(r))&&r.forEach(function(r){i.push(r)})}),i}}();

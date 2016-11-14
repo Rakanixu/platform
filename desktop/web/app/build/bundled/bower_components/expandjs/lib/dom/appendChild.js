@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("../assert/assertArgument"),r=require("../tester/isElement"),t=require("../tester/isNode"),i=require("../tester/isVoid");module.exports=function(s,u){if(e(i(s)||r(s),1,"Element"),e(i(u)||t(u),2,"Node"),s&&u)return s.appendChild(u)}}();

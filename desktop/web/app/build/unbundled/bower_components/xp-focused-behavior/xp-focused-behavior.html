@@ -1,5 +1,0 @@
-<html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../expandjs/expandjs.html">
-
-<script>Polymer.XPFocusedBehavior={listeners:{blur:"_blurHandler",focus:"_focusHandler"},properties:{disabled:{notify:!0,observer:"_disabledObserver",reflectToAttribute:!0,type:Boolean,value:!1},focused:{notify:!0,readOnly:!0,reflectToAttribute:!0,type:Boolean,value:!1},hidden:{notify:!0,reflectToAttribute:!0,type:Boolean,value:!1}},tabIndexLast:0,_disabledObserver:function(){var e=this;e._setFocused(e.focused&&!e.disabled),e.tabIndexLast=e.disabled?e.tabIndex:e.tabIndexLast,e.tabIndex=e.disabled?-1:e.tabIndexLast,e.style.pointerEvents=e.disabled?"none":""},mutated:function(){var e=this;e.tabIndex=e.disabled?-1:e.tabIndex||0,XP.onMutation(e,Polymer.XPFocusedBehavior.mutated.bind(e),{attributes:!0,attributeFilter:["tabindex"]})},ready:function(){Polymer.XPFocusedBehavior.mutated.apply(this)},_blurHandler:function(){this._setFocused(!1)},_focusHandler:function(){this._setFocused(!this.disabled)}};</script>
-</head><body></body></html>

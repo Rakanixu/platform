@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("../tester/isDefined"),r=(require("../tester/isObject"),require("../tester/isPolyfilled")),t=require("../tester/isShady"),i=require("../tester/isVoid");module.exports=function(s,n){return s=t(s)?s.node:s,!(!s||!(e(s.nodeType)&&e(s.ownerDocument)||r(s)))&&!(!i(n)&&s.nodeType!==n)}}();

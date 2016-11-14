@@ -1,1 +1,0 @@
-!function(){"use strict";var r=require("lodash"),e=require("../assert/assertArgument"),t=require("../tester/isArray"),s=require("../tester/isPredicate");module.exports=function(i,u,n){return e(t(i),1,"Array"),e(s(u),2,"Function, Object or string"),r.remove(i,u,n)}}();

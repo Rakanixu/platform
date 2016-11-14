@@ -1,1 +1,0 @@
-!function(){"use strict";var r=require("../tester/isInt");module.exports=function(t){if(r(t)){for(var e="",o="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";t>0;)e=o[t%62]+e,t=Math.floor(t/62);return e||"0"}}}();

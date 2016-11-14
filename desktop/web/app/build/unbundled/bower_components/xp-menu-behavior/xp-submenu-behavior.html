@@ -1,7 +1,0 @@
-<html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../expandjs/expandjs.html">
-<link rel="import" href="../xp-master-behavior/xp-master-behavior.html">
-<link rel="import" href="../xp-slave-behavior/xp-slave-behavior.html">
-
-<script>Polymer.XPSubmenuBehaviorImp={hide:function(){var e=this;return e.showed=!1,e},show:function(){var e=this;return e.showed=!0,e},toggle:function(){var e=this;return e.showed=!e.showed,e},observers:["_showedObserver(showed)"],properties:{menu:{notify:!0,readOnly:!0},showed:{notify:!0,reflectToAttribute:!0,type:Boolean,value:!1},submenus:{notify:!0,readOnly:!0,value:function(){return[]}},supermenu:{notify:!0,readOnly:!0}},_showedObserver:function(){this.showed||XP.invoke(this.submenus||[],"hide")},created:function(){this.classList.add("submenu")},ready:function(){var e=this;e.mastersMap.menu=".menu",e.mastersMap.supermenu=".submenu",e.slavesMap.submenus=".submenu"}},Polymer.XPSubmenuBehavior=[Polymer.XPMasterBehavior,Polymer.XPSlaveBehavior,Polymer.XPSubmenuBehaviorImp];</script>
-</head><body></body></html>

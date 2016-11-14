@@ -1,1 +1,0 @@
-!function(){"use strict";module.exports=/^(?!\s).*[\S]+$|^$/}();

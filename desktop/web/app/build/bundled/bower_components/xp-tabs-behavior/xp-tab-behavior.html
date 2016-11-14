@@ -1,8 +1,0 @@
-<html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../expandjs/expandjs.html">
-<link rel="import" href="../xp-observer/xp-observer.html">
-<link rel="import" href="../xp-slave-behavior/xp-slave-behavior.html">
-<link rel="import" href="../xp-targeter-behavior/xp-targeter-behavior.html">
-
-<script>Polymer.XPTabBehaviorImp={compare:function(){var e=this;return e._setModified(!!e.dataObserver&&!!e.mementoObserver&&!XP.isEquivalent(e.data,e.memento)),e},properties:{closable:{notify:!0,reflectToAttribute:!0,type:Boolean,value:!1},content:{notify:!0,observer:"_contentObserver",reflectToAttribute:!0,type:String},data:{observer:"_dataObserver"},label:{reflectToAttribute:!0,type:String},memento:{notify:!0,observer:"_mementoObserver"},modified:{notify:!0,readOnly:!0,reflectToAttribute:!0,type:Boolean,value:!1},selector:{notify:!0,readOnly:!0}},_contentObserver:function(){var e=this,t=e.findTarget();t&&(t.content=e.content)},_dataObserver:function(e,t){var r=this,a=r.findTarget();a&&a.data===t&&(a.data=r.data),r.dataObserver&&r.dataObserver.disconnect(),r.dataObserver=XP.isObject(r.data)?new XPObserver(r.data,r.compare.bind(r),(!0)):null,r.compare()},_mementoObserver:function(){var e=this;e.mementoObserver&&e.mementoObserver.disconnect(),e.mementoObserver=XP.isObject(e.memento)?new XPObserver(e.memento,e.compare.bind(e),(!0)):null,e.compare()},created:function(){this.classList.add("tab")},ready:function(){this.mastersMap.selector=".tabs"},_closeHandler:function(e){var t=this;e.stopPropagation(),e.detail.target||t.fire("xp-tab-close",{firer:t,isActive:t.active,isModified:t.modified})}},Polymer.XPTabBehavior=[Polymer.XPSlaveBehavior,Polymer.XPTargeterBehavior,Polymer.XPTabBehaviorImp];</script>
-</head><body></body></html>

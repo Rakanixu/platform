@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("../tester/isIndex"),r=require("../caster/toInt");module.exports=function(t,i){return e(t=r(t))?t:i?0:void 0}}();

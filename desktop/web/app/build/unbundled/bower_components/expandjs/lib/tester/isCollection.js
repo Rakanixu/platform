@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("../tester/isArrayable"),r=require("../tester/isObject");module.exports=function(t,i){return e(t,i)||r(t,i)}}();
