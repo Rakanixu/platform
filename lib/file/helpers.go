@@ -285,6 +285,10 @@ func NewKazoupFileFromGmailFile(m *gmail.Message, dsId, uId, dsURL, index string
 		return nil
 	}
 
+	// Payload is required to get extension and filename, but it is HUGE,
+	// so drop it to minimize index size
+	m.Payload = &gmail.MessagePart{}
+
 	kf := &KazoupFile{
 		ID:           globals.GetMD5Hash(url),
 		UserId:       uId,

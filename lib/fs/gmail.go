@@ -138,7 +138,10 @@ func (gfs *GmailFs) pushMessagesToChanForPage(s *gmail.Service, msgs []*gmail.Me
 
 	for _, v := range msgs {
 		srvCall := srv.Get("me", v.Id)
-		msgBdy, err := srvCall.Fields("historyId,id,internalDate,labelIds,payload,raw,sizeEstimate,snippet,threadId").Do()
+
+		// Available fields
+		// historyId,id,internalDate,labelIds,payload,raw,sizeEstimate,snippet,threadId
+		msgBdy, err := srvCall.Fields("id,internalDate,payload,sizeEstimate").Do()
 		if err != nil {
 			return err
 		}
