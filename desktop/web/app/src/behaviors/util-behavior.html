@@ -212,9 +212,15 @@
             break;
         }
       },
+      isSpinnerActive: function(item) {
+        if (document.querySelector('#spinner' + item.id)) {
+          // crawler_running can be true or undefined
+          document.querySelector('#spinner' + item.id).active = (item.crawler_running) ? true : false;
+        }
+      },
       crawlerRunningMsg: function(datasource) {
         if (datasource.crawler_running) {
-          return 'Crawler running ' + this.timeSince(datasource.last_scan_started) + '. Data will populate in a while.';
+          return 'Scanning..';
         } else {
           return 'Last scan finished ' + this.timeSince(datasource.last_scan);
         }

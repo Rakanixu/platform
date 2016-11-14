@@ -6,7 +6,7 @@
 
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
-
+<link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
@@ -21,6 +21,7 @@
 <link rel="import" href="../../bower_components/mat-menu/mat-menu.html">
 <link rel="import" href="../../bower_components/mat-dialog/mat-dialog.html">
 
+<link rel="import" href="../../src/time/time-ago.html">
 <link rel="import" href="../../src/empty-state/empty-state.html">
 
 <link rel="import" href="../../src/behaviors/util-behavior.html">
@@ -36,6 +37,18 @@
         display: block;
       }
 
+      paper-spinner {
+        height: 44px;
+        width: 44px;
+        position: absolute;
+        top: 14px;
+        left: -58px;
+        --paper-spinner-layer-1-color: var(--accent);
+        --paper-spinner-layer-2-color: var(--accent);
+        --paper-spinner-layer-3-color: var(--accent);
+        --paper-spinner-layer-4-color: var(--accent);
+      }
+
       .big {
         --iron-icon-height: 36px;
         --iron-icon-width: 36px;
@@ -49,11 +62,12 @@
     <template is="dom-repeat" items="[[datasourcesResults]]" hidden$="[[emptyState.visible]]">
       <mat-item label="[[getDatasourcePrettyType(item.url)]]"
                 description="[[getDatasourceUrl(item.url)]]">
+        <paper-spinner id$="spinner[[item.id]]" compute$="[[isSpinnerActive(item)]]"></paper-spinner>
         <mat-avatar class="primary"
                     icon$="[[getDatasourceIcon(item.url)]]">
 	      </mat-avatar>
 
-        <span>[[crawlerRunningMsg(item)]]</span>
+        <time-ago datasource="{{item}}"></time-ago>
 
         <mat-icon-button class="secondary"
                          behavior="toggle"
@@ -329,6 +343,10 @@
           this.set('loading', false);
           this.$.toast.text = 'Scan started succesfully';
           this.$.toast.show();
+
+          this.async(function() {
+            this.refreshDatasources();
+          }, 1000);
         },
         _handleDeleteDatasource: function(e) {
           this.set('loading', false);

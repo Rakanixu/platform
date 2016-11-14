@@ -149,6 +149,9 @@ datasources-page {
 	width:55px !important;
 }
 
+datasources-page mat-item .anchor .main .content {
+    overflow: visible;
+}
 
 .title {
     margin-top: auto;
