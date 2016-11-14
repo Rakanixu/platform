@@ -59,7 +59,8 @@ func HandleDropboxLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Code conversion from bytes to hexadecimal string to be send over the wire
-	url := globals.NewDropboxOauthConfig().AuthCodeURL(fmt.Sprintf("%0x", nt))
+	// Dropbox does not follow oauth2 spec. They do define a new flag force_reapprove Boolean. twats
+	url := globals.NewDropboxOauthConfig().AuthCodeURL(fmt.Sprintf("%0x", nt), oauth2.SetAuthURLParam("force_reapprove", "true"))
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 

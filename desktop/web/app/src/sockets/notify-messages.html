@@ -47,7 +47,7 @@
           clearTimeout(this.reconnectTimeout);
 
           this.reconnectTimeout = setTimeout(function() {
-            this.$.socket.open();
+            this.init();
           }.bind(this), 2000);
         },
         _onMessage: function(e) {

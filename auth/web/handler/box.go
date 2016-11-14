@@ -39,7 +39,7 @@ func HandleBoxLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Code conversion from bytes to hexadecimal string to be send over the wire
-	url := globals.NewBoxOauthConfig().AuthCodeURL(fmt.Sprintf("%0x", nt))
+	url := globals.NewBoxOauthConfig().AuthCodeURL(fmt.Sprintf("%0x", nt), oauth2.ApprovalForce)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 

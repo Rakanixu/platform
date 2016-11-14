@@ -108,11 +108,20 @@ func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId, uId, index stri
 		c = categories.GetDocType(g.MimeType)
 	}
 
+	// Link to view / edit file
+	url := g.WebViewLink
+	// When document is Microsoft Office, download link
+	if g.MimeType == globals.MS_DOCUMENT ||
+		g.MimeType == globals.MS_PRESENTATION ||
+		g.MimeType == globals.MS_SPREADSHEET {
+		url = g.WebContentLink
+	}
+
 	kf := &KazoupFile{
-		ID:           globals.GetMD5Hash(g.WebViewLink),
+		ID:           globals.GetMD5Hash(url),
 		UserId:       uId,
 		Name:         g.Name,
-		URL:          g.WebViewLink,
+		URL:          url,
 		Modified:     t,
 		FileSize:     g.Size,
 		IsDir:        d,
