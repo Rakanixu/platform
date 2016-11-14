@@ -100,8 +100,6 @@ const (
 	CLIENT_ID_SECRET = "EC1FD9R5t6D3cs9CzPbgJaBJjshoVgrJrTs6U39scYzYF7HYyMlv_mal2IjLLaA9" // Auth0 RPC API client
 	ENCRYTION_KEY_32 = "asjklasd766adfashj22kljasdhyfjkh"
 
-	CODE_REFRESH_DS = "CODE_REFRESH_DS"
-
 	NOTIFY_REFRESH_DATASOURCES = "refreshDatasources"
 	NOTIFY_REFRESH_SEARCH      = "refreshSearch"
 )
