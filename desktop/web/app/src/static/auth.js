@@ -40,7 +40,8 @@ window.Auth = (function() {
     }, {
       headers: {
         'Cache-Control': ''
-      }
+      },
+      cache:true
     });
   }
 
@@ -59,6 +60,8 @@ window.Auth = (function() {
         created_at: _profile.created_at
       };
       window.Intercom('update', window.intercomSettings);
+
+      document.querySelector('notify-messages').init(_profile.user_id);
 
       localStorage.setItem('id_token', authResult.idToken);
 
@@ -94,6 +97,9 @@ window.Auth = (function() {
     },
     getUserId: function() {
       return _profile.user_id;
+    },
+    getMD5UserId: function() {
+      return new Hashes.MD5().hex(_profile.user_id);
     },
     clear: function() {
       _profile = {};

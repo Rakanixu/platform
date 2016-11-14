@@ -8,8 +8,8 @@ import (
 	"github.com/kazoup/platform/db/srv/engine"
 	data "github.com/kazoup/platform/db/srv/engine/elastic/data"
 	db "github.com/kazoup/platform/db/srv/proto/db"
+	"github.com/kazoup/platform/lib/globals"
 	search_proto "github.com/kazoup/platform/search/srv/proto/search"
-	"github.com/kazoup/platform/structs/globals"
 	lib "github.com/mattbaird/elastigo/lib"
 	"golang.org/x/net/context"
 	"log"
@@ -58,7 +58,7 @@ func init() {
 // Init elastic db
 func (e *elastic) Init() error {
 	e.conn = lib.NewConn()
-	e.conn.SetHosts([]string{"localhost:9200"}) //TODO: replace for enterprise version, get flag
+	e.conn.SetHosts([]string{"elasticsearch:9200"}) //TODO: replace for enterprise version, get flag
 	e.bulk = e.conn.NewBulkIndexerErrors(100, 5)
 	e.bulk.BulkMaxDocs = 100000
 	e.bulk.Start()
@@ -175,11 +175,18 @@ func (e *elastic) DeleteByQuery(ctx context.Context, req *db.DeleteByQueryReques
 // Search ES index
 func (e *elastic) Search(ctx context.Context, req *db.SearchRequest) (*db.SearchResponse, error) {
 	var results []interface{}
+	var err error
 	var rstr string
+	var uId string
 
-	uId, err := globals.ParseJWTToken(ctx)
-	if err != nil {
-		return &db.SearchResponse{}, err
+	// Get user id implicitly or explicitly
+	if len(req.UserId) == 0 {
+		uId, err = globals.ParseJWTToken(ctx)
+		if err != nil {
+			return &db.SearchResponse{}, err
+		}
+	} else {
+		uId = req.UserId
 	}
 
 	eQuery := ElasticQuery{
@@ -191,7 +198,8 @@ func (e *elastic) Search(ctx context.Context, req *db.SearchRequest) (*db.Search
 		Category: req.Category,
 		Url:      req.Url,
 		Depth:    req.Depth,
-		Type:     req.FileType,
+		Type:     req.Type,
+		FileType: req.FileType,
 	}
 	query, err := eQuery.Query()
 

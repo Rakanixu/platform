@@ -1,13 +1,14 @@
 package search
 
 import (
-	"log"
-
+	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/kazoup/platform/search/srv/engine"
 	_ "github.com/kazoup/platform/search/srv/engine/db_search"
+	_ "github.com/micro/go-plugins/transport/tcp"
+	_ "github.com/micro/go-plugins/broker/nats"
 	"github.com/kazoup/platform/search/srv/handler"
-	"github.com/kazoup/platform/structs/wrappers"
 	"github.com/micro/cli"
+	"log"
 )
 
 func srv(ctx *cli.Context) {

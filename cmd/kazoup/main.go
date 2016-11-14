@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/kardianos/osext"
 	auth "github.com/kazoup/platform/auth"
 	config "github.com/kazoup/platform/config"
@@ -8,12 +9,13 @@ import (
 	datasource "github.com/kazoup/platform/datasource"
 	db "github.com/kazoup/platform/db"
 	ui "github.com/kazoup/platform/desktop"
+	file "github.com/kazoup/platform/file"
 	flag "github.com/kazoup/platform/flag"
+	"github.com/kazoup/platform/lib/globals"
 	media "github.com/kazoup/platform/media"
+	notification "github.com/kazoup/platform/notification"
 	scheduler "github.com/kazoup/platform/scheduler"
 	search "github.com/kazoup/platform/search"
-	"github.com/kazoup/platform/structs/globals"
-	proxy "github.com/kazoup/platform/web"
 	"github.com/micro/cli"
 	ccli "github.com/micro/cli"
 	"github.com/micro/go-micro/cmd"
@@ -21,7 +23,9 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"runtime"
 	"sync"
+	"time"
 )
 
 func main() {
@@ -36,7 +40,8 @@ func main() {
 	app.Commands = append(app.Commands, media.Commands()...)
 	app.Commands = append(app.Commands, search.Commands()...)
 	app.Commands = append(app.Commands, scheduler.Commands()...)
-	app.Commands = append(app.Commands, proxy.Commands()...)
+	app.Commands = append(app.Commands, file.Commands()...)
+	app.Commands = append(app.Commands, notification.Commands()...)
 	app.Commands = append(app.Commands, web.Commands()...)
 	app.Commands = append(app.Commands, desktopCommands()...)
 	app.Action = func(context *cli.Context) { cli.ShowAppHelp(context) }
@@ -51,6 +56,21 @@ func main() {
 func setup(app *ccli.App) {
 	// common flags
 	app.Flags = append(app.Flags,
+		ccli.BoolFlag{
+			Name:   "enable_tls",
+			Usage:  "Enable TLS",
+			EnvVar: "MICRO_ENABLE_TLS",
+		},
+		ccli.StringFlag{
+			Name:   "tls_cert_file",
+			Usage:  "TLS Certificate file",
+			EnvVar: "MICRO_TLS_CERT_FILE",
+		},
+		ccli.StringFlag{
+			Name:   "tls_key_file",
+			Usage:  "TLS Key file",
+			EnvVar: "MICRO_TLS_KEY_FILE",
+		},
 		ccli.IntFlag{
 			Name:   "register_ttl",
 			EnvVar: "MICRO_REGISTER_TTL",
@@ -80,32 +100,69 @@ func setup(app *ccli.App) {
 
 func desktop(ctx *ccli.Context) {
 	var wg sync.WaitGroup
+	var nc *exec.Cmd
 	cmds := ctx.App.Commands
-	binary, _ := osext.Executable()
+	binary, err := osext.Executable()
+	if err != nil {
+		log.Println(err.Error())
+	}
+	dir, err := osext.ExecutableFolder()
+	if err != nil {
+		log.Println(err.Error())
+	}
+
+	// Execute nats server binary. Only linux amd64. Other platforms should run binary manually.
+
+	wg.Add(1)
+	nc = exec.Command(fmt.Sprintf("%s%s%s%s%s/gnatsd", dir, "/nats/gnatsd-v0.9.4-", runtime.GOOS, "-", runtime.GOARCH))
+	nc.Stdout = os.Stdout
+	nc.Stderr = os.Stderr
+	if err := nc.Start(); err != nil {
+		log.Println(err.Error())
+		wg.Done()
+	}
+	time.Sleep(time.Second * 2)
+
 	for _, cmd := range cmds {
 		if cmd.Name != "help" && len(cmd.Subcommands) > 0 {
 			for _, subcmd := range cmd.Subcommands {
-				//time.Sleep(time.Second)
 				wg.Add(1)
-				log.Print(cmd.Name, subcmd.Name)
-				c := exec.Command(binary, "--registry=mdns", cmd.Name, subcmd.Name)
+				c := exec.Command(
+					binary,
+					"--registry=mdns",
+					"--transport=tcp",
+					"--broker=nats",
+					"--broker_address=127.0.0.1:4222",
+					"--enable_tls",
+					"--tls_cert_file=ssl/cert.pem",
+					"--tls_key_file=ssl/key.pem",
+					cmd.Name,
+					subcmd.Name,
+				)
 				c.Stdout = os.Stdout
 				c.Stderr = os.Stderr
 				if err := c.Start(); err != nil {
-					log.Print(err.Error())
+					log.Println(err.Error())
 					wg.Done()
 				}
 			}
 		}
 		if cmd.Name != "help" && len(cmd.Subcommands) == 0 && cmd.Name != "desktop" {
-
 			wg.Add(1)
-			log.Print(cmd.Name)
-			c := exec.Command(binary, "--registry=mdns", cmd.Name)
+			c := exec.Command(
+				binary,
+				"--registry=mdns",
+				"--broker=nats",
+				"--transport=tcp",
+				"--broker_address=127.0.0.1:4222",
+				"--enable_tls",
+				"--tls_cert_file=ssl/cert.pem",
+				"--tls_key_file=ssl/key.pem",
+				cmd.Name)
 			c.Stdout = os.Stdout
 			c.Stderr = os.Stderr
 			if err := c.Start(); err != nil {
-				log.Print(err.Error())
+				log.Println(err.Error())
 				wg.Done()
 			}
 		}
@@ -113,7 +170,6 @@ func desktop(ctx *ccli.Context) {
 	//TODO:Start elasticsearch
 
 	wg.Wait()
-
 }
 
 func desktopCommands() []cli.Command {

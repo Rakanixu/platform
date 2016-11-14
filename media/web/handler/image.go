@@ -5,9 +5,9 @@ import (
 	"fmt"
 	datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db "github.com/kazoup/platform/db/srv/proto/db"
-	"github.com/kazoup/platform/structs/file"
-	"github.com/kazoup/platform/structs/fs"
-	"github.com/kazoup/platform/structs/globals"
+	"github.com/kazoup/platform/lib/file"
+	"github.com/kazoup/platform/lib/fs"
+	"github.com/kazoup/platform/lib/globals"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/metadata"
 	"golang.org/x/net/context"
@@ -35,9 +35,10 @@ func NewImageHandler() *ImageHandler {
 }
 
 //ServeHTTP handles requests depending on file type
-//http://ADDRESS:8082/desktop/image?file_id={file_id}&width=300&height=300&mode=fit&quality=50
+//http://ADDRESS:8082/desktop/image?user_id={user_id}&file_id={file_id}&width=300&height=300&mode=fit&quality=50
 func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//Extract values from URL
+	md5_user_id := r.FormValue("user_id")
 	file_id := r.FormValue("file_id")
 	width := r.FormValue("width")
 	height := r.FormValue("height")
@@ -67,7 +68,7 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"Authorization": token,
 	})
 
-	f, err := file.GetFileByID(ctx, file_id, ih.dbclient)
+	f, err := file.GetFileByID(ctx, md5_user_id, file_id, ih.dbclient)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

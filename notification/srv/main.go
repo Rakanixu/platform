@@ -1,32 +1,40 @@
 package main
 
 import (
-	"github.com/kazoup/platform/notification/srv/subscriber"
-	"github.com/kazoup/platform/structs/globals"
-	"github.com/kazoup/platform/structs/wrappers"
-	"github.com/micro/go-micro/server"
-	_ "github.com/micro/go-plugins/broker/nats"
 	"log"
+
+	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/wrappers"
+	"github.com/kazoup/platform/notification/srv/handler"
+	proto "github.com/kazoup/platform/notification/srv/proto/notification"
+	"github.com/kazoup/platform/notification/srv/subscriber"
+	_ "github.com/micro/go-plugins/broker/nats"
+	_ "github.com/micro/go-plugins/transport/tcp"
 )
 
 func main() {
 	service := wrappers.NewKazoupService("notification")
 
-	// Init srv
-	service.Init()
+	subscriber.Broker = service.Server().Options().Broker
 
-	// Attach subscriber
+	// This subscriber receives notification messages and publish same message but over the broker directly
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.NotificationTopic,
-			subscriber.Notify,
+			subscriber.SubscriberProxy,
 		),
 	); err != nil {
 		log.Fatal(err)
 	}
 
+	// Notification handler instantiate with service broker
+	// It will allow to subscribe to topics and then stream actions back to clients
+	proto.RegisterNotificationHandler(service.Server(), &handler.Notification{
+		Server: service.Server(),
+	})
+	service.Init()
 	// Run server
-	if err := server.Run(); err != nil {
+	if err := service.Run(); err != nil {
 		log.Fatal(err)
 	}
 }

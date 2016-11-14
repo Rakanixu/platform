@@ -5,8 +5,8 @@ import (
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db "github.com/kazoup/platform/db/srv/proto/db"
 	flag_proto "github.com/kazoup/platform/flag/srv/proto/flag"
+	"github.com/kazoup/platform/lib/file"
 	search_proto "github.com/kazoup/platform/search/srv/proto/search"
-	"github.com/kazoup/platform/structs/file"
 	"golang.org/x/net/context"
 )
 

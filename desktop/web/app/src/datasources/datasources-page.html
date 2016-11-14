@@ -19,13 +19,14 @@
 <link rel="import" href="../../bower_components/mat-icons/action-icons.html">
 <link rel="import" href="../../bower_components/mat-icon-button/mat-icon-button.html">
 <link rel="import" href="../../bower_components/mat-menu/mat-menu.html">
+<link rel="import" href="../../bower_components/mat-dialog/mat-dialog.html">
 
 <link rel="import" href="../../src/empty-state/empty-state.html">
 
 <link rel="import" href="../../src/behaviors/util-behavior.html">
 <link rel="import" href="../../src/behaviors/endpoints-behavior.html">
 <link rel="import" href="../../src/behaviors/nav-behavior.html">
-<link rel="import" href="../../src/behaviors/categories-map-behavior.html">
+<link rel="import" href="../../src/behaviors/map-behavior.html">
 
 <dom-module id="datasources-page">
   <template>
@@ -172,7 +173,7 @@
         behaviors: [
           Polymer.UtilBehaviorImp,
           Polymer.NavBehaviorImp,
-          Polymer.CategoriesMapBehaviorImp,
+          Polymer.MapBehaviorImp,
           Polymer.AsyncBehaviorImp,
           Polymer.CommonBehaviorImp,
           Polymer.EndpointsBehaviorImp
@@ -284,6 +285,9 @@
 
           this.closeDatasourceDialog();
         },
+        refreshDatasources: function(data) {
+          this.$.rpcGetDatasources.generateRequest();
+        },
         startScan: function(e) {
           this.set('loading', true);
           this.rpcStartScanParams.request.id = e.model.__data__.item.id;
@@ -320,7 +324,6 @@
               localStorage.setItem(attr, detail[attr]);
             }
           }
-          this.init();
         },
         _handleStartScan: function(e) {
           this.set('loading', false);

@@ -20,8 +20,8 @@ import (
 	search_handler "github.com/kazoup/platform/search/srv/handler"
 	search_proto "github.com/kazoup/platform/search/srv/proto/search"
 
-	"github.com/kazoup/platform/structs/categories"
-	"github.com/kazoup/platform/structs/globals"
+	"github.com/kazoup/platform/lib/categories"
+	"github.com/kazoup/platform/lib/globals"
 	"github.com/micro/cli"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/broker/mock"

@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package go.micro.srv.file;
+
+service File {
+  rpc Create(CreateRequest) returns (CreateResponse) {}  // Creates a new file
+  rpc Delete(DeleteRequest) returns (CreateResponse) {}  // Deletes an existing file from third-party and kazoup indexes
+  rpc Share(ShareRequest) returns (ShareResponse) {}     // Shares a file
+}
+
+message CreateRequest {
+  string datasource_id = 1; // Our Endpoint identifier
+  string file_name = 2;     // Name for the new file
+  string mime_type = 3;     // MimeType for file to be created (MS Word, Spreadsheet, Presentation)
+}
+
+message CreateResponse {
+  string doc_url = 1;       // If provided, url to access file
+  string data = 2;          // Stringify file
+}
+
+message DeleteRequest {
+  string datasource_id = 1;       // Our Endpoint identifier
+  string index = 2;               // DB Index name ref
+  string file_id = 3;             // File ID to delete (for kazoup)
+  string original_id = 4;         // Original file ID (to refer third-parties)
+  string original_file_path = 5;  // Original file path. Internal to some third-party (Dropbox)
+}
+
+message DeleteResponse {
+
+}
+
+message ShareRequest {
+  string datasource_id = 1; // Our Endpoint identifier
+  string index = 2;         // The ElasticSearch index that stores the file
+  string file_id = 3;       // Kazoup File ID, ElasticSearch reference
+  string original_id = 4;   // Original File ID, third party reference
+  string destination_id = 5;// Destination, can be a slack channel, user..
+  bool share_publicly = 6;  // Option
+}
+
+message ShareResponse {
+  string public_url = 1;   // If provided, url to access file
+  bool share_publicly = 2; // Option back from request
+}

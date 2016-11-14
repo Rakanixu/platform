@@ -7,6 +7,8 @@ import (
 	"github.com/kazoup/platform/smtp/srv/smtp"
 	"github.com/micro/cli"
 	"github.com/micro/go-micro"
+	_ "github.com/micro/go-plugins/broker/nats"
+	_ "github.com/micro/go-plugins/broker/nats"
 )
 
 func main() {

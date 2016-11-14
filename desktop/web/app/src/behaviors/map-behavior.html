@@ -1,0 +1,35 @@
+<script>
+  'use strict';
+
+  (function() {
+    Polymer.MapBehaviorImp = {
+      properties: {
+        categoriesMap: {
+          type: Object,
+          notify: false,
+          value: function() {
+            return {
+              all: 'My Files',
+              documents: 'Documents',
+              videos: 'Movies',
+              images: 'Pictures',
+              audios: 'Audio'
+            };
+          }
+        },
+        fileTypesMap: {
+          type: Object,
+          notify: false,
+          value: function() {
+            return {
+              document: 'document',
+              presentation: 'presentation',
+              spreadsheet: 'spreadsheet',
+              text: 'text'
+            };
+          }
+        }
+      }
+    };
+  }());
+</script>

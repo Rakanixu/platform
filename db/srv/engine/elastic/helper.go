@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"github.com/kazoup/platform/lib/globals"
+	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	search_proto "github.com/kazoup/platform/search/srv/proto/search"
-	"github.com/kazoup/platform/structs/globals"
 	lib "github.com/mattbaird/elastigo/lib"
+	"github.com/micro/go-micro/client"
 	"log"
 	"strconv"
-	"strings"
 )
 
 func indexer(e *elastic) error {
@@ -20,6 +21,20 @@ func indexer(e *elastic) error {
 			case v := <-e.filesChannel:
 				if err := e.bulk.Index(v.Index, "file", v.Id, "", "", nil, v.Data); err != nil {
 					log.Print("Bulk Indexer error %s", err)
+				}
+
+				// File message can be notified, when a file is create, deleted or shared within kazoup
+				if v.Notify {
+					c := client.NewClient()
+					n := &notification_proto.NotificationMessage{
+						Method: globals.NOTIFY_REFRESH_SEARCH,
+						UserId: v.UserId,
+					}
+
+					// Publish scan topic, crawlers should pick up message and start scanning
+					if err := c.Publish(globals.NewSystemContext(), c.NewPublication(globals.NotificationTopic, n)); err != nil {
+						log.Print("Publishing (notify file) error %s", err)
+					}
 				}
 			}
 
@@ -124,6 +139,7 @@ type ElasticQuery struct {
 	Url      string
 	Depth    int64
 	Type     string
+	FileType string
 	LastSeen int64
 	Aggs     []*search_proto.Aggregation
 }
@@ -185,7 +201,7 @@ func (e *ElasticQuery) QueryById() (string, error) {
 	buffer.WriteString(e.Id + `"}}`)
 	// Filter by user for files, not for users or channels (slack)
 	// This is due to channels and users (slack) does not have to store the user they belong to
-	if e.Type == globals.FileType {
+	if e.FileType == globals.FileType {
 		buffer.WriteString(`,` + e.filterUser())
 	}
 	buffer.WriteString(`]}}}}}`)
@@ -196,8 +212,9 @@ func (e *ElasticQuery) QueryById() (string, error) {
 func (e *ElasticQuery) defaultSorting() string {
 	var buffer bytes.Buffer
 
+	// TODO: better way to avoid sorting on well known indexes.
 	if (e.From != 0 || e.Size != 0) &&
-		(e.Index == globals.FilesAlias || strings.Contains(e.Index, "index")) &&
+		(e.Index != globals.IndexDatasources && e.Index != globals.IndexFlags) &&
 		len(e.Term) == 0 {
 		buffer.WriteString(`{"is_dir": "desc"},{"modified":"desc"},{"file_size": "desc"}`)
 	}
@@ -222,7 +239,7 @@ func (e *ElasticQuery) filterLastSeen() string {
 func (e *ElasticQuery) filterType() string {
 	var buffer bytes.Buffer
 
-	switch e.Type {
+	switch e.FileType {
 	case globals.FileTypeFile:
 		buffer.WriteString(`{"term": {"is_dir": false}}`)
 	case globals.FileTypeDirectory:
@@ -265,8 +282,8 @@ func (e *ElasticQuery) filterUrl() string {
 func (e *ElasticQuery) filterUser() string {
 	var buffer bytes.Buffer
 
-	// We filter datasources index
-	if len(e.UserId) > 0 && e.Index != globals.IndexFlags {
+	// We filter by user_id when quering file or datasource ES documents.
+	if len(e.UserId) > 0 && (e.Type == globals.FileType || e.Type == globals.TypeDatasource) {
 		buffer.WriteString(`{"term": {"user_id": "`)
 		buffer.WriteString(e.UserId)
 		buffer.WriteString(`"}}`)

@@ -2,11 +2,12 @@ package auth
 
 import (
 	"github.com/kazoup/platform/crawler/srv/subscriber"
-	"github.com/kazoup/platform/structs/categories"
-	"github.com/kazoup/platform/structs/globals"
-	"github.com/kazoup/platform/structs/wrappers"
+	"github.com/kazoup/platform/lib/categories"
+	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/cli"
 	_ "github.com/micro/go-plugins/broker/nats"
+	_ "github.com/micro/go-plugins/transport/tcp"
 	"log"
 )
 
@@ -33,11 +34,12 @@ func srv(ctx *cli.Context) {
 }
 
 func crawlerCommands() []cli.Command {
-	return []cli.Command{{
-		Name:   "srv",
-		Usage:  "Run crawler service",
-		Action: srv,
-	},
+	return []cli.Command{
+		{
+			Name:   "srv",
+			Usage:  "Run crawler service",
+			Action: srv,
+		},
 	}
 }
 func Commands() []cli.Command {

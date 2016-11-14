@@ -9,7 +9,7 @@ import (
 
 func main() {
 
-	service := web.NewService(web.Name("go.micro.web.auth"))
+	service := web.NewService(web.Name("com.kazoup.web.auth"))
 	service.HandleFunc("/google/login", handler.HandleGoogleLogin)
 	service.HandleFunc("/GoogleCallback", handler.HandleGoogleCallback)
 	service.HandleFunc("/google/callback", handler.HandleGoogleCallback)
@@ -17,6 +17,7 @@ func main() {
 	service.HandleFunc("/microsoft/callback", handler.HandleMicrosoftCallback)
 	service.HandleFunc("/slack/login", handler.HandleSlackLogin)
 	service.HandleFunc("/slack/callback", handler.HandleSlackCallback)
+
 	if err := service.Init(); err != nil {
 		log.Panic(err)
 	}

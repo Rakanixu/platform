@@ -24,7 +24,6 @@
 <link rel="import" href="../../bower_components/mat-text-field/mat-text-field.html">
 <link rel="import" href="../../bower_components/mat-icon/mat-icon.html">
 <link rel="import" href="../../bower_components/mat-icons/mat-icons.html">
-<link rel="import" href="../../bower_components/mat-dialog/mat-dialog.html">
 <link rel="import" href="../../bower_components/mat-icons/image-icons.html">
 <link rel="import" href="../../bower_components/mat-avatar/mat-avatar.html">
 <link rel="import" href="../../bower_components/mat-button/mat-button.html">
@@ -44,12 +43,13 @@
 
 <link rel="import" href="../../src/behaviors/util-behavior.html">
 <link rel="import" href="../../src/behaviors/nav-behavior.html">
-<link rel="import" href="../../src/behaviors/categories-map-behavior.html">
+<link rel="import" href="../../src/behaviors/map-behavior.html">
 <link rel="import" href="../../src/behaviors/common-behavior.html">
 <link rel="import" href="../../src/behaviors/endpoints-behavior.html">
 
 <link rel="import" href="../../src/filter-converter/filter-converter.html">
 <link rel="import" href="../../src/detail-view/detail-view.html">
+<link rel="import" href="../../src/third-party-actions/create-file.html">
 <link rel="import" href="../../src/empty-state/empty-state.html">
 <link rel="import" href="../../src/kazoup-icons/kazoup-icons.html">
 
@@ -245,6 +245,8 @@
                                          color="white"
                                          hidden$="[[!searching]]"></mat-icon-button>
 
+                        <create-file selected-datasource="[[selectedDatasource]]" item-selected="{{itemSelected}}"></create-file>
+
                         <div class="middle breadcrumbs">
                             <!-- Breadcrumbs while browsing. Breadcrumbs fits into screen -->
                             <mat-breadcrumb id="fitBreadcrumbs"
@@ -296,16 +298,16 @@
                                                       description="[[item.url]]">
 
                                                 <template is="dom-if" if="[[isVideoPreview(item.category, bigVideoClass)]]" restamp="true">
-                                                    <iron-image background="[[documentType(item.name)]]"
+                                                    <iron-image background="[[documentType(item.name, item.original)]]"
                                                                 class="primary image"
                                                                 sizing="cover"
                                                                 placeholder="src/static/unknown-video.png"
-                                                                src="[[endpoints.web]]/media/preview?file_id=[[item.id]]&width=128&height=128&mode=fit&quality=50&token=[[getToken()]]"
+                                                                src="[[endpoints.web]]/media/preview?user_id=[[md5UserId]]&file_id=[[item.id]]&width=128&height=128&mode=fit&quality=50&token=[[getToken()]]"
                                                                 preload
                                                                 fade></iron-image>
                                                 </template>
                                                 <template is="dom-if" if="[[!isVideoPreview(item.category, bigVideoClass)]]">
-                                                    <mat-avatar background="[[documentType(item.name)]]"
+                                                    <mat-avatar background="[[documentType(item.name, item.original)]]"
                                                                 class="primary"
                                                                 icon="[[getIcon(item.is_dir, item.category, item.file_type)]]"></mat-avatar>
                                                 </template>
@@ -320,7 +322,7 @@
                                             <mat-item on-tap="mainAction"
                                                       label="[[item.name]]"
                                                       description="[[item.url]]">
-                                                <mat-avatar background="[[documentType(item.name)]]"
+                                                <mat-avatar background="[[documentType(item.name, item.original)]]"
                                                             class="primary"
                                                             icon="[[getIcon(item.is_dir, item.category, item.file_type)]]"></mat-avatar>
                                                 <iron-icon class="secondary info info-icon"
@@ -339,7 +341,7 @@
                                         <div class="photoContainer grid">
                                             <div class="photoContent" tabindex$="[[tabIndex]]" on-tap="mainAction">
                                                 <iron-image sizing="cover"
-                                                            src="[[endpoints.web]]/media/preview?file_id=[[item.id]]&width=600&mode=fit&quality=100&token=[[getToken()]]"
+                                                            src="[[endpoints.web]]/media/preview?user_id=[[md5UserId]]&file_id=[[item.id]]&width=600&mode=fit&quality=100&token=[[getToken()]]"
                                                             placeholder="src/static/unknown-img.jpg"
                                                             preload
                                                             fade>
@@ -377,6 +379,31 @@
                                            tabindex="-1"></paper-icon-button>
 
                         <div class="flex"></div>
+
+                        <!-- Share functionality specific for every integration, this way any of the elements becomes unnecessary complex -->
+                        <template is="dom-if" if="[[isSlack(item.file_type)]]">
+                            <share-slack-file item="{{item}}"></share-slack-file>
+                        </template>
+
+                        <template is="dom-if" if="[[isGoogleDrive(item.file_type)]]">
+                            <share-google-drive-file item="{{item}}"></share-google-drive-file>
+                        </template>
+
+                        <template is="dom-if" if="[[isOneDrive(item.file_type)]]">
+                            <share-one-drive-file item="{{item}}"></share-one-drive-file>
+                        </template>
+
+                        <template is="dom-if" if="[[isDropbox(item.file_type)]]">
+                            <share-dropbox-file item="{{item}}"></share-dropbox-file>
+                        </template>
+
+                        <template is="dom-if" if="[[isBox(item.file_type)]]">
+                            <share-box-file item="{{item}}"></share-box-file>
+                        </template>
+
+                        <template is="dom-if" if="[[isDeleteFileAvailable(item.file_type)]]">
+                            <delete-file item="{{item}}"></delete-file>
+                        </template>
 
                         <div class="bottom fit">
                             <mat-item label="[[item.name]]" class="light" focused="false"></mat-item>
@@ -446,7 +473,7 @@
             behaviors: [
                 Polymer.UtilBehaviorImp,
                 Polymer.NavBehaviorImp,
-                Polymer.CategoriesMapBehaviorImp,
+                Polymer.MapBehaviorImp,
                 Polymer.AsyncBehaviorImp,
                 Polymer.CommonBehaviorImp,
                 Polymer.EndpointsBehaviorImp
@@ -521,7 +548,7 @@
                 },
                 selectedDatasource: {
                     type: Object,
-                    notify: false,
+                    notify: true,
                     value: function() {
                         return {};
                     }
@@ -529,6 +556,7 @@
                 item: {
                     type: Object,
                     notify: true,
+                    reflectToAttribute: true,
                     value: function() {
                         return {};
                     }
@@ -621,6 +649,10 @@
                             visible: false
                         };
                     }
+                },
+                md5UserId: {
+                    type: String,
+                    notify: false
                 }
             },
             observers: [
@@ -668,6 +700,7 @@
 
                 this.headers = Auth.getHeaders();
                 this.profile = Auth.getProfile();
+                this.md5UserId = Auth.getMD5UserId();
 
                 this.listDatasources();
                 this.$.secondaryMenu.selected = "-1";
@@ -897,14 +930,19 @@
 
                     this.set('selectedDatasource', {
                         type: 'local',
-                        index: 'files'
+                        index: Auth.getMD5UserId()
+                    });
+                } else {
+                    this.set('selectedDatasource', {
+                        type: '',
+                        index: Auth.getMD5UserId()
                     });
                 }
 
                 // depth must be 0 for search
                 // When there is no search term and user didn't selected a category, then browse
                 this.$.filterConverter.setValues({
-                    index: 'files',
+                    index: Auth.getMD5UserId(),
                     from: 0,
                     size: this.size,
                     category: category,
@@ -929,12 +967,14 @@
                 this.setListView();
                 this.$.navDrawerPanel.closeDrawer();
                 this.set('breadcrumbsVisible', true);
+                this.set('itemSelected', false);
                 this.set('bigVideoClass', '');
                 this.set('title', 'Search');
 
                 this.set('selectedDatasource', {
                     type: this.getDatasourceType(e.model.__data__.item.url),
-                    index: e.model.__data__.item.index
+                    index: e.model.__data__.item.index,
+                    id: e.model.__data__.item.id
                 });
 
                 if (this.getDatasourceType(e.model.__data__.item.url) === 'local') {
@@ -942,7 +982,7 @@
                     var depth = url.split('/').length;
 
                     this.$.filterConverter.setValues({
-                        index: 'files',
+                        index: Auth.getMD5UserId(),
                         category: '',
                         from: 0,
                         size: this.size,
@@ -982,7 +1022,7 @@
                 } else {
                     // Browsing local files
                     this.$.filterConverter.setValues({
-                        index: 'files',
+                        index: Auth.getMD5UserId(),
                         from: 0,
                         size: this.size,
                         file_type: '',
@@ -1030,6 +1070,7 @@
             resetSearch: function(e, detail) {
                 this.toggleSearch();
                 this.clearIronList();
+                this.set('itemSelected', false);
                 this.$.filterConverter.setValue('term', '');
             },
             toggleSearch: function(e, detail) {
@@ -1057,7 +1098,7 @@
                         this.set('searching', false);
 
                         this.$.filterConverter.setValues({
-                            index: 'files',
+                            index: Auth.getMD5UserId(),
                             from: 0,
                             size: this.size,
                             type: 'file',
@@ -1075,7 +1116,7 @@
                 } else {
                     // Primary action, open file
                     if (!e.target.classList.contains('info-icon')) {
-                        this.openFile(e.model.__data__.item);
+                        this.openFile(e.model.__data__.item.url);
                         this.closeDetails();
                     // Secondary action, show details
                     } else {
@@ -1096,15 +1137,6 @@
                             document.querySelector('wave-player wave').remove();
                         }
                     }
-                }
-            },
-            openFile: function(item) {
-                if (window && window.process && window.process.type) {
-                    ipcRenderer.send('open-file-message', {
-                        url: this.getLocalAsset(item.url)
-                    });
-                } else {
-                    window.open(this.getLocalAsset(item.url));
                 }
             },
             closeDetails: function(e, detail) {

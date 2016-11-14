@@ -4,9 +4,11 @@ import (
 	"github.com/kazoup/platform/search/srv/engine"
 	"log"
 	//_ "github.com/kazoup/platform/search/srv/engine/bleve"
+	"github.com/kazoup/platform/lib/wrappers"
 	_ "github.com/kazoup/platform/search/srv/engine/db_search"
 	"github.com/kazoup/platform/search/srv/handler"
-	"github.com/kazoup/platform/structs/wrappers"
+	_ "github.com/micro/go-plugins/broker/nats"
+	_ "github.com/micro/go-plugins/transport/tcp"
 )
 
 func main() {

@@ -130,6 +130,7 @@ message SearchRequest {
   int64 depth = 7;
   string type = 8;
   string file_type = 9;
+  string user_id = 10;
 }
 
 message SearchResponse {
