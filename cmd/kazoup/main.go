@@ -2,13 +2,19 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"os/exec"
+	"runtime"
+	"sync"
+	"time"
+
 	"github.com/kardianos/osext"
 	auth "github.com/kazoup/platform/auth"
 	config "github.com/kazoup/platform/config"
 	crawler "github.com/kazoup/platform/crawler"
 	datasource "github.com/kazoup/platform/datasource"
 	db "github.com/kazoup/platform/db"
-	ui "github.com/kazoup/platform/desktop"
 	file "github.com/kazoup/platform/file"
 	flag "github.com/kazoup/platform/flag"
 	"github.com/kazoup/platform/lib/globals"
@@ -16,16 +22,11 @@ import (
 	notification "github.com/kazoup/platform/notification"
 	scheduler "github.com/kazoup/platform/scheduler"
 	search "github.com/kazoup/platform/search"
+	ui "github.com/kazoup/platform/ui/desktop"
 	"github.com/micro/cli"
 	ccli "github.com/micro/cli"
 	"github.com/micro/go-micro/cmd"
 	"github.com/micro/micro/web"
-	"log"
-	"os"
-	"os/exec"
-	"runtime"
-	"sync"
-	"time"
 )
 
 func main() {

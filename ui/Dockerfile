@@ -3,8 +3,8 @@ FROM alpine:3.4
 RUN	apk update && \
 	apk upgrade && \
 	apk add --update tzdata
-ADD app app
-ADD web /
-ENTRYPOINT [ "/web" ]
+ADD src src
+ADD ui /
+ENTRYPOINT [ "/ui" ]
 
 

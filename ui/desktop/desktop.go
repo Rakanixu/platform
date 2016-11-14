@@ -1,14 +1,15 @@
 package desktop
 
 import (
+	"net/http"
+
 	"github.com/micro/cli"
 	"github.com/micro/go-web"
-	"net/http"
 )
 
 func ui(ctx *cli.Context) {
 	service := web.NewService(web.Name("go.micro.web.ui"))
-	service.Handle("/", http.FileServer(http.Dir("../../desktop/web/app")))
+	service.Handle("/", http.FileServer(http.Dir("../../ui/src")))
 
 	service.Run()
 }

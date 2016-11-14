@@ -6,12 +6,20 @@ Distributed Kazoup desktop application
 
 In development 
 
+Desktop
+
 ```
 
 npm run dev
 
 ```
+Web App access 
 
+```
+
+polymer serve
+
+```
 
 ## Build
 <!-- 
