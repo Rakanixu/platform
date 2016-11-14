@@ -56,6 +56,10 @@ const (
 	SPREADSHEET  = "spreadsheet"
 	TEXT         = "text"
 
+	MS_DOCUMENT     = "application/msword"
+	MS_PRESENTATION = "application/vnd.ms-powerpoint"
+	MS_SPREADSHEET  = "application/vnd.ms-excel"
+
 	GOOGLE_DRIVE_DOCUMENT    = "application/vnd.google-apps.document"
 	GOOGLE_DRIVE_PRESETATION = "application/vnd.google-apps.presentation"
 	GOOGLE_DRIVE_SPREADSHEET = "application/vnd.google-apps.spreadsheet"
