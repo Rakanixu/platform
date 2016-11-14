@@ -835,6 +835,7 @@
 
                 if (e.detail.response && e.detail.response.result) {
                     result = JSON.parse(e.detail.response.result);
+
                     this.set('totalResults', JSON.parse(e.detail.response.info).total);
                     _.forEach(result, function(record) {
                         this.push('searchResults', record);
@@ -1046,6 +1047,10 @@
                     this.$.rpcElastic.lastRequest.abort();
                 }
                 this.$.rpcElastic.generateRequest();
+            },
+            refreshSearch: function(data) {
+                this.clearIronList();
+                this.search();
             },
             searchAsYouType: function(e, detail) {
                 var term = this.$.search.input.value;

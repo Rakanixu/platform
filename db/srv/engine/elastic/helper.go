@@ -19,21 +19,27 @@ func indexer(e *elastic) error {
 		for {
 			select {
 			case v := <-e.filesChannel:
-				if err := e.bulk.Index(v.Index, "file", v.Id, "", "", nil, v.Data); err != nil {
-					log.Print("Bulk Indexer error %s", err)
-				}
-
 				// File message can be notified, when a file is create, deleted or shared within kazoup
 				if v.Notify {
+					// We do not use bulk, as is just one element
+					if _, err := e.conn.Index(v.Index, "file", v.Id, nil, v.Data); err != nil {
+						log.Print("Bulk Indexer error %s", err)
+					}
+
 					c := client.NewClient()
 					n := &notification_proto.NotificationMessage{
 						Method: globals.NOTIFY_REFRESH_SEARCH,
 						UserId: v.UserId,
 					}
 
-					// Publish scan topic, crawlers should pick up message and start scanning
+					// Publish scan topic, crawlers should pick up message
 					if err := c.Publish(globals.NewSystemContext(), c.NewPublication(globals.NotificationTopic, n)); err != nil {
 						log.Print("Publishing (notify file) error %s", err)
+					}
+				} else {
+					// Use bulk as we will index groups of documents
+					if err := e.bulk.Index(v.Index, "file", v.Id, "", "", nil, v.Data); err != nil {
+						log.Print("Bulk Indexer error %s", err)
 					}
 				}
 			}

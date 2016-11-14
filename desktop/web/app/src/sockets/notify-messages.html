@@ -62,13 +62,14 @@
               }
 
               this.async(function() {
-                //TODO: FIX: e.detail.method ==
-                //	NOTIFY_REFRESH_DATASOURCES = "refreshDatasources"
-                //  NOTIFY_REFRESH_SEARCH      = "refreshSearch"
-                // For datasources, call datasource-page, for refresh search call web-app.. I may need a map in backend {method & target}, or stupid ifs in front
+                if (document.querySelector('datasources-page')[e.detail.method]) {
+                  document.querySelector('datasources-page')[e.detail.method](data);
+                }
 
-                document.querySelector('datasources-page')[e.detail.method](data);
-              }, 1000);
+                if (document.querySelector('web-app')[e.detail.method]) {
+                  document.querySelector('web-app')[e.detail.method](data);
+                }
+              }, 1200);
             }
           }
         },
