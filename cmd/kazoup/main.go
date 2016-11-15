@@ -21,7 +21,6 @@ import (
 	notification "github.com/kazoup/platform/notification"
 	scheduler "github.com/kazoup/platform/scheduler"
 	search "github.com/kazoup/platform/search"
-	ui "github.com/kazoup/platform/ui/desktop"
 	"github.com/micro/cli"
 	ccli "github.com/micro/cli"
 	"github.com/micro/go-micro/cmd"
@@ -35,7 +34,6 @@ func main() {
 	app.Commands = append(app.Commands, crawler.Commands()...)
 	app.Commands = append(app.Commands, datasource.Commands()...)
 	app.Commands = append(app.Commands, db.Commands()...)
-	app.Commands = append(app.Commands, ui.Commands()...)
 	app.Commands = append(app.Commands, media.Commands()...)
 	app.Commands = append(app.Commands, search.Commands()...)
 	app.Commands = append(app.Commands, scheduler.Commands()...)
