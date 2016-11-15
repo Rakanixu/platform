@@ -29,7 +29,7 @@ func (s *Scheduler) createTask(ctx context.Context, req *proto.CreateScheduledTa
 			var ds *datasource_proto.Endpoint
 			dbC := db_proto.NewDBClient(globals.DB_SERVICE_NAME, s.Client)
 
-			rsp, err := dbC.Read(context.Background(), &db_proto.ReadRequest{
+			rsp, err := dbC.Read(globals.NewSystemContext(), &db_proto.ReadRequest{
 				Index: "datasources",
 				Type:  "datasource",
 				Id:    req.Task.Id,
@@ -51,7 +51,7 @@ func (s *Scheduler) createTask(ctx context.Context, req *proto.CreateScheduledTa
 					dsC := datasource_proto.NewDataSourceClient(globals.DATASOURCE_SERVICE_NAME, s.Client)
 
 					// ctx it is not passed because circuit breaker, timeout will exceed when executed in the future
-					_, err = dsC.Scan(context.Background(), &datasource_proto.ScanRequest{
+					_, err = dsC.Scan(globals.NewSystemContext(), &datasource_proto.ScanRequest{
 						Id: req.Task.Id,
 					})
 					if err != nil {

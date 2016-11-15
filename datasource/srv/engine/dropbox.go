@@ -2,8 +2,11 @@ package engine
 
 import (
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/lib/globals"
+	scheduler_proto "github.com/kazoup/platform/scheduler/srv/proto/scheduler"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	"time"
 )
 
 // Dropbox struct
@@ -36,6 +39,19 @@ func (s *Dropbox) Delete(ctx context.Context, c client.Client) error {
 // Scan dropbox data source
 func (s *Dropbox) Scan(ctx context.Context, c client.Client) error {
 	return ScanDataSource(ctx, c, &s.Endpoint)
+}
+
+// ScheduleScan register a chron task
+func (s *Dropbox) ScheduleScan(ctx context.Context, c client.Client) error {
+	return ScheduleScanDataSource(ctx, c, &scheduler_proto.CreateScheduledTaskRequest{
+		Task: &scheduler_proto.Task{
+			Id:     s.Endpoint.Id,
+			Action: globals.StartScanTask,
+		},
+		Schedule: &scheduler_proto.Schedule{
+			IntervalSeconds: int64(time.Hour.Seconds()),
+		},
+	})
 }
 
 // CreateIndeWithAlias creates a index for dropbox datasource

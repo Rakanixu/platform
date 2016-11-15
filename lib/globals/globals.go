@@ -27,10 +27,12 @@ const (
 	DB_SERVICE_NAME           string = NAMESPACE + ".srv.db"
 	DATASOURCE_SERVICE_NAME   string = NAMESPACE + ".srv.datasource"
 	NOTIFICATION_SERVICE_NAME string = NAMESPACE + ".srv.notification"
+	SCHEDULER_SERVICE_NAME    string = NAMESPACE + ".srv.scheduler"
 	FilesTopic                string = NAMESPACE + ".topic.files"
 	SlackChannelsTopic        string = NAMESPACE + ".topic.slackchannels"
 	SlackUsersTopic           string = NAMESPACE + ".topic.slackusers"
 	ScanTopic                 string = NAMESPACE + ".topic.scan"
+	CrawlerStartedTopic       string = NAMESPACE + ".topic.crawlerstarted"
 	CrawlerFinishedTopic      string = NAMESPACE + ".topic.crawlerfinished"
 	NotificationTopic         string = NAMESPACE + ".topic.notification"
 

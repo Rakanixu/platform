@@ -2,8 +2,11 @@ package engine
 
 import (
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/lib/globals"
+	scheduler_proto "github.com/kazoup/platform/scheduler/srv/proto/scheduler"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	"time"
 )
 
 // Onedrive struct
@@ -36,6 +39,19 @@ func (o *Onedrive) Delete(ctx context.Context, c client.Client) error {
 // Scan one drive data source
 func (o *Onedrive) Scan(ctx context.Context, c client.Client) error {
 	return ScanDataSource(ctx, c, &o.Endpoint)
+}
+
+// ScheduleScan register a chron task
+func (o *Onedrive) ScheduleScan(ctx context.Context, c client.Client) error {
+	return ScheduleScanDataSource(ctx, c, &scheduler_proto.CreateScheduledTaskRequest{
+		Task: &scheduler_proto.Task{
+			Id:     o.Endpoint.Id,
+			Action: globals.StartScanTask,
+		},
+		Schedule: &scheduler_proto.Schedule{
+			IntervalSeconds: int64(time.Hour.Seconds()),
+		},
+	})
 }
 
 // CreateIndeWithAlias creates a index for local datasource

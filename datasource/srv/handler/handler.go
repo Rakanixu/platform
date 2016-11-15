@@ -55,6 +55,10 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 
+	if err := eng.ScheduleScan(ctx, ds.Client); err != nil {
+		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
+	}
+
 	return nil
 }
 

@@ -5,10 +5,13 @@ import (
 	"errors"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/lib/globals"
+	scheduler_proto "github.com/kazoup/platform/scheduler/srv/proto/scheduler"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"os"
 	"strings"
+	"time"
 )
 
 // Local struct
@@ -80,6 +83,19 @@ func (l *Local) Delete(ctx context.Context, c client.Client) error {
 // Scan local data source
 func (l *Local) Scan(ctx context.Context, c client.Client) error {
 	return ScanDataSource(ctx, c, &l.Endpoint)
+}
+
+// ScheduleScan register a chron task
+func (l *Local) ScheduleScan(ctx context.Context, c client.Client) error {
+	return ScheduleScanDataSource(ctx, c, &scheduler_proto.CreateScheduledTaskRequest{
+		Task: &scheduler_proto.Task{
+			Id:     l.Endpoint.Id,
+			Action: globals.StartScanTask,
+		},
+		Schedule: &scheduler_proto.Schedule{
+			IntervalSeconds: int64(time.Hour.Seconds()),
+		},
+	})
 }
 
 // CreateIndeWithAlias creates a index for local datasource

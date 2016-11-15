@@ -2,6 +2,7 @@ package subscriber
 
 import (
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
+	crawler_proto "github.com/kazoup/platform/crawler/srv/proto/crawler"
 	datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
@@ -16,6 +17,14 @@ import (
 func Scans(ctx context.Context, endpoint *datasource.Endpoint) error {
 	fs, err := fs.NewFsFromEndpoint(endpoint)
 	if err != nil {
+		return err
+	}
+
+	// Publish crawler started, or is just going to start..
+	if err := client.Publish(context.Background(), client.NewPublication(globals.CrawlerStartedTopic, &crawler_proto.CrawlerStartedMessage{
+		UserId:       endpoint.UserId,
+		DatasourceId: endpoint.Id,
+	})); err != nil {
 		return err
 	}
 
