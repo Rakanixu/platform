@@ -1,6 +1,0 @@
-<html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../expandjs/expandjs.html">
-<link rel="import" href="../xp-refirer-behavior/xp-refirer-behavior.html">
-
-<script>Polymer.XPWrapperBehaviorImp={properties:{attributesMap:{notify:!0,readOnly:!0,type:Object,value:function(){return{}}}},_wrappedObserver:function(e){var r=this,t=e&&XP.findKey(r.__data__,function(r,t){return r===e&&t.indexOf(".")<0}),a=t&&r.attributesMap[t];XP.forEach(a||[],function(t){XP.isDefined(e[t])&&r[XP.setter(t,!0)](e[t])}),XP.forEach(a||[],function(t){r.listen(e,XP.kebabCase(t)+"-changed","_attributeHandler")})},ready:function(){var e=this,r=Polymer.dom(e.root);e.async(function(){XP.forOwn(e.attributesMap,function(t,a){return e[a]||e[XP.setter(a,!0)](r.querySelector("."+XP.kebabCase(a)))})})},_attributeHandler:function(e){var r=this,t=!e.detail.path&&XP.camelCase(e.type.replace(/-changed$/,""));return e.detail.path?r.notifyChange(e):void r[XP.setter(t,!0)](e.detail.value)}},Polymer.XPWrapperBehavior=[Polymer.XPRefirerBehavior,Polymer.XPWrapperBehaviorImp];</script>
-</head><body></body></html>

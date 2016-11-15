@@ -1,6 +1,9 @@
 package handler
 
 import (
+	"fmt"
+	"log"
+
 	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/wrappers"
@@ -8,9 +11,9 @@ import (
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
-	"log"
 )
 
+//SaveDatasource call datasource-srv and save new data source
 func SaveDatasource(ctx context.Context, user string, url string, token *oauth2.Token) error {
 
 	c := proto_datasource.NewDataSourceClient(globals.DATASOURCE_SERVICE_NAME, wrappers.NewKazoupClient())
@@ -33,11 +36,13 @@ func SaveDatasource(ctx context.Context, user string, url string, token *oauth2.
 
 	_, err := c.Create(ctx, req)
 	if err != nil {
+		fmt.Print(err)
 		return err
 	}
 	return nil
 }
 
+//PublishNotification send data source created notification
 func PublishNotification(uID string) error {
 	c := client.NewClient()
 	n := &notification_proto.NotificationMessage{

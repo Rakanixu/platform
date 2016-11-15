@@ -1,1 +1,0 @@
-!function(e){"use strict";var t=require("eventemitter3"),i=e.XP||require("expandjs");module.exports=e.XPEmitter=new i.Class("XPEmitter",{extends:t})}("undefined"!=typeof window?window:global);

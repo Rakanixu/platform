@@ -4,7 +4,6 @@ package go.micro.srv.config;
 
 service Config {
   rpc Status(StatusRequest) returns (StatusResponse) {}
-  rpc SetFlags(SetFlagsRequest) returns (SetFlagsResponse) {}
 }
 
 message StatusRequest {
@@ -17,13 +16,4 @@ message StatusResponse {
   bool APPLIANCE_IS_REGISTERED = 3;
   string GIT_COMMIT_STRING = 4;
   bool SMB_USER_EXISTS = 5;
-}
-
-
-message SetFlagsRequest {
-  string type = 1; // Desktop, enterprise
-}
-
-message SetFlagsResponse {
-
 }

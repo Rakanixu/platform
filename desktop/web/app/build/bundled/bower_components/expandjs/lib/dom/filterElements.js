@@ -1,1 +1,0 @@
-!function(){"use strict";var r=require("../assert/assertArgument"),e=require("../collection/filter"),t=require("../tester/isArrayable"),i=require("../caster/toDOMPredicate");module.exports=function(s,u){var a=i(u);return r(t(s),1,"Arrayable"),r(a,2,"Function or string"),e(s,a)}}();

@@ -1,5 +1,0 @@
-<html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../expandjs/expandjs.html">
-
-<script>Polymer.XPOverlayInjector={inject:function(e,n,t){XP.assertArgument(XP.isElement(e)||XP.isString(e,!0),1,"Element or string"),XP.assertArgument(XP.isVoid(t)||XP.isElement(t),3,"Element");var o=this,r=XP.findParentElement(o,".shell")||document.body,i=XP.isString(e)?document.createElement(e=e.toLowerCase()):e,m=XP.isString(e)?Polymer.dom(r.root||r).querySelector(e):null,d=XP.debounce(function(){return!i.showed&&Polymer.dom(Polymer.dom(i).parentNode).removeChild(XP.unlisten(i,"showed-changed",d))},500);return m&&m!==i&&m.hide(),m!==i&&Polymer.dom(r.root||r).appendChild(i),m!==i&&XP.listen(i,"showed-changed",d),requestAnimationFrame(function(){requestAnimationFrame(i.show.bind(i,o,n||o.data))}),i}};</script>
-</head><body></body></html>

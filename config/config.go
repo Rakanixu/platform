@@ -11,7 +11,6 @@ import (
 
 	_ "github.com/micro/go-plugins/broker/nats"
 	_ "github.com/micro/go-plugins/transport/tcp"
-	
 )
 
 func srv(ctx *cli.Context) {

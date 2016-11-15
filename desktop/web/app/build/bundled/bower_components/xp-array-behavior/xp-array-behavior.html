@@ -1,5 +1,0 @@
-<html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../expandjs/expandjs.html">
-
-<script>Polymer.XPArrayBehavior={append:function(r,t){XP.assertArgument(XP.isString(r,!0),1,"string"),XP.assertOption(XP.isArray(this.get(r)),r,"Array");var e=this,s=e.get(r);return s.indexOf(t)<0&&e.push(r,t),t},overwrite:function(r,t){XP.assertArgument(XP.isString(r,!0),1,"string"),XP.assertArgument(XP.isArrayable(t),2,"Arrayable"),XP.assertOption(XP.isArray(this.get(r)),r,"Array");var e=this,s=e.get(r),i=s.length!==t.length||XP.reduce(s,function(r,e,s){return r||e!==t[s]});return i&&e.splice.apply(e,XP.concat([r,0,s.length],t)),s},pull:function(r,t){XP.assertArgument(XP.isString(r,!0),1,"string"),XP.assertOption(XP.isArray(this.get(r)),r,"Array");var e=this,s=e.get(r);return XP.forEachRight(s,function(s,i){t===s&&e.splice(r,i,1)}),s},pullAt:function(r,t){XP.assertArgument(XP.isString(r,!0),1,"string"),XP.assertArgument(XP.isVoid(t)||XP.isIndex(t),2,"number"),XP.assertOption(XP.isArray(this.get(r)),r,"Array");var e=this,s=e.get(r);return t<s.length?e.splice(r,t,1)[0]:void 0}};</script>
-</head><body></body></html>

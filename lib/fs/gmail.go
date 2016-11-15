@@ -1,15 +1,19 @@
 package fs
 
 import (
+	"encoding/base64"
+	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	gmailhelper "github.com/kazoup/platform/lib/gmail"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	gmail "google.golang.org/api/gmail/v1"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -137,17 +141,47 @@ func (gfs *GmailFs) pushMessagesToChanForPage(s *gmail.Service, msgs []*gmail.Me
 	srv := gmail.NewUsersMessagesService(s)
 
 	for _, v := range msgs {
-		srvCall := srv.Get("me", v.Id)
-		msgBdy, err := srvCall.Fields("historyId,id,internalDate,labelIds,payload,raw,sizeEstimate,snippet,threadId").Do()
+		// Available fields
+		// historyId,id,internalDate,labelIds,payload,raw,sizeEstimate,snippet,threadId
+		msgBdy, err := srv.Get("me", v.Id).Fields("id,internalDate,payload,sizeEstimate").Do()
 		if err != nil {
 			return err
 		}
 
-		f := file.NewKazoupFileFromGmailFile(msgBdy, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Url, gfs.Endpoint.Index)
-		// Constructor will return nil when the attachment has no name
-		// When an attachment has no name, attachment use to be a marketing image
-		if f != nil {
-			gfs.FilesChan <- f
+		// Iterate over all attachments
+		for _, vl := range msgBdy.Payload.Parts {
+			gf := &gmailhelper.GmailFile{
+				Id:           fmt.Sprintf("%s%s", msgBdy.Id, vl.PartId),
+				MessageId:    msgBdy.Id,
+				Extension:    "None",
+				InternalDate: msgBdy.InternalDate,
+				SizeEstimate: msgBdy.SizeEstimate,
+				Name:         vl.Filename,
+			}
+
+			if vl.MimeType == globals.MIME_PNG || vl.MimeType == globals.MIME_JPG || vl.MimeType == globals.MIME_JPEG {
+				mpb, err := srv.Attachments.Get("me", v.Id, vl.Body.AttachmentId).Fields("data").Do()
+				if err != nil {
+					return err
+				}
+
+				b, err := base64.URLEncoding.DecodeString(mpb.Data)
+				if err != nil {
+					return err
+				}
+
+				gf.Base64 = string(base64.StdEncoding.EncodeToString(b))
+			}
+
+			ext := strings.Split(strings.Replace(vl.Filename, " ", "-", 1), ".")
+			gf.Extension = ext[len(ext)-1]
+
+			f := file.NewKazoupFileFromGmailFile(gf, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Url, gfs.Endpoint.Index)
+			// Constructor will return nil when the attachment has no name
+			// When an attachment has no name, attachment use to be a marketing image
+			if f != nil {
+				gfs.FilesChan <- f
+			}
 		}
 	}
 

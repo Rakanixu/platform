@@ -60,3 +60,13 @@ func (kf *KazoupLocalFile) GetPathDisplay() string {
 func (kf *KazoupLocalFile) GetURL() string {
 	return kf.URL
 }
+
+func (kf *KazoupLocalFile) GetExtension() string {
+	ext := strings.Split(strings.Replace(kf.Name, " ", "-", 1), ".")
+
+	return ext[len(ext)-1]
+}
+
+func (kf *KazoupLocalFile) GetBase64() string {
+	return ""
+}

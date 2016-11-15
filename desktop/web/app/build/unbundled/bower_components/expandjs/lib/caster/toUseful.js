@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("../tester/isNaN"),r=require("../tester/isNull");module.exports=function(t){if(!r(t)&&!e(t))return t}}();

@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("../assert/assertArgument"),r=require("../tester/isElement"),t=require("html-json-forms");module.exports=function(s){e(r(s),1,"Element");var n=t.encode(s);return delete n[""],n}}();

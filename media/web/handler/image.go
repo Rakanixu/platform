@@ -135,6 +135,15 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			log.Println("ERROR", err.Error())
 		}
 		http.Redirect(w, r, url, http.StatusSeeOther)
+	case globals.Gmail:
+		// This is not used in frontend due to tag not able to render base 64 when comes from network request
+		b := []byte(`data:image/` + f.GetExtension() + `;base64,` + f.GetBase64())
+		_, err := w.Write(b)
+		if err != nil {
+			log.Println("ERROR", err.Error())
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	return

@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("lodash"),r=require("../assert/assertArgument"),i=require("../tester/isVoid"),s=require("../tester/isIndex");module.exports=function(t,u,n){return r(i(u)||s(u),2,"a positive number"),r(i(n)||s(n),3,"a positive number"),e.slice(t,u,n)}}();

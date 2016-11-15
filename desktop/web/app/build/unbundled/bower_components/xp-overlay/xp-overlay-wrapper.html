@@ -1,6 +1,0 @@
-<html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../expandjs/expandjs.html">
-<link rel="import" href="../xp-wrapper-behavior/xp-wrapper-behavior.html">
-
-<script>Polymer.XPOverlayWrapperImp={hide:function(){var e=this;return e.overlay&&e.overlay.hide(),e},show:function(e,r){var t=this;return t.overlay&&t.overlay.show(e,r),t},toggle:function(e,r){var t=this;return t.overlay&&t.overlay.toggle(e,r),t},properties:{data:{notify:!0,readOnly:!0},overlay:{notify:!0,observer:"_wrappedObserver",readOnly:!0},showed:{notify:!0,observer:"_showedObserver",readOnly:!0,reflectToAttribute:!0,type:Boolean,value:!1},target:{notify:!0,readOnly:!0}},_showedObserver:function(){this.isAttached&&this.fire(this.showed?"xp-show":"xp-hide",{firer:this})},ready:function(){this.attributesMap.overlay=["data","showed","target"]}},Polymer.XPOverlayWrapper=[Polymer.XPWrapperBehavior,Polymer.XPOverlayWrapperImp];</script>
-</head><body></body></html>

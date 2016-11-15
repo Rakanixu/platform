@@ -5,13 +5,15 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/kazoup/platform/lib/globals"
-	"golang.org/x/oauth2"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/kazoup/platform/lib/globals"
+	"golang.org/x/oauth2"
 )
 
+//DropboxAccount data
 type DropboxAccount struct {
 	AccountID string `json:"account_id"`
 	Name      struct {
@@ -49,6 +51,7 @@ type DropboxAccount struct {
 	TeamMemberID string `json:"team_member_id"`
 }
 
+//HandleDropboxLogin redirect
 func HandleDropboxLogin(w http.ResponseWriter, r *http.Request) {
 	t := []byte(r.URL.Query().Get("user"))                          // String to encrypt
 	nt, err := globals.Encrypt([]byte(globals.ENCRYTION_KEY_32), t) // Encryption
@@ -59,10 +62,12 @@ func HandleDropboxLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Code conversion from bytes to hexadecimal string to be send over the wire
-	url := globals.NewDropboxOauthConfig().AuthCodeURL(fmt.Sprintf("%0x", nt))
+	// Dropbox does not follow oauth2 spec. They do define a new flag force_reapprove Boolean. twats
+	url := globals.NewDropboxOauthConfig().AuthCodeURL(fmt.Sprintf("%0x", nt), oauth2.SetAuthURLParam("force_reapprove", "true"))
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
+//HandleDropboxCallback repsonse from Dropbox
 func HandleDropboxCallback(w http.ResponseWriter, r *http.Request) {
 	var da *DropboxAccount
 

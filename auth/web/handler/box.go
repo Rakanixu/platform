@@ -4,13 +4,15 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/kazoup/platform/lib/globals"
-	"golang.org/x/oauth2"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/kazoup/platform/lib/globals"
+	"golang.org/x/oauth2"
 )
 
+//BoxUser struct
 type BoxUser struct {
 	Type          string `json:"type"`
 	ID            string `json:"id"`
@@ -29,6 +31,7 @@ type BoxUser struct {
 	AvatarURL     string `json:"avatar_url"`
 }
 
+//HandleBoxLogin Oauth
 func HandleBoxLogin(w http.ResponseWriter, r *http.Request) {
 	t := []byte(r.URL.Query().Get("user"))                          // String to encrypt
 	nt, err := globals.Encrypt([]byte(globals.ENCRYTION_KEY_32), t) // Encryption
@@ -39,10 +42,11 @@ func HandleBoxLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Code conversion from bytes to hexadecimal string to be send over the wire
-	url := globals.NewBoxOauthConfig().AuthCodeURL(fmt.Sprintf("%0x", nt))
+	url := globals.NewBoxOauthConfig().AuthCodeURL(fmt.Sprintf("%0x", nt), oauth2.ApprovalForce)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
+//HandleBoxCallback handle response from BOX
 func HandleBoxCallback(w http.ResponseWriter, r *http.Request) {
 	var bu *BoxUser
 

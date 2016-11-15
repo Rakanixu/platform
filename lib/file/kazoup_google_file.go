@@ -3,6 +3,7 @@ package file
 import (
 	"github.com/kazoup/platform/lib/globals"
 	googledrive "google.golang.org/api/drive/v3"
+	"strings"
 )
 
 type KazoupGoogleFile struct {
@@ -44,4 +45,14 @@ func (kf *KazoupGoogleFile) GetPathDisplay() string {
 
 func (kf *KazoupGoogleFile) GetURL() string {
 	return kf.URL
+}
+
+func (kf *KazoupGoogleFile) GetExtension() string {
+	ext := strings.Split(strings.Replace(kf.Name, " ", "-", 1), ".")
+
+	return ext[len(ext)-1]
+}
+
+func (kf *KazoupGoogleFile) GetBase64() string {
+	return ""
 }

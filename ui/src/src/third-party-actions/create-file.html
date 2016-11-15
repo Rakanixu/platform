@@ -1,0 +1,299 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/device-icons.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
+
+<link rel="import" href="../../bower_components/mat-icon/mat-icon.html">
+<link rel="import" href="../../bower_components/mat-icons/mat-icons.html">
+<link rel="import" href="../../bower_components/mat-icons/hardware-icons.html">
+<link rel="import" href="../../bower_components/mat-icons/action-icons.html">
+<link rel="import" href="../../bower_components/mat-icon-button/mat-icon-button.html">
+
+<link rel="import" href="../../bower_components/mat-dialog/mat-dialog.html">
+
+<link rel="import" href="../../src/behaviors/endpoints-behavior.html">
+<link rel="import" href="../../src/behaviors/map-behavior.html">
+<link rel="import" href="../../src/behaviors/util-behavior.html">
+
+<dom-module id="create-file">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style>
+      :host {
+        display: block;
+      }
+
+      paper-fab {
+        position: absolute;
+        top: 99px;
+        right: 24px;
+        z-index: 9999;
+        background-color: var(--accent);
+      }
+
+      mat-dialog {
+        width: 320px;
+      }
+
+      @media screen and (max-width: 601px) {
+        paper-fab {
+          top: 84px;
+        }
+      }
+    </style>
+
+    <paper-fab id="createFileIcon"
+               icon="icons:add"
+               title="Create File"
+               on-tap="openCreateFileDialog"
+               hidden$="[[!createFileIconVisible]]"></paper-fab>
+
+    <mat-dialog id="createFileDialog" label="">
+      <div>
+        <!-- Markup is duplicated to be able to add / remove actions by endpoint quickly, as change icons -->
+        <template is="dom-if" if="[[isGoogleDrive(selectedDatasource.type)]]">
+          <paper-button on-tap="setFileName" data-type$="[[fileTypesMap.document]]">
+            <iron-icon class="big" src="../static/icon_document.png"></iron-icon>
+            <mat-item label="Google Document"/>
+          </paper-button>
+          <paper-button on-tap="setFileName" data-type$="[[fileTypesMap.spreadsheet]]">
+            <iron-icon class="big" src="../static/icon_spreadsheet.png"></iron-icon>
+            <mat-item label="Google Spreadsheet"/>
+          </paper-button>
+          <paper-button on-tap="setFileName" data-type$="[[fileTypesMap.presentation]]">
+            <iron-icon class="big" src="../static/icon_presentation.png"></iron-icon>
+            <mat-item label="Google Presentation"/>
+          </paper-button>
+          <paper-button on-tap="setFileName" data-type$="[[fileTypesMap.text]]">
+            <iron-icon class="big" src="../static/icon_text.png"></iron-icon>
+            <mat-item label="Drive Notepad"/>
+          </paper-button>
+        </template>
+
+        <template is="dom-if" if="[[isOneDrive(selectedDatasource.type)]]">
+          <paper-button on-tap="setFileName" data-type$="[[fileTypesMap.document]]">
+            <iron-icon class="big" src="../static/icon_document_od.png"></iron-icon>
+            <mat-item label="Word Document"/>
+          </paper-button>
+          <paper-button on-tap="setFileName" data-type$="[[fileTypesMap.spreadsheet]]">
+            <iron-icon class="big" src="../static/icon_spreadsheet_od.png"></iron-icon>
+            <mat-item label="Excel Spreadsheet"/>
+          </paper-button>
+          <paper-button on-tap="setFileName" data-type$="[[fileTypesMap.presentation]]">
+            <iron-icon class="big" src="../static/icon_presentation_od.png"></iron-icon>
+            <mat-item label="PowerPoint Presentation"/>
+          </paper-button>
+          <paper-button on-tap="setFileName" data-type$="[[fileTypesMap.text]]">
+            <iron-icon class="big" src="../static/icon_text_od.png"></iron-icon>
+            <mat-item label="Plain Text"/>
+          </paper-button>
+        </template>
+
+        <template is="dom-if" if="[[isDropbox(selectedDatasource.type)]]">
+          <paper-button on-tap="setFileName" data-type$="[[fileTypesMap.document]]">
+            <iron-icon class="big" src="../static/icon_document_od.png"></iron-icon>
+            <mat-item label="Word Document"/>
+          </paper-button>
+          <paper-button on-tap="setFileName" data-type$="[[fileTypesMap.spreadsheet]]">
+            <iron-icon class="big" src="../static/icon_spreadsheet_od.png"></iron-icon>
+            <mat-item label="Excel Spreadsheet"/>
+          </paper-button>
+          <paper-button on-tap="setFileName" data-type$="[[fileTypesMap.presentation]]">
+            <iron-icon class="big" src="../static/icon_presentation_od.png"></iron-icon>
+            <mat-item label="PowerPoint Presentation"/>
+          </paper-button>
+        </template>
+
+        <template is="dom-if" if="[[isBox(selectedDatasource.type)]]">
+          <paper-button on-tap="setFileName" data-type$="[[fileTypesMap.document]]">
+            <iron-icon class="big" src="../static/icon_document_od.png"></iron-icon>
+            <mat-item label="Word Document"/>
+          </paper-button>
+          <paper-button on-tap="setFileName" data-type$="[[fileTypesMap.spreadsheet]]">
+            <iron-icon class="big" src="../static/icon_spreadsheet_od.png"></iron-icon>
+            <mat-item label="Excel Spreadsheet"/>
+          </paper-button>
+          <paper-button on-tap="setFileName" data-type$="[[fileTypesMap.presentation]]">
+            <iron-icon class="big" src="../static/icon_presentation_od.png"></iron-icon>
+            <mat-item label="PowerPoint Presentation"/>
+          </paper-button>
+          <paper-button on-tap="setFileName" data-type$="[[fileTypesMap.text]]">
+            <iron-icon class="big" src="../static/icon_text_od.png"></iron-icon>
+            <mat-item label="Plain Text"/>
+          </paper-button>
+        </template>
+      </div>
+      <mat-button class="action" label="Cancel" on-tap="closeCreateFileDialog"></mat-button>
+    </mat-dialog>
+
+    <mat-dialog id="setFileNameDialog" label="">
+      <div>
+        <paper-input id="fileName"
+                     label="File Name"
+                     class="flex"
+                     error-message="Please set a file name"
+                     value="{{fileName}}"
+                     required
+                     auto-validate></paper-input>
+
+
+      </div>
+      <mat-button class="action" label="CREATE" on-tap="createFile"></mat-button>
+      <mat-button class="action" label="Cancel" on-tap="closeSetFileNameDialog"></mat-button>
+    </mat-dialog>
+
+    <paper-toast id="toast" duration="6000" text=""></paper-toast>
+
+    <iron-media-query query="(min-width: 601px)"
+                      query-matches="{{mediaQuerySmall}}"></iron-media-query>
+
+    <iron-media-query query="(min-width: 961px)"
+                      query-matches="{{mediaQueryMedium}}"></iron-media-query>
+
+    <iron-media-query query="(min-width: 1281px)"
+                      query-matches="{{mediaQueryLarge}}"></iron-media-query>
+
+
+    <iron-ajax id="rpcCreateFile"
+               method="POST"
+               content-type="application/json"
+               url="[[endpoints.endpoint]]"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleCreateFile"
+               params="[[rpcCreateFileParams]]"
+               headers="[[headers]]"></iron-ajax>
+
+  </template>
+
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'create-file',
+        behaviors: [
+          Polymer.EndpointsBehaviorImp,
+          Polymer.UtilBehaviorImp,
+          Polymer.MapBehaviorImp,
+          Polymer.IronValidatorBehavior
+        ],
+        properties: {
+          fileName: {
+            type: String,
+            notify: false,
+            value: ''
+          },
+          rpcCreateFileParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: 'com.kazoup.srv.file',
+                method: 'File.Create',
+                request: {
+                  datasource_id: '',
+                  mime_type: '',
+                  file_name: 'untitle'
+                }
+              };
+            }
+          },
+          selectedDatasource: {
+            observer: 'selectedDatasourceChanged'
+          },
+          itemSelected: {
+            observer: 'itemSeletedChanged'
+          },
+          createFileIconVisible: {
+            type: Boolean,
+            notify: true,
+            value: false
+          }
+        },
+        selectedDatasourceChanged: function(newVal, oldVal) {
+          this.set(
+            'createFileIconVisible',
+            (
+              newVal.type === 'googledrive' ||
+              newVal.type === 'onedrive' ||
+              newVal.type === 'dropbox' ||
+              newVal.type === 'box'
+            )
+          );
+        },
+        itemSeletedChanged: function(newVal, oldVal) {
+          // Handle paper-fab visibility
+          if (this.itemSelected !== undefined) {
+            if (this.mediaQueryMedium === false && this.itemSelected) {
+              this.$.createFileIcon.style.display = 'none';
+            } else {
+              this.$.createFileIcon.style.display = 'block';
+            }
+          }
+        },
+        openCreateFileDialog: function(e) {
+          this.$.createFileDialog.show();
+        },
+        closeCreateFileDialog: function(e) {
+          this.$.createFileDialog.hide();
+        },
+        openSetFileNameDialog: function(e) {
+          this.$.setFileNameDialog.show();
+        },
+        closeSetFileNameDialog: function(e) {
+          this.$.setFileNameDialog.hide();
+        },
+        setFileName: function(e) {
+          this.openSetFileNameDialog();
+          this.closeCreateFileDialog();
+
+          this.rpcCreateFileParams.request.mime_type = e.currentTarget.dataset.type;
+        },
+        createFile: function(e) {
+          if (!this.$.fileName.validate() || this.fileName.trim() === "") {
+            return;
+          }
+
+          this.closeSetFileNameDialog();
+
+          this.headers = Auth.getHeaders();
+
+          this.rpcCreateFileParams.request.file_name = this.fileName;
+          this.rpcCreateFileParams.request.datasource_id = this.selectedDatasource.id;
+          this.$.rpcCreateFile.body = this.rpcCreateFileParams;
+          this.$.rpcCreateFile.generateRequest();
+        },
+        _handleCreateFile: function(e) {
+          // Backend respond with the file created. Not in use now but could be useful.
+          if (e.detail.response && e.detail.response.doc_url) {
+            if (window && window.process && window.process.type) {
+              ipcRenderer.send('open-file-message', {
+                url: e.detail.response.doc_url
+              });
+            } else {
+              window.open(e.detail.response.doc_url);
+            }
+
+            this.$.toast.text = "File created succesfully, it will appear shortly on Kazoup";
+            this.$.toast.show();
+          }
+
+          this.closeCreateFileDialog();
+        },
+        _handleError: function(e) {
+          this.checkUnauthorize(e);
+
+          if (e.detail.request && e.detail.request.response) {
+            this.$.toast.text = e.detail.request.response.detail;
+            this.$.toast.show();
+          }
+        }
+      });
+    }());
+  </script>
+</dom-module>

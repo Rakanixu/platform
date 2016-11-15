@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("../assert/assertArgument"),r=require("../object/has"),t=require("../tester/isBindable"),s=require("../tester/isString");module.exports=function(i,u){return e(t(u),2,"Array, Function or Object"),s(i,!0)&&r(u,i)&&u.propertyIsEnumerable(i)}}();

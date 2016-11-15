@@ -4,16 +4,20 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/kazoup/platform/lib/globals"
-	"golang.org/x/oauth2"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/kazoup/platform/lib/globals"
+	"golang.org/x/oauth2"
 )
 
+//SlackTeamInfoResponse  data
 type SlackTeamInfoResponse struct {
 	OK   bool          `json:"ok"`
 	Team SlackTeamInfo `json:"team"`
 }
+
+//SlackTeamInfo data
 type SlackTeamInfo struct {
 	Name        string            `json:"name"`
 	Domain      string            `json:"domain"`
@@ -21,6 +25,7 @@ type SlackTeamInfo struct {
 	Icon        map[string]string `json:"icon"`
 }
 
+//HandleSlackLogin Slack oauth2 redirect
 func HandleSlackLogin(w http.ResponseWriter, r *http.Request) {
 	t := []byte(r.URL.Query().Get("user"))                          // String to encrypt
 	nt, err := globals.Encrypt([]byte(globals.ENCRYTION_KEY_32), t) // Encryption
@@ -31,10 +36,11 @@ func HandleSlackLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Code conversion from bytes to hexadecimal string to be send over the wire
-	url := globals.NewSlackOauthConfig().AuthCodeURL(fmt.Sprintf("%0x", nt), oauth2.AccessTypeOffline)
+	url := globals.NewSlackOauthConfig().AuthCodeURL(fmt.Sprintf("%0x", nt), oauth2.AccessTypeOffline, oauth2.ApprovalForce)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
+//HandleSlackCallback Slack response handler
 func HandleSlackCallback(w http.ResponseWriter, r *http.Request) {
 	euID, err := hex.DecodeString(r.FormValue("state"))                 // Convert the code we sent in hex format to bytes
 	uID, err := globals.Decrypt([]byte(globals.ENCRYTION_KEY_32), euID) // Decrypt the bytes into bytes --> string(bytes) was the encrypted string
@@ -52,7 +58,7 @@ func HandleSlackCallback(w http.ResponseWriter, r *http.Request) {
 	code := r.FormValue("code")
 	token, err := globals.NewSlackOauthConfig().Exchange(oauth2.NoContext, code)
 	if err != nil {
-		fmt.Println("Code exchange failed with '%s'\n", err)
+		fmt.Printf("Code exchange failed with '%s'\n", err)
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
@@ -71,7 +77,7 @@ func HandleSlackCallback(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, err.Error())
 	}
 	if !sr.OK {
-		fmt.Fprintf(w, "Error $s", sr)
+		fmt.Fprintf(w, "Error %v", sr)
 	}
 	url := fmt.Sprintf("slack://%s", sr.Team.Name)
 	if err := SaveDatasource(globals.NewSystemContext(), string(uID), url, token); err != nil {

@@ -1,1 +1,0 @@
-!function(){"use strict";var r=require("../error/CustomError");module.exports=function(o,a){r.call(this,"UnavailableError",o+" is not available",a)}}();

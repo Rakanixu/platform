@@ -1,7 +1,0 @@
-<html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../expandjs/expandjs.html">
-<link rel="import" href="../xp-master-behavior/xp-master-behavior.html">
-<link rel="import" href="../xp-selector/xp-selector-behavior.html">
-
-<script>Polymer.XPPagesBehaviorImp={close:function(e){var r=this,t=r.findItem(e),a=r.findIndex(t,!0);return t&&t.closable?t.fire("xp-page-close",{firer:t,index:a,isActive:!!t.active},{cancelable:!0}).defaultPrevented?null:Polymer.dom(Polymer.dom(t).parentNode).removeChild(t):null},open:function(e,r){var t=this;return requestAnimationFrame(function(){var a=t.itemTag&&document.createElement(t.itemTag),i=a&&XP.assign(a,e,{closable:!0});return i?(t.append("items",Polymer.dom(t).appendChild(i)),void(r&&requestAnimationFrame(t.select.bind(t,i,!0)))):null}),t},properties:{itemSelector:{type:String,value:".page"},itemTag:{readOnly:!0,type:String},items:{value:function(){return[]}}},created:function(){this.classList.add("pages")},ready:function(){this.slavesMap.items=".page"}},Polymer.XPPagesBehavior=[Polymer.XPMasterBehavior,Polymer.XPSelectorBehavior,Polymer.XPPagesBehaviorImp];</script>
-</head><body></body></html>

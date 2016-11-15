@@ -4,13 +4,15 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/kazoup/platform/lib/globals"
-	"golang.org/x/oauth2"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/kazoup/platform/lib/globals"
+	"golang.org/x/oauth2"
 )
 
+//GoogleUserInfo data
 type GoogleUserInfo struct {
 	ID            string `json:"id"`
 	Email         string `json:"email"`
@@ -24,6 +26,7 @@ type GoogleUserInfo struct {
 	Locale        string `json:"locale"`
 }
 
+//HandleGoogleLogin hanldes Google ouath2
 func HandleGoogleLogin(w http.ResponseWriter, r *http.Request) {
 	t := []byte(r.URL.Query().Get("user"))                          // String to encrypt
 	nt, err := globals.Encrypt([]byte(globals.ENCRYTION_KEY_32), t) // Encryption
@@ -38,6 +41,7 @@ func HandleGoogleLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
+//HandleGoogleCallback Google response handler
 func HandleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 	userInfo := new(GoogleUserInfo)
 

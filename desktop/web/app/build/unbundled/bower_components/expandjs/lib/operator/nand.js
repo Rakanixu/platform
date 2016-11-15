@@ -1,1 +1,0 @@
-!function(){"use strict";var r=require("../operator/and");module.exports=function(e,t){return!r(e,t)}}();

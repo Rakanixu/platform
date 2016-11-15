@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("../assert/assertArgument"),r=require("../tester/isBindable");module.exports=function(t){return e(r(t,!0),1,"Array, Function or Object"),Object.freeze(t)}}();

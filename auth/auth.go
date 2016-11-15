@@ -9,8 +9,8 @@ import (
 )
 
 func web(ctx *cli.Context) {
-
 	service := webmicro.NewService(webmicro.Name("go.micro.web.auth"))
+
 	service.HandleFunc("/google/login", handler.HandleGoogleLogin)
 	service.HandleFunc("/google/callback", handler.HandleGoogleCallback)
 	service.HandleFunc("/microsoft/login", handler.HandleMicrosoftLogin)

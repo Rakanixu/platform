@@ -1,1 +1,0 @@
-!function(){"use strict";var r=require("lodash"),e=require("../function/ary"),i=require("../collection/filter"),t=require("../tester/isArrayable"),o=require("../collection/map"),u=require("../caster/toArray");module.exports=function(n){return r.intersection.apply(r,o(i(arguments,e(t,1)),e(u,1)))}}();

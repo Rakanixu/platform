@@ -56,12 +56,20 @@ const (
 	SPREADSHEET  = "spreadsheet"
 	TEXT         = "text"
 
+	MS_DOCUMENT     = "application/msword"
+	MS_PRESENTATION = "application/vnd.ms-powerpoint"
+	MS_SPREADSHEET  = "application/vnd.ms-excel"
+
 	GOOGLE_DRIVE_DOCUMENT    = "application/vnd.google-apps.document"
 	GOOGLE_DRIVE_PRESETATION = "application/vnd.google-apps.presentation"
 	GOOGLE_DRIVE_SPREADSHEET = "application/vnd.google-apps.spreadsheet"
 	GOOGLE_DRIVE_TEXT        = "text/plain"
 
 	ONEDRIVE_TEXT = "text/plain"
+
+	MIME_PNG  = "image/png"
+	MIME_JPG  = "image/jpg"
+	MIME_JPEG = "image/jpeg"
 
 	SlackFilesEndpoint       = "https://slack.com/api/files.list"
 	SlackUsersEndpoint       = "https://slack.com/api/users.list"
@@ -95,8 +103,6 @@ const (
 	SYSTEM_TOKEN     = "ajsdIgsnaloHFGis823jsdgyjTGDKijfcjk783JDUYFJyggvwejkxsnmbkjwpoj6483"
 	CLIENT_ID_SECRET = "EC1FD9R5t6D3cs9CzPbgJaBJjshoVgrJrTs6U39scYzYF7HYyMlv_mal2IjLLaA9" // Auth0 RPC API client
 	ENCRYTION_KEY_32 = "asjklasd766adfashj22kljasdhyfjkh"
-
-	CODE_REFRESH_DS = "CODE_REFRESH_DS"
 
 	NOTIFY_REFRESH_DATASOURCES = "refreshDatasources"
 	NOTIFY_REFRESH_SEARCH      = "refreshSearch"

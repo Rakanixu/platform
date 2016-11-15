@@ -1,1 +1,0 @@
-!function(){"use strict";var r=require("../assert/assertArgument"),e=require("../array/indexOf"),t=require("../caster/toArray");module.exports=function(a,u){return r(a=t(a),1,"Arrayable"),a[e(a,u)-1]}}();

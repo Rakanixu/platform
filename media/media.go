@@ -1,12 +1,15 @@
 package media
 
 import (
-	"github.com/kazoup/platform/media/web/handler"
-	"github.com/micro/cli"
-	microweb "github.com/micro/go-web"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/kazoup/platform/media/web/handler"
+	"github.com/micro/cli"
+	_ "github.com/micro/go-plugins/broker/nats"
+	_ "github.com/micro/go-plugins/transport/tcp"
+	microweb "github.com/micro/go-web"
 )
 
 func web(ctx *cli.Context) {
