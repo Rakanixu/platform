@@ -302,7 +302,7 @@
                                                                 class="primary image"
                                                                 sizing="cover"
                                                                 placeholder="src/static/unknown-video.png"
-                                                                src="[[endpoints.web]]/media/preview?user_id=[[md5UserId]]&file_id=[[item.id]]&width=128&height=128&mode=fit&quality=50&token=[[getToken()]]"
+                                                                src$="[[endpoints.web]]/media/preview?user_id=[[md5UserId]]&file_id=[[item.id]]&width=128&height=128&mode=fit&quality=50&token=[[getToken()]]"
                                                                 preload
                                                                 fade></iron-image>
                                                 </template>
@@ -340,13 +340,25 @@
                                     <template is="dom-if" if="[[view.isGrid]]" restamp="true">
                                         <div class="photoContainer grid">
                                             <div class="photoContent" tabindex$="[[tabIndex]]" on-tap="mainAction">
-                                                <iron-image sizing="cover"
-                                                            src="[[endpoints.web]]/media/preview?user_id=[[md5UserId]]&file_id=[[item.id]]&width=600&mode=fit&quality=100&token=[[getToken()]]"
-                                                            placeholder="src/static/unknown-img.jpg"
-                                                            preload
-                                                            fade>
-                                                    <mat-ripple></mat-ripple>
-                                                </iron-image>
+                                                <template is="dom-if" if="[[isGmail(item.file_type)]]">
+                                                    <iron-image sizing="cover"
+                                                                src$="data:image/[[item.original.extension]];base64,[[item.original.base64]]"
+                                                                placeholder="src/static/unknown-img.jpg"
+                                                                preload
+                                                                fade>
+                                                        <mat-ripple></mat-ripple>
+                                                    </iron-image>
+                                                </template>
+
+                                                <template is="dom-if" if="[[!isGmail(item.file_type)]]">
+                                                    <iron-image sizing="cover"
+                                                                src$="[[endpoints.web]]/media/preview?user_id=[[md5UserId]]&file_id=[[item.id]]&width=600&mode=fit&quality=100&token=[[getToken()]]"
+                                                                placeholder="src/static/unknown-img.jpg"
+                                                                preload
+                                                                fade>
+                                                        <mat-ripple></mat-ripple>
+                                                    </iron-image>
+                                                </template>
 
                                                 <div class="detail">
                                                     <mat-item class="light" label="[[item.name]]">

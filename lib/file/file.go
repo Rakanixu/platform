@@ -23,6 +23,8 @@ type File interface {
 	GetFileType() string
 	GetPathDisplay() string
 	GetURL() string
+	GetExtension() string
+	GetBase64() string
 }
 
 func IndexAsync(file File, topic, index string, notify bool) error {

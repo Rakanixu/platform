@@ -3,12 +3,13 @@ package file
 import (
 	"fmt"
 	"github.com/kazoup/platform/lib/globals"
-	gmail "google.golang.org/api/gmail/v1"
+	gmail "github.com/kazoup/platform/lib/gmail"
+	"strings"
 )
 
 type KazoupGmailFile struct {
 	KazoupFile
-	Original gmail.Message `json:"original"`
+	Original gmail.GmailFile `json:"original"`
 }
 
 func (kf *KazoupGmailFile) PreviewURL(width, height, mode, quality string) string {
@@ -47,4 +48,14 @@ func (kf *KazoupGmailFile) GetPathDisplay() string {
 
 func (kf *KazoupGmailFile) GetURL() string {
 	return kf.URL
+}
+
+func (kf *KazoupGmailFile) GetExtension() string {
+	ext := strings.Split(strings.Replace(kf.Name, " ", "-", 1), ".")
+
+	return ext[len(ext)-1]
+}
+
+func (kf *KazoupGmailFile) GetBase64() string {
+	return kf.Original.Base64
 }

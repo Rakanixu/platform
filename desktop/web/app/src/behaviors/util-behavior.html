@@ -272,6 +272,9 @@
       isGoogleDrive: function(fileType) {
         return (fileType === 'googledrive');
       },
+      isGmail: function(fileType) {
+        return (fileType === 'gmail');
+      },
       isOneDrive: function(fileType) {
         return (fileType === 'onedrive');
       },
@@ -316,6 +319,10 @@
       },
       replaceAll: function(str, search, replacement) {
         return  str.replace(new RegExp(search, 'g'), replacement);
+      },
+      base64DecodeUrl: function(str) {
+        str = (str + '===').slice(0, str.length + (str.length % 4));
+        return str.replace(/-/g, '+').replace(/_/g, '/');
       }
     };
   }());
