@@ -7,15 +7,16 @@ import (
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/lib/globals"
 	proto "github.com/kazoup/platform/scheduler/srv/proto/scheduler"
-	"github.com/robfig/cron"
 	"golang.org/x/net/context"
+	"gopkg.in/robfig/cron.v2" // This is like vendoring pre GO 1.5 - github.com/robfig/cron
 	"log"
 	"strconv"
 )
 
 type CronWrapper struct {
-	Cron *cron.Cron
-	Id   string
+	Cron   *cron.Cron
+	CronId cron.EntryID
+	Id     string
 }
 
 // TODO: FIXME: cron task are keep in memory, so two instance of this srv running will fail
@@ -27,7 +28,8 @@ func (s *Scheduler) createTask(ctx context.Context, req *proto.CreateScheduledTa
 		i := "@every " + strconv.Itoa(int(req.Schedule.IntervalSeconds)) + "s"
 
 		c := cron.New()
-		c.AddFunc(i, func() {
+
+		cId, err := c.AddFunc(i, func() {
 			var ds *datasource_proto.Endpoint
 			dbC := db_proto.NewDBClient(globals.DB_SERVICE_NAME, s.Client)
 
@@ -67,17 +69,26 @@ func (s *Scheduler) createTask(ctx context.Context, req *proto.CreateScheduledTa
 				// Datasources and tasks will be eventually consistent.
 				for k, v := range s.Crons {
 					if v.Id == req.Task.Id {
-						// Stop cron task and delete CronWrapper instance from Scheduler
+						// Stop cron task if running
 						v.Cron.Stop()
+						// Remove cron task
+						c.Remove(v.CronId)
+						// Delete CronWrapper instance from Scheduler
 						s.Crons = append(s.Crons[:k], s.Crons[k+1:]...)
 					}
 				}
 			}
 		})
+		if err != nil {
+			log.Println("ERROR", err)
+			return nil, err
+		}
+
 		c.Start()
 		s.Crons = append(s.Crons, &CronWrapper{
-			Id:   req.Task.Id,
-			Cron: c,
+			Id:     req.Task.Id,
+			CronId: cId,
+			Cron:   c,
 		})
 
 		taskRecognise = true
