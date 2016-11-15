@@ -5,13 +5,15 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/kazoup/platform/lib/globals"
-	"golang.org/x/oauth2"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/kazoup/platform/lib/globals"
+	"golang.org/x/oauth2"
 )
 
+//DropboxAccount data
 type DropboxAccount struct {
 	AccountID string `json:"account_id"`
 	Name      struct {
@@ -49,6 +51,7 @@ type DropboxAccount struct {
 	TeamMemberID string `json:"team_member_id"`
 }
 
+//HandleDropboxLogin redirect
 func HandleDropboxLogin(w http.ResponseWriter, r *http.Request) {
 	t := []byte(r.URL.Query().Get("user"))                          // String to encrypt
 	nt, err := globals.Encrypt([]byte(globals.ENCRYTION_KEY_32), t) // Encryption
@@ -64,6 +67,7 @@ func HandleDropboxLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
+//HandleDropboxCallback repsonse from Dropbox
 func HandleDropboxCallback(w http.ResponseWriter, r *http.Request) {
 	var da *DropboxAccount
 

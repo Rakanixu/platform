@@ -4,13 +4,15 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
+
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/onedrive"
 	"golang.org/x/oauth2"
-	"log"
-	"net/http"
 )
 
+//HandleMicrosoftLogin Microsoft oauth2 redirect
 func HandleMicrosoftLogin(w http.ResponseWriter, r *http.Request) {
 	t := []byte(r.URL.Query().Get("user"))                          // String to encrypt
 	nt, err := globals.Encrypt([]byte(globals.ENCRYTION_KEY_32), t) // Encryption
@@ -25,6 +27,7 @@ func HandleMicrosoftLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
+//HandleMicrosoftCallback M$ response handler
 func HandleMicrosoftCallback(w http.ResponseWriter, r *http.Request) {
 	euID, err := hex.DecodeString(r.FormValue("state"))                 // Convert the code we sent in hex format to bytes
 	uID, err := globals.Decrypt([]byte(globals.ENCRYTION_KEY_32), euID) // Decrypt the bytes into bytes --> string(bytes) was the encrypted string

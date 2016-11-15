@@ -13,6 +13,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
+//SaveDatasource call datasource-srv and save new data source
 func SaveDatasource(ctx context.Context, user string, url string, token *oauth2.Token) error {
 
 	c := proto_datasource.NewDataSourceClient(globals.DATASOURCE_SERVICE_NAME, wrappers.NewKazoupClient())
@@ -41,6 +42,7 @@ func SaveDatasource(ctx context.Context, user string, url string, token *oauth2.
 	return nil
 }
 
+//PublishNotification send data source created notification
 func PublishNotification(uID string) error {
 	c := client.NewClient()
 	n := &notification_proto.NotificationMessage{
