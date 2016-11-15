@@ -1,5 +1,0 @@
-<html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../expandjs/expandjs.html">
-
-<script>Polymer.XPTargeterBehavior={findTarget:function(){var t=this,e=t.domHost&&Polymer.dom(t.domHost.root);return XP.isElement(t.target)?t.target:XP.isString(t.target,!0)&&e?e.querySelector("#"+t.target)||null:XP.isString(t.target,!0)?document.getElementById(t.target)||null:null},properties:{target:{notify:!0,value:null}}};</script>
-</head><body></body></html>

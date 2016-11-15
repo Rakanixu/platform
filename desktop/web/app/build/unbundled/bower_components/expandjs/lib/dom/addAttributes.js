@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("../dom/addAttribute"),r=require("../assert/assertArgument"),t=require("../tester/isArrayable"),i=require("../tester/isElement"),u=require("../tester/isVoid"),s=require("../collection/forEach");module.exports=function(n,o){return r(u(n)||i(n),1,"Element"),r(u(o)||!t(o),2,"Arrayable"),n&&o&&s(o,function(r){e(n,r)}),n}}();

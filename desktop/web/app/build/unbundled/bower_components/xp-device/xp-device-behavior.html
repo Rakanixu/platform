@@ -1,7 +1,0 @@
-<html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../expandjs/expandjs.html">
-<link rel="import" href="../xp-array-behavior/xp-array-behavior.html">
-<link rel="import" href="../xp-script/xp-script.html">
-
-<script>!function(){var e="idle";Polymer.XPDeviceBehaviorImp={properties:{device:{notify:!0,observer:"_deviceObserver",readOnly:!0,type:String,value:function(){return this.detectors[0]&&this.detectors[0].device}},mobile:{notify:!0,readOnly:!0,type:Boolean,value:function(){return this.detectors[0]&&this.detectors[0].mobile}}},detectors:[],_deviceObserver:function(){var e=this,t=e===e.detectors[0],i=t&&document.querySelector("html");i&&(XP.setAttribute(i,"mobile",e.mobile),XP.setAttribute(i,"device",e.device))},ready:function(){var t=this,i=!t.device&&"idle"===e&&localStorage.getItem("device"),r=!t.device&&"idle"===e&&!i&&document.createElement("xp-script"),o=i&&XP.parseJSON(i);t.append("detectors",t),o&&t._setMobile(o.mobile),o&&t._setDevice(o.type),r&&(t.listen(r,"xp-script-load","_detectHandler"),t.listen(r,"xp-script-state","_scriptHandler"),r.src="https://wurfl.io/wurfl.js")},_detectHandler:function(){var e=this;XP.invoke(e.detectors,"_setMobile",WURFL.is_mobile),XP.invoke(e.detectors,"_setDevice",WURFL.form_factor),localStorage.setItem("device",XP.toJSON({mobile:e.mobile,type:e.device}))},_scriptHandler:function(t){e=t.detail.state}},Polymer.XPDeviceBehavior=[Polymer.XPArrayBehavior,Polymer.XPDeviceBehaviorImp]}();</script>
-</head><body></body></html>

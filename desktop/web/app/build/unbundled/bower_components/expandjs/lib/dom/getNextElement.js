@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("../assert/assertArgument"),r=require("../array/getNext"),t=require("../tester/isNode");module.exports=function(n){return e(t(n),1,"Element"),r(n.parentNode.children,n)}}();

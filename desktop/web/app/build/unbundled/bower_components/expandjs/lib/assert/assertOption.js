@@ -1,1 +1,0 @@
-!function(){"use strict";var r=require("../assert/assert"),e=require("../error/ValidationError");module.exports=function(t,o,i){r(t,function(){throw new e(o,i)})}}();

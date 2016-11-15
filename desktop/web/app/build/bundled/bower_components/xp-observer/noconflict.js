@@ -1,1 +1,0 @@
-!function(){"use strict";var e=__dirname,i=require("fs"),n=require("path"),f=n.basename(e),t='else if(typeof define==="function"&&define.amd){define([],f)}',r=function(e){i.writeFileSync(e,i.readFileSync(e,"utf-8").replace(t,""),"utf-8")};r(e+"/dist/"+f+".js"),r(e+"/dist/"+f+".min.js")}();

@@ -1,7 +1,0 @@
-<html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../expandjs/expandjs.html">
-<link rel="import" href="../mat-paper/mat-paper-behavior.html">
-<link rel="import" href="mat-pressed-behavior.html">
-
-<script>Polymer.MatPressedPaperBehaviorImp={_fall:function(){var e=this;return e.zRaising||!e.z?e:(e.z=e.pressed?e.z:e.zPrevious,e.zPrevious=e.pressed?e.zPrevious:0,e.zRaising=!1,e)},_raise:function(){var e=this;return e.zRaising||!e.z?e:(e.zRaising=!0,e.zPrevious=e.z,e.z=Math.min(e.z+e.zElevation,e.zMax),e.async(function(){e.zRaising=!1,e._fall()},400),e)},observers:["_backgroundObserver(active, activeBackground)"],properties:{activeBackground:{type:String}},zElevation:6,zMax:24,zPrevious:0,zRaising:!1,_backgroundObserver:function(){this._setCurrentBackground(this.active&&this.activeBackground||this.background||null)},_touchHandler:function(e){var r=this;Polymer.MatPressedBehaviorImp._touchHandler.apply(r,arguments),e.pressed===r&&(r.pressed?r._raise():r._fall())}},Polymer.MatPressedPaperBehavior=[Polymer.MatPaperBehavior,Polymer.MatPressedBehavior,Polymer.MatPressedPaperBehaviorImp];</script>
-</head><body></body></html>

@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("../assert/assertArgument"),t=require("../tester/isElement"),r=require("../tester/isString"),s=require("../tester/isVoid");module.exports=function(i,c){e(t(i),1,"Element"),e(s(c)||r(c),2,"string");var o=i.node||i,n=o.matches||o.webkitMatchesSelector||o.mozMatchesSelector||o.msMatchesSelector||o.oMatchesSelector;return!c||n.call(o,c)}}();

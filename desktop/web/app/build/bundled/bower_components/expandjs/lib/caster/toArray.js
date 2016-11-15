@@ -1,1 +1,0 @@
-!function(){"use strict";var r=require("../tester/isArray"),e=require("../tester/isArrayable"),i=require("../tester/isVoid"),t=require("../array/slice");module.exports=function(s,u){return r(s)?s:e(s)?t(s):u?i(s)?[]:[s]:void 0}}();

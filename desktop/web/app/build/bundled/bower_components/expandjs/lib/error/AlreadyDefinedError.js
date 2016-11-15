@@ -1,1 +1,0 @@
-!function(){"use strict";var r=require("../error/CustomError");module.exports=function(e,i){r.call(this,"AlreadyDefinedError",e+" is already defined",i)}}();

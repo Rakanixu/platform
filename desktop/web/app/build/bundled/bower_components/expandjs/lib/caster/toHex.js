@@ -1,1 +1,0 @@
-!function(){"use strict";var t=require("../tester/isInt");module.exports=function(e){if(t(e))return e.toString(16).toUpperCase()}}();

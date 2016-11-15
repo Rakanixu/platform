@@ -1,1 +1,0 @@
-!function(){"use strict";var r=require("../number/ratio");module.exports=function(e,t,u,n){return 100*r(e,t,u,n)}}();

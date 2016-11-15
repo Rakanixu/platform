@@ -2,30 +2,30 @@ package main
 
 import (
 	"fmt"
-	"github.com/kardianos/osext"
-	auth "github.com/kazoup/platform/auth"
-	config "github.com/kazoup/platform/config"
-	crawler "github.com/kazoup/platform/crawler"
-	datasource "github.com/kazoup/platform/datasource"
-	db "github.com/kazoup/platform/db"
-	ui "github.com/kazoup/platform/desktop"
-	file "github.com/kazoup/platform/file"
-	flag "github.com/kazoup/platform/flag"
-	"github.com/kazoup/platform/lib/globals"
-	media "github.com/kazoup/platform/media"
-	notification "github.com/kazoup/platform/notification"
-	scheduler "github.com/kazoup/platform/scheduler"
-	search "github.com/kazoup/platform/search"
-	"github.com/micro/cli"
-	ccli "github.com/micro/cli"
-	"github.com/micro/go-micro/cmd"
-	"github.com/micro/micro/web"
 	"log"
 	"os"
 	"os/exec"
 	"runtime"
 	"sync"
 	"time"
+
+	"github.com/kardianos/osext"
+	auth "github.com/kazoup/platform/auth"
+	config "github.com/kazoup/platform/config"
+	crawler "github.com/kazoup/platform/crawler"
+	datasource "github.com/kazoup/platform/datasource"
+	db "github.com/kazoup/platform/db"
+	file "github.com/kazoup/platform/file"
+	"github.com/kazoup/platform/lib/globals"
+	media "github.com/kazoup/platform/media"
+	notification "github.com/kazoup/platform/notification"
+	scheduler "github.com/kazoup/platform/scheduler"
+	search "github.com/kazoup/platform/search"
+	ui "github.com/kazoup/platform/ui/desktop"
+	"github.com/micro/cli"
+	ccli "github.com/micro/cli"
+	"github.com/micro/go-micro/cmd"
+	"github.com/micro/micro/web"
 )
 
 func main() {
@@ -36,7 +36,6 @@ func main() {
 	app.Commands = append(app.Commands, datasource.Commands()...)
 	app.Commands = append(app.Commands, db.Commands()...)
 	app.Commands = append(app.Commands, ui.Commands()...)
-	app.Commands = append(app.Commands, flag.Commands()...)
 	app.Commands = append(app.Commands, media.Commands()...)
 	app.Commands = append(app.Commands, search.Commands()...)
 	app.Commands = append(app.Commands, scheduler.Commands()...)

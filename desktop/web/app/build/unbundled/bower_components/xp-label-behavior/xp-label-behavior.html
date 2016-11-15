@@ -1,5 +1,0 @@
-<html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../expandjs/expandjs.html">
-
-<script>Polymer.XPLabelBehavior={findInput:function(){var e=this,t=e.domHost&&Polymer.dom(e.domHost.root),o=e.htmlFor&&(t?t.querySelector("#"+e.htmlFor):document.getElementById(e.htmlFor)),r=e.htmlFor?[]:e.selectors,l=!o&&Polymer.dom(e);return o||XP.reduce(r,function(e,t){return e||l.querySelector(t)})||null},listeners:{click:"_focusHandler"},properties:{disabled:{notify:!0,reflectToAttribute:!0,type:Boolean,value:!1},focused:{notify:!0,reflectToAttribute:!0,type:Boolean,value:!1},hidden:{notify:!0,reflectToAttribute:!0,type:Boolean,value:!1}},selectors:["textarea","select","input"],created:function(){this.classList.add("label")},_focusHandler:function(e){var t=this,o=!e.button&&t.findInput();o&&(o.focus(),o.click())}};</script>
-</head><body></body></html>

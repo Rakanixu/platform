@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("../assert/assertArgument"),r=require("../tester/isString"),t=require("../tester/isVoid");module.exports=function(s){e(t(s)||r(s),1,"string");var i=s?s.lastIndexOf("."):-1;return i>0?s.slice(0,i):""}}();

@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("../assert/assertArgument"),t=require("../dom/getHeight"),r=require("../tester/isObject");module.exports=function(i,o){return e(r(i),1,"Object"),e(r(o),2,"Object"),i.top+o.top+i.height+o.bottom>t()}}();

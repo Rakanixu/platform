@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("../tester/isFinite");module.exports=function(t,r){return e(t=parseFloat(t))?t:r?0:void 0}}();

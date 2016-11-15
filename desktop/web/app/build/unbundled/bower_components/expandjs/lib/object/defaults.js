@@ -1,1 +1,0 @@
-!function(){"use strict";var e=require("lodash"),r=require("../function/ary"),t=require("../assert/assertArgument"),u=require("../tester/isObject"),i=require("../collection/filter");module.exports=function(s,n){return t(u(s),1,"Object"),e.defaults.apply(e,i(arguments,r(u,1)))}}();
