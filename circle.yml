@@ -9,7 +9,8 @@ dependencies:
                 - sudo apt-get install ruby ruby-dev gcc make icnsutils graphicsmagick xz-utils
 test:
         override:
-                - ./build_docker.sh
+                - ./test.sh
+                - ./build.sh
 deployment:
         release:
                 branch: desktop

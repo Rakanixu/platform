@@ -2,6 +2,7 @@ package sockets
 
 import (
 	"fmt"
+
 	"github.com/kazoup/platform/lib/globals"
 	proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"golang.org/x/net/websocket"
@@ -24,15 +25,18 @@ func Stream(ws *websocket.Conn) {
 		fmt.Println("err", err)
 		return
 	}
+
 	defer stream.Close()
 
 	for {
 		msg, err := stream.Recv()
 		if err != nil {
+			fmt.Println("err", err)
 			return
 		}
 
 		if err := websocket.JSON.Send(ws, msg.Message); err != nil {
+			fmt.Println("err", err)
 			return
 		}
 

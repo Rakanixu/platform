@@ -9,47 +9,35 @@ In development
 Desktop
 
 ```
-
+cd desktop
 npm run dev
 
 ```
 Web App access 
 
 ```
-
-polymer serve
+cd src
+sudo polymer serve -p 80
 
 ```
 
 ## Build
-<!-- 
-TODO:Simplify this
--->
-To build distribution for all platforms run below
-This will build OSX,Linux and Windows packages and save tem in /dist folder
-You will need to install dependencies so far it works on Mac see more over [here](https://github.com/electron-userland/electron-builder/wiki/Multi-Platform-Build)
- 
-```
-npm run dist
+
+Build polymer application
 
 ```
-
-To prepare relase run below.
-It will copy neccesery files into /release folder
-
-```
-
-npm run release
+cd src
+polymer
 
 ```
+## Deploy 
 
-To deploy packages to github release run below
+Build code for HTML app will be in build/bundled and build/unbundled after running polymer command
+To build desktop app
+
 
 ```
-
-./deploy.sh
+cd desktop
+npm run all
 
 ```
-
-
-

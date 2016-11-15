@@ -1,11 +1,14 @@
 package main
 
 import (
-	"github.com/kazoup/platform/media/web/handler"
-	microweb "github.com/micro/go-web"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/kazoup/platform/media/web/handler"
+	_ "github.com/micro/go-plugins/broker/nats"
+	_ "github.com/micro/go-plugins/transport/tcp"
+	microweb "github.com/micro/go-web"
 )
 
 func main() {

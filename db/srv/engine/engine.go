@@ -4,7 +4,6 @@ import (
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db "github.com/kazoup/platform/db/srv/proto/db"
-	flag_proto "github.com/kazoup/platform/flag/srv/proto/flag"
 	"github.com/kazoup/platform/lib/file"
 	search_proto "github.com/kazoup/platform/search/srv/proto/search"
 	"golang.org/x/net/context"
@@ -137,8 +136,6 @@ func TypeFactory(typ string, data string) (interface{}, error) {
 		return file, nil
 	case Datasource:
 		return &datasource_proto.Endpoint{}, nil
-	case Flag:
-		return &flag_proto.ReadResponse{}, nil
 	}
 
 	return nil, nil

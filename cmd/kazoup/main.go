@@ -16,7 +16,6 @@ import (
 	datasource "github.com/kazoup/platform/datasource"
 	db "github.com/kazoup/platform/db"
 	file "github.com/kazoup/platform/file"
-	flag "github.com/kazoup/platform/flag"
 	"github.com/kazoup/platform/lib/globals"
 	media "github.com/kazoup/platform/media"
 	notification "github.com/kazoup/platform/notification"
@@ -37,7 +36,6 @@ func main() {
 	app.Commands = append(app.Commands, datasource.Commands()...)
 	app.Commands = append(app.Commands, db.Commands()...)
 	app.Commands = append(app.Commands, ui.Commands()...)
-	app.Commands = append(app.Commands, flag.Commands()...)
 	app.Commands = append(app.Commands, media.Commands()...)
 	app.Commands = append(app.Commands, search.Commands()...)
 	app.Commands = append(app.Commands, scheduler.Commands()...)
