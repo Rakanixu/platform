@@ -19,6 +19,12 @@ func srv(ctx *cli.Context) {
 	// we want to stream the messages over the notification socket
 	subscriber.Broker = service.Server().Options().Broker
 
+	// Attach crawler started subscriber
+	if err := service.Server().Subscribe(
+		service.Server().NewSubscriber(globals.CrawlerStartedTopic, subscriber.SubscribeCrawlerStarted)); err != nil {
+		log.Fatal(err)
+	}
+
 	// Attach crawler finished subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(globals.CrawlerFinishedTopic, subscriber.SubscribeCrawlerFinished)); err != nil {

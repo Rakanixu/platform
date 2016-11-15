@@ -2,6 +2,7 @@ package engine
 
 import (
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	scheduler_proto "github.com/kazoup/platform/scheduler/srv/proto/scheduler"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 )
@@ -36,6 +37,11 @@ func (b *Box) Delete(ctx context.Context, c client.Client) error {
 // Scan box data source
 func (b *Box) Scan(ctx context.Context, c client.Client) error {
 	return ScanDataSource(ctx, c, &b.Endpoint)
+}
+
+// ScheduleScan register a chron task
+func (b *Box) ScheduleScan(ctx context.Context, c client.Client, sc *scheduler_proto.CreateScheduledTaskRequest) error {
+	return ScheduleScanDataSource(ctx, c, sc)
 }
 
 // CreateIndeWithAlias creates a index for box datasource
