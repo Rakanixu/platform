@@ -29,7 +29,7 @@ type Engine interface {
 	Save(ctx context.Context, data interface{}, id string) error
 	Delete(ctx context.Context, c client.Client) error
 	Scan(ctx context.Context, c client.Client) error
-	ScheduleScan(ctx context.Context, c client.Client) error
+	ScheduleScan(ctx context.Context, c client.Client, sc *scheduler_proto.CreateScheduledTaskRequest) error
 	CreateIndexWithAlias(ctx context.Context, c client.Client) error
 }
 

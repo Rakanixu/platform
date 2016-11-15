@@ -18,6 +18,8 @@ type CronWrapper struct {
 	Id   string
 }
 
+// TODO: FIXME: cron task are keep in memory, so two instance of this srv running will fail
+// We need to sync the data between instances.
 func (s *Scheduler) createTask(ctx context.Context, req *proto.CreateScheduledTaskRequest) (*proto.CreateScheduledTaskResponse, error) {
 	taskRecognise := false
 
