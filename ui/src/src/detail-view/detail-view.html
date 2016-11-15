@@ -38,10 +38,23 @@
 
     <template is="dom-if" if="[[!item.is_dir]]" restamp="true">
       <template is="dom-if" if="[[isImage(item.category)]]" restamp="true">
-        <iron-image src="[[endpoints.web]]/media/preview?user_id=[[md5UserId]]&file_id=[[item.id]]&width=600&mode=fit&quality=100&token=[[getToken()]]"
-                    sizing="contain"
-                    preload
-                    fade></iron-image><!--placeholder="src/static/spinner_256.gif"-->
+        <template is="dom-if" if="[[isGmail(item.file_type)]]">
+          <iron-image sizing="contain"
+                      src$="data:image/[[item.original.extension]];base64,[[item.original.base64]]"
+                      placeholder="src/static/unknown-img.jpg"
+                      preload
+                      fade>
+            <mat-ripple></mat-ripple>
+          </iron-image>
+        </template>
+
+        <template is="dom-if" if="[[!isGmail(item.file_type)]]">
+          <iron-image src="[[endpoints.web]]/media/preview?user_id=[[md5UserId]]&file_id=[[item.id]]&width=600&mode=fit&quality=100&token=[[getToken()]]"
+                      sizing="contain"
+                      placeholder="src/static/unknown-img.jpg"
+                      preload
+                      fade></iron-image>
+        </template>
       </template>
 
       <template is="dom-if" if="[[isLocalMP4Video(item.category, item.name, item.file_type)]]" restamp="true">
