@@ -9,12 +9,12 @@ import (
 	"github.com/kazoup/platform/lib/categories"
 	"github.com/kazoup/platform/lib/dropbox"
 	"github.com/kazoup/platform/lib/globals"
+	gmailhelper "github.com/kazoup/platform/lib/gmail"
 	"github.com/kazoup/platform/lib/local"
 	"github.com/kazoup/platform/lib/onedrive"
 	"github.com/kazoup/platform/lib/slack"
 	"golang.org/x/net/context"
 	googledrive "google.golang.org/api/drive/v3"
-	gmail "google.golang.org/api/gmail/v1"
 	"net/url"
 	"path/filepath"
 	"strings"
@@ -274,39 +274,23 @@ func NewKazoupFileFromBoxFile(d *box.BoxFileMeta, dsId, uId, index string) *Kazo
 }
 
 // NewKazoupFileFromGmailFile constructor
-func NewKazoupFileFromGmailFile(m *gmail.Message, dsId, uId, dsURL, index string) *KazoupGmailFile {
-	var name string
-	ext := []string{"none"}
-
-	url := fmt.Sprintf("%s%s/#inbox/%s", globals.GmailEndpoint, strings.Replace(dsURL, globals.Gmail+"://", "", 1), m.Id)
-	t := time.Unix(m.InternalDate/1000, 0)
-
-	for _, v := range m.Payload.Parts {
-		if len(v.Filename) > 0 {
-			name = v.Filename
-			ext = strings.Split(strings.Replace(v.Filename, " ", "-", 1), ".")
-			break
-		}
-	}
-
-	// Attachment is a marketing image
-	if len(name) == 0 {
+func NewKazoupFileFromGmailFile(m *gmailhelper.GmailFile, dsId, uId, dsURL, index string) *KazoupGmailFile {
+	if len(m.Name) == 0 {
 		return nil
 	}
 
-	// Payload is required to get extension and filename, but it is HUGE,
-	// so drop it to minimize index size
-	m.Payload = &gmail.MessagePart{}
+	url := fmt.Sprintf("%s%s/#inbox/%s", globals.GmailEndpoint, strings.Replace(dsURL, globals.Gmail+"://", "", 1), m.MessageId)
+	t := time.Unix(m.InternalDate/1000, 0)
 
 	kf := &KazoupFile{
 		ID:           globals.GetMD5Hash(url),
 		UserId:       uId,
-		Name:         name,
+		Name:         m.Name,
 		URL:          url,
 		Modified:     t,
 		FileSize:     m.SizeEstimate,
 		IsDir:        false,
-		Category:     categories.GetDocType("." + ext[len(ext)-1]),
+		Category:     categories.GetDocType(fmt.Sprintf(".%s", m.Extension)),
 		Depth:        0,
 		FileType:     globals.Gmail,
 		LastSeen:     time.Now().Unix(),

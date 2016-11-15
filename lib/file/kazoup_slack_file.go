@@ -1,6 +1,9 @@
 package file
 
-import "github.com/kazoup/platform/lib/slack"
+import (
+	"github.com/kazoup/platform/lib/slack"
+	"strings"
+)
 
 type KazoupSlackFile struct {
 	KazoupFile
@@ -58,4 +61,14 @@ func (kf *KazoupSlackFile) GetPathDisplay() string {
 
 func (kf *KazoupSlackFile) GetURL() string {
 	return kf.URL
+}
+
+func (kf *KazoupSlackFile) GetExtension() string {
+	ext := strings.Split(strings.Replace(kf.Name, " ", "-", 1), ".")
+
+	return ext[len(ext)-1]
+}
+
+func (kf *KazoupSlackFile) GetBase64() string {
+	return ""
 }

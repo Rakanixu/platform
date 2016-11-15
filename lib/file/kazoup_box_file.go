@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/kazoup/platform/lib/box"
 	"github.com/kazoup/platform/lib/globals"
+	"strings"
 )
 
 type KazoupBoxFile struct {
@@ -47,4 +48,14 @@ func (kf *KazoupBoxFile) GetPathDisplay() string {
 
 func (kf *KazoupBoxFile) GetURL() string {
 	return kf.URL
+}
+
+func (kf *KazoupBoxFile) GetExtension() string {
+	ext := strings.Split(strings.Replace(kf.Name, " ", "-", 1), ".")
+
+	return ext[len(ext)-1]
+}
+
+func (kf *KazoupBoxFile) GetBase64() string {
+	return ""
 }

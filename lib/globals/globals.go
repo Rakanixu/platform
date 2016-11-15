@@ -67,6 +67,10 @@ const (
 
 	ONEDRIVE_TEXT = "text/plain"
 
+	MIME_PNG  = "image/png"
+	MIME_JPG  = "image/jpg"
+	MIME_JPEG = "image/jpeg"
+
 	SlackFilesEndpoint       = "https://slack.com/api/files.list"
 	SlackUsersEndpoint       = "https://slack.com/api/users.list"
 	SlackChannelsEndpoint    = "https://slack.com/api/channels.list"

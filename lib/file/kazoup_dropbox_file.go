@@ -2,6 +2,7 @@ package file
 
 import (
 	"github.com/kazoup/platform/lib/dropbox"
+	"strings"
 )
 
 type KazoupDropboxFile struct {
@@ -43,4 +44,14 @@ func (kf *KazoupDropboxFile) GetPathDisplay() string {
 
 func (kf *KazoupDropboxFile) GetURL() string {
 	return kf.URL
+}
+
+func (kf *KazoupDropboxFile) GetExtension() string {
+	ext := strings.Split(strings.Replace(kf.Name, " ", "-", 1), ".")
+
+	return ext[len(ext)-1]
+}
+
+func (kf *KazoupDropboxFile) GetBase64() string {
+	return ""
 }

@@ -3,6 +3,7 @@ package file
 import (
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/onedrive"
+	"strings"
 )
 
 type KazoupOneDriveFile struct {
@@ -44,4 +45,14 @@ func (kf *KazoupOneDriveFile) GetPathDisplay() string {
 
 func (kf *KazoupOneDriveFile) GetURL() string {
 	return kf.URL
+}
+
+func (kf *KazoupOneDriveFile) GetExtension() string {
+	ext := strings.Split(strings.Replace(kf.Name, " ", "-", 1), ".")
+
+	return ext[len(ext)-1]
+}
+
+func (kf *KazoupOneDriveFile) GetBase64() string {
+	return ""
 }
