@@ -82,6 +82,10 @@ curl -XPUT localhost:9200/_template/template_file -d '
           "type": "date",
           "format": "date_optional_time"
         },
+        "last_seen": {
+          "type": "long",
+          "index": "not_analyzed"
+        },
         "file_size": {
           "type": "long"
         }
