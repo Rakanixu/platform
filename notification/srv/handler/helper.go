@@ -19,7 +19,10 @@ func StreamNotifications(s server.Server, req *proto.StreamRequest) (chan *proto
 		if err := json.Unmarshal(p.Message().Body, &e); err != nil {
 			return err
 		}
-		che <- e
+
+		if req.UserId == e.UserId {
+			che <- e
+		}
 
 		return nil
 	})
