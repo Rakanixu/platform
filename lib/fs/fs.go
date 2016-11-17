@@ -7,6 +7,7 @@ import (
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	img "github.com/kazoup/platform/lib/image"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"strings"
@@ -51,6 +52,11 @@ func NewFsFromEndpoint(e *datasource_proto.Endpoint) (Fs, error) {
 }
 
 // FileToBase64 converts a slice of bytes to base64 string.
-func FileToBase64(file []byte) string {
-	return base64.StdEncoding.EncodeToString(file)
+func FileToBase64(file []byte) (string, error) {
+	b, err := img.Thumbnail(file, globals.THUMBNAIL_WIDTH)
+	if err != nil {
+		return "", err
+	}
+
+	return base64.StdEncoding.EncodeToString(b), nil
 }

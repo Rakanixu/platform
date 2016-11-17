@@ -340,17 +340,17 @@
                                     <template is="dom-if" if="[[view.isGrid]]" restamp="true">
                                         <div class="photoContainer grid">
                                             <div class="photoContent" tabindex$="[[tabIndex]]" on-tap="mainAction">
-                                                <template is="dom-if" if="[[isGmail(item.file_type)]]">
+                                           <!--     <template is="dom-if" if="[[isGmail(item.file_type)]]">-->
                                                     <iron-image sizing="cover"
-                                                                src$="data:image/[[item.original.extension]];base64,[[item.original.base64]]"
+                                                                src$="data:image/[[item.original.extension]];base64,[[item.base_64]]"
                                                                 placeholder="src/static/unknown-img.jpg"
                                                                 preload
                                                                 fade>
                                                         <mat-ripple></mat-ripple>
                                                     </iron-image>
-                                                </template>
+                                      <!--          </template>-->
 
-                                                <template is="dom-if" if="[[!isGmail(item.file_type)]]">
+                                      <!--          <template is="dom-if" if="[[!isGmail(item.file_type)]]">
                                                     <iron-image sizing="cover"
                                                                 src$="[[endpoints.web]]/media/preview?user_id=[[md5UserId]]&file_id=[[item.id]]&width=600&mode=fit&quality=100&token=[[getToken()]]"
                                                                 placeholder="src/static/unknown-img.jpg"
@@ -358,7 +358,7 @@
                                                                 fade>
                                                         <mat-ripple></mat-ripple>
                                                     </iron-image>
-                                                </template>
+                                                </template>-->
 
                                                 <div class="detail">
                                                     <mat-item class="light" label="[[item.name]]">

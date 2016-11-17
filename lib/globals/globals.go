@@ -76,6 +76,8 @@ const (
 
 	CATEGORY_PICTURE = "Pictures"
 
+	THUMBNAIL_WIDTH = 178
+
 	SlackFilesEndpoint       = "https://slack.com/api/files.list"
 	SlackUsersEndpoint       = "https://slack.com/api/users.list"
 	SlackChannelsEndpoint    = "https://slack.com/api/channels.list"

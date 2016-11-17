@@ -238,7 +238,10 @@ func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
 				return err
 			}
 
-			b64 = FileToBase64(b)
+			b64, err = FileToBase64(b)
+			if err != nil {
+				return err
+			}
 		}
 
 		f := file.NewKazoupFileFromGoogleDriveFile(v, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index, b64)
