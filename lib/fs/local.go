@@ -84,7 +84,7 @@ func (lfs *LocalFs) ShareFile(ctx context.Context, c client.Client, req file_pro
 }
 
 // DownloadFile retrieves a file
-func (lfs *LocalFs) DownloadFile(id string) ([]byte, error) {
+func (lfs *LocalFs) DownloadFile(id string, opts ...string) ([]byte, error) {
 	return nil, nil
 }
 

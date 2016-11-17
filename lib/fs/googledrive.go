@@ -154,7 +154,8 @@ func (gfs *GoogleDriveFs) ShareFile(ctx context.Context, c client.Client, req fi
 }
 
 // DownloadFile retrieves a file
-func (gfs *GoogleDriveFs) DownloadFile(id string) ([]byte, error) {
+func (gfs *GoogleDriveFs) DownloadFile(id string, opts ...string) ([]byte, error) {
+	// opts not use for google drive
 	srv, err := gfs.getDriveService()
 	if err != nil {
 		return nil, err

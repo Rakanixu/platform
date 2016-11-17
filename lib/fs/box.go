@@ -271,7 +271,7 @@ func (bfs *BoxFs) ShareFile(ctx context.Context, c client.Client, req file_proto
 }
 
 // DownloadFile retrieves a file
-func (bfs *BoxFs) DownloadFile(id string) ([]byte, error) {
+func (bfs *BoxFs) DownloadFile(id string, opts ...string) ([]byte, error) {
 	return nil, nil
 }
 

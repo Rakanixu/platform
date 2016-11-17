@@ -281,13 +281,18 @@ func NewKazoupFileFromBoxFile(d *box.BoxFileMeta, dsId, uId, index string) *Kazo
 }
 
 // NewKazoupFileFromGmailFile constructor
-func NewKazoupFileFromGmailFile(m *gmailhelper.GmailFile, dsId, uId, dsURL, index string) *KazoupGmailFile {
+func NewKazoupFileFromGmailFile(m *gmailhelper.GmailFile, dsId, uId, dsURL, index string, opts ...string) *KazoupGmailFile {
 	if len(m.Name) == 0 {
 		return nil
 	}
 
 	url := fmt.Sprintf("%s%s/#inbox/%s", globals.GmailEndpoint, strings.Replace(dsURL, globals.Gmail+"://", "", 1), m.MessageId)
 	t := time.Unix(m.InternalDate/1000, 0)
+
+	b64 := ""
+	if len(opts) > 0 {
+		b64 = opts[0]
+	}
 
 	kf := &KazoupFile{
 		ID:           globals.GetMD5Hash(url),
@@ -301,6 +306,7 @@ func NewKazoupFileFromGmailFile(m *gmailhelper.GmailFile, dsId, uId, dsURL, inde
 		Depth:        0,
 		FileType:     globals.Gmail,
 		LastSeen:     time.Now().Unix(),
+		Base64:       b64,
 		DatasourceId: dsId,
 		Index:        index,
 	}

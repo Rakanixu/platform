@@ -259,7 +259,7 @@ func (dfs *DropboxFs) ShareFile(ctx context.Context, c client.Client, req file_p
 }
 
 // DownloadFile retrieves a file
-func (dfs *DropboxFs) DownloadFile(id string) ([]byte, error) {
+func (dfs *DropboxFs) DownloadFile(id string, opts ...string) ([]byte, error) {
 	return nil, nil
 }
 

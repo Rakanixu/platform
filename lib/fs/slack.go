@@ -108,7 +108,7 @@ func (sfs *SlackFs) ShareFile(ctx context.Context, c client.Client, req file_pro
 }
 
 // DownloadFile retrieves a file
-func (sfs *SlackFs) DownloadFile(id string) ([]byte, error) {
+func (sfs *SlackFs) DownloadFile(id string, opts ...string) ([]byte, error) {
 	return nil, nil
 }
 

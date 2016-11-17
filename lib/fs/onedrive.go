@@ -254,7 +254,7 @@ func (ofs *OneDriveFs) ShareFile(ctx context.Context, c client.Client, req file_
 }
 
 // DownloadFile retrieves a file
-func (ofs *OneDriveFs) DownloadFile(id string) ([]byte, error) {
+func (ofs *OneDriveFs) DownloadFile(id string, opts ...string) ([]byte, error) {
 	return nil, nil
 }
 

@@ -2,6 +2,7 @@ package fs
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
@@ -77,8 +78,36 @@ func (gfs *GmailFs) ShareFile(ctx context.Context, c client.Client, req file_pro
 }
 
 // DownloadFile retrieves a file
-func (gfs *GmailFs) DownloadFile(id string) ([]byte, error) {
-	return nil, nil
+func (gfs *GmailFs) DownloadFile(id string, opts ...string) ([]byte, error) {
+	cfg := globals.NewGmailOauthConfig()
+	c := cfg.Client(context.Background(), &oauth2.Token{
+		AccessToken:  gfs.Endpoint.Token.AccessToken,
+		TokenType:    gfs.Endpoint.Token.TokenType,
+		RefreshToken: gfs.Endpoint.Token.RefreshToken,
+		Expiry:       time.Unix(gfs.Endpoint.Token.Expiry, 0),
+	})
+
+	s, err := gmail.New(c)
+	if err != nil {
+		return nil, err
+	}
+
+	srv := gmail.NewUsersMessagesService(s)
+
+	if len(opts) == 0 {
+		return nil, errors.New("ERROR opts reuired (attachmentID)")
+	}
+	mpb, err := srv.Attachments.Get("me", id, opts[0]).Fields("data").Do()
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := base64.URLEncoding.DecodeString(mpb.Data)
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
 }
 
 // getMessages discover files (attachments)
@@ -164,24 +193,23 @@ func (gfs *GmailFs) pushMessagesToChanForPage(s *gmail.Service, msgs []*gmail.Me
 				Name:         vl.Filename,
 			}
 
+			b64 := ""
 			if vl.MimeType == globals.MIME_PNG || vl.MimeType == globals.MIME_JPG || vl.MimeType == globals.MIME_JPEG {
-				mpb, err := srv.Attachments.Get("me", v.Id, vl.Body.AttachmentId).Fields("data").Do()
+				b, err := gfs.DownloadFile(v.Id, vl.Body.AttachmentId)
 				if err != nil {
 					return err
 				}
 
-				b, err := base64.URLEncoding.DecodeString(mpb.Data)
+				b64, err = FileToBase64(b)
 				if err != nil {
 					return err
 				}
-
-				gf.Base64 = string(base64.StdEncoding.EncodeToString(b))
 			}
 
 			ext := strings.Split(strings.Replace(vl.Filename, " ", "-", 1), ".")
 			gf.Extension = ext[len(ext)-1]
 
-			f := file.NewKazoupFileFromGmailFile(gf, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Url, gfs.Endpoint.Index)
+			f := file.NewKazoupFileFromGmailFile(gf, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Url, gfs.Endpoint.Index, b64)
 			// Constructor will return nil when the attachment has no name
 			// When an attachment has no name, attachment use to be a marketing image
 			if f != nil {
