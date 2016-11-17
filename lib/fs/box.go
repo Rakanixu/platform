@@ -270,6 +270,11 @@ func (bfs *BoxFs) ShareFile(ctx context.Context, c client.Client, req file_proto
 	return kbf.Original.SharedLink.URL, nil
 }
 
+// DownloadFile retrieves a file
+func (bfs *BoxFs) DownloadFile(id string) ([]byte, error) {
+	return nil, nil
+}
+
 // getDirChildren get children from directory
 func (bfs *BoxFs) getDirChildren(id string, offset, limit int) error {
 	c := &http.Client{}

@@ -83,6 +83,11 @@ func (lfs *LocalFs) ShareFile(ctx context.Context, c client.Client, req file_pro
 	return "", nil
 }
 
+// DownloadFile retrieves a file
+func (lfs *LocalFs) DownloadFile(id string) ([]byte, error) {
+	return nil, nil
+}
+
 // walkDatasourceParents creates helper index, aliases and push the dirs that makes the root path of the datasource
 func (lfs *LocalFs) walkDatasourceParents() error {
 	// Create index and put mapping if does not exist

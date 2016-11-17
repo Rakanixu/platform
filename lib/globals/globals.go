@@ -74,6 +74,8 @@ const (
 	MIME_JPG  = "image/jpg"
 	MIME_JPEG = "image/jpeg"
 
+	CATEGORY_PICTURE = "Pictures"
+
 	SlackFilesEndpoint       = "https://slack.com/api/files.list"
 	SlackUsersEndpoint       = "https://slack.com/api/users.list"
 	SlackChannelsEndpoint    = "https://slack.com/api/channels.list"

@@ -258,6 +258,11 @@ func (dfs *DropboxFs) ShareFile(ctx context.Context, c client.Client, req file_p
 	return "", nil
 }
 
+// DownloadFile retrieves a file
+func (dfs *DropboxFs) DownloadFile(id string) ([]byte, error) {
+	return nil, nil
+}
+
 // getFile retrieves a single file from dorpbox
 func (dfs *DropboxFs) getFile(id string) (*file.KazoupDropboxFile, error) {
 	b := []byte(`{

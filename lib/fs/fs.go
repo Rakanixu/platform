@@ -1,6 +1,7 @@
 package fs
 
 import (
+	"encoding/base64"
 	"errors"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
@@ -17,6 +18,7 @@ type Fs interface {
 	CreateFile(file_proto.CreateRequest) (*file_proto.CreateResponse, error)
 	DeleteFile(context.Context, client.Client, file_proto.DeleteRequest) (*file_proto.DeleteResponse, error)
 	ShareFile(context.Context, client.Client, file_proto.ShareRequest) (string, error)
+	DownloadFile(string) ([]byte, error)
 	GetDatasourceId() string
 	Token() string
 	GetThumbnail(id string) (string, error)
@@ -46,4 +48,9 @@ func NewFsFromEndpoint(e *datasource_proto.Endpoint) (Fs, error) {
 	}
 
 	return nil, errors.New("Error parsing URL")
+}
+
+// FileToBase64 converts a slice of bytes to base64 string.
+func FileToBase64(file []byte) string {
+	return base64.StdEncoding.EncodeToString(file)
 }

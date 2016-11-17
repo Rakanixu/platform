@@ -250,10 +250,12 @@ func (ofs *OneDriveFs) ShareFile(ctx context.Context, c client.Client, req file_
 	}
 	defer res.Body.Close()
 
-	log.Println("*****")
-	log.Println(res.StatusCode)
-
 	return "", nil
+}
+
+// DownloadFile retrieves a file
+func (ofs *OneDriveFs) DownloadFile(id string) ([]byte, error) {
+	return nil, nil
 }
 
 // getFiles retrieves drives, directories and files

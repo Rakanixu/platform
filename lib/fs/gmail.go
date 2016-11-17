@@ -76,6 +76,11 @@ func (gfs *GmailFs) ShareFile(ctx context.Context, c client.Client, req file_pro
 	return "", nil
 }
 
+// DownloadFile retrieves a file
+func (gfs *GmailFs) DownloadFile(id string) ([]byte, error) {
+	return nil, nil
+}
+
 // getMessages discover files (attachments)
 func (gfs *GmailFs) getMessages() error {
 	cfg := globals.NewGmailOauthConfig()

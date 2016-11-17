@@ -95,7 +95,8 @@ func NewFileFromString(s string) (File, error) {
 }
 
 // NewKazoupFileFromGoogleDriveFile constructor
-func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId, uId, index string) *KazoupGoogleFile {
+// opts first param is base64 emcoded file (itself)
+func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId, uId, index string, opts ...string) *KazoupGoogleFile {
 	t, _ := time.Parse("2006-01-02T15:04:05.000Z", g.ModifiedTime)
 
 	d := false
@@ -117,6 +118,11 @@ func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId, uId, index stri
 		url = g.WebContentLink
 	}
 
+	b64 := ""
+	if len(opts) > 0 {
+		b64 = opts[0]
+	}
+
 	kf := &KazoupFile{
 		ID:           globals.GetMD5Hash(url),
 		UserId:       uId,
@@ -129,6 +135,7 @@ func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId, uId, index stri
 		Depth:        0,
 		FileType:     globals.GoogleDrive,
 		LastSeen:     time.Now().Unix(),
+		Base64:       b64,
 		DatasourceId: dsId,
 		Index:        index,
 	}
