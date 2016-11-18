@@ -9,6 +9,7 @@ import (
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
+	"github.com/kazoup/platform/lib/categories"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/onedrive"
@@ -18,6 +19,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -255,7 +257,21 @@ func (ofs *OneDriveFs) ShareFile(ctx context.Context, c client.Client, req file_
 
 // DownloadFile retrieves a file
 func (ofs *OneDriveFs) DownloadFile(id string, opts ...string) ([]byte, error) {
+	// opts first string is ContentDownloadURL
+
+	log.Println("ONEDRIVE", opts[0])
+
 	return nil, nil
+}
+
+// UploadFile uploads a file into google cloud storage
+func (ofs *OneDriveFs) UploadFile(file []byte, fId string) error {
+	return UploadFile(file, fId)
+}
+
+// SignedObjectStorageURL returns a temporary link to a resource in GC storage
+func (ofs *OneDriveFs) SignedObjectStorageURL(objName string) (string, error) {
+	return SignedObjectStorageURL(objName)
 }
 
 // getFiles retrieves drives, directories and files
@@ -370,8 +386,9 @@ func (ofs *OneDriveFs) getDrivesChildren() error {
 				ofs.Directories <- v.ID
 				// Is file
 			} else {
-				f := file.NewKazoupFileFromOneDriveFile(&v, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)
-				ofs.FilesChan <- f
+				if err := ofs.pushToFilesChannel(v); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -402,13 +419,34 @@ func (ofs *OneDriveFs) getDirChildren(id string) error {
 
 	for _, v := range filesRsp.Value {
 		if len(v.File.MimeType) == 0 {
-			//ofs.DirCounter++
 			ofs.Directories <- v.ID
 		} else {
-			f := file.NewKazoupFileFromOneDriveFile(&v, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)
-			ofs.FilesChan <- f
+			if err := ofs.pushToFilesChannel(v); err != nil {
+				return err
+			}
 		}
 	}
+
+	return nil
+}
+
+func (ofs *OneDriveFs) pushToFilesChannel(f onedrive.OneDriveFile) error {
+	n := strings.Split(f.Name, ".")
+	b64 := ""
+	if categories.GetDocType("."+n[len(n)-1]) == globals.CATEGORY_PICTURE {
+		b, err := ofs.DownloadFile(f.ID, f.ContentDownloadURL)
+		if err != nil {
+			return err
+		}
+
+		b64, err = FileToBase64(b)
+		if err != nil {
+			return err
+		}
+	}
+
+	kof := file.NewKazoupFileFromOneDriveFile(&f, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index, b64)
+	ofs.FilesChan <- kof
 
 	return nil
 }

@@ -111,6 +111,12 @@ const (
 	CLIENT_ID_SECRET = "EC1FD9R5t6D3cs9CzPbgJaBJjshoVgrJrTs6U39scYzYF7HYyMlv_mal2IjLLaA9" // Auth0 RPC API client
 	ENCRYTION_KEY_32 = "asjklasd766adfashj22kljasdhyfjkh"
 
+	GC_OBJ_STORAGE_ACCESS_KEY = "GOOGQU37LWQYB65A6RFC"
+	GC_OBJ_STORAGE_SECRET_KEY = "2azu1PhG7+mNhLW6LEIG3IHmu9YkteHp5WktHuDZ"
+	GC_OBJ_STORAGE_REGION     = "europe-west-1"
+	GC_THUMBNAIL_CONTAINER    = "kazoup-desktop-thumbs-dev"
+	GC_APP_EMAIL              = ""
+
 	NOTIFY_REFRESH_DATASOURCES = "refreshDatasources"
 	NOTIFY_REFRESH_SEARCH      = "refreshSearch"
 )
@@ -207,6 +213,26 @@ func NewGmailOauthConfig() *oauth2.Config {
 			"https://www.googleapis.com/auth/userinfo.profile",
 			"https://www.googleapis.com/auth/userinfo.email",
 			"https://www.googleapis.com/auth/gmail.readonly",
+		},
+		Endpoint: google.Endpoint,
+	}
+}
+
+func NewGoogleCloudOauthConfig() *oauth2.Config {
+	return &oauth2.Config{
+		RedirectURL:  SECURE_SERVER_ADDRESS + "/auth/google/callback",
+		ClientID:     "928848534435-kjubrqvl1sp50sfs3icemj2ma6v2an5j.apps.googleusercontent.com",
+		ClientSecret: "zZAQz3zP5xnpLaA1S_q6YNhy",
+		Scopes: []string{
+			"https://www.googleapis.com/auth/userinfo.profile",
+			"https://www.googleapis.com/auth/userinfo.email",
+			"https://www.googleapis.com/auth/drive",
+			"https://www.googleapis.com/auth/drive.appdata",
+			"https://www.googleapis.com/auth/drive.file",
+			"https://www.googleapis.com/auth/drive.metadata",
+			"https://www.googleapis.com/auth/drive.metadata.readonly",
+			"https://www.googleapis.com/auth/drive.photos.readonly",
+			"https://www.googleapis.com/auth/drive.readonly",
 		},
 		Endpoint: google.Endpoint,
 	}

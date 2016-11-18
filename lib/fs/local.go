@@ -88,6 +88,16 @@ func (lfs *LocalFs) DownloadFile(id string, opts ...string) ([]byte, error) {
 	return nil, nil
 }
 
+// UploadFile uploads a file into google cloud storage
+func (lfs *LocalFs) UploadFile(file []byte, fId string) error {
+	return UploadFile(file, fId)
+}
+
+// SignedObjectStorageURL returns a temporary link to a resource in GC storage
+func (lfs *LocalFs) SignedObjectStorageURL(objName string) (string, error) {
+	return SignedObjectStorageURL(objName)
+}
+
 // walkDatasourceParents creates helper index, aliases and push the dirs that makes the root path of the datasource
 func (lfs *LocalFs) walkDatasourceParents() error {
 	// Create index and put mapping if does not exist

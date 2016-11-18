@@ -112,6 +112,16 @@ func (sfs *SlackFs) DownloadFile(id string, opts ...string) ([]byte, error) {
 	return nil, nil
 }
 
+// UploadFile uploads a file into google cloud storage
+func (sfs *SlackFs) UploadFile(file []byte, fId string) error {
+	return UploadFile(file, fId)
+}
+
+// SignedObjectStorageURL returns a temporary link to a resource in GC storage
+func (sfs *SlackFs) SignedObjectStorageURL(objName string) (string, error) {
+	return SignedObjectStorageURL(objName)
+}
+
 // getUsers retrieves users from slack team
 func (sfs *SlackFs) getUsers() error {
 	data := make(url.Values)

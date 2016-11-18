@@ -275,6 +275,16 @@ func (bfs *BoxFs) DownloadFile(id string, opts ...string) ([]byte, error) {
 	return nil, nil
 }
 
+// UploadFile uploads a file into google cloud storage
+func (bfs *BoxFs) UploadFile(file []byte, fId string) error {
+	return UploadFile(file, fId)
+}
+
+// SignedObjectStorageURL returns a temporary link to a resource in GC storage
+func (bfs *BoxFs) SignedObjectStorageURL(objName string) (string, error) {
+	return SignedObjectStorageURL(objName)
+}
+
 // getDirChildren get children from directory
 func (bfs *BoxFs) getDirChildren(id string, offset, limit int) error {
 	c := &http.Client{}

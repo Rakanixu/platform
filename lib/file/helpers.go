@@ -186,12 +186,17 @@ func NewKazoupFileFromLocal(lf *local.LocalFile, dsId, uId, index string) *Kazou
 }
 
 // NewKazoupFileFromOneDriveFile constructor
-func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile, dsId, uId, index string) *KazoupOneDriveFile {
+func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile, dsId, uId, index string, opts ...string) *KazoupOneDriveFile {
 	isDir := true
 	name := strings.Split(o.Name, ".")
 
 	if len(o.File.MimeType) > 0 {
 		isDir = false
+	}
+
+	b64 := ""
+	if len(opts) > 0 {
+		b64 = opts[0]
 	}
 
 	kf := &KazoupFile{
@@ -206,6 +211,7 @@ func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile, dsId, uId, index st
 		Depth:        0,
 		FileType:     globals.OneDrive,
 		LastSeen:     time.Now().Unix(),
+		Base64:       b64,
 		DatasourceId: dsId,
 		Index:        index,
 	}

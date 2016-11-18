@@ -263,6 +263,16 @@ func (dfs *DropboxFs) DownloadFile(id string, opts ...string) ([]byte, error) {
 	return nil, nil
 }
 
+// UploadFile uploads a file into google cloud storage
+func (dfs *DropboxFs) UploadFile(file []byte, fId string) error {
+	return UploadFile(file, fId)
+}
+
+// SignedObjectStorageURL returns a temporary link to a resource in GC storage
+func (dfs *DropboxFs) SignedObjectStorageURL(objName string) (string, error) {
+	return SignedObjectStorageURL(objName)
+}
+
 // getFile retrieves a single file from dorpbox
 func (dfs *DropboxFs) getFile(id string) (*file.KazoupDropboxFile, error) {
 	b := []byte(`{

@@ -20,6 +20,8 @@ func web(ctx *cli.Context) {
 	service := microweb.NewService(microweb.Name("go.micro.web.media"))
 
 	service.Handle("/preview", handler.NewImageHandler())
+	service.Handle("/thumbnail", handler.NewThumbnailHandler())
+
 	service.Run()
 }
 

@@ -8,6 +8,7 @@ import (
 	"github.com/kazoup/platform/lib/categories"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/image"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -153,9 +154,8 @@ func (gfs *GoogleDriveFs) ShareFile(ctx context.Context, c client.Client, req fi
 	return "", nil
 }
 
-// DownloadFile retrieves a file
+// DownloadFile retrieves a file from google drive
 func (gfs *GoogleDriveFs) DownloadFile(id string, opts ...string) ([]byte, error) {
-	// opts not use for google drive
 	srv, err := gfs.getDriveService()
 	if err != nil {
 		return nil, err
@@ -173,6 +173,16 @@ func (gfs *GoogleDriveFs) DownloadFile(id string, opts ...string) ([]byte, error
 	}
 
 	return b, nil
+}
+
+// UploadFile uploads a file into google cloud storage
+func (gfs *GoogleDriveFs) UploadFile(file []byte, fId string) error {
+	return UploadFile(file, fId)
+}
+
+// SignedObjectStorageURL returns a temporary link to a resource in GC storage
+func (gfs *GoogleDriveFs) SignedObjectStorageURL(objName string) (string, error) {
+	return SignedObjectStorageURL(objName)
 }
 
 // getFiles discover all files in google drive account
@@ -239,8 +249,12 @@ func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
 				return err
 			}
 
-			b64, err = FileToBase64(b)
+			b, err = image.Thumbnail(b, globals.THUMBNAIL_WIDTH)
 			if err != nil {
+				return err
+			}
+
+			if err := gfs.UploadFile(b, v.Id); err != nil {
 				return err
 			}
 		}
