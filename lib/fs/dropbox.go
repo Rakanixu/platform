@@ -9,15 +9,19 @@ import (
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
+	"github.com/kazoup/platform/lib/categories"
 	"github.com/kazoup/platform/lib/dropbox"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/image"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 )
 
 // DropboxFs dropbox file system
@@ -260,7 +264,27 @@ func (dfs *DropboxFs) ShareFile(ctx context.Context, c client.Client, req file_p
 
 // DownloadFile retrieves a file
 func (dfs *DropboxFs) DownloadFile(id string, opts ...string) ([]byte, error) {
-	return nil, nil
+	c := &http.Client{}
+	req, err := http.NewRequest(http.MethodPost, globals.DropboxFileDownload, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", dfs.Token())
+	req.Header.Set("Dropbox-API-Arg", `{
+		"path": "`+id+`"
+	}`)
+	rsp, err := c.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer rsp.Body.Close()
+
+	b, err := ioutil.ReadAll(rsp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
 }
 
 // UploadFile uploads a file into google cloud storage
@@ -336,6 +360,25 @@ func (dfs *DropboxFs) getFiles() error {
 	}
 
 	for _, v := range filesRsp.Entries {
+		name := strings.Split(v.Name, ".")
+		if categories.GetDocType("."+name[len(name)-1]) == globals.CATEGORY_PICTURE {
+			log.Println("-->", v.Name)
+
+			b, err := dfs.DownloadFile(v.ID)
+			if err != nil {
+				return err
+			}
+
+			b, err = image.Thumbnail(b, globals.THUMBNAIL_WIDTH)
+			if err != nil {
+				return err
+			}
+
+			if err := dfs.UploadFile(b, v.ID); err != nil {
+				return err
+			}
+		}
+
 		f := file.NewKazoupFileFromDropboxFile(&v, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
 		// File is shared, lets get Users and Invitees to this file
 		if f.Original.HasExplicitSharedMembers {

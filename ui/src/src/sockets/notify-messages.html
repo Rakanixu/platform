@@ -34,6 +34,8 @@
         init: function(userId) {
           this.$.socket.open();
 
+          clearTimeout(this.reconnectTimeout);
+
           this.async(function() {
             this.$.socket.send({
               user_id: userId

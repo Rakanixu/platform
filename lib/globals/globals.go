@@ -94,6 +94,7 @@ const (
 	DropboxFileUpload        = "https://content.dropboxapi.com/2/files/upload"
 	DropboxFileShare         = "https://api.dropboxapi.com/2/sharing/add_file_member"
 	DropboxFileDelete        = "https://api.dropboxapi.com/2/files/delete"
+	DropboxFileDownload      = "https://content.dropboxapi.com/2/files/download"
 
 	BoxAccountEndpoint      = "https://api.box.com/2.0/users/me"
 	BoxFoldersEndpoint      = "https://api.box.com/2.0/folders/"
