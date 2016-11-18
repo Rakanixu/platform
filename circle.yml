@@ -1,22 +1,37 @@
 machine:
+        environment:
+                 PROJECT_NAME: Desktop
+                 CLUSTER_NAME: prod
+                 CLOUDSDK_COMPUTE_ZONE: europe-west1-b
         services:
                 - docker
 dependencies:
-        override: #https://discuss.circleci.com/t/overriding-go-inference-in-the-dependencies-phase/660
+        pre:
+                - sudo /opt/google-cloud-sdk/bin/gcloud --quiet components update
+                - sudo /opt/google-cloud-sdk/bin/gcloud --quiet components update kubectl
+                - echo $ACCT_AUTH | base64 --decode -i > ${HOME}/account-auth.json
+                - sudo /opt/google-cloud-sdk/bin/gcloud auth activate-service-account --key-file ${HOME}/account-auth.json
+                - sudo /opt/google-cloud-sdk/bin/gcloud config set project $PROJECT_NAME
+                - sudo /opt/google-cloud-sdk/bin/gcloud --quiet config set container/cluster $CLUSTER_NAME
+                # Reading the zone from the env var is not working so we set it here
+                - sudo /opt/google-cloud-sdk/bin/gcloud config set compute/zone ${CLOUDSDK_COMPUTE_ZONE}
+                - sudo /opt/google-cloud-sdk/bin/gcloud --quiet container clusters get-credentials $CLUSTER_NAME
+                # override: #https://discuss.circleci.com/t/overriding-go-inference-in-the-dependencies-phase/660
                 - mkdir -p $HOME/.go_project/src/github.com/$CIRCLE_PROJECT_USERNAME
                 - ln -fs $HOME/$CIRCLE_PROJECT_REPONAME $HOME/.go_project/src/github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
                 - echo 'export GOPATH=$GOPATH:$HOME/.go_project' >> ~/.circlerc
                 - sudo apt-get install ruby ruby-dev gcc make icnsutils graphicsmagick xz-utils
+                - ./build-circle.sh
 test:
         override:
                 - ./test.sh
                 - ./build.sh
 deployment:
         release:
-                branch: desktop
+                branch: kuberentes
                 commands:
-                        - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
-                        - ./deploy.sh
+                        # - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+                        - ./deploy-circle.sh
                         #- go get github.com/tcnksm/ghr
                         #- ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace `git describe --tags` desktop/dist/
         hub: 
