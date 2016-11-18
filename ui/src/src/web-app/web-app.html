@@ -340,25 +340,13 @@
                                     <template is="dom-if" if="[[view.isGrid]]" restamp="true">
                                         <div class="photoContainer grid">
                                             <div class="photoContent" tabindex$="[[tabIndex]]" on-tap="mainAction">
-                                           <!--     <template is="dom-if" if="[[isGmail(item.file_type)]]">-->
-                          <!--                          <iron-image sizing="cover"
-                                                                src$="data:image/[[item.original.extension]];base64,[[item.base_64]]"
-                                                                placeholder="src/static/unknown-img.jpg"
-                                                                preload
-                                                                fade>
-                                                        <mat-ripple></mat-ripple>
-                                                    </iron-image>-->
-                                      <!--          </template>-->
-
-                                                <!--<template is="dom-if" if="[[!isGmail(item.file_type)]]">-->
-                                                    <iron-image sizing="cover"
-                                                                src$="[[endpoints.web]]/media/thumbnail?original_file_id=[[item.original.id]]"
-                                                                placeholder="src/static/unknown-img.jpg"
-                                                                preload
-                                                                fade>
-                                                        <mat-ripple></mat-ripple>
-                                                    </iron-image>
-                                              <!--  </template>-->
+                                                <iron-image sizing="cover"
+                                                            src$="[[endpoints.web]]/media/thumbnail?original_file_id=[[item.original.id]]"
+                                                            placeholder="src/static/unknown-img.jpg"
+                                                            preload
+                                                            fade>
+                                                    <mat-ripple></mat-ripple>
+                                                </iron-image>
 
                                                 <div class="detail">
                                                     <mat-item class="light" label="[[item.name]]">

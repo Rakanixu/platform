@@ -432,20 +432,19 @@ func (ofs *OneDriveFs) getDirChildren(id string) error {
 
 func (ofs *OneDriveFs) pushToFilesChannel(f onedrive.OneDriveFile) error {
 	n := strings.Split(f.Name, ".")
-	b64 := ""
 	if categories.GetDocType("."+n[len(n)-1]) == globals.CATEGORY_PICTURE {
-		b, err := ofs.DownloadFile(f.ID, f.ContentDownloadURL)
+		_, err := ofs.DownloadFile(f.ID, f.ContentDownloadURL)
 		if err != nil {
 			return err
 		}
 
-		b64, err = FileToBase64(b)
-		if err != nil {
-			return err
-		}
+		/*	b64, err = FileToBase64(b)
+			if err != nil {
+				return err
+			}*/
 	}
 
-	kof := file.NewKazoupFileFromOneDriveFile(&f, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index, b64)
+	kof := file.NewKazoupFileFromOneDriveFile(&f, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)
 	ofs.FilesChan <- kof
 
 	return nil

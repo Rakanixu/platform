@@ -96,7 +96,7 @@ func NewFileFromString(s string) (File, error) {
 
 // NewKazoupFileFromGoogleDriveFile constructor
 // opts first param is base64 emcoded file (itself)
-func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId, uId, index string, opts ...string) *KazoupGoogleFile {
+func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId, uId, index string) *KazoupGoogleFile {
 	t, _ := time.Parse("2006-01-02T15:04:05.000Z", g.ModifiedTime)
 
 	d := false
@@ -118,11 +118,6 @@ func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId, uId, index stri
 		url = g.WebContentLink
 	}
 
-	b64 := ""
-	if len(opts) > 0 {
-		b64 = opts[0]
-	}
-
 	kf := &KazoupFile{
 		ID:           globals.GetMD5Hash(url),
 		UserId:       uId,
@@ -135,7 +130,6 @@ func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId, uId, index stri
 		Depth:        0,
 		FileType:     globals.GoogleDrive,
 		LastSeen:     time.Now().Unix(),
-		Base64:       b64,
 		DatasourceId: dsId,
 		Index:        index,
 	}
@@ -186,17 +180,12 @@ func NewKazoupFileFromLocal(lf *local.LocalFile, dsId, uId, index string) *Kazou
 }
 
 // NewKazoupFileFromOneDriveFile constructor
-func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile, dsId, uId, index string, opts ...string) *KazoupOneDriveFile {
+func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile, dsId, uId, index string) *KazoupOneDriveFile {
 	isDir := true
 	name := strings.Split(o.Name, ".")
 
 	if len(o.File.MimeType) > 0 {
 		isDir = false
-	}
-
-	b64 := ""
-	if len(opts) > 0 {
-		b64 = opts[0]
 	}
 
 	kf := &KazoupFile{
@@ -211,7 +200,6 @@ func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile, dsId, uId, index st
 		Depth:        0,
 		FileType:     globals.OneDrive,
 		LastSeen:     time.Now().Unix(),
-		Base64:       b64,
 		DatasourceId: dsId,
 		Index:        index,
 	}
@@ -287,18 +275,13 @@ func NewKazoupFileFromBoxFile(d *box.BoxFileMeta, dsId, uId, index string) *Kazo
 }
 
 // NewKazoupFileFromGmailFile constructor
-func NewKazoupFileFromGmailFile(m *gmailhelper.GmailFile, dsId, uId, dsURL, index string, opts ...string) *KazoupGmailFile {
+func NewKazoupFileFromGmailFile(m *gmailhelper.GmailFile, dsId, uId, dsURL, index string) *KazoupGmailFile {
 	if len(m.Name) == 0 {
 		return nil
 	}
 
 	url := fmt.Sprintf("%s%s/#inbox/%s", globals.GmailEndpoint, strings.Replace(dsURL, globals.Gmail+"://", "", 1), m.MessageId)
 	t := time.Unix(m.InternalDate/1000, 0)
-
-	b64 := ""
-	if len(opts) > 0 {
-		b64 = opts[0]
-	}
 
 	kf := &KazoupFile{
 		ID:           globals.GetMD5Hash(url),
@@ -312,7 +295,6 @@ func NewKazoupFileFromGmailFile(m *gmailhelper.GmailFile, dsId, uId, dsURL, inde
 		Depth:        0,
 		FileType:     globals.Gmail,
 		LastSeen:     time.Now().Unix(),
-		Base64:       b64,
 		DatasourceId: dsId,
 		Index:        index,
 	}

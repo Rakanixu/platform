@@ -242,7 +242,6 @@ func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
 			c = categories.GetDocType(v.MimeType)
 		}
 
-		b64 := ""
 		if c == globals.CATEGORY_PICTURE {
 			b, err := gfs.DownloadFile(v.Id)
 			if err != nil {
@@ -259,7 +258,7 @@ func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
 			}
 		}
 
-		f := file.NewKazoupFileFromGoogleDriveFile(v, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index, b64)
+		f := file.NewKazoupFileFromGoogleDriveFile(v, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
 
 		gfs.FilesChan <- f
 	}

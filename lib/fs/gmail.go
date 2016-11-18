@@ -9,6 +9,7 @@ import (
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	gmailhelper "github.com/kazoup/platform/lib/gmail"
+	"github.com/kazoup/platform/lib/image"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -203,15 +204,18 @@ func (gfs *GmailFs) pushMessagesToChanForPage(s *gmail.Service, msgs []*gmail.Me
 				Name:         vl.Filename,
 			}
 
-			b64 := ""
 			if vl.MimeType == globals.MIME_PNG || vl.MimeType == globals.MIME_JPG || vl.MimeType == globals.MIME_JPEG {
 				b, err := gfs.DownloadFile(v.Id, vl.Body.AttachmentId)
 				if err != nil {
 					return err
 				}
 
-				b64, err = FileToBase64(b)
+				b, err = image.Thumbnail(b, globals.THUMBNAIL_WIDTH)
 				if err != nil {
+					return err
+				}
+
+				if err := gfs.UploadFile(b, gf.Id); err != nil {
 					return err
 				}
 			}
@@ -219,7 +223,7 @@ func (gfs *GmailFs) pushMessagesToChanForPage(s *gmail.Service, msgs []*gmail.Me
 			ext := strings.Split(strings.Replace(vl.Filename, " ", "-", 1), ".")
 			gf.Extension = ext[len(ext)-1]
 
-			f := file.NewKazoupFileFromGmailFile(gf, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Url, gfs.Endpoint.Index, b64)
+			f := file.NewKazoupFileFromGmailFile(gf, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Url, gfs.Endpoint.Index)
 			// Constructor will return nil when the attachment has no name
 			// When an attachment has no name, attachment use to be a marketing image
 			if f != nil {

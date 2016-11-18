@@ -15,7 +15,6 @@ type KazoupFile struct {
 	Depth        int64     `json:"depth"`
 	FileType     string    `json:"file_type"`
 	LastSeen     int64     `json:"last_seen"`
-	Base64       string    `json:"base_64"`
 	DatasourceId string    `json:"datasource_id"`
 	Index        string    `json:"index,omitempty"` //Index the file will be pushed to
 }
