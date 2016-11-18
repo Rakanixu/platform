@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  namespace: default
+  name: search-srv
+spec:
+  replicas: 1
+  selector:
+    name: search-srv
+  template:
+    metadata:
+      labels:
+        name: search-srv
+    spec:
+      containers:
+        - name: search
+          command: [
+                  "/srv",
+                  "--registry=consul",
+                  "--registry_address=$(REGISTRY_SERVICE_HOST)",
+                  "--server_address=0.0.0.0:9090",
+                  "--broker=nats",
+                  "--broker_address=nats:4222",
+                  "--selector=cache",
+                  "--transport=tcp",
+                  ]
+          image: kazoup/search-srv:latest
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 9090
+            name: search-port
+          - containerPort: 10001
+            name: broker-port

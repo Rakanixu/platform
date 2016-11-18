@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  namespace: default
+  name: scheduler-srv
+spec:
+  replicas: 1
+  selector:
+    name: scheduler-srv
+  template:
+    metadata:
+      labels:
+        name: scheduler-srv
+    spec:
+      containers:
+        - name: scheduler
+          command: [
+                  "/srv",
+                  "--registry=consul",
+                  "--registry_address=$(REGISTRY_SERVICE_HOST)",
+                  "--server_address=0.0.0.0:9090",
+                  "--broker=nats",
+                  "--broker_address=nats:4222",
+                  "--selector=cache",
+                  "--transport=tcp",
+                  ]
+          image: kazoup/scheduler-srv:latest
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 9090
+            name: scheduler-port
+          - containerPort: 10001
+            name: broker-port
