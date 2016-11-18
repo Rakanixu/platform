@@ -1,6 +1,6 @@
 machine:
         environment:
-                 PROJECT_NAME: Desktop
+                 PROJECT_NAME: desktop-1470249894548
                  CLUSTER_NAME: prod
                  CLOUDSDK_COMPUTE_ZONE: europe-west1-b
         services:
