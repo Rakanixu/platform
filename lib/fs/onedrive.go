@@ -12,10 +12,12 @@ import (
 	"github.com/kazoup/platform/lib/categories"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/image"
 	"github.com/kazoup/platform/lib/onedrive"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -68,7 +70,7 @@ func (ofs *OneDriveFs) List() (chan file.File, chan bool, error) {
 				}
 			default:
 				// Helper for close channel and set that scanner has finish
-				if ofs.LastDirTime+10 < time.Now().Unix() {
+				if ofs.LastDirTime+15 < time.Now().Unix() {
 					ofs.Running <- false
 					close(ofs.Directories)
 					return
@@ -257,11 +259,32 @@ func (ofs *OneDriveFs) ShareFile(ctx context.Context, c client.Client, req file_
 
 // DownloadFile retrieves a file
 func (ofs *OneDriveFs) DownloadFile(id string, opts ...string) ([]byte, error) {
-	// opts first string is ContentDownloadURL
+	//POST /drive/items/{item-id}/action.invite
+	if err := ofs.refreshToken(); err != nil {
+		log.Println(err)
+	}
 
-	log.Println("ONEDRIVE", opts[0])
+	oc := &http.Client{}
 
-	return nil, nil
+	// https://dev.onedrive.com/items/download.htm
+	url := globals.OneDriveEndpoint + Drive + "items/" + id + "/content"
+	oreq, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	oreq.Header.Set("Authorization", ofs.Endpoint.Token.TokenType+" "+ofs.Endpoint.Token.AccessToken)
+	res, err := oc.Do(oreq)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	b, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
 }
 
 // UploadFile uploads a file into google cloud storage
@@ -433,15 +456,19 @@ func (ofs *OneDriveFs) getDirChildren(id string) error {
 func (ofs *OneDriveFs) pushToFilesChannel(f onedrive.OneDriveFile) error {
 	n := strings.Split(f.Name, ".")
 	if categories.GetDocType("."+n[len(n)-1]) == globals.CATEGORY_PICTURE {
-		_, err := ofs.DownloadFile(f.ID, f.ContentDownloadURL)
+		b, err := ofs.DownloadFile(f.ID)
 		if err != nil {
 			return err
 		}
 
-		/*	b64, err = FileToBase64(b)
-			if err != nil {
-				return err
-			}*/
+		b, err = image.Thumbnail(b, globals.THUMBNAIL_WIDTH)
+		if err != nil {
+			return err
+		}
+
+		if err := ofs.UploadFile(b, f.ID); err != nil {
+			return err
+		}
 	}
 
 	kof := file.NewKazoupFileFromOneDriveFile(&f, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)

@@ -9,7 +9,6 @@ import (
 	"image/jpeg"
 	_ "image/jpeg"
 	_ "image/png"
-	"log"
 )
 
 func Thumbnail(file []byte, width int) ([]byte, error) {
@@ -23,8 +22,6 @@ func Thumbnail(file []byte, width int) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	err = jpeg.Encode(buf, ni, nil)
 	if err != nil {
-		log.Println("ONEDRIVE ENCODE", err)
-
 		return nil, err
 	}
 
