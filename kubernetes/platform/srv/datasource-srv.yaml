@@ -1,33 +1,30 @@
-apiVersion: v1
-kind: ReplicationController
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
-  namespace: default
   name: datasource-srv
 spec:
   replicas: 1
-  selector:
-    name: datasource-srv
   template:
     metadata:
       labels:
-        name: datasource-srv
+        app: datasource-srv
     spec:
       containers:
-        - name: datasource
-          command: [
+      - name: datasource
+        command: [
                   "/srv",
                   "--registry=consul",
                   "--registry_address=$(REGISTRY_SERVICE_HOST)",
                   "--server_address=0.0.0.0:9090",
-                   "--broker=nats",
+                  "--broker=nats",
                   "--broker_address=nats:4222",
                   "--selector=cache",
                   "--transport=tcp",
                   ]
-          image: kazoup/datasource-srv:latest
-          imagePullPolicy: Always
-          ports:
-          - containerPort: 9090
-            name: datasource-port
-          - containerPort: 10001
-            name: broker-port
+        image: eu.gcr.io/desktop-1470249894548/datasource-srv:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9090
+          name: datasource-port
+        - containerPort: 10001
+          name: broker-port

@@ -1,35 +1,29 @@
-apiVersion: v1
-kind: ReplicationController
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
-  namespace: default
   name: config-web
 spec:
   replicas: 1
-  selector:
-    name: config-web
   template:
     metadata:
       labels:
-        name: config-web
+        app: config-web
     spec:
       containers:
-        - name: config
-          resources:
-            limits:
-              cpu: "10m"
-          command: [
-                "/web",
-                "--registry_address=$(REGISTRY_SERVICE_HOST)",
-                "--server_address=0.0.0.0:9090",
-                "--register_ttl=60",
-                "--register_interval=30",
-                "--broker=nats",
-                "--broker_address=nats:4222",
-                "--selector=cache",
-                "--transport=tcp",
-          ]
-          image: kazoup/config-web:latest
-          imagePullPolicy: Always
-          ports:
-          - containerPort: 9090
-            name: config-port
+      - name: config
+        command: [
+                  "/web",
+                  "--registry_address=$(REGISTRY_SERVICE_HOST)",
+                  "--server_address=0.0.0.0:9090",
+                  "--register_ttl=60",
+                  "--register_interval=30",
+                  "--broker=nats",
+                  "--broker_address=nats:4222",
+                  "--selector=cache",
+                  "--transport=tcp",
+                  ]
+        image: eu.gcr.io/desktop-1470249894548/config-web:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9090
+          name: config-port

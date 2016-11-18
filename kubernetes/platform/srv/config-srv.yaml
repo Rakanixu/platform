@@ -1,20 +1,17 @@
-apiVersion: v1
-kind: ReplicationController
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
-  namespace: default
   name: config-srv
 spec:
   replicas: 1
-  selector:
-    name: config-srv
   template:
     metadata:
       labels:
-        name: config-srv
+        app: config-srv
     spec:
       containers:
-        - name: config
-          command: [
+      - name: config
+        command: [
                   "/srv",
                   "--registry=consul",
                   "--registry_address=$(REGISTRY_SERVICE_HOST)",
@@ -24,10 +21,10 @@ spec:
                   "--selector=cache",
                   "--transport=tcp",
                   ]
-          image: kazoup/config-srv:latest
-          imagePullPolicy: Always
-          ports:
-          - containerPort: 9090
-            name: config-port
-          - containerPort: 10001
-            name: broker-port
+        image: eu.gcr.io/desktop-1470249894548/config-srv:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9090
+          name: config-port
+        - containerPort: 10001
+          name: broker-port

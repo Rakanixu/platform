@@ -1,20 +1,17 @@
-apiVersion: v1
-kind: ReplicationController
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
-  namespace: default
   name: crawler-srv
 spec:
   replicas: 1
-  selector:
-    name: crawler-srv
   template:
     metadata:
       labels:
-        name: crawler-srv
+        app: crawler-srv
     spec:
       containers:
-        - name: crawler
-          command: [
+      - name: crawler
+        command: [
                   "/srv",
                   "--registry=consul",
                   "--registry_address=$(REGISTRY_SERVICE_HOST)",
@@ -24,10 +21,10 @@ spec:
                   "--selector=cache",
                   "--transport=tcp",
                   ]
-          image: kazoup/crawler-srv:latest
-          imagePullPolicy: Always
-          ports:
-          - containerPort: 9090
-            name: crawler-port
-          - containerPort: 10001
-            name: broker-port
+        image: eu.gcr.io/desktop-1470249894548/crawler-srv:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9090
+          name: crawler-port
+        - containerPort: 10001
+          name: broker-port

@@ -1,20 +1,17 @@
-apiVersion: v1
-kind: ReplicationController
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
-  namespace: default
   name: file-srv
 spec:
   replicas: 1
-  selector:
-    name: file-srv
   template:
     metadata:
       labels:
-        name: file-srv
+        app: file-srv
     spec:
       containers:
-        - name: file
-          command: [
+      - name: file
+        command: [
                   "/srv",
                   "--registry=consul",
                   "--registry_address=$(REGISTRY_SERVICE_HOST)",
@@ -24,10 +21,10 @@ spec:
                   "--selector=cache",
                   "--transport=tcp",
                   ]
-          image: kazoup/file-srv:latest
-          imagePullPolicy: Always
-          ports:
-          - containerPort: 9090
-            name: file-port
-          - containerPort: 10001
-            name: broker-port
+        image: eu.gcr.io/desktop-1470249894548/file-srv:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9090
+          name: file-port
+        - containerPort: 10001
+          name: broker-port

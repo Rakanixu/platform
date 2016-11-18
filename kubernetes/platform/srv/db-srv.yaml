@@ -1,33 +1,30 @@
-apiVersion: v1
-kind: ReplicationController
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
-  namespace: default
   name: db-srv
 spec:
   replicas: 1
-  selector:
-    name: db-srv
   template:
     metadata:
       labels:
-        name: db-srv
+        app: db-srv
     spec:
       containers:
-        - name: db
-          command: [
+      - name: db
+        command: [
                   "/srv",
                   "--registry=consul",
                   "--registry_address=$(REGISTRY_SERVICE_HOST)",
                   "--server_address=0.0.0.0:9090",
-                   "--broker=nats",
+                  "--broker=nats",
                   "--broker_address=nats:4222",
                   "--selector=cache",
                   "--transport=tcp",
                   ]
-          image: kazoup/db-srv:latest
-          imagePullPolicy: Always
-          ports:
-          - containerPort: 9090
-            name: db-port
-          - containerPort: 10001
-            name: broker-port
+        image: eu.gcr.io/desktop-1470249894548/db-srv:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9090
+          name: db-port
+        - containerPort: 10001
+          name: broker-port
