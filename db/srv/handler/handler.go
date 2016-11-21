@@ -15,7 +15,7 @@ type DB struct{}
 func (db *DB) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.CreateResponse) error {
 	_, err := engine.Create(ctx, req)
 	if err != nil {
-		return errors.InternalServerError("go.micro.srv.db", err.Error())
+		return errors.InternalServerError("go.micro.srv.db.Create", err.Error())
 	}
 
 	return nil
@@ -25,7 +25,7 @@ func (db *DB) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.C
 func (db *DB) Read(ctx context.Context, req *proto.ReadRequest, rsp *proto.ReadResponse) error {
 	response, err := engine.Read(ctx, req)
 	if err != nil {
-		return errors.InternalServerError("go.micro.srv.db", err.Error())
+		return errors.InternalServerError("go.micro.srv.db.Read", err.Error())
 	}
 
 	rsp.Result = response.Result
@@ -37,7 +37,7 @@ func (db *DB) Read(ctx context.Context, req *proto.ReadRequest, rsp *proto.ReadR
 func (db *DB) Update(ctx context.Context, req *proto.UpdateRequest, rsp *proto.UpdateResponse) error {
 	_, err := engine.Update(ctx, req)
 	if err != nil {
-		return errors.InternalServerError("go.micro.srv.db", err.Error())
+		return errors.InternalServerError("go.micro.srv.db.Update", err.Error())
 	}
 
 	return nil
@@ -47,7 +47,7 @@ func (db *DB) Update(ctx context.Context, req *proto.UpdateRequest, rsp *proto.U
 func (db *DB) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *proto.DeleteResponse) error {
 	_, err := engine.Delete(ctx, req)
 	if err != nil {
-		return errors.InternalServerError("go.micro.srv.db", err.Error())
+		return errors.InternalServerError("go.micro.srv.db.Delete", err.Error())
 	}
 
 	return nil
@@ -57,7 +57,7 @@ func (db *DB) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *proto.D
 func (db *DB) DeleteByQuery(ctx context.Context, req *proto.DeleteByQueryRequest, rsp *proto.DeleteByQueryResponse) error {
 	_, err := engine.DeleteByQuery(ctx, req)
 	if err != nil {
-		return errors.InternalServerError("go.micro.srv.db", err.Error())
+		return errors.InternalServerError("go.micro.srv.db.DeleteByQuery", err.Error())
 	}
 
 	return nil
@@ -67,7 +67,7 @@ func (db *DB) DeleteByQuery(ctx context.Context, req *proto.DeleteByQueryRequest
 func (db *DB) CreateIndexWithSettings(ctx context.Context, req *proto.CreateIndexWithSettingsRequest, rsp *proto.CreateIndexWithSettingsResponse) error {
 	_, err := engine.CreateIndexWithSettings(ctx, req)
 	if err != nil {
-		return errors.InternalServerError("go.micro.srv.db", err.Error())
+		return errors.InternalServerError("go.micro.srv.db.CreateIndexWithSettings", err.Error())
 	}
 
 	return nil
@@ -77,7 +77,7 @@ func (db *DB) CreateIndexWithSettings(ctx context.Context, req *proto.CreateInde
 func (db *DB) PutMappingFromJSON(ctx context.Context, req *proto.PutMappingFromJSONRequest, rsp *proto.PutMappingFromJSONResponse) error {
 	_, err := engine.PutMappingFromJSON(ctx, req)
 	if err != nil {
-		return errors.InternalServerError("go.micro.srv.db", err.Error())
+		return errors.InternalServerError("go.micro.srv.db.PutMappingFromJSON", err.Error())
 	}
 
 	return nil
@@ -99,7 +99,7 @@ func (db *DB) Status(ctx context.Context, req *proto.StatusRequest, rsp *proto.S
 func (db *DB) Search(ctx context.Context, req *proto.SearchRequest, rsp *proto.SearchResponse) error {
 	response, err := engine.Search(ctx, req)
 	if err != nil {
-		return errors.InternalServerError("go.micro.srv.db", err.Error())
+		return errors.InternalServerError("go.micro.srv.db.Search", err.Error())
 	}
 
 	rsp.Result = response.Result
@@ -112,7 +112,7 @@ func (db *DB) Search(ctx context.Context, req *proto.SearchRequest, rsp *proto.S
 func (db *DB) SearchById(ctx context.Context, req *proto.SearchByIdRequest, rsp *proto.SearchByIdResponse) error {
 	response, err := engine.SearchById(ctx, req)
 	if err != nil {
-		return errors.InternalServerError("go.micro.srv.db", err.Error())
+		return errors.InternalServerError("go.micro.srv.db.SearchById", err.Error())
 	}
 
 	rsp.Result = response.Result
@@ -124,7 +124,7 @@ func (db *DB) SearchById(ctx context.Context, req *proto.SearchByIdRequest, rsp 
 func (db *DB) AddAlias(ctx context.Context, req *proto.AddAliasRequest, rsp *proto.AddAliasResponse) error {
 	_, err := engine.AddAlias(ctx, req)
 	if err != nil {
-		return errors.InternalServerError("go.micro.srv.db", err.Error())
+		return errors.InternalServerError("go.micro.srv.db.AddAlias", err.Error())
 	}
 
 	return nil
@@ -134,7 +134,7 @@ func (db *DB) AddAlias(ctx context.Context, req *proto.AddAliasRequest, rsp *pro
 func (db *DB) DeleteIndex(ctx context.Context, req *proto.DeleteIndexRequest, rsp *proto.DeleteIndexResponse) error {
 	_, err := engine.DeleteIndex(ctx, req)
 	if err != nil {
-		return errors.InternalServerError("go.micro.srv.db", err.Error())
+		return errors.InternalServerError("go.micro.srv.db.DeleteIndex", err.Error())
 	}
 
 	return nil
@@ -144,7 +144,7 @@ func (db *DB) DeleteIndex(ctx context.Context, req *proto.DeleteIndexRequest, rs
 func (db *DB) DeleteAlias(ctx context.Context, req *proto.DeleteAliasRequest, rsp *proto.DeleteAliasResponse) error {
 	_, err := engine.DeleteAlias(ctx, req)
 	if err != nil {
-		return errors.InternalServerError("go.micro.srv.db", err.Error())
+		return errors.InternalServerError("go.micro.srv.db.DeleteAlias", err.Error())
 	}
 
 	return nil
@@ -154,7 +154,7 @@ func (db *DB) DeleteAlias(ctx context.Context, req *proto.DeleteAliasRequest, rs
 func (db *DB) RenameAlias(ctx context.Context, req *proto.RenameAliasRequest, rsp *proto.RenameAliasResponse) error {
 	_, err := engine.RenameAlias(ctx, req)
 	if err != nil {
-		return errors.InternalServerError("go.micro.srv.db", err.Error())
+		return errors.InternalServerError("go.micro.srv.db.RenameAlias", err.Error())
 	}
 
 	return nil
@@ -164,7 +164,7 @@ func (db *DB) RenameAlias(ctx context.Context, req *proto.RenameAliasRequest, rs
 func (db *DB) Aggregate(ctx context.Context, req *search_proto.AggregateRequest, rsp *search_proto.AggregateResponse) error {
 	response, err := engine.Aggregate(ctx, req)
 	if err != nil {
-		return errors.InternalServerError("go.micro.srv.db", err.Error())
+		return errors.InternalServerError("go.micro.srv.db.Aggregate", err.Error())
 	}
 
 	rsp.Result = response.Result
