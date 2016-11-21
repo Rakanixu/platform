@@ -20,7 +20,8 @@ find * -type d -maxdepth 1 -print | while read dir; do
 	
 	# dep
 	go get -d  -v -t ./...
-
+	# gen
+	go generate -x ./...
 	# build static binary
 	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo  .
 	

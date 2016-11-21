@@ -1,0 +1,69 @@
+<html><head><link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
+
+<link rel="import" href="../../src/behaviors/async-behavior.html">
+<link rel="import" href="../../src/behaviors/endpoints-behavior.html">
+
+</head><body><dom-module id="load-screen">
+  <style is="custom-style" include="iron-flex iron-positioning iron-flex-alignment"></style>
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      .container {
+        @apply(--layout-fullbleed);
+      }
+
+      .inner-container {
+        margin: auto;
+        width: 120px;
+      }
+
+      .inner-container paper-progress,
+      .inner-container iron-image {
+        width: 120px;
+      }
+
+      .inner-container p.info {
+        position: absolute;
+        left: 0;
+        right: 0;
+        padding: 0 10%;
+        text-align: center;
+      }
+    </style>
+
+    <section>
+      <div class="container vertical layout">
+        <div class="flex vertical layout">
+          <div class="inner-container">
+            <iron-image src="../../src/static/kazoup-logo.png"></iron-image>
+            <paper-progress indeterminate=""></paper-progress>
+            <p class="info">[[info]]</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <iron-ajax id="rpcDbStatus" method="POST" content-type="application/json" url="[[endpoints.endpoint]]" handle-as="json" on-error="_handleError" on-response="_handleDbStatus" params="{{rpcDbStatusParams}}" headers="[[headers]]"></iron-ajax>
+
+    <iron-ajax id="rpcDbDatasourcesIndex" method="POST" content-type="application/json" url="[[endpoints.endpoint]]" handle-as="json" on-error="_handleError" on-response="_handleDbDatasourcesIndex" params="{{rpcDbDatasorucesIndexParams}}" headers="[[headers]]"></iron-ajax>
+
+    <iron-ajax id="rpcDbDatasourcesMapping" method="POST" content-type="application/json" url="[[endpoints.endpoint]]" handle-as="json" on-error="_handleError" on-response="_handleDbDatasourcesMapping" params="{{rpcDbDatasourcesMappingParams}}" headers="[[headers]]"></iron-ajax>
+
+    <iron-ajax id="rpcSanitizeDatasources" method="POST" content-type="application/json" url="[[endpoints.endpoint]]" handle-as="json" on-error="_handleError" on-response="_handleSanitizeDatasources" params="{{rpcSanitizeDatasourcesParams}}" headers="[[headers]]"></iron-ajax>
+
+    <iron-ajax id="rpcSetFlags" method="POST" content-type="application/json" url="[[endpoints.endpoint]]" handle-as="json" on-error="_handleError" on-response="_handleSetFlags" params="{{rpcSetFlagsParams}}" headers="[[headers]]"></iron-ajax>
+
+    <iron-ajax id="rpcSearch" method="POST" content-type="application/json" url="[[endpoints.endpoint]]" handle-as="json" on-error="_handleError" on-response="_handleSearch" params="{{rpcSearchParams}}" headers="[[headers]]"></iron-ajax>
+
+  </template>
+
+  <script>"use strict";!function(){Polymer({is:"load-screen",behaviors:[Polymer.AsyncBehaviorImp,Polymer.EndpointsBehaviorImp],properties:{wait:{type:Number,notify:!1,value:1200},info:{type:String,notify:!1,value:"Starting search engine .."},rpcDbStatusParams:{type:Object,notify:!1,value:function(){return{service:"com.kazoup.srv.db",method:"DB.Status"}}},rpcDbDatasourcesIndexParams:{type:Object,notify:!1,value:function(){return{service:"com.kazoup.srv.db",method:"DB.CreateIndexWithSettings",request:{index:"datasources",type:"datasource"}}}},rpcDbDatasourcesMappingParams:{type:Object,notify:!1,value:function(){return{service:"com.kazoup.srv.db",method:"DB.PutMappingFromJSON",request:{index:"datasources",type:"datasource"}}}},rpcSanitizeDatasourcesParams:{type:Object,notify:!1,value:function(){return{service:"com.kazoup.srv.db",method:"DB.Update",request:{index:"datasources",type:"datasource",id:"",data:""}}}},rpcSetFlagsParams:{type:Object,notify:!1,value:function(){return{service:"com.kazoup.srv.config",method:"Config.SetFlags",request:{type:"desktop"}}}},rpcSearchParams:{type:Object,notify:!1,value:function(){return{service:"com.kazoup.srv.datasource",method:"DataSource.Search",request:{from:0,size:999}}}}},ready:function(){this.headers=this.getPublicHeaders(),this.$.rpcDbStatus.body=this.rpcDbStatusParams,this.$.rpcDbDatasourcesIndex.body=this.rpcDbDatasourcesIndexParams,this.$.rpcSetFlags.body=this.rpcSetFlagsParams,this.$.rpcSearch.body=this.rpcSearchParams,this.$.rpcDbStatus.generateRequest()},_handleDbStatus:function(e){var t;e.detail.response&&e.detail.response.status&&(t=JSON.parse(e.detail.response.status),t.master_node.length?(this.set("info","Initializing search engine config .."),_.isEmpty(t.metadata.indices.datasources)&&this.$.rpcDbDatasourcesIndex.generateRequest(),_.isEmpty(t.metadata.indices.flags)&&this.$.rpcSetFlags.generateRequest(),this.async(function(){this.$.rpcSearch.generateRequest()},this.wait)):this.async(function(){this.$.rpcDbStatus.generateRequest()},this.wait))},_handleDbDatasourcesIndex:function(e){this.$.rpcDbDatasourcesMapping.body=this.rpcDbDatasourcesMappingParams,this.$.rpcDbDatasourcesMapping.generateRequest()},_handleDbDatasourcesMapping:function(e){},_handleSetFlags:function(e){},_handleSanitizeDatasources:function(e){},_handleSearch:function(e){var t,a,s;e.detail.response&&(a=JSON.parse(e.detail.response.info),t=JSON.parse(e.detail.response.result),a.total?(s=!1,_.forEach(t,function(e){e.crawler_running&&(e.crawler_running=!1,this.rpcSanitizeDatasourcesParams.request.id=e.id,this.rpcSanitizeDatasourcesParams.request.data=JSON.stringify(e),this.$.rpcSanitizeDatasources.body=this.rpcSanitizeDatasourcesParams,this.$.rpcSanitizeDatasources.generateRequest())}.bind(this))):s=!0,this.loadPage(2,"web-app-activated",{first_scan:s}))},_handleError:function(e){this.checkUnauthorize(e)}})}();</script>
+</dom-module>
+</body></html>

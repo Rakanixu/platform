@@ -1,0 +1,80 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../mat-icon/mat-icon.html">
+<link rel="import" href="../mat-pressed-behavior/mat-pressed-ink-behavior.html">
+<link rel="import" href="../mat-pressed-behavior/mat-pressed-ink-styles.html">
+<link rel="import" href="../mat-typography/mat-typography.html">
+<link rel="import" href="../xp-anchor-behavior/xp-anchor-behavior.html">
+<link rel="import" href="../xp-anchor-behavior/xp-anchor-styles.html">
+<link rel="import" href="../xp-overlay/xp-overlay-injector.html">
+
+</head><body><dom-module id="mat-button">
+
+    <template strip-whitespace="">
+
+        <style include="xp-anchor-styles"></style>
+        <style include="mat-pressed-ink-styles"></style>
+
+        <style>
+            :host {
+                @apply(--mat-font-button);
+                border-radius: 2px;
+                height: 36px;
+                margin: 6px 0;
+                min-width: 36px;
+                text-align: center;
+            }
+
+            :host .anchor:after {
+                min-height: 48px;
+                min-width: 44px;
+                width: calc(100% + 8px);
+            }
+
+            :host .main {
+                @apply(--layout-horizontal);
+                @apply(--layout-center);
+                box-sizing: border-box;
+                height: 100%;
+                padding: 0 12px;
+            }
+
+            :host([label]:not([label=""])) .icon {
+                left: 12px;
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+
+            :host([label=""]) .icon,
+            :host(:not([label])) .icon {
+                margin: -2px -6px;
+            }
+
+            :host .icon:not([empty]) ~ .label {
+                margin-left: 36px;
+            }
+
+            :host([label=""]) .label,
+            :host(:not([label])) .label {
+                display: none !important;
+            }
+        </style>
+
+        <a class="anchor" tabindex="-1" on-click="_anchorHandler">
+            <div class="main">
+                <mat-icon class="icon" color="[[color]]" disabled="[[disabled]]" name="[[icon]]" src="[[iconSrc]]"></mat-icon>
+                <div class="label">[[label]]</div>
+            </div>
+        </a>
+
+        <div class="ripple-ground" active$="[[active]]"></div>
+        <div class="ripple-waves"></div>
+
+    </template>
+
+    <script>Polymer({is:"mat-button",behaviors:[Polymer.XPAnchorBehavior,Polymer.XPOverlayInjector,Polymer.MatPressedInkBehavior],properties:{icon:{reflectToAttribute:!0,type:String},iconSrc:{reflectToAttribute:!0,type:String},label:{reflectToAttribute:!0,type:String}},created:function(){this.classList.add("button")}});</script>
+
+</dom-module>
+</body></html>

@@ -8,7 +8,6 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/wrappers"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
-	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 )
@@ -16,7 +15,7 @@ import (
 //SaveDatasource call datasource-srv and save new data source
 func SaveDatasource(ctx context.Context, user string, url string, token *oauth2.Token) error {
 
-	c := proto_datasource.NewDataSourceClient(globals.DATASOURCE_SERVICE_NAME, wrappers.NewKazoupClient())
+	c := proto_datasource.NewDataSourceClient("com.kazoup.srv.datasource", wrappers.NewKazoupClient())
 	log.Print(c)
 	req := &proto_datasource.CreateRequest{
 		Endpoint: &proto_datasource.Endpoint{
@@ -44,7 +43,8 @@ func SaveDatasource(ctx context.Context, user string, url string, token *oauth2.
 
 //PublishNotification send data source created notification
 func PublishNotification(uID string) error {
-	c := client.NewClient()
+	//c := client.NewClient()
+	c := wrappers.NewKazoupClient()
 	n := &notification_proto.NotificationMessage{
 		Info:   "Datasource created succesfully",
 		Method: globals.NOTIFY_REFRESH_DATASOURCES,

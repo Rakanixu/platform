@@ -1,0 +1,5 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+
+<script>Polymer.XPSlaveBehavior={_coupleMaster:function(e,t){var r=this;return r[e]||r[XP.setter(e,!0)](t),r[e]===t&&t||null},_decoupleMaster:function(e,t){var r=this;return r[e]===t&&r[XP.setter(e,!0)](null),!r[e]&&t||null},properties:{mastersMap:{notify:!0,readOnly:!0,type:Object,value:function(){return{}}}},attached:function(){var e=this,t=function(t,r){e.fire("xp-slave",{firer:e,couple:e._coupleMaster.bind(e,r),selector:t,isAttached:!0})};e.async(function(){XP.forOwn(e.mastersMap,t)})},detached:function(){var e=this,t=function(t,r){e[r]&&e[r].fire("xp-slave",{firer:e,couple:e._decoupleMaster.bind(e,r),selector:t,isAttached:!1})};e.async(function(){XP.forOwn(e.mastersMap,t)})}};</script>
+</head><body></body></html>

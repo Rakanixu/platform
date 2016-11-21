@@ -1,0 +1,8 @@
+<html><head></head><body>/**
+* This element manages the `filters` query parameter.
+*
+*/
+<dom-module id="filter-converter">
+  <script>!function(){Polymer({is:"filter-converter",behaviors:[Polymer.UtilBehaviorImp],properties:{filters:{type:Object,notify:!0,value:function(){return{index:"files",type:"file"}}}},setValue:function(e,i){this.set("filters."+e,i),this.fireFilterChanged()},setValues:function(e){_.forEach(e,function(e,i){this.set("filters."+i,e)}.bind(this)),this.fireFilterChanged()},getFilterAsObj:function(){return this.filters},fireFilterChanged:function(e,i){this.fire("filter-changed",{})}})}();</script>
+</dom-module>
+</body></html>

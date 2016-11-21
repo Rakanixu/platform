@@ -1,0 +1,2 @@
+<html><head><script>"use strict";!function(){Polymer.EndpointsBehaviorImp={properties:{endpoints:{type:Object,notify:!0,value:function(){return window.Endpoints}}},getToken:function(){return localStorage.getItem("token")},loadPage:function(e,t,n){document.querySelector("#ironPages").selected=e,this.fireEvent(t,n)},checkUnauthorize:function(){401===event.detail.request.xhr.response.code&&(localStorage.clear(),this.loadPage(1,"login-auth0-activated",{}))}}}();</script>
+</head><body></body></html>

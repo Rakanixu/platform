@@ -128,3 +128,10 @@ search-srv:
   links:
   - registry
   - nats
+  
+ui-web:
+  command: --registry_address=registry:8500 --selector=cache  --broker=nats --broker_address=nats:4222 
+  image: kazoup/ui-web:latest
+  links:
+  - registry
+  - nats

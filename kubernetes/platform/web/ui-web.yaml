@@ -1,0 +1,31 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ui-web
+spec:
+  replicas: 3
+  revisionHistoryLimit: 3
+  template:
+    metadata:
+      labels:
+        name: ui-web
+        app: ui-web
+        test: test
+    spec:
+      containers:
+      - name: ui-web
+        command: [
+                  "/web",
+                  "--registry_address=$(REGISTRY_SERVICE_HOST)",
+                  "--server_address=0.0.0.0:9090",
+                  "--register_ttl=60",
+                  "--register_interval=30",
+                  "--broker=nats",
+                  "--broker_address=nats:4222",
+                  "--selector=cache",
+                  ]
+        image: eu.gcr.io/desktop-1470249894548/ui-web:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9090
+          name: ui-port

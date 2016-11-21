@@ -1,0 +1,38 @@
+<html><head><link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
+
+<link rel="import" href="../../bower_components/mat-item/mat-item.html">
+
+<link rel="import" href="../../src/behaviors/util-behavior.html">
+<link rel="import" href="../../src/behaviors/endpoints-behavior.html">
+<link rel="import" href="../../src/behaviors/nav-behavior.html">
+<link rel="import" href="../../src/behaviors/map-behavior.html">
+
+</head><body><dom-module id="configuration-page">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+
+    <template is="dom-repeat" items="[[flagsResults]]">
+      <mat-item class="flag" label="[[item.key]]" description="[[item.description]]">
+        <paper-toggle-button class="secondary"></paper-toggle-button>
+      </mat-item>
+    </template>
+
+    <paper-toast id="toast" text=""></paper-toast>
+
+    <iron-ajax id="rpcGetFlags" method="POST" content-type="application/json" url="[[endpoints.endpoint]]" handle-as="json" on-error="_handleError" on-response="_handleGetFlags" params="[[rpcGetFlagsParams]]" headers="[[headers]]"></iron-ajax>
+
+  </template>
+
+  <script>"use strict";!function(){Polymer({is:"configuration-page",behaviors:[Polymer.UtilBehaviorImp,Polymer.NavBehaviorImp,Polymer.MapBehaviorImp,Polymer.AsyncBehaviorImp,Polymer.CommonBehaviorImp,Polymer.EndpointsBehaviorImp],properties:{rpcGetFlagsParams:{type:Object,notify:!1,value:function(){return{service:"com.kazoup.srv.flag",method:"Flag.List",request:{}}}},flagsResults:{type:Array,notify:!0,value:function(){return[]}}},ready:function(){this.$.rpcGetFlags.body=this.rpcGetFlagsParams,window.addEventListener("configuration-page-activated",this.init.bind(this))},init:function(e,t){this.headers=Auth.getHeaders(),this.set("loading",!0),this.$.rpcGetFlags.generateRequest()},_handleGetFlags:function(e){this.set("loading",!1),e.detail.response&&e.detail.response.result&&this.set("flagsResults",JSON.parse(e.detail.response.result))},_handleError:function(e){this.set("loading",!1),this.checkUnauthorize(e),e.detail.request&&e.detail.request.response&&(this.$.toast.text=e.detail.request.response.detail,this.$.toast.show())}})}();</script>
+</dom-module>
+</body></html>

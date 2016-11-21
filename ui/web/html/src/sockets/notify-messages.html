@@ -1,0 +1,21 @@
+<html><head><link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/web-socket/web-socket.html">
+
+<link rel="import" href="../../src/behaviors/endpoints-behavior.html">
+
+</head><body><dom-module id="notify-messages">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+
+    <paper-toast id="toast" text=""></paper-toast>
+
+    <web-socket id="socket" url="[[endpoints.socket]]/notification/platform/notify" on-open="_onOpen" on-close="_onClose" on-message="_onMessage" on-error="_onError" json=""></web-socket>
+  </template>
+
+  <script>"use strict";!function(){Polymer({is:"notify-messages",behaviors:[Polymer.EndpointsBehaviorImp],init:function(e){this.$.socket.open(),this.async(function(){this.$.socket.send({user_id:e})},2500)},_onOpen:function(e){console.log("_onOpen",e.detail)},_onClose:function(e){clearTimeout(this.reconnectTimeout),this.reconnectTimeout=setTimeout(function(){this.$.socket.open()}.bind(this),2e3)},_onMessage:function(e){if(e.detail.user_id===Auth.getUserId()&&(e.detail.info&&e.detail.info.length&&(this.$.toast.text=e.detail.info,this.$.toast.show()),e.detail.method)){var t={};e.detail.data&&e.detail.data.length&&(t=Object(e.detail.data)),this.async(function(){document.querySelector("datasources-page")[e.detail.method]&&document.querySelector("datasources-page")[e.detail.method](t),document.querySelector("web-app")[e.detail.method]&&document.querySelector("web-app")[e.detail.method](t)},1200)}},_onError:function(e){console.log("_onError",e.detail)}})}();</script>
+</dom-module>
+</body></html>
