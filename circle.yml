@@ -3,6 +3,7 @@ machine:
                  PROJECT_NAME: desktop-1470249894548
                  CLUSTER_NAME: prod
                  CLOUDSDK_COMPUTE_ZONE: europe-west1-b
+                 GOOGLE_APPLICATION_CREDENTIALS: /home/ubuntu/account-auth.json
         services:
                 - docker
 dependencies:
