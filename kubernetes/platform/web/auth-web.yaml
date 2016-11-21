@@ -10,7 +10,7 @@ spec:
         app: auth-web
     spec:
       containers:
-      - name: auth
+      - name: auth-web
         command: [
                   "/web",
                   "--registry_address=$(REGISTRY_SERVICE_HOST)",

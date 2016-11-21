@@ -10,7 +10,7 @@ spec:
         app: datasource-srv
     spec:
       containers:
-      - name: datasource
+      - name: datasource-srv
         command: [
                   "/srv",
                   "--registry=consul",

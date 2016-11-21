@@ -10,7 +10,7 @@ spec:
         app: db-srv
     spec:
       containers:
-      - name: db
+      - name: db-srv
         command: [
                   "/srv",
                   "--registry=consul",

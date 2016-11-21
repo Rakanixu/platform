@@ -10,7 +10,7 @@ spec:
         app: config-web
     spec:
       containers:
-      - name: config
+      - name: config-web
         command: [
                   "/web",
                   "--registry_address=$(REGISTRY_SERVICE_HOST)",

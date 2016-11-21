@@ -10,7 +10,7 @@ spec:
         app: notification-srv
     spec:
       containers:
-      - name: notification
+      - name: notification-srv
         command: [
                   "/srv",
                   "--registry=consul",

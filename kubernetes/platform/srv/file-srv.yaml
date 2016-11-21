@@ -10,7 +10,7 @@ spec:
         app: file-srv
     spec:
       containers:
-      - name: file
+      - name: file-srv
         command: [
                   "/srv",
                   "--registry=consul",

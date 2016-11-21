@@ -10,7 +10,7 @@ spec:
         app: notification-web
     spec:
       containers:
-      - name: notification
+      - name: notification-web
         command: [
                   "/web",
                   "--registry_address=$(REGISTRY_SERVICE_HOST)",

@@ -10,7 +10,7 @@ spec:
         app: search-srv
     spec:
       containers:
-      - name: search
+      - name: search-srv
         command: [
                   "/srv",
                   "--registry=consul",

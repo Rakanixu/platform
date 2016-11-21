@@ -10,7 +10,7 @@ spec:
         app: media-web
     spec:
       containers:
-      - name: media
+      - name: media-web
         command: [
                   "/web",
                   "--registry_address=$(REGISTRY_SERVICE_HOST)",

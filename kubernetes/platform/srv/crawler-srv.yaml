@@ -10,7 +10,7 @@ spec:
         app: crawler-srv
     spec:
       containers:
-      - name: crawler
+      - name: crawler-srv
         command: [
                   "/srv",
                   "--registry=consul",

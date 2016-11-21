@@ -10,7 +10,7 @@ spec:
         app: config-srv
     spec:
       containers:
-      - name: config
+      - name: config-srv
         command: [
                   "/srv",
                   "--registry=consul",

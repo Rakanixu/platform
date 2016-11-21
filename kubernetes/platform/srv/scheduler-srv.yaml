@@ -10,7 +10,7 @@ spec:
         app: scheduler-srv
     spec:
       containers:
-      - name: scheduler
+      - name: scheduler-srv
         command: [
                   "/srv",
                   "--registry=consul",
