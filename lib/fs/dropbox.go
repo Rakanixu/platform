@@ -362,20 +362,18 @@ func (dfs *DropboxFs) getFiles() error {
 	for _, v := range filesRsp.Entries {
 		name := strings.Split(v.Name, ".")
 		if categories.GetDocType("."+name[len(name)-1]) == globals.CATEGORY_PICTURE {
-			log.Println("-->", v.Name)
-
 			b, err := dfs.DownloadFile(v.ID)
 			if err != nil {
-				return err
+				log.Println("ERROR downloading dropbox file: %s", err)
 			}
 
 			b, err = image.Thumbnail(b, globals.THUMBNAIL_WIDTH)
 			if err != nil {
-				return err
+				log.Println("ERROR generating thumbnail for dropbox file: %s", err)
 			}
 
 			if err := dfs.UploadFile(b, v.ID); err != nil {
-				return err
+				log.Println("ERROR uploading thumbnail for dropbox file: %s", err)
 			}
 		}
 

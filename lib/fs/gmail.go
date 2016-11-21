@@ -207,16 +207,16 @@ func (gfs *GmailFs) pushMessagesToChanForPage(s *gmail.Service, msgs []*gmail.Me
 			if vl.MimeType == globals.MIME_PNG || vl.MimeType == globals.MIME_JPG || vl.MimeType == globals.MIME_JPEG {
 				b, err := gfs.DownloadFile(v.Id, vl.Body.AttachmentId)
 				if err != nil {
-					return err
+					log.Println("ERROR downloading gmail file: %s", err)
 				}
 
 				b, err = image.Thumbnail(b, globals.THUMBNAIL_WIDTH)
 				if err != nil {
-					return err
+					log.Println("ERROR generating thumbnail for gmail file: %s", err)
 				}
 
 				if err := gfs.UploadFile(b, gf.Id); err != nil {
-					return err
+					log.Println("ERROR uploading thumbnail for gmail file: %s", err)
 				}
 			}
 

@@ -245,16 +245,16 @@ func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
 		if c == globals.CATEGORY_PICTURE {
 			b, err := gfs.DownloadFile(v.Id)
 			if err != nil {
-				return err
+				log.Println("ERROR downloading googledrive file: %s", err)
 			}
 
 			b, err = image.Thumbnail(b, globals.THUMBNAIL_WIDTH)
 			if err != nil {
-				return err
+				log.Println("ERROR generating thumbnail for googledrive file: %s", err)
 			}
 
 			if err := gfs.UploadFile(b, v.Id); err != nil {
-				return err
+				log.Println("ERROR uploading thumbnail for googledrive file: %s", err)
 			}
 		}
 

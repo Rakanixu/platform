@@ -373,16 +373,16 @@ func (bfs *BoxFs) getMetadataFromFile(id string) error {
 	if categories.GetDocType("."+name[len(name)-1]) == globals.CATEGORY_PICTURE {
 		b, err := bfs.DownloadFile(fm.ID)
 		if err != nil {
-			return err
+			log.Println("ERROR downloading box file: %s", err)
 		}
 
 		b, err = image.Thumbnail(b, globals.THUMBNAIL_WIDTH)
 		if err != nil {
-			return err
+			log.Println("ERROR generating thumbnail for box file: %s", err)
 		}
 
 		if err := bfs.UploadFile(b, fm.ID); err != nil {
-			return err
+			log.Println("ERROR uploading thumbnail for box file: %s", err)
 		}
 	}
 

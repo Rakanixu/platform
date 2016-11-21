@@ -458,16 +458,16 @@ func (ofs *OneDriveFs) pushToFilesChannel(f onedrive.OneDriveFile) error {
 	if categories.GetDocType("."+n[len(n)-1]) == globals.CATEGORY_PICTURE {
 		b, err := ofs.DownloadFile(f.ID)
 		if err != nil {
-			return err
+			log.Println("ERROR downloading onedrive file: %s", err)
 		}
 
 		b, err = image.Thumbnail(b, globals.THUMBNAIL_WIDTH)
 		if err != nil {
-			return err
+			log.Println("ERROR generating thumbnail for onedrive file: %s", err)
 		}
 
 		if err := ofs.UploadFile(b, f.ID); err != nil {
-			return err
+			log.Println("ERROR uploading thumbnail for onedrive file: %s", err)
 		}
 	}
 
