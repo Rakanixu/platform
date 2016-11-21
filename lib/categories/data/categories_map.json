@@ -491,7 +491,7 @@
     "order": 3,
     "color": "#d62728",
     "extensions": [
-      ".png", ".jpeg", ".jpg", ".tiff", ".bmp", ".exif",".gif"
+      ".png", ".jpeg", ".jpg", ".tiff", ".bmp", ".exif", ".gif", ".PNG", ".JPEG", ".JPG"
     ]
   },
   {

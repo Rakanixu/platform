@@ -3,9 +3,12 @@ package handler
 import (
 	"github.com/kazoup/platform/datasource/srv/engine"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/lib/globals"
+	scheduler_proto "github.com/kazoup/platform/scheduler/srv/proto/scheduler"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
+	"time"
 )
 
 // DataSource struct
@@ -52,6 +55,19 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 
 	// Scan created datasource
 	if err := eng.Scan(ctx, ds.Client); err != nil {
+		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
+	}
+
+	// Shedule scan task
+	if err := eng.ScheduleScan(ctx, ds.Client, &scheduler_proto.CreateScheduledTaskRequest{
+		Task: &scheduler_proto.Task{
+			Id:     endpoint.Id,
+			Action: globals.StartScanTask,
+		},
+		Schedule: &scheduler_proto.Schedule{
+			IntervalSeconds: int64(time.Hour.Seconds()),
+		},
+	}); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 

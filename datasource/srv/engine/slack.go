@@ -2,6 +2,7 @@ package engine
 
 import (
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	scheduler_proto "github.com/kazoup/platform/scheduler/srv/proto/scheduler"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 )
@@ -36,6 +37,11 @@ func (s *Slack) Delete(ctx context.Context, c client.Client) error {
 // Scan slack data source
 func (s *Slack) Scan(ctx context.Context, c client.Client) error {
 	return ScanDataSource(ctx, c, &s.Endpoint)
+}
+
+// ScheduleScan register a chron task
+func (s *Slack) ScheduleScan(ctx context.Context, c client.Client, sc *scheduler_proto.CreateScheduledTaskRequest) error {
+	return ScheduleScanDataSource(ctx, c, sc)
 }
 
 // CreateIndeWithAlias creates a index for local datasource

@@ -3,6 +3,10 @@ package elastic
 import (
 	"encoding/json"
 	"errors"
+	"log"
+
+	"os"
+
 	"github.com/kazoup/gabs"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/kazoup/platform/db/srv/engine"
@@ -12,7 +16,6 @@ import (
 	search_proto "github.com/kazoup/platform/search/srv/proto/search"
 	lib "github.com/mattbaird/elastigo/lib"
 	"golang.org/x/net/context"
-	"log"
 )
 
 type elastic struct {
@@ -57,8 +60,26 @@ func init() {
 
 // Init elastic db
 func (e *elastic) Init() error {
+	// Set ES details from env variables
+	url := os.Getenv("ELASTICSEARCH_URL")
+	if url == "" {
+		url = "http://elasticsearch:9200"
+	}
+	username := os.Getenv("ES_USERNAME")
+	password := os.Getenv("ES_PASSWORD")
+	//connect
 	e.conn = lib.NewConn()
-	e.conn.SetHosts([]string{"elasticsearch:9200"}) //TODO: replace for enterprise version, get flag
+	err := e.conn.SetFromUrl(url)
+	//e.conn.SetHosts([]string{"elasticsearch:9200"}) //TODO: replace for enterprise version, get flag
+	if err != nil {
+		return err
+	}
+	if username != "" {
+		e.conn.Username = username
+	}
+	if password != "" {
+		e.conn.Password = password
+	}
 	e.bulk = e.conn.NewBulkIndexerErrors(100, 5)
 	e.bulk.BulkMaxDocs = 100000
 	e.bulk.Start()

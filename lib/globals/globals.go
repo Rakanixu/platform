@@ -9,6 +9,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
+
 	"github.com/dgrijalva/jwt-go"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
@@ -18,7 +20,6 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"golang.org/x/oauth2/slack"
-	"io"
 )
 
 const (
@@ -27,10 +28,12 @@ const (
 	DB_SERVICE_NAME           string = NAMESPACE + ".srv.db"
 	DATASOURCE_SERVICE_NAME   string = NAMESPACE + ".srv.datasource"
 	NOTIFICATION_SERVICE_NAME string = NAMESPACE + ".srv.notification"
+	SCHEDULER_SERVICE_NAME    string = NAMESPACE + ".srv.scheduler"
 	FilesTopic                string = NAMESPACE + ".topic.files"
 	SlackChannelsTopic        string = NAMESPACE + ".topic.slackchannels"
 	SlackUsersTopic           string = NAMESPACE + ".topic.slackusers"
 	ScanTopic                 string = NAMESPACE + ".topic.scan"
+	CrawlerStartedTopic       string = NAMESPACE + ".topic.crawlerstarted"
 	CrawlerFinishedTopic      string = NAMESPACE + ".topic.crawlerfinished"
 	NotificationTopic         string = NAMESPACE + ".topic.notification"
 
@@ -97,8 +100,8 @@ const (
 
 	StartScanTask = "start_scan"
 
-	SERVER_ADDRESS        = "http://web.kazoup.io:8082"
-	SECURE_SERVER_ADDRESS = "https://web.kazoup.io:8082"
+	SERVER_ADDRESS        = "https://web.kazoup.io"
+	SECURE_SERVER_ADDRESS = "https://web.kazoup.io"
 
 	SYSTEM_TOKEN     = "ajsdIgsnaloHFGis823jsdgyjTGDKijfcjk783JDUYFJyggvwejkxsnmbkjwpoj6483"
 	CLIENT_ID_SECRET = "EC1FD9R5t6D3cs9CzPbgJaBJjshoVgrJrTs6U39scYzYF7HYyMlv_mal2IjLLaA9" // Auth0 RPC API client

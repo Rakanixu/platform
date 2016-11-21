@@ -16,6 +16,40 @@ import (
 
 var Broker broker.Broker
 
+// SubscribeCrawlerStarted receives CrawlerStartedMessage and publish to NotificationTopic
+func SubscribeCrawlerStarted(ctx context.Context, msg *crawler.CrawlerStartedMessage) error {
+	var ds *proto.Endpoint
+
+	c := db_proto.NewDBClient(globals.DB_SERVICE_NAME, nil)
+	rsp, err := c.Read(ctx, &db_proto.ReadRequest{
+		Index: "datasources",
+		Type:  "datasource",
+		Id:    msg.DatasourceId,
+	})
+	if err != nil {
+		return err
+	}
+
+	if err := json.Unmarshal([]byte(rsp.Result), &ds); err != nil {
+		return err
+	}
+
+	// Publish notification
+	nm := &notification_proto.NotificationMessage{
+		Info:   "Scan started on " + ds.Url + " datasource.",
+		Method: globals.NOTIFY_REFRESH_DATASOURCES,
+		UserId: msg.UserId,
+		Data:   rsp.Result,
+	}
+
+	// Publish notification
+	if err := client.Publish(ctx, client.NewPublication(globals.NotificationTopic, nm)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // SubscribeCrawlerFinished sets last scan timestamp for the datasource after being scanned and updates crawler state
 func SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedMessage) error {
 	var ds *proto.Endpoint
