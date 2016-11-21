@@ -1,0 +1,31 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: file-srv
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  template:
+    metadata:
+      labels:
+        app: file-srv
+    spec:
+      containers:
+      - name: file-srv
+        command: [
+                  "/srv",
+                  "--registry=consul",
+                  "--registry_address=$(REGISTRY_SERVICE_HOST)",
+                  "--server_address=0.0.0.0:9090",
+                  "--broker=nats",
+                  "--broker_address=nats:4222",
+                  "--selector=cache",
+                  "--transport=tcp",
+                  ]
+        image: eu.gcr.io/desktop-1470249894548/file-srv:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9090
+          name: file-port
+        - containerPort: 10001
+          name: broker-port

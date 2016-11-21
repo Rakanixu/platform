@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  namespace: default
+  name: micro-web
+spec:
+  replicas: 3
+  selector:
+    name: micro-web
+  template:
+    metadata:
+      labels:
+        name: micro-web
+    spec:
+      containers:
+        - name: web
+          resources:
+            limits:
+              cpu: "10m"
+          command: [
+            "/micro",
+            "--registry=consul",
+            "--web_namespace=com.kazoup.web",
+            "--registry_address=$(REGISTRY_SERVICE_HOST)",
+            "--register_ttl=60",
+            "--register_interval=30",
+            "--web_cors=*",
+            "--enable_tls",
+            "--tls_cert_file=/secrets/tls.crt",
+            "--tls_key_file=/secrets/tls.key",
+            "--enable_stats",
+            "web"
+          ]
+          image: microhq/micro:latest
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 8082
+            name: web-port
+          volumeMounts: 
+          - name: secrets
+            mountPath: "/secrets"
+            readOnly: true
+      volumes:
+      - name: secrets
+        secret: 
+         secretName: "ssl"
+        

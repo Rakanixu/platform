@@ -1,0 +1,30 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: media-web
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  template:
+    metadata:
+      labels:
+        app: media-web
+    spec:
+      containers:
+      - name: media-web
+        command: [
+                  "/web",
+                  "--registry_address=$(REGISTRY_SERVICE_HOST)",
+                  "--server_address=0.0.0.0:9090",
+                  "--register_ttl=60",
+                  "--register_interval=30",
+                  "--broker=nats",
+                  "--broker_address=nats:4222",
+                  "--selector=cache",
+                  "--transport=tcp",
+                  ]
+        image: eu.gcr.io/desktop-1470249894548/media-web:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9090
+          name: media-port

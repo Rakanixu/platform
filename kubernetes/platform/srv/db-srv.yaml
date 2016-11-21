@@ -1,0 +1,38 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: db-srv
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  template:
+    metadata:
+      labels:
+        app: db-srv
+    spec:
+      containers:
+      - name: db-srv
+        command: [
+                  "/srv",
+                  "--registry=consul",
+                  "--registry_address=$(REGISTRY_SERVICE_HOST)",
+                  "--server_address=0.0.0.0:9090",
+                  "--broker=nats",
+                  "--broker_address=nats:4222",
+                  "--selector=cache",
+                  "--transport=tcp",
+                  ]
+        image: eu.gcr.io/desktop-1470249894548/db-srv:latest
+        env:
+          - name: ELASTICSEARCH_URL
+            value:  "https://fdcafef6eb3464e469a96ae1d6da9fe6.eu-west-1.aws.found.io:9243"
+          - name: ES_USERNAME
+            value: "elastic"
+          - name: ES_PASSWORD
+            value: "q3cbAJ3TueRCTBIrgLLlpLkD"
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9090
+          name: db-port
+        - containerPort: 10001
+          name: broker-port

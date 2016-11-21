@@ -1,0 +1,31 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: scheduler-srv
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  template:
+    metadata:
+      labels:
+        app: scheduler-srv
+    spec:
+      containers:
+      - name: scheduler-srv
+        command: [
+                  "/srv",
+                  "--registry=consul",
+                  "--registry_address=$(REGISTRY_SERVICE_HOST)",
+                  "--server_address=0.0.0.0:9090",
+                  "--broker=nats",
+                  "--broker_address=nats:4222",
+                  "--selector=cache",
+                  "--transport=tcp",
+                  ]
+        image: eu.gcr.io/desktop-1470249894548/scheduler-srv:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9090
+          name: scheduler-port
+        - containerPort: 10001
+          name: broker-port
