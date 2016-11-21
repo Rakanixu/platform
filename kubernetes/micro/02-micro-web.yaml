@@ -24,7 +24,10 @@ spec:
             "--registry_address=$(REGISTRY_SERVICE_HOST)",
             "--register_ttl=60",
             "--register_interval=30",
-            "--web_cors=http://web.kazoup.io",
+            "--web_cors=*",
+            "--enable_tls",
+            "--tls_cert_file=/secrets/tls.crt",
+            "--tls_key_file=/secrets/tls.key",
             "--enable_stats",
             "web"
           ]
@@ -33,3 +36,12 @@ spec:
           ports:
           - containerPort: 8082
             name: web-port
+          volumeMounts: 
+          - name: secrets
+            mountPath: "/secrets"
+            readOnly: true
+      volumes:
+      - name: secrets
+        secret: 
+         secretName: "ssl"
+        

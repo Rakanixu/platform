@@ -12,7 +12,11 @@ spec:
     - name: http
       port: 80
       targetPort: 8082
+    - name: https
+      port: 443
+      targetPort: 8082
   # label keys and values that must match in order to receive traffic for this service
   selector:
     name: micro-web
   type: LoadBalancer
+  loadBalancerIP: 104.199.48.186
