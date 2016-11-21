@@ -1,0 +1,46 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-typography/mat-typography.html">
+<link rel="import" href="../xp-toast-behavior/xp-toast-behavior.html">
+<link rel="import" href="../xp-toast-behavior/xp-toast-styles.html">
+
+</head><body><dom-module id="mat-toast">
+
+    <template strip-whitespace="">
+
+        <style include="xp-toast-styles"></style>
+
+        <style>
+            :host {
+                @apply(--mat-font-body);
+                background: hsla(0, 0%, 20%, 1);
+                border-radius: 24px;
+                bottom: 12px;
+                color: hsla(0, 0%, 95%, 1);
+                height: 48px;
+                left: 12px;
+                padding: 14px 24px;
+                right: 12px;
+                transform: translate(0, 72px);
+            }
+
+            /* DESKTOP */
+
+            @media (min-width: 960px) {
+
+                :host {
+                    max-width: 568px;
+                    min-width: 288px;
+                    right: auto;
+                }
+            }
+        </style>
+
+        <div class="wrapper">[[label]]</div>
+
+    </template>
+
+    <script>Polymer({is:"mat-toast",behaviors:[Polymer.XPToastBehavior]});</script>
+
+</dom-module>
+</body></html>

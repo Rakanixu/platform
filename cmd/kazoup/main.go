@@ -21,6 +21,7 @@ import (
 	notification "github.com/kazoup/platform/notification"
 	scheduler "github.com/kazoup/platform/scheduler"
 	search "github.com/kazoup/platform/search"
+	ui "github.com/kazoup/platform/ui"
 	"github.com/micro/cli"
 	ccli "github.com/micro/cli"
 	"github.com/micro/go-micro/cmd"
@@ -39,6 +40,7 @@ func main() {
 	app.Commands = append(app.Commands, scheduler.Commands()...)
 	app.Commands = append(app.Commands, file.Commands()...)
 	app.Commands = append(app.Commands, notification.Commands()...)
+	app.Commands = append(app.Commands, ui.Commands()...)
 	app.Commands = append(app.Commands, web.Commands()...)
 	app.Commands = append(app.Commands, desktopCommands()...)
 	app.Action = func(context *cli.Context) { cli.ShowAppHelp(context) }

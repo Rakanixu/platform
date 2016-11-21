@@ -1,0 +1,62 @@
+<html><head></head><body><dom-module id="empty-state">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style>
+      :host {
+        display: block;
+      }
+
+      .container {
+        height: 100%;
+      }
+
+      .container .inner-container {
+        margin: auto;
+        width: 70%;
+        text-align: center;
+      }
+
+      .container .inner-container h3 {
+        text-transform: uppercase;
+        font-size: 1.6em;
+        text-stroke: 0;
+        -webkit-text-stroke: 0;
+        -ms-text-stroke: 0;
+        -moz-text-stroke: 0;
+        color: transparent;
+        background-color: rgba(0, 0, 0, 0.75);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -ms-background-clip: text;
+        -moz-background-clip: text;
+        text-shadow: rgba(255,255,255,0.5) 0 2px 3px, rgba(255,255,255,0.2) 3px 3px 3px;
+        transition: text-shadow .1s ease-out, background-color .2s ease-out;
+        -webkit-transition: text-shadow .1s ease-out, background-color .2s ease-out;
+        -ms-transition: text-shadow .1s ease-out, background-color .2s ease-out;
+        -moz-transition: text-shadow .1s ease-out, background-color .2s ease-out;
+        opacity: 0.7;
+      }
+
+      .container .inner-container iron-icon {
+        opacity: 0.7;
+      }
+
+      .container .inner-container .icon-size {
+        width: 128px;
+        height: 128px;
+      }
+
+    </style>
+
+    <div class="container vertical layout">
+      <div class="inner-container">
+        <iron-icon class="icon-size" icon="{{icon}}"></iron-icon>
+
+        <h3 id="header"></h3>
+
+      </div>
+    </div>
+  </template>
+  <script>"use strict";!function(){Polymer({is:"empty-state",properties:{header:{type:String,notify:!0,observer:"headerChanged"},icon:{type:String,notify:!0}},headerChanged:function(){this.set("$.header.innerHTML",this.header)}})}();</script>
+</dom-module>
+</body></html>

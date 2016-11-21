@@ -1,0 +1,6 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../xp-overlay/xp-overlay-behavior.html">
+
+<script>Polymer.XPToastBehaviorImp={align:function(){return this},hide:function(){var e=this;return e.queue[0]&&e===e.queue[0].instance?(e.showed=!1,e.queue.shift(),e.queue.length&&e.queue[0].instance._show(e.queue[0].target,e.queue[0].data),e):e},show:function(e,t){var u=this;return u.queue.push({instance:u,target:e,data:t}),u.queue.length<2&&u._show(e,t),u},toggle:function(e,t){return this.show(e,t)},_show:function(e,t){XP.assertArgument(XP.isVoid(e)||XP.isElement(e)||XP.isString(e),1,"Element or string");var u=this;return u.data=t||u.data,u.target=e||u.target,u.showed=!0,u.debounce("hide",u.hide.bind(u),u.timeout),u},properties:{autoHideDisabled:{type:Boolean,value:!0},label:{reflectToAttribute:!0,type:String},timeout:{type:Number,value:3e3}},queue:[],created:function(){this.classList.add("toast")}},Polymer.XPToastBehavior=[Polymer.XPOverlayBehavior,Polymer.XPToastBehaviorImp];</script>
+</head><body></body></html>

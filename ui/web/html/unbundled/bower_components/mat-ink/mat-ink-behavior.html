@@ -1,0 +1,7 @@
+<html><head><link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../expandjs/expandjs.html">
+<link rel="import" href="../mat-palette/mat-palette.html">
+<link rel="import" href="../xp-slave-behavior/xp-slave-behavior.html">
+
+<script>Polymer.MatInkBehaviorImp={observers:["_currentColorObserver(currentColor, disabled)"],properties:{color:{observer:"_colorObserver",type:String},currentColor:{readOnly:!0,reflectToAttribute:!0,type:String},disabled:{reflectToAttribute:!0,type:Boolean,value:!1},foreground:{computed:"_computeForeground(paper.foreground)",reflectToAttribute:!0,type:String,value:"dark"},hidden:{notify:!0,reflectToAttribute:!0,type:Boolean,value:!1},paper:{readOnly:!0},opacity:{reflectToAttribute:!0,type:String}},opacityList:["divider","hint","icon","secondary"],_computeForeground:function(){return!!this.paper&&this.paper.foreground},_colorObserver:function(){this._setCurrentColor(this.color||null)},_currentColorObserver:function(){this.style.color=this._computeRGB(this.currentColor,this.disabled)||""},created:function(){this.classList.add("ink")},ready:function(){this.mastersMap.paper=".paper"}},Polymer.MatInkBehavior=[Polymer.XPSlaveBehavior,Polymer.MatPalette,Polymer.MatInkBehaviorImp];</script>
+</head><body></body></html>

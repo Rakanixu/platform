@@ -29,7 +29,7 @@ registry:
   - "8600:53/udp"
 
 web:
-  command: --registry_address=registry:8500 --register_interval=5 --register_ttl=10 --web_namespace=com.kazoup.web  --enable_stats=true  --selector=cache --enable_tls -tls_cert_file=/ssl/all.pem --tls_key_file=/ssl/key.pem web
+  command: --registry_address=registry:8500 --register_interval=5 --register_ttl=10 --web_namespace=com.kazoup.web  --enable_stats=true  --selector=cache --enable_tls -tls_cert_file=/ssl/all.pem --tls_key_file=/ssl/key.pem --web_cors=* web
   image: microhq/micro:latest
   links:
   - registry
@@ -40,7 +40,7 @@ web:
 
 
 auth-web:
-  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 --transport=tcp
+  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 
   image: kazoup/auth-web:latest
   links:
   - registry
@@ -48,42 +48,45 @@ auth-web:
 
 
 config-srv: 
-  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 --transport=tcp
+  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 
   image: kazoup/config-srv:latest
   links:
   - registry
   - nats
 
 config-web: 
-  command: --registry_address=registry:8500 --selector=cache  --broker=nats --broker_address=nats:4222 --transport=tcp
+  command: --registry_address=registry:8500 --selector=cache  --broker=nats --broker_address=nats:4222 
   image: kazoup/config-web:latest
   links:
   - registry
 
 crawler-srv:
-   command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 --transport=tcp
+   command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 
    image: kazoup/crawler-srv:latest
    links:
    - registry
    - nats
 
 datasource-srv:
-  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 --transport=tcp
+  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 
   image: kazoup/datasource-srv:latest
   links:
   - registry
   - nats
 
 db-srv:
-  command: --elasticsearch_hosts=elasticsearch:9200 --registry_address=registry:8500  --selector=cache --broker=nats --broker_address=nats:4222 --transport=tcp
+  command: --elasticsearch_hosts=elasticsearch:9200 --registry_address=registry:8500  --selector=cache --broker=nats --broker_address=nats:4222 
   image: kazoup/db-srv:latest
+  environment:
+  - ELASTICSEARCH_URL = "https://fdcafef6eb3464e469a96ae1d6da9fe6.eu-west-1.aws.found.io:9243"
+  - ES_USERNAME = "elastic"
+  - ES_PASSWORD = "q3cbAJ3TueRCTBIrgLLlpLkD"
   links:
   - registry
-  - elasticsearch
   - nats
   
 file-srv:
-  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 --transport=tcp
+  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 
   image: kazoup/file-srv:latest
   links:
   - registry
@@ -92,36 +95,43 @@ file-srv:
 
 
 media-web:
-  command: --registry_address=registry:8500 --selector=cache  --broker=nats --broker_address=nats:4222 --transport=tcp
+  command: --registry_address=registry:8500 --selector=cache  --broker=nats --broker_address=nats:4222 
   image: kazoup/media-web:latest
   links:
   - registry
   - nats
 
 notification-srv:
-  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 --transport=tcp
+  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 
   image: kazoup/notification-srv:latest
   links:
   - registry
   - nats
 
 notification-web:
-  command: --registry_address=registry:8500 --selector=cache  --broker=nats --broker_address=nats:4222 --transport=tcp
+  command: --registry_address=registry:8500 --selector=cache  --broker=nats --broker_address=nats:4222 
   image: kazoup/notification-web:latest
   links:
   - registry
   - nats
 
 scheduler-srv:
-  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 --transport=tcp
+  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 
   image: kazoup/scheduler-srv:latest
   links:
   - registry
   - nats
   
 search-srv:
-  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 --transport=tcp
+  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 
   image: kazoup/search-srv:latest
+  links:
+  - registry
+  - nats
+  
+ui-web:
+  command: --registry_address=registry:8500 --selector=cache  --broker=nats --broker_address=nats:4222 
+  image: kazoup/ui-web:latest
   links:
   - registry
   - nats

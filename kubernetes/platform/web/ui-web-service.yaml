@@ -1,0 +1,22 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ui-web
+  namespace: default
+  labels:
+    name: ui-web
+spec:
+  ports:
+    # the port that this service should serve on
+    - name: https
+      port: 443
+      targetPort: 9090
+    - name: http
+      port: 80
+      targetPort: 9090
+  # label keys and values that must match in order to receive traffic for this service
+  selector:
+    name: ui-web
+  type: LoadBalancer
+  loadBalancerIP: 146.148.24.41
