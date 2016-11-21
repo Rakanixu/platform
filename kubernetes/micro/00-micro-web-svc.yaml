@@ -9,11 +9,11 @@ metadata:
 spec:
   ports:
     # the port that this service should serve on
-    - name: http
-      port: 80
-      targetPort: 8082
     - name: https
       port: 443
+      targetPort: 8082
+    - name: web
+      port: 8082
       targetPort: 8082
   # label keys and values that must match in order to receive traffic for this service
   selector:
