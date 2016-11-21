@@ -28,14 +28,6 @@ test:
                 - ./build-circle.sh
 deployment:
         release:
-                branch: kubernetes
-                commands:
-                        # - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
-                        - ./deploy-circle.sh
-                        #- go get github.com/tcnksm/ghr
-                        #- ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace `git describe --tags` desktop/dist/
-        hub: 
                 branch: master
                 commands:
-                        - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
-                        - ./deploy.sh
+                        - ./deploy-circle.sh
