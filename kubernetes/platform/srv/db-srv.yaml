@@ -19,16 +19,15 @@ spec:
                   "--server_address=0.0.0.0:9090",
                   "--broker=nats",
                   "--broker_address=nats:4222",
-                  "--selector=cache",
                   ]
         image: eu.gcr.io/desktop-1470249894548/db-srv:latest
         env:
           - name: ELASTICSEARCH_URL
-            value:  "https://fdcafef6eb3464e469a96ae1d6da9fe6.eu-west-1.aws.found.io:9243"
+            value:  "https://8d22518314b8a6bab84906817730e7f4.eu-west-1.aws.found.io:9243"
           - name: ES_USERNAME
-            value: "elastic"
+            value: "admin"
           - name: ES_PASSWORD
-            value: "q3cbAJ3TueRCTBIrgLLlpLkD"
+            value: "9svne8f655h"
         imagePullPolicy: Always
         ports:
         - containerPort: 9090

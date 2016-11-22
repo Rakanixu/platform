@@ -3,6 +3,9 @@ package wrappers
 import (
 	"encoding/base64"
 	"fmt"
+	"os"
+	"time"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/kazoup/platform/lib/globals"
@@ -15,8 +18,6 @@ import (
 	"github.com/micro/go-micro/selector"
 	"github.com/micro/go-micro/server"
 	"golang.org/x/net/context"
-	"os"
-	"time"
 )
 
 // log wrapper logs every time a request is made
@@ -157,10 +158,10 @@ func DesktopWrap(c client.Client) client.Client {
 }
 
 func NewKazoupClient() client.Client {
-	// c := client.NewClient(
-	// 	client.Wrap(DesktopWrap),
-	// )
-	return client.NewClient()
+	c := client.NewClient(
+		client.Wrap(LogWrap),
+	)
+	return c
 }
 
 func NewKazoupService(name string) micro.Service {

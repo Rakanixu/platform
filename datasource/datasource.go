@@ -37,6 +37,12 @@ func srv(ctx *cli.Context) {
 		log.Fatal(err)
 	}
 
+	// Attach clean bucket subscriber
+	if err := service.Server().Subscribe(
+		service.Server().NewSubscriber(globals.DeleteFileInBucketTopic, subscriber.SubscribeDeleteFileInBucket)); err != nil {
+		log.Fatal(err)
+	}
+
 	// New service handler
 	service.Server().Handle(
 		service.Server().NewHandler(&handler.DataSource{
