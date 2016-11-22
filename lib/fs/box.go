@@ -299,12 +299,17 @@ func (bfs *BoxFs) DownloadFile(id string, opts ...string) ([]byte, error) {
 
 // UploadFile uploads a file into google cloud storage
 func (bfs *BoxFs) UploadFile(file []byte, fId string) error {
-	return UploadFile(file, fId)
+	return UploadFile(file, bfs.Endpoint.Index, fId)
 }
 
 // SignedObjectStorageURL returns a temporary link to a resource in GC storage
 func (bfs *BoxFs) SignedObjectStorageURL(objName string) (string, error) {
-	return SignedObjectStorageURL(objName)
+	return SignedObjectStorageURL(bfs.Endpoint.Index, objName)
+}
+
+// DeleteFilesFromIndex removes files from GC storage
+func (bfs *BoxFs) DeleteIndexBucketFromGCS() error {
+	return DeleteBucket(bfs.Endpoint.Index, "")
 }
 
 // getDirChildren get children from directory

@@ -10,6 +10,7 @@ import (
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
+	"log"
 )
 
 // DataSource struct
@@ -91,6 +92,13 @@ func (ds *DataSource) Delete(ctx context.Context, req *proto.DeleteRequest, rsp 
 	eng, err := engine.NewDataSourceEngine(endpoint)
 	if err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
+	}
+
+	// Publish message to clean async the bucket that stores the thumbnails in GC storage
+	if err := client.Publish(globals.NewSystemContext(), client.NewPublication(globals.DeleteBucketTopic, &proto.DeleteBucketMessage{
+		Endpoint: endpoint,
+	})); err != nil {
+		log.Println("ERROR cleaningthumbs from GCS", err)
 	}
 
 	// Delete datasource

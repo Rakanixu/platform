@@ -134,12 +134,17 @@ func (sfs *SlackFs) DownloadFile(url string, opts ...string) ([]byte, error) {
 
 // UploadFile uploads a file into google cloud storage
 func (sfs *SlackFs) UploadFile(file []byte, fId string) error {
-	return UploadFile(file, fId)
+	return UploadFile(file, sfs.Endpoint.Index, fId)
 }
 
 // SignedObjectStorageURL returns a temporary link to a resource in GC storage
 func (sfs *SlackFs) SignedObjectStorageURL(objName string) (string, error) {
-	return SignedObjectStorageURL(objName)
+	return SignedObjectStorageURL(sfs.Endpoint.Index, objName)
+}
+
+// DeleteFilesFromIndex removes files from GC storage
+func (sfs *SlackFs) DeleteIndexBucketFromGCS() error {
+	return DeleteBucket(sfs.Endpoint.Index, "")
 }
 
 // getUsers retrieves users from slack team

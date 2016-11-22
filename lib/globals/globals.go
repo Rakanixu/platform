@@ -36,6 +36,7 @@ const (
 	CrawlerStartedTopic       string = NAMESPACE + ".topic.crawlerstarted"
 	CrawlerFinishedTopic      string = NAMESPACE + ".topic.crawlerfinished"
 	NotificationTopic         string = NAMESPACE + ".topic.notification"
+	DeleteBucketTopic         string = NAMESPACE + ".topic.deletebucket"
 
 	IndexDatasources  = "datasources"
 	IndexFlags        = "flags"
@@ -111,12 +112,6 @@ const (
 	SYSTEM_TOKEN     = "ajsdIgsnaloHFGis823jsdgyjTGDKijfcjk783JDUYFJyggvwejkxsnmbkjwpoj6483"
 	CLIENT_ID_SECRET = "EC1FD9R5t6D3cs9CzPbgJaBJjshoVgrJrTs6U39scYzYF7HYyMlv_mal2IjLLaA9" // Auth0 RPC API client
 	ENCRYTION_KEY_32 = "asjklasd766adfashj22kljasdhyfjkh"
-
-	GC_OBJ_STORAGE_ACCESS_KEY = "GOOGQU37LWQYB65A6RFC"
-	GC_OBJ_STORAGE_SECRET_KEY = "2azu1PhG7+mNhLW6LEIG3IHmu9YkteHp5WktHuDZ"
-	GC_OBJ_STORAGE_REGION     = "europe-west-1"
-	GC_THUMBNAIL_CONTAINER    = "kazoup-desktop-thumbs-dev"
-	GC_APP_EMAIL              = ""
 
 	NOTIFY_REFRESH_DATASOURCES = "refreshDatasources"
 	NOTIFY_REFRESH_SEARCH      = "refreshSearch"

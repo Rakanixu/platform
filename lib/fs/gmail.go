@@ -113,12 +113,17 @@ func (gfs *GmailFs) DownloadFile(id string, opts ...string) ([]byte, error) {
 
 // UploadFile uploads a file into google cloud storage
 func (gfs *GmailFs) UploadFile(file []byte, fId string) error {
-	return UploadFile(file, fId)
+	return UploadFile(file, gfs.Endpoint.Index, fId)
 }
 
 // SignedObjectStorageURL returns a temporary link to a resource in GC storage
 func (gfs *GmailFs) SignedObjectStorageURL(objName string) (string, error) {
-	return SignedObjectStorageURL(objName)
+	return SignedObjectStorageURL(gfs.Endpoint.Index, objName)
+}
+
+// DeleteFilesFromIndex removes files from GC storage
+func (gfs *GmailFs) DeleteIndexBucketFromGCS() error {
+	return DeleteBucket(gfs.Endpoint.Index, "")
 }
 
 // getMessages discover files (attachments)

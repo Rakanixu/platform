@@ -90,12 +90,17 @@ func (lfs *LocalFs) DownloadFile(id string, opts ...string) ([]byte, error) {
 
 // UploadFile uploads a file into google cloud storage
 func (lfs *LocalFs) UploadFile(file []byte, fId string) error {
-	return UploadFile(file, fId)
+	return UploadFile(file, lfs.Endpoint.Index, fId)
 }
 
 // SignedObjectStorageURL returns a temporary link to a resource in GC storage
 func (lfs *LocalFs) SignedObjectStorageURL(objName string) (string, error) {
-	return SignedObjectStorageURL(objName)
+	return SignedObjectStorageURL(lfs.Endpoint.Index, objName)
+}
+
+// DeleteFilesFromIndex removes files from GC storage
+func (lfs *LocalFs) DeleteIndexBucketFromGCS() error {
+	return DeleteBucket(lfs.Endpoint.Index, "")
 }
 
 // walkDatasourceParents creates helper index, aliases and push the dirs that makes the root path of the datasource

@@ -15,7 +15,7 @@ import (
 
 // Scans subscriber, receive endpoint to crawl it
 func Scans(ctx context.Context, endpoint *datasource.Endpoint) error {
-	fs, err := fs.NewFsFromEndpoint(endpoint)
+	cfs, err := fs.NewFsFromEndpoint(endpoint)
 	if err != nil {
 		return err
 	}
@@ -29,7 +29,7 @@ func Scans(ctx context.Context, endpoint *datasource.Endpoint) error {
 	}
 
 	// Receive files founded by FileSystem
-	c, r, err := fs.List()
+	c, r, err := cfs.List()
 	if err != nil {
 		return err
 	}
@@ -39,6 +39,7 @@ func Scans(ctx context.Context, endpoint *datasource.Endpoint) error {
 		// Channel receives signal cralwer has finished
 		case <-r:
 			time.Sleep(time.Second * 5)
+
 			// Clear index (files that no longer exists, rename, etc..)
 			if err := globals.ClearIndex(endpoint); err != nil {
 				log.Println("ERROR clearing index after scan", err)

@@ -67,3 +67,7 @@ message Token {
  string refresh_token = 3;
  int64 expiry = 4;
 }
+
+message DeleteBucketMessage {
+  Endpoint endpoint = 1;
+}

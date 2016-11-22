@@ -289,12 +289,17 @@ func (ofs *OneDriveFs) DownloadFile(id string, opts ...string) ([]byte, error) {
 
 // UploadFile uploads a file into google cloud storage
 func (ofs *OneDriveFs) UploadFile(file []byte, fId string) error {
-	return UploadFile(file, fId)
+	return UploadFile(file, ofs.Endpoint.Index, fId)
 }
 
 // SignedObjectStorageURL returns a temporary link to a resource in GC storage
 func (ofs *OneDriveFs) SignedObjectStorageURL(objName string) (string, error) {
-	return SignedObjectStorageURL(objName)
+	return SignedObjectStorageURL(ofs.Endpoint.Index, objName)
+}
+
+// DeleteFilesFromIndex removes files from GC storage
+func (ofs *OneDriveFs) DeleteIndexBucketFromGCS() error {
+	return DeleteBucket(ofs.Endpoint.Index, "")
 }
 
 // getFiles retrieves drives, directories and files
