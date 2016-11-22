@@ -34,11 +34,13 @@
         init: function(userId) {
           this.$.socket.open();
 
+          clearTimeout(this.reconnectTimeout);
+
           this.async(function() {
             this.$.socket.send({
               user_id: userId
             });
-          }, 2500);
+          }, 3000);
         },
         _onOpen: function(e) {
           console.log('_onOpen', e.detail);
@@ -48,7 +50,7 @@
 
           this.reconnectTimeout = setTimeout(function() {
             this.init(Auth.getUserId());
-          }.bind(this), 2000);
+          }.bind(this), 3000);
         },
         _onMessage: function(e) {
           // Check for user ID message is for, right now we are broadcasting from notification srv

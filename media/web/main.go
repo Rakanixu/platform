@@ -19,6 +19,7 @@ func main() {
 	service := microweb.NewService(microweb.Name("com.kazoup.web.media"))
 
 	service.Handle("/preview", handler.NewImageHandler())
+	service.Handle("/thumbnail", handler.NewThumbnailHandler())
 
 	service.Init()
 	service.Run()

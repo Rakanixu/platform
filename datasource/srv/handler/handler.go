@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"time"
+
 	"github.com/kazoup/platform/datasource/srv/engine"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/lib/globals"
@@ -8,7 +10,7 @@ import (
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
-	"time"
+	"log"
 )
 
 // DataSource struct
@@ -24,7 +26,7 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 
 	eng, err := engine.NewDataSourceEngine(req.Endpoint)
 	if err != nil {
-		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
+		return errors.InternalServerError("go.micro.srv.datasource.NewDataSourceEngine", err.Error())
 	}
 
 	datasourcesList, err := engine.SearchDataSources(ctx, ds.Client, &proto.SearchRequest{
@@ -42,20 +44,20 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 	// Validate and assigns Id and index
 	endpoint, err := eng.Validate(ctx, ds.Client, datasources)
 	if err != nil {
-		return errors.BadRequest("go.micro.srv.datasource", err.Error())
+		return errors.BadRequest("go.micro.srv.datasource.eng.Validate", err.Error())
 	}
 
 	if err := eng.Save(ctx, endpoint, endpoint.Id); err != nil {
-		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
+		return errors.InternalServerError("go.micro.srv.datasource.eng.Save", err.Error())
 	}
 
 	if err := eng.CreateIndexWithAlias(ctx, ds.Client); err != nil {
-		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
+		return errors.InternalServerError("go.micro.srv.datasource.eng.CreateIndexWithAlias", err.Error())
 	}
 
 	// Scan created datasource
 	if err := eng.Scan(ctx, ds.Client); err != nil {
-		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
+		return errors.InternalServerError("go.micro.srv.datasource.eng.Scan", err.Error())
 	}
 
 	// Shedule scan task
@@ -68,7 +70,7 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 			IntervalSeconds: int64(time.Hour.Seconds()),
 		},
 	}); err != nil {
-		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
+		return errors.InternalServerError("go.micro.srv.datasource.eng.ScheduleScan", err.Error())
 	}
 
 	return nil
@@ -90,6 +92,13 @@ func (ds *DataSource) Delete(ctx context.Context, req *proto.DeleteRequest, rsp 
 	eng, err := engine.NewDataSourceEngine(endpoint)
 	if err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
+	}
+
+	// Publish message to clean async the bucket that stores the thumbnails in GC storage
+	if err := client.Publish(globals.NewSystemContext(), client.NewPublication(globals.DeleteBucketTopic, &proto.DeleteBucketMessage{
+		Endpoint: endpoint,
+	})); err != nil {
+		log.Println("ERROR cleaningthumbs from GCS", err)
 	}
 
 	// Delete datasource

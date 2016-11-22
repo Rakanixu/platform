@@ -6,11 +6,14 @@ import (
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
+	"github.com/kazoup/platform/lib/categories"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/image"
 	"github.com/kazoup/platform/lib/slack"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -105,6 +108,43 @@ func (sfs *SlackFs) ShareFile(ctx context.Context, c client.Client, req file_pro
 
 		return sfs.shareFileInsideTeam(f, req.DestinationId)
 	}
+}
+
+// DownloadFile retrieves a file
+func (sfs *SlackFs) DownloadFile(url string, opts ...string) ([]byte, error) {
+	c := &http.Client{}
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Authorization", sfs.Token())
+	res, err := c.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	b, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
+}
+
+// UploadFile uploads a file into google cloud storage
+func (sfs *SlackFs) UploadFile(file []byte, fId string) error {
+	return UploadFile(file, sfs.Endpoint.Index, fId)
+}
+
+// SignedObjectStorageURL returns a temporary link to a resource in GC storage
+func (sfs *SlackFs) SignedObjectStorageURL(objName string) (string, error) {
+	return SignedObjectStorageURL(sfs.Endpoint.Index, objName)
+}
+
+// DeleteFilesFromIndex removes files from GC storage
+func (sfs *SlackFs) DeleteIndexBucketFromGCS() error {
+	return DeleteBucket(sfs.Endpoint.Index, "")
 }
 
 // getUsers retrieves users from slack team
@@ -205,6 +245,22 @@ func (sfs *SlackFs) getFiles(page int) error {
 	}
 
 	for _, v := range filesRsp.Files {
+		if categories.GetDocType("."+v.Filetype) == globals.CATEGORY_PICTURE {
+			b, err := sfs.DownloadFile(v.URLPrivateDownload)
+			if err != nil {
+				log.Println("ERROR downloading slack file: ", err)
+			}
+
+			b, err = image.Thumbnail(b, globals.THUMBNAIL_WIDTH)
+			if err != nil {
+				log.Println("ERROR generating thumbnail for slack file: ", err)
+			}
+
+			if err := sfs.UploadFile(b, v.ID); err != nil {
+				log.Println("ERROR uploading thumbnail for slack file: ", err)
+			}
+		}
+
 		f := file.NewKazoupFileFromSlackFile(&v, sfs.Endpoint.Id, sfs.Endpoint.UserId, sfs.Endpoint.Index)
 
 		sfs.FilesChan <- f

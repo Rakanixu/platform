@@ -36,6 +36,7 @@ const (
 	CrawlerStartedTopic       string = NAMESPACE + ".topic.crawlerstarted"
 	CrawlerFinishedTopic      string = NAMESPACE + ".topic.crawlerfinished"
 	NotificationTopic         string = NAMESPACE + ".topic.notification"
+	DeleteBucketTopic         string = NAMESPACE + ".topic.deletebucket"
 
 	IndexDatasources  = "datasources"
 	IndexFlags        = "flags"
@@ -74,6 +75,10 @@ const (
 	MIME_JPG  = "image/jpg"
 	MIME_JPEG = "image/jpeg"
 
+	CATEGORY_PICTURE = "Pictures"
+
+	THUMBNAIL_WIDTH = 178
+
 	SlackFilesEndpoint       = "https://slack.com/api/files.list"
 	SlackUsersEndpoint       = "https://slack.com/api/users.list"
 	SlackChannelsEndpoint    = "https://slack.com/api/channels.list"
@@ -90,6 +95,7 @@ const (
 	DropboxFileUpload        = "https://content.dropboxapi.com/2/files/upload"
 	DropboxFileShare         = "https://api.dropboxapi.com/2/sharing/add_file_member"
 	DropboxFileDelete        = "https://api.dropboxapi.com/2/files/delete"
+	DropboxFileDownload      = "https://content.dropboxapi.com/2/files/download"
 
 	BoxAccountEndpoint      = "https://api.box.com/2.0/users/me"
 	BoxFoldersEndpoint      = "https://api.box.com/2.0/folders/"
@@ -203,6 +209,26 @@ func NewGmailOauthConfig() *oauth2.Config {
 			"https://www.googleapis.com/auth/userinfo.profile",
 			"https://www.googleapis.com/auth/userinfo.email",
 			"https://www.googleapis.com/auth/gmail.readonly",
+		},
+		Endpoint: google.Endpoint,
+	}
+}
+
+func NewGoogleCloudOauthConfig() *oauth2.Config {
+	return &oauth2.Config{
+		RedirectURL:  SECURE_SERVER_ADDRESS + "/auth/google/callback",
+		ClientID:     "928848534435-kjubrqvl1sp50sfs3icemj2ma6v2an5j.apps.googleusercontent.com",
+		ClientSecret: "zZAQz3zP5xnpLaA1S_q6YNhy",
+		Scopes: []string{
+			"https://www.googleapis.com/auth/userinfo.profile",
+			"https://www.googleapis.com/auth/userinfo.email",
+			"https://www.googleapis.com/auth/drive",
+			"https://www.googleapis.com/auth/drive.appdata",
+			"https://www.googleapis.com/auth/drive.file",
+			"https://www.googleapis.com/auth/drive.metadata",
+			"https://www.googleapis.com/auth/drive.metadata.readonly",
+			"https://www.googleapis.com/auth/drive.photos.readonly",
+			"https://www.googleapis.com/auth/drive.readonly",
 		},
 		Endpoint: google.Endpoint,
 	}

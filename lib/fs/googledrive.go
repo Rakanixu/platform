@@ -5,12 +5,15 @@ import (
 	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
+	"github.com/kazoup/platform/lib/categories"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/image"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"google.golang.org/api/drive/v3"
+	"io/ioutil"
 	"log"
 	"time"
 )
@@ -151,6 +154,42 @@ func (gfs *GoogleDriveFs) ShareFile(ctx context.Context, c client.Client, req fi
 	return "", nil
 }
 
+// DownloadFile retrieves a file from google drive
+func (gfs *GoogleDriveFs) DownloadFile(id string, opts ...string) ([]byte, error) {
+	srv, err := gfs.getDriveService()
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := srv.Files.Get(id).Download()
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	b, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
+}
+
+// UploadFile uploads a file into google cloud storage
+func (gfs *GoogleDriveFs) UploadFile(file []byte, fId string) error {
+	return UploadFile(file, gfs.Endpoint.Index, fId)
+}
+
+// SignedObjectStorageURL returns a temporary link to a resource in GC storage
+func (gfs *GoogleDriveFs) SignedObjectStorageURL(objName string) (string, error) {
+	return SignedObjectStorageURL(gfs.Endpoint.Index, objName)
+}
+
+// DeleteFilesFromIndex removes files from GC storage
+func (gfs *GoogleDriveFs) DeleteIndexBucketFromGCS() error {
+	return DeleteBucket(gfs.Endpoint.Index, "")
+}
+
 // getFiles discover all files in google drive account
 func (gfs *GoogleDriveFs) getFiles() error {
 	srv, err := gfs.getDriveService()
@@ -203,6 +242,27 @@ func (gfs *GoogleDriveFs) getNextPage(srv *drive.Service, nextPageToken string) 
 // pushFilesToChanForPage sends discovered files to the file system channel
 func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
 	for _, v := range files {
+		c := categories.GetDocType("." + v.FullFileExtension)
+		if len(v.FullFileExtension) == 0 {
+			c = categories.GetDocType(v.MimeType)
+		}
+
+		if c == globals.CATEGORY_PICTURE {
+			b, err := gfs.DownloadFile(v.Id)
+			if err != nil {
+				log.Println("ERROR downloading googledrive file: %s", err)
+			}
+
+			b, err = image.Thumbnail(b, globals.THUMBNAIL_WIDTH)
+			if err != nil {
+				log.Println("ERROR generating thumbnail for googledrive file: %s", err)
+			}
+
+			if err := gfs.UploadFile(b, v.Id); err != nil {
+				log.Println("ERROR uploading thumbnail for googledrive file: %s", err)
+			}
+		}
+
 		f := file.NewKazoupFileFromGoogleDriveFile(v, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
 
 		gfs.FilesChan <- f

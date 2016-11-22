@@ -5,6 +5,7 @@ import (
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
+	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/broker"
@@ -98,4 +99,14 @@ func SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedM
 	}
 
 	return nil
+}
+
+// SubscribeDeleteBucket subscribes to DeleteBucket Message to clean un a bicket in GC storage
+func SubscribeDeleteBucket(ctx context.Context, msg *proto.DeleteBucketMessage) error {
+	cfs, err := fs.NewFsFromEndpoint(msg.Endpoint)
+	if err != nil {
+		return err
+	}
+
+	return cfs.DeleteIndexBucketFromGCS()
 }
