@@ -2,15 +2,17 @@ package engine
 
 import (
 	"encoding/json"
-	"errors"
+	"strings"
+	"time"
+
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/wrappers"
 	scheduler_proto "github.com/kazoup/platform/scheduler/srv/proto/scheduler"
 	"github.com/micro/go-micro/client"
+	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
-	"strings"
-	"time"
 )
 
 const (
@@ -77,7 +79,7 @@ func NewDataSourceEngine(endpoint *datasource_proto.Endpoint) (Engine, error) {
 		}, nil
 	}
 
-	err := errors.New("Error parsing endpoint for " + endpoint.Url)
+	err := errors.New("com.kazoup.Datasource.NewDataSourceEngine", "Error parsing endpoint for ", 500)
 
 	return nil, err
 }
@@ -128,9 +130,9 @@ func GenerateEndpoint(ctx context.Context, c client.Client, endpoint datasource_
 func SaveDataSource(ctx context.Context, data interface{}, id string) error {
 	b, err := json.Marshal(data)
 	if err != nil {
-		return err
+		return errors.New("com.kazoup.Datasource.SaveDataSource unmarshall error", err.Error(), 500)
 	}
-
+	client := wrappers.NewKazoupClient()
 	srvReq := client.NewRequest(
 		globals.DB_SERVICE_NAME,
 		"DB.Create",
@@ -144,7 +146,7 @@ func SaveDataSource(ctx context.Context, data interface{}, id string) error {
 	srvRes := &db_proto.CreateResponse{}
 
 	if err := client.Call(ctx, srvReq, srvRes); err != nil {
-		return err
+		return errors.New("com.kazoup.Datasource.SaveDataSource.clientCall DB.Create", err.Error(), 500)
 	}
 
 	return nil
