@@ -110,3 +110,8 @@ func SubscribeDeleteBucket(ctx context.Context, msg *proto.DeleteBucketMessage) 
 
 	return cfs.DeleteIndexBucketFromGCS()
 }
+
+// SubscribeCleanBucket subscribes to DCleanBucket Message to remove thumbs not longer related with document in index
+func SubscribeDeleteFileInBucket(ctx context.Context, msg *proto.DeleteFileInBucketMessage) error {
+	return fs.DeleteFile(msg.Index, msg.FileId)
+}

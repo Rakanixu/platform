@@ -9,8 +9,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"io"
-
 	"github.com/dgrijalva/jwt-go"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
@@ -20,6 +18,7 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"golang.org/x/oauth2/slack"
+	"io"
 )
 
 const (
@@ -37,6 +36,7 @@ const (
 	CrawlerFinishedTopic      string = NAMESPACE + ".topic.crawlerfinished"
 	NotificationTopic         string = NAMESPACE + ".topic.notification"
 	DeleteBucketTopic         string = NAMESPACE + ".topic.deletebucket"
+	DeleteFileInBucketTopic   string = NAMESPACE + ".topic.deletefileinbucket"
 
 	IndexDatasources  = "datasources"
 	IndexFlags        = "flags"
@@ -291,7 +291,15 @@ func NewUUID() (string, error) {
 // Compares LastSeen with the time the crawler started
 // so all records with a LastSeen before will be removed from index
 // file does not exists any more on datasource
+// Also deletes thumbs that does not exists any more on index
 func ClearIndex(e *datasource_proto.Endpoint) error {
+	// Call the helper to publish messages of thumbnails that does not exists anymore
+	// Paginate in chuncks of 100 docs
+	if err := deleteFilesNoExistsFromGCS(e, 0, 100); err != nil {
+		return err
+	}
+
+	// Clean the index after all messages have been published
 	c := db_proto.NewDBClient(DB_SERVICE_NAME, nil)
 	_, err := c.DeleteByQuery(NewSystemContext(), &db_proto.DeleteByQueryRequest{
 		Indexes:  []string{e.Index},
