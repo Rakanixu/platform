@@ -131,6 +131,7 @@ message SearchRequest {
   string type = 8;
   string file_type = 9;
   string user_id = 10;
+  int64 last_seen = 11;
 }
 
 message SearchResponse {

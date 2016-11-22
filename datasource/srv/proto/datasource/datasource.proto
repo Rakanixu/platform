@@ -71,3 +71,8 @@ message Token {
 message DeleteBucketMessage {
   Endpoint endpoint = 1;
 }
+
+message DeleteFileInBucketMessage {
+  string file_id = 1;
+  string index = 2;
+}

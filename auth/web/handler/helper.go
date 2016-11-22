@@ -12,12 +12,11 @@ import (
 
 //SaveDatasource call datasource-srv and save new data source
 func SaveDatasource(ctx context.Context, user string, url string, token *oauth2.Token) error {
-
 	client := wrappers.NewKazoupClient()
 
 	srvReq := client.NewRequest(
 		globals.DATASOURCE_SERVICE_NAME,
-		"DataSource.Crete",
+		"DataSource.Create",
 		&proto_datasource.CreateRequest{
 			Endpoint: &proto_datasource.Endpoint{
 				UserId:          user,
