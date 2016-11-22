@@ -164,6 +164,7 @@ func (e *ElasticQuery) Query() (string, error) {
 	buffer.WriteString(e.filterDepth() + ",")
 	buffer.WriteString(e.filterUrl() + ",")
 	buffer.WriteString(e.filterUser() + ",")
+	buffer.WriteString(e.filterLastSeen() + ",")
 	buffer.WriteString(e.filterType())
 	buffer.WriteString(`]}}, "sort":[`)
 	buffer.WriteString(e.defaultSorting())

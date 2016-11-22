@@ -38,7 +38,7 @@ func Scans(ctx context.Context, endpoint *datasource.Endpoint) error {
 		select {
 		// Channel receives signal cralwer has finished
 		case <-r:
-			time.Sleep(time.Second * 5)
+			time.Sleep(time.Second * 8)
 
 			// Clear index (files that no longer exists, rename, etc..)
 			if err := globals.ClearIndex(endpoint); err != nil {
