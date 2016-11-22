@@ -3,13 +3,14 @@ package engine
 import (
 	"encoding/json"
 	"errors"
+	"os"
+	"strings"
+
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	scheduler_proto "github.com/kazoup/platform/scheduler/srv/proto/scheduler"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
-	"os"
-	"strings"
 )
 
 // Local struct
@@ -57,8 +58,8 @@ func (l *Local) Validate(ctx context.Context, c client.Client, datasources strin
 }
 
 // Save local datasource
-func (l *Local) Save(ctx context.Context, data interface{}, id string) error {
-	return SaveDataSource(ctx, data, id)
+func (l *Local) Save(ctx context.Context, c client.Client, data interface{}, id string) error {
+	return SaveDataSource(ctx, c, data, id)
 }
 
 // Delete local data source

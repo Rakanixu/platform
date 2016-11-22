@@ -25,8 +25,8 @@ func (b *Box) Validate(ctx context.Context, c client.Client, datasources string)
 }
 
 // Save box data source
-func (b *Box) Save(ctx context.Context, data interface{}, id string) error {
-	return SaveDataSource(ctx, data, id)
+func (b *Box) Save(ctx context.Context, c client.Client, data interface{}, id string) error {
+	return SaveDataSource(ctx, c, data, id)
 }
 
 // Delete box data source

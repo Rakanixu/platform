@@ -25,8 +25,8 @@ func (s *Slack) Validate(ctx context.Context, c client.Client, datasources strin
 }
 
 // Save slack datasource
-func (s *Slack) Save(ctx context.Context, data interface{}, id string) error {
-	return SaveDataSource(ctx, data, id)
+func (s *Slack) Save(ctx context.Context, c client.Client, data interface{}, id string) error {
+	return SaveDataSource(ctx, c, data, id)
 }
 
 // Delete slack data source

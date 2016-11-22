@@ -3,6 +3,8 @@ package handler
 import (
 	"time"
 
+	"log"
+
 	"github.com/kazoup/platform/datasource/srv/engine"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/lib/globals"
@@ -10,7 +12,6 @@ import (
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
-	"log"
 )
 
 // DataSource struct
@@ -47,7 +48,7 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 		return errors.BadRequest("go.micro.srv.datasource.eng.Validate", err.Error())
 	}
 
-	if err := eng.Save(ctx, endpoint, endpoint.Id); err != nil {
+	if err := eng.Save(ctx, ds.Client, endpoint, endpoint.Id); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource.eng.Save", err.Error())
 	}
 
