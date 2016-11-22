@@ -144,7 +144,7 @@ func SaveDataSource(ctx context.Context, c client.Client, data interface{}, id s
 	)
 	srvRes := &db_proto.CreateResponse{}
 
-	if err := client.Call(ctx, srvReq, srvRes); err != nil {
+	if err := c.Call(ctx, srvReq, srvRes); err != nil {
 		return errors.New("com.kazoup.Datasource.SaveDataSource.clientCall DB.Create", err.Error(), 500)
 	}
 
