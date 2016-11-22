@@ -25,8 +25,8 @@ func (s *Dropbox) Validate(ctx context.Context, c client.Client, datasources str
 }
 
 // Save dropbox data source
-func (s *Dropbox) Save(ctx context.Context, data interface{}, id string) error {
-	return SaveDataSource(ctx, data, id)
+func (s *Dropbox) Save(ctx context.Context, c client.Client, data interface{}, id string) error {
+	return SaveDataSource(ctx, c, data, id)
 }
 
 // Delete dropbox data source

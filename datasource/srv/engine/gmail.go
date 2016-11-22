@@ -25,8 +25,8 @@ func (g *Gmail) Validate(ctx context.Context, c client.Client, datasources strin
 }
 
 // Save gmail data source
-func (g *Gmail) Save(ctx context.Context, data interface{}, id string) error {
-	return SaveDataSource(ctx, data, id)
+func (g *Gmail) Save(ctx context.Context, c client.Client, data interface{}, id string) error {
+	return SaveDataSource(ctx, c, data, id)
 }
 
 // Delete gmail data source

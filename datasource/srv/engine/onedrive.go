@@ -25,8 +25,8 @@ func (o *Onedrive) Validate(ctx context.Context, c client.Client, datasources st
 }
 
 // Save one drive datasource
-func (o *Onedrive) Save(ctx context.Context, data interface{}, id string) error {
-	return SaveDataSource(ctx, data, id)
+func (o *Onedrive) Save(ctx context.Context, c client.Client, data interface{}, id string) error {
+	return SaveDataSource(ctx, c, data, id)
 }
 
 // Delete one drive data source

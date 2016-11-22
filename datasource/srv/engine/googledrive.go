@@ -25,8 +25,8 @@ func (g *Googledrive) Validate(ctx context.Context, c client.Client, datasources
 }
 
 // Save google drive data source
-func (g *Googledrive) Save(ctx context.Context, data interface{}, id string) error {
-	return SaveDataSource(ctx, data, id)
+func (g *Googledrive) Save(ctx context.Context, c client.Client, data interface{}, id string) error {
+	return SaveDataSource(ctx, c, data, id)
 }
 
 // Delete google drive data source

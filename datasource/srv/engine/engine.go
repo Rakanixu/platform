@@ -8,7 +8,6 @@ import (
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/lib/globals"
-	"github.com/kazoup/platform/lib/wrappers"
 	scheduler_proto "github.com/kazoup/platform/scheduler/srv/proto/scheduler"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
@@ -28,7 +27,7 @@ const (
 // Engine interface implements Validation and Save for datasources, name probably could be better DataSourcerer?? jaja
 type Engine interface {
 	Validate(ctx context.Context, c client.Client, datasources string) (*datasource_proto.Endpoint, error)
-	Save(ctx context.Context, data interface{}, id string) error
+	Save(ctx context.Context, c client.Client, data interface{}, id string) error
 	Delete(ctx context.Context, c client.Client) error
 	Scan(ctx context.Context, c client.Client) error
 	ScheduleScan(ctx context.Context, c client.Client, sc *scheduler_proto.CreateScheduledTaskRequest) error
@@ -127,13 +126,13 @@ func GenerateEndpoint(ctx context.Context, c client.Client, endpoint datasource_
 }
 
 // SaveDataSource is a helper to write DS in ES.
-func SaveDataSource(ctx context.Context, data interface{}, id string) error {
+func SaveDataSource(ctx context.Context, c client.Client, data interface{}, id string) error {
 	b, err := json.Marshal(data)
 	if err != nil {
 		return errors.New("com.kazoup.Datasource.SaveDataSource unmarshall error", err.Error(), 500)
 	}
-	client := wrappers.NewKazoupClient()
-	srvReq := client.NewRequest(
+
+	srvReq := c.NewRequest(
 		globals.DB_SERVICE_NAME,
 		"DB.Create",
 		&db_proto.CreateRequest{
