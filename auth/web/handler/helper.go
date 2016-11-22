@@ -17,7 +17,7 @@ func SaveDatasource(ctx context.Context, user string, url string, token *oauth2.
 
 	srvReq := client.NewRequest(
 		globals.DATASOURCE_SERVICE_NAME,
-		"DataSource.Crete",
+		"DataSource.Create",
 		&proto_datasource.CreateRequest{
 			Endpoint: &proto_datasource.Endpoint{
 				UserId:          user,
