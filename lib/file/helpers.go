@@ -95,6 +95,7 @@ func NewFileFromString(s string) (File, error) {
 }
 
 // NewKazoupFileFromGoogleDriveFile constructor
+// opts first param is base64 emcoded file (itself)
 func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId, uId, index string) *KazoupGoogleFile {
 	t, _ := time.Parse("2006-01-02T15:04:05.000Z", g.ModifiedTime)
 

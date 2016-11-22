@@ -83,6 +83,26 @@ func (lfs *LocalFs) ShareFile(ctx context.Context, c client.Client, req file_pro
 	return "", nil
 }
 
+// DownloadFile retrieves a file
+func (lfs *LocalFs) DownloadFile(id string, opts ...string) ([]byte, error) {
+	return nil, nil
+}
+
+// UploadFile uploads a file into google cloud storage
+func (lfs *LocalFs) UploadFile(file []byte, fId string) error {
+	return UploadFile(file, lfs.Endpoint.Index, fId)
+}
+
+// SignedObjectStorageURL returns a temporary link to a resource in GC storage
+func (lfs *LocalFs) SignedObjectStorageURL(objName string) (string, error) {
+	return SignedObjectStorageURL(lfs.Endpoint.Index, objName)
+}
+
+// DeleteFilesFromIndex removes files from GC storage
+func (lfs *LocalFs) DeleteIndexBucketFromGCS() error {
+	return DeleteBucket(lfs.Endpoint.Index, "")
+}
+
 // walkDatasourceParents creates helper index, aliases and push the dirs that makes the root path of the datasource
 func (lfs *LocalFs) walkDatasourceParents() error {
 	// Create index and put mapping if does not exist

@@ -10,16 +10,20 @@ import (
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/box"
+	"github.com/kazoup/platform/lib/categories"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/image"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"io"
+	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -270,6 +274,44 @@ func (bfs *BoxFs) ShareFile(ctx context.Context, c client.Client, req file_proto
 	return kbf.Original.SharedLink.URL, nil
 }
 
+// DownloadFile retrieves a file
+func (bfs *BoxFs) DownloadFile(id string, opts ...string) ([]byte, error) {
+	c := &http.Client{}
+	url := fmt.Sprintf("%s%s/content", globals.BoxFileMetadataEndpoint, id)
+	r, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	r.Header.Set("Authorization", bfs.Token())
+	rsp, err := c.Do(r)
+	if err != nil {
+		return nil, err
+	}
+	defer rsp.Body.Close()
+
+	b, err := ioutil.ReadAll(rsp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
+}
+
+// UploadFile uploads a file into google cloud storage
+func (bfs *BoxFs) UploadFile(file []byte, fId string) error {
+	return UploadFile(file, bfs.Endpoint.Index, fId)
+}
+
+// SignedObjectStorageURL returns a temporary link to a resource in GC storage
+func (bfs *BoxFs) SignedObjectStorageURL(objName string) (string, error) {
+	return SignedObjectStorageURL(bfs.Endpoint.Index, objName)
+}
+
+// DeleteFilesFromIndex removes files from GC storage
+func (bfs *BoxFs) DeleteIndexBucketFromGCS() error {
+	return DeleteBucket(bfs.Endpoint.Index, "")
+}
+
 // getDirChildren get children from directory
 func (bfs *BoxFs) getDirChildren(id string, offset, limit int) error {
 	c := &http.Client{}
@@ -330,6 +372,23 @@ func (bfs *BoxFs) getMetadataFromFile(id string) error {
 	var fm *box.BoxFileMeta
 	if err := json.NewDecoder(rsp.Body).Decode(&fm); err != nil {
 		return err
+	}
+
+	name := strings.Split(fm.Name, ".")
+	if categories.GetDocType("."+name[len(name)-1]) == globals.CATEGORY_PICTURE {
+		b, err := bfs.DownloadFile(fm.ID)
+		if err != nil {
+			log.Println("ERROR downloading box file: %s", err)
+		}
+
+		b, err = image.Thumbnail(b, globals.THUMBNAIL_WIDTH)
+		if err != nil {
+			log.Println("ERROR generating thumbnail for box file: %s", err)
+		}
+
+		if err := bfs.UploadFile(b, fm.ID); err != nil {
+			log.Println("ERROR uploading thumbnail for box file: %s", err)
+		}
 	}
 
 	f := file.NewKazoupFileFromBoxFile(fm, bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)

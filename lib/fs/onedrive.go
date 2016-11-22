@@ -9,15 +9,19 @@ import (
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
+	"github.com/kazoup/platform/lib/categories"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/image"
 	"github.com/kazoup/platform/lib/onedrive"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -66,7 +70,7 @@ func (ofs *OneDriveFs) List() (chan file.File, chan bool, error) {
 				}
 			default:
 				// Helper for close channel and set that scanner has finish
-				if ofs.LastDirTime+10 < time.Now().Unix() {
+				if ofs.LastDirTime+15 < time.Now().Unix() {
 					ofs.Running <- false
 					close(ofs.Directories)
 					return
@@ -250,10 +254,52 @@ func (ofs *OneDriveFs) ShareFile(ctx context.Context, c client.Client, req file_
 	}
 	defer res.Body.Close()
 
-	log.Println("*****")
-	log.Println(res.StatusCode)
-
 	return "", nil
+}
+
+// DownloadFile retrieves a file
+func (ofs *OneDriveFs) DownloadFile(id string, opts ...string) ([]byte, error) {
+	//POST /drive/items/{item-id}/action.invite
+	if err := ofs.refreshToken(); err != nil {
+		log.Println(err)
+	}
+
+	oc := &http.Client{}
+
+	// https://dev.onedrive.com/items/download.htm
+	url := globals.OneDriveEndpoint + Drive + "items/" + id + "/content"
+	oreq, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	oreq.Header.Set("Authorization", ofs.Endpoint.Token.TokenType+" "+ofs.Endpoint.Token.AccessToken)
+	res, err := oc.Do(oreq)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	b, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
+}
+
+// UploadFile uploads a file into google cloud storage
+func (ofs *OneDriveFs) UploadFile(file []byte, fId string) error {
+	return UploadFile(file, ofs.Endpoint.Index, fId)
+}
+
+// SignedObjectStorageURL returns a temporary link to a resource in GC storage
+func (ofs *OneDriveFs) SignedObjectStorageURL(objName string) (string, error) {
+	return SignedObjectStorageURL(ofs.Endpoint.Index, objName)
+}
+
+// DeleteFilesFromIndex removes files from GC storage
+func (ofs *OneDriveFs) DeleteIndexBucketFromGCS() error {
+	return DeleteBucket(ofs.Endpoint.Index, "")
 }
 
 // getFiles retrieves drives, directories and files
@@ -368,8 +414,9 @@ func (ofs *OneDriveFs) getDrivesChildren() error {
 				ofs.Directories <- v.ID
 				// Is file
 			} else {
-				f := file.NewKazoupFileFromOneDriveFile(&v, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)
-				ofs.FilesChan <- f
+				if err := ofs.pushToFilesChannel(v); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -400,13 +447,37 @@ func (ofs *OneDriveFs) getDirChildren(id string) error {
 
 	for _, v := range filesRsp.Value {
 		if len(v.File.MimeType) == 0 {
-			//ofs.DirCounter++
 			ofs.Directories <- v.ID
 		} else {
-			f := file.NewKazoupFileFromOneDriveFile(&v, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)
-			ofs.FilesChan <- f
+			if err := ofs.pushToFilesChannel(v); err != nil {
+				return err
+			}
 		}
 	}
+
+	return nil
+}
+
+func (ofs *OneDriveFs) pushToFilesChannel(f onedrive.OneDriveFile) error {
+	n := strings.Split(f.Name, ".")
+	if categories.GetDocType("."+n[len(n)-1]) == globals.CATEGORY_PICTURE {
+		b, err := ofs.DownloadFile(f.ID)
+		if err != nil {
+			log.Println("ERROR downloading onedrive file: %s", err)
+		}
+
+		b, err = image.Thumbnail(b, globals.THUMBNAIL_WIDTH)
+		if err != nil {
+			log.Println("ERROR generating thumbnail for onedrive file: %s", err)
+		}
+
+		if err := ofs.UploadFile(b, f.ID); err != nil {
+			log.Println("ERROR uploading thumbnail for onedrive file: %s", err)
+		}
+	}
+
+	kof := file.NewKazoupFileFromOneDriveFile(&f, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)
+	ofs.FilesChan <- kof
 
 	return nil
 }

@@ -31,6 +31,12 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Attach delete bucket subscriber
+	if err := service.Server().Subscribe(
+		service.Server().NewSubscriber(globals.DeleteBucketTopic, subscriber.SubscribeDeleteBucket)); err != nil {
+		log.Fatal(err)
+	}
+
 	// New service handler
 	service.Server().Handle(
 		service.Server().NewHandler(&handler.DataSource{
