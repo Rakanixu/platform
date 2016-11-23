@@ -1,7 +1,0 @@
-<html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../expandjs/expandjs.html">
-<link rel="import" href="../xp-master-behavior/xp-master-behavior.html">
-<link rel="import" href="../xp-selector/xp-selector-multi-behavior.html">
-
-<script>Polymer.XPListBehaviorImp={properties:{autoCollapseDisabled:{type:Boolean,value:!1},findDeep:{readOnly:!0,type:Boolean,value:!0},itemSelector:{type:String,value:".item"},sublists:{notify:!0,readOnly:!0,value:function(){return[]}}},_selectionObserver:function(){var e=this,t=e.selection&&!e.multi&&XP.findParentElement(e.selection,".sublist[collapsible]",e);Polymer.XPSelectorBehaviorImp._selectionObserver.apply(e,arguments),t&&t.expand()},created:function(){this.classList.add("list")},ready:function(){this.slavesMap.sublists=".sublist"}},Polymer.XPListBehavior=[Polymer.XPMasterBehavior,Polymer.XPSelectorMultiBehavior,Polymer.XPListBehaviorImp];</script>
-</head><body></body></html>
