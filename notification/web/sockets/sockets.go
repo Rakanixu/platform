@@ -14,7 +14,7 @@ func Stream(ws *websocket.Conn) {
 	var m map[string]interface{}
 
 	if err := websocket.JSON.Receive(ws, &m); err != nil {
-		fmt.Println("err", err)
+		fmt.Println("ERROR", err)
 		return
 	}
 
@@ -22,7 +22,7 @@ func Stream(ws *websocket.Conn) {
 		UserId: m["user_id"].(string),
 	})
 	if err != nil {
-		fmt.Println("err", err)
+		fmt.Println("ERROR", err)
 		return
 	}
 
@@ -31,12 +31,12 @@ func Stream(ws *websocket.Conn) {
 	for {
 		msg, err := stream.Recv()
 		if err != nil {
-			fmt.Println("err", err)
+			fmt.Println("ERROR", err)
 			return
 		}
 
 		if err := websocket.JSON.Send(ws, msg.Message); err != nil {
-			fmt.Println("err", err)
+			fmt.Println("ERROR", err)
 			return
 		}
 

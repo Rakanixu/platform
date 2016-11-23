@@ -19,13 +19,13 @@ import (
 func srv(ctx *cli.Context) {
 	service := wrappers.NewKazoupService("notification")
 
-	subscriber.Broker = service.Server().Options().Broker
-
 	// This subscriber receives notification messages and publish same message but over the broker directly
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.NotificationTopic,
-			subscriber.SubscriberProxy,
+			&subscriber.Proxy{
+				Broker: service.Server().Options().Broker,
+			},
 		),
 	); err != nil {
 		log.Fatal(err)
