@@ -49,7 +49,7 @@ var Endpoints = (function() {
           db: {
               srv: 'com.kazoup.srv.db',
               create: 'DB.Create',
-              createIndexWithSettings: 'DB.CreateIndexWithSettings',
+              createIndex: 'DB.CreateIndex',
               delete: 'DB.Delete',
               putMappingFromJSON: 'DB.PutMappingFromJSON',
               read: 'DB.Read',

@@ -26,8 +26,7 @@ type Engine interface {
 	Update(ctx context.Context, req *db.UpdateRequest) (*db.UpdateResponse, error)
 	Delete(ctx context.Context, req *db.DeleteRequest) (*db.DeleteResponse, error)
 	DeleteByQuery(ctx context.Context, req *db.DeleteByQueryRequest) (*db.DeleteByQueryResponse, error)
-	CreateIndexWithSettings(ctx context.Context, req *db.CreateIndexWithSettingsRequest) (*db.CreateIndexWithSettingsResponse, error)
-	PutMappingFromJSON(ctx context.Context, req *db.PutMappingFromJSONRequest) (*db.PutMappingFromJSONResponse, error)
+	CreateIndex(ctx context.Context, req *db.CreateIndexRequest) (*db.CreateIndexResponse, error)
 	Status(ctx context.Context, req *db.StatusRequest) (*db.StatusResponse, error)
 	Search(ctx context.Context, req *db.SearchRequest) (*db.SearchResponse, error)
 	SearchById(ctx context.Context, req *db.SearchByIdRequest) (*db.SearchByIdResponse, error)
@@ -86,12 +85,8 @@ func DeleteByQuery(ctx context.Context, req *db.DeleteByQueryRequest) (*db.Delet
 	return engine.DeleteByQuery(ctx, req)
 }
 
-func CreateIndexWithSettings(ctx context.Context, req *db.CreateIndexWithSettingsRequest) (*db.CreateIndexWithSettingsResponse, error) {
-	return engine.CreateIndexWithSettings(ctx, req)
-}
-
-func PutMappingFromJSON(ctx context.Context, req *db.PutMappingFromJSONRequest) (*db.PutMappingFromJSONResponse, error) {
-	return engine.PutMappingFromJSON(ctx, req)
+func CreateIndex(ctx context.Context, req *db.CreateIndexRequest) (*db.CreateIndexResponse, error) {
+	return engine.CreateIndex(ctx, req)
 }
 
 func Status(ctx context.Context, req *db.StatusRequest) (*db.StatusResponse, error) {

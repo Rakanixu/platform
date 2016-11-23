@@ -107,21 +107,10 @@ func (lfs *LocalFs) DeleteIndexBucketFromGCS() error {
 func (lfs *LocalFs) walkDatasourceParents() error {
 	// Create index and put mapping if does not exist
 	c := db_proto.NewDBClient(globals.DB_SERVICE_NAME, nil)
-	_, err := c.CreateIndexWithSettings(
+	_, err := c.CreateIndex(
 		context.Background(),
-		&db_proto.CreateIndexWithSettingsRequest{
+		&db_proto.CreateIndexRequest{
 			Index: globals.IndexHelper,
-		},
-	)
-	if err != nil {
-		return err
-	}
-
-	_, err = c.PutMappingFromJSON(
-		context.Background(),
-		&db_proto.PutMappingFromJSONRequest{
-			Index: globals.IndexHelper,
-			Type:  globals.FileType,
 		},
 	)
 	if err != nil {
