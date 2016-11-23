@@ -69,7 +69,7 @@ func (lfs *LocalFs) GetThumbnail(id string) (string, error) {
 }
 
 // CreateFile belongs to Fs interface
-func (lfs *LocalFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.CreateResponse, error) {
+func (lfs *LocalFs) CreateFile(ctx context.Context, c client.Client, rq file_proto.CreateRequest) (*file_proto.CreateResponse, error) {
 	return &file_proto.CreateResponse{}, nil
 }
 

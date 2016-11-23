@@ -25,7 +25,9 @@ func main() {
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.ScanTopic,
-			subscriber.Scans,
+			&subscriber.Crawler{
+				Client: service.Client(),
+			},
 		),
 	); err != nil {
 		log.Fatal(err)

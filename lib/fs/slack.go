@@ -73,7 +73,7 @@ func (sfs *SlackFs) GetThumbnail(id string) (string, error) {
 }
 
 // CreateFile belongs to Fs interface
-func (sfs *SlackFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.CreateResponse, error) {
+func (sfs *SlackFs) CreateFile(ctx context.Context, c client.Client, rq file_proto.CreateRequest) (*file_proto.CreateResponse, error) {
 	return &file_proto.CreateResponse{}, nil
 }
 
@@ -85,7 +85,7 @@ func (sfs *SlackFs) DeleteFile(ctx context.Context, c client.Client, rq file_pro
 // ShareFile sets a PermalinkPublic available, so everyone with URL has access to the slack file
 func (sfs *SlackFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
 	if req.SharePublicly {
-		return sfs.shareFilePublicly(req.OriginalId)
+		return sfs.shareFilePublicly(c, req.OriginalId)
 	} else {
 		r := c.NewRequest(
 			globals.DB_SERVICE_NAME,
@@ -274,13 +274,13 @@ func (sfs *SlackFs) getFiles(page int) error {
 }
 
 // shareFilePublicly will set a PermalinkPublic available and reachable for a file arcived/ stored in slack
-func (sfs *SlackFs) shareFilePublicly(id string) (string, error) {
+func (sfs *SlackFs) shareFilePublicly(c client.Client, id string) (string, error) {
 	data := make(url.Values)
 	data.Add("token", sfs.Endpoint.Token.AccessToken)
 	data.Add("file", id)
 
-	c := &http.Client{}
-	rsp, err := c.PostForm(globals.SlackShareFilesEndpoint, data)
+	hc := &http.Client{}
+	rsp, err := hc.PostForm(globals.SlackShareFilesEndpoint, data)
 
 	if err != nil {
 		return "", err
@@ -295,7 +295,7 @@ func (sfs *SlackFs) shareFilePublicly(id string) (string, error) {
 	// Response contains object, permalink_public attr will be modified
 	// Reindex document
 	f := file.NewKazoupFileFromSlackFile(&ssr.File, sfs.Endpoint.Id, sfs.Endpoint.UserId, sfs.Endpoint.Index)
-	if err := file.IndexAsync(f, globals.FilesTopic, sfs.Endpoint.Index, true); err != nil {
+	if err := file.IndexAsync(c, f, globals.FilesTopic, sfs.Endpoint.Index, true); err != nil {
 		return "", err
 	}
 

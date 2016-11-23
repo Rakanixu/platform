@@ -25,7 +25,7 @@ func (f *File) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.
 	}
 
 	// Create a file for given file system
-	r, err := fsys.CreateFile(*req)
+	r, err := fsys.CreateFile(ctx, f.Client, *req)
 	if err != nil {
 		return err
 	}

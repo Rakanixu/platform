@@ -2,7 +2,7 @@ package config
 
 import (
 	srv_handler "github.com/kazoup/platform/config/srv/handler"
-	"github.com/kazoup/platform/config/srv/sockets"
+	"github.com/kazoup/platform/config/web/sockets"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/cli"
 	microweb "github.com/micro/go-web"
