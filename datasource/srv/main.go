@@ -14,32 +14,39 @@ import (
 func main() {
 	service := wrappers.NewKazoupService("datasource")
 
-	// Init broker on subscriber
-	// This is required to be able to handle the data properly when
-	// we want to stream the messages over the notification socket
-	subscriber.Broker = service.Server().Options().Broker
-
 	// Attach crawler started subscriber
 	if err := service.Server().Subscribe(
-		service.Server().NewSubscriber(globals.CrawlerStartedTopic, subscriber.SubscribeCrawlerStarted)); err != nil {
+		service.Server().NewSubscriber(globals.CrawlerStartedTopic, &subscriber.CrawlerStarted{
+			Client: service.Client(),
+			Broker: service.Server().Options().Broker,
+		})); err != nil {
 		log.Fatal(err)
 	}
 
 	// Attach crawler finished subscriber
 	if err := service.Server().Subscribe(
-		service.Server().NewSubscriber(globals.CrawlerFinishedTopic, subscriber.SubscribeCrawlerFinished)); err != nil {
+		service.Server().NewSubscriber(globals.CrawlerFinishedTopic, &subscriber.CrawlerFinished{
+			Client: service.Client(),
+			Broker: service.Server().Options().Broker,
+		})); err != nil {
 		log.Fatal(err)
 	}
 
 	// Attach delete bucket subscriber
 	if err := service.Server().Subscribe(
-		service.Server().NewSubscriber(globals.DeleteBucketTopic, subscriber.SubscribeDeleteBucket)); err != nil {
+		service.Server().NewSubscriber(globals.DeleteBucketTopic, &subscriber.DeleteBucket{
+			Client: service.Client(),
+			Broker: service.Server().Options().Broker,
+		})); err != nil {
 		log.Fatal(err)
 	}
 
 	// Attach clean bucket subscriber
 	if err := service.Server().Subscribe(
-		service.Server().NewSubscriber(globals.DeleteFileInBucketTopic, subscriber.SubscribeDeleteFileInBucket)); err != nil {
+		service.Server().NewSubscriber(globals.DeleteFileInBucketTopic, &subscriber.DeleteFileInBucket{
+			Client: service.Client(),
+			Broker: service.Server().Options().Broker,
+		})); err != nil {
 		log.Fatal(err)
 	}
 
