@@ -296,7 +296,7 @@ func NewUUID() (string, error) {
 func ClearIndex(c client.Client, e *datasource_proto.Endpoint) error {
 	// Call the helper to publish messages of thumbnails that does not exists anymore
 	// Paginate in chuncks of 100 docs
-	if err := deleteFilesNoExistsFromGCS(e, 0, 100); err != nil {
+	if err := deleteFilesNoExistsFromGCS(c, e, 0, 100); err != nil {
 		return err
 	}
 
