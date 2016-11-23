@@ -8,7 +8,6 @@ import (
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	search_proto "github.com/kazoup/platform/search/srv/proto/search"
 	lib "github.com/mattbaird/elastigo/lib"
-	"github.com/micro/go-micro/client"
 	"log"
 	"strconv"
 )
@@ -20,25 +19,24 @@ func indexer(e *elastic) error {
 			select {
 			case v := <-e.filesChannel:
 				// File message can be notified, when a file is create, deleted or shared within kazoup
-				if v.Notify {
+				if v.FileMessage.Notify {
 					// We do not use bulk, as is just one element
-					if _, err := e.conn.Index(v.Index, "file", v.Id, nil, v.Data); err != nil {
+					if _, err := e.conn.Index(v.FileMessage.Index, "file", v.FileMessage.Id, nil, v.FileMessage.Data); err != nil {
 						log.Print("Bulk Indexer error %s", err)
 					}
 
-					c := client.NewClient()
 					n := &notification_proto.NotificationMessage{
 						Method: globals.NOTIFY_REFRESH_SEARCH,
-						UserId: v.UserId,
+						UserId: v.FileMessage.UserId,
 					}
 
 					// Publish scan topic, crawlers should pick up message
-					if err := c.Publish(globals.NewSystemContext(), c.NewPublication(globals.NotificationTopic, n)); err != nil {
+					if err := v.Client.Publish(globals.NewSystemContext(), v.Client.NewPublication(globals.NotificationTopic, n)); err != nil {
 						log.Print("Publishing (notify file) error %s", err)
 					}
 				} else {
 					// Use bulk as we will index groups of documents
-					if err := e.bulk.Index(v.Index, "file", v.Id, "", "", nil, v.Data); err != nil {
+					if err := e.bulk.Index(v.FileMessage.Index, "file", v.FileMessage.Id, "", "", nil, v.FileMessage.Data); err != nil {
 						log.Print("Bulk Indexer error %s", err)
 					}
 				}

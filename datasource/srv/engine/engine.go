@@ -246,12 +246,12 @@ func CreateIndexWithAlias(ctx context.Context, c client.Client, endpoint *dataso
 	// Create index
 	createIndexSrvReq := c.NewRequest(
 		globals.DB_SERVICE_NAME,
-		"DB.CreateIndexWithSettings",
-		&db_proto.CreateIndexWithSettingsRequest{
+		"DB.CreateIndex",
+		&db_proto.CreateIndexRequest{
 			Index: endpoint.Index,
 		},
 	)
-	createIndexSrvRes := &db_proto.CreateIndexWithSettingsResponse{}
+	createIndexSrvRes := &db_proto.CreateIndexResponse{}
 
 	if err := c.Call(ctx, createIndexSrvReq, createIndexSrvRes); err != nil {
 		return err

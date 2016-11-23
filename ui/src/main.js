@@ -21,11 +21,13 @@ if (isWidget) {
         resizable: true,
         showDockIcon: false,
         useContentSize: true,
-        windowPosition: 'topRight'
+        windowPosition: 'topRight',
+        preloadWindow: true
     });
 
     mb.on('after-create-window', function() {
         mb.window.loadURL(`file://${__dirname}/index-electron.html`)
+        
     });
 } else {
     // This method will be called when Electron has finished
