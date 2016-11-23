@@ -152,8 +152,8 @@
             notify: false,
             value: function() {
               return {
-                service: 'com.kazoup.srv.file',
-                method: 'File.Share',
+                service: window.Endpoints.srvs.file.srv,
+                method: window.Endpoints.srvs.file.share,
                 request: {
                   datasource_id: '',
                   index: '',
@@ -170,8 +170,8 @@
             notify: false,
             value: function() {
               return {
-                service: 'com.kazoup.srv.search',
-                method: 'Search.Search',
+                service: window.Endpoints.srvs.search.srv,
+                method: window.Endpoints.srvs.search.search,
                 request: {
                   index: '',
                   type: 'channel',
@@ -186,8 +186,8 @@
             notify: false,
             value: function() {
               return {
-                service: 'com.kazoup.srv.search',
-                method: 'Search.Search',
+                service: window.Endpoints.srvs.search.srv,
+                method: window.Endpoints.srvs.search.search,
                 request: {
                   index: '',
                   type: 'user',

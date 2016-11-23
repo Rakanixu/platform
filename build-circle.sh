@@ -5,7 +5,8 @@ set -x
 
 REGISTRY=kazoup
 
-
+# Build UI 
+cd ui/src && npm install && bower install
 # Used to rebuild all the things
 
 find * -type d -maxdepth 1 -print | while read dir; do
@@ -20,7 +21,7 @@ find * -type d -maxdepth 1 -print | while read dir; do
 	
 	# dep
 	go get -d  -v -t ./...
-
+	
 	# build static binary
 	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo  .
 	

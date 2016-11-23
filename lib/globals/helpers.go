@@ -8,7 +8,7 @@ import (
 	"github.com/micro/go-micro/client"
 )
 
-func deleteFilesNoExistsFromGCS(e *datasource_proto.Endpoint, from, size int) error {
+func deleteFilesNoExistsFromGCS(c client.Client, e *datasource_proto.Endpoint, from, size int) error {
 	// Helper to get only the ids from original file, this way we do  not know what type are we working with
 	var r []struct {
 		Original struct {
@@ -19,8 +19,8 @@ func deleteFilesNoExistsFromGCS(e *datasource_proto.Endpoint, from, size int) er
 		Total int `json:"total"`
 	}
 
-	c := db_proto.NewDBClient(DB_SERVICE_NAME, nil)
-	rsp, err := c.Search(NewSystemContext(), &db_proto.SearchRequest{
+	dbc := db_proto.NewDBClient(DB_SERVICE_NAME, c)
+	rsp, err := dbc.Search(NewSystemContext(), &db_proto.SearchRequest{
 		Index:    e.Index,
 		From:     int64(from),
 		Size:     int64(size),
@@ -53,7 +53,7 @@ func deleteFilesNoExistsFromGCS(e *datasource_proto.Endpoint, from, size int) er
 	}
 
 	if i.Total > from+size {
-		if err := deleteFilesNoExistsFromGCS(e, from+size, size); err != nil {
+		if err := deleteFilesNoExistsFromGCS(c, e, from+size, size); err != nil {
 			return err
 		}
 	}

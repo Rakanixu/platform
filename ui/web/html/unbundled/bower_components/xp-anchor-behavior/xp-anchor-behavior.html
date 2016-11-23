@@ -1,5 +1,0 @@
-<html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../expandjs/expandjs.html">
-
-<script>Polymer.XPAnchorBehavior={observers:["_anchorObserver(anchor, download, href, rel, target)"],properties:{anchor:{notify:!0,readOnly:!0},download:{reflectToAttribute:!0,type:String,value:null},href:{reflectToAttribute:!0,type:String,value:null},rel:{reflectToAttribute:!0,type:String,value:null},target:{notify:!0,value:null}},_anchorObserver:function(){var r=this;XP.setAttribute(r.anchor,"download",r.href&&r.download),XP.setAttribute(r.anchor,"href",r.href),XP.setAttribute(r.anchor,"rel",r.href&&r.rel),XP.setAttribute(r.anchor,"target",r.href&&r.target)},ready:function(){this._setAnchor(this.anchor||Polymer.dom(this.root).querySelector(".anchor"))},_anchorHandler:function(r){var e=this;!r.button&&e.anchor===r.currentTarget&&e.anchor.href&&e.fire("xp-redirect",{firer:e,anchor:e.anchor,href:e.anchor.href},{cancelable:!0}).defaultPrevented&&r.preventDefault()}};</script>
-</head><body></body></html>

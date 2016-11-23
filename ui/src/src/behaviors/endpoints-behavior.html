@@ -26,7 +26,8 @@
       checkUnauthorize: function() {
         // Unauthorize
         if (event.detail.request.xhr.response.code === 401) {
-          localStorage.clear();
+          localStorage.removeItem('token');
+          localStorage.removeItem('id_token');
           this.loadPage(1, 'login-auth0-activated', {});
         }
       }

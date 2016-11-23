@@ -424,16 +424,6 @@
 
         <paper-toast id="toast" text=""></paper-toast>
 
-        <iron-ajax id="rpcStartScan"
-                   method="POST"
-                   content-type="application/json"
-                   url="[[endpoints.endpoint]]"
-                   handle-as="json"
-                   on-error="_handleError"
-                   on-response="_handleStartScan"
-                   params="[[rpcStartScanParams]]"
-                   headers="[[headers]]"></iron-ajax>
-
         <iron-ajax id="rpcGetDatasources"
                    method="POST"
                    content-type="application/json"
@@ -490,26 +480,13 @@
                     notify: false,
                     value: function() {
                         return {
-                            service: 'com.kazoup.srv.datasource',
-                            method: 'DataSource.Search',
+                            service: window.Endpoints.srvs.datasource.srv,
+                            method: window.Endpoints.srvs.datasource.search,
                             request: {
                                 index: 'datasources',
                                 type: 'datasource',
                                 from: 0,
                                 size: 9999
-                            }
-                        };
-                    }
-                },
-                rpcStartScanParams: {
-                    type: Object,
-                    notify: true,
-                    value: function() {
-                        return {
-                            service: 'com.kazoup.srv.datasource',
-                            method: 'DataSource.Scan',
-                            request: {
-                                id: ''
                             }
                         };
                     }
@@ -567,11 +544,6 @@
                     notify: true,
                     value: false,
                     observer: 'itemSelectedChanged'
-                },
-                doScan: {
-                    type: Boolean,
-                    notify: true,
-                    value: false,
                 },
                 view: {
                     type: Object,
@@ -821,16 +793,6 @@
                     }
                 }
             },
-            _handleStartScan: function(e) {
-                if (e.detail.response) {
-                    this.$.snackbar.hide();
-                    this.$.toast.text = 'Scanning started, data will appear shortly';
-                    this.$.toast.show();
-                    this.async(function() {
-                        this.init({});
-                    }, 3500);
-                }
-            },
             _handleElastic: function(e) {
                 var result;
 
@@ -874,18 +836,9 @@
                 if (e.detail.response && e.detail.response.result) {
                     var results = JSON.parse(e.detail.response.result);
 
-                    if (this.doScan) {
-                        // Scan datasources
-                        _.forEach(results, function(datasource) {
-                            this.rpcStartScanParams.request.id = datasource.id;
-                            this.$.rpcStartScan.body = this.rpcStartScanParams;
-                            this.$.rpcStartScan.generateRequest();
-                        }.bind(this));
-                    } else {
-                        // List datasources
-                        this.set('datasourceResults', results ? results : []);
-                        this.setMenuHeight();
-                    }
+                    // List datasources
+                    this.set('datasourceResults', results ? results : []);
+                    this.setMenuHeight();
                 }
             },
             clearIronList: function() {
@@ -957,7 +910,6 @@
             },
             listDatasources: function(e, detail) {
                 this.$.navDrawerPanel.closeDrawer();
-                this.set('doScan', false);
                 this.set('breadcrumbs', []);
                 this.setListView();
                 this.set('bigVideoClass', '');

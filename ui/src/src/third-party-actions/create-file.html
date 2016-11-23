@@ -193,8 +193,8 @@
             notify: false,
             value: function() {
               return {
-                service: 'com.kazoup.srv.file',
-                method: 'File.Create',
+                service: window.Endpoints.srvs.file.srv,
+                method: window.Endpoints.srvs.file.create,
                 request: {
                   datasource_id: '',
                   mime_type: '',
