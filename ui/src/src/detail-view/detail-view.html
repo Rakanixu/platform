@@ -301,8 +301,8 @@
             notify: false,
             value: function() {
               return {
-                service: 'com.kazoup.srv.db',
-                method: 'DB.SearchById',
+                service: window.Endpoints.srvs.db.srv,
+                method: window.Endpoints.srvs.db.searchById,
                 request: {
                   index: '',
                   type: 'user',
@@ -316,8 +316,8 @@
             notify: false,
             value: function() {
               return {
-                service: 'com.kazoup.srv.db',
-                method: 'DB.SearchById',
+                service: window.Endpoints.srvs.db.srv,
+                method: window.Endpoints.srvs.db.searchById,
                 request: {
                   index: '',
                   type: 'channel',
@@ -331,8 +331,8 @@
             notify: false,
             value: function() {
               return {
-                service: 'com.kazoup.srv.search',
-                method: 'Search.Aggregate',
+                service: window.Endpoints.srvs.search.srv,
+                method: window.Endpoints.srvs.search.aggregate,
                 request: {
                   filters: {
                     index: 'files',

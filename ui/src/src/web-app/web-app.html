@@ -490,8 +490,8 @@
                     notify: false,
                     value: function() {
                         return {
-                            service: 'com.kazoup.srv.datasource',
-                            method: 'DataSource.Search',
+                            service: window.Endpoints.srvs.datasource.srv,
+                            method: window.Endpoints.srvs.datasource.search,
                             request: {
                                 index: 'datasources',
                                 type: 'datasource',
@@ -506,8 +506,8 @@
                     notify: true,
                     value: function() {
                         return {
-                            service: 'com.kazoup.srv.datasource',
-                            method: 'DataSource.Scan',
+                            service: window.Endpoints.srvs.datasource.srv,
+                            method: window.Endpoints.srvs.datasource.scan,
                             request: {
                                 id: ''
                             }

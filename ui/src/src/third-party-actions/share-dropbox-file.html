@@ -104,8 +104,8 @@
             notify: false,
             value: function() {
               return {
-                service: 'com.kazoup.srv.file',
-                method: 'File.Share',
+                service: window.Endpoints.srvs.file.srv,
+                method: window.Endpoints.srvs.file.share,
                 request: {
                   datasource_id: '',    // Need to set, but ignored for dropbox (backend)
                   index: '',            // Ignored for dropbox (backend)

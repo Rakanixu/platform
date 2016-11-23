@@ -50,7 +50,6 @@
 <link rel="import" href="../../src/behaviors/map-behavior.html">
 
 <link rel="import" href="../../src/datasources/datasources-page.html">
-<link rel="import" href="../../src/configuration/configuration-page.html">
 
 <dom-module id="settings-page">
   <template>
@@ -166,7 +165,6 @@
 
             <paper-tabs class="middle horizontal layout fit" selected="{{selectedTab}}" scrollable>
               <paper-tab class="flex">DATA SOURCES</paper-tab>
-              <!--<paper-tab class="flex">CONFIGURATION</paper-tab>-->
             </paper-tabs>
 
             <paper-progress id="progressBar"
@@ -181,9 +179,6 @@
                                  selected="[[selectedTab]]">
               <neon-animatable>
                 <datasources-page datasources-results="{{datasourceResults}}"></datasources-page>
-              </neon-animatable>
-              <neon-animatable>
-                <configuration-page></configuration-page>
               </neon-animatable>
             </neon-animated-pages>
           </div>

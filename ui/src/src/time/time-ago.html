@@ -40,18 +40,6 @@
         },
         datasourceChanged: function(newVal, oldVal) {
           this.set('message', this.crawlerRunningMsg(this.datasource));
-
-          /*
-          clearInterval(this.interval);
-
-          // Minutes interval
-          this.interval = setInterval(function() {
-            this.datasource.last_scan_started -= 59.9;
-            this.datasource.last_scan -= 59.9;
-
-            this.set('message', this.crawlerRunningMsg(this.datasource));
-          }.bind(this), 59999);
-          */
         }
       });
     }());
