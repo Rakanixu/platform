@@ -545,11 +545,6 @@
                     value: false,
                     observer: 'itemSelectedChanged'
                 },
-                doScan: {
-                    type: Boolean,
-                    notify: true,
-                    value: false,
-                },
                 view: {
                     type: Object,
                     notify: true,
@@ -841,14 +836,9 @@
                 if (e.detail.response && e.detail.response.result) {
                     var results = JSON.parse(e.detail.response.result);
 
-                    if (this.doScan) {
-                        // Scan datasources
-
-                    } else {
-                        // List datasources
-                        this.set('datasourceResults', results ? results : []);
-                        this.setMenuHeight();
-                    }
+                    // List datasources
+                    this.set('datasourceResults', results ? results : []);
+                    this.setMenuHeight();
                 }
             },
             clearIronList: function() {
@@ -920,7 +910,6 @@
             },
             listDatasources: function(e, detail) {
                 this.$.navDrawerPanel.closeDrawer();
-                this.set('doScan', false);
                 this.set('breadcrumbs', []);
                 this.setListView();
                 this.set('bigVideoClass', '');
