@@ -23,7 +23,9 @@ func srv(ctx *cli.Context) {
 
 	// Attach file indexer subscriber
 	if err := service.Server().Subscribe(
-		service.Server().NewSubscriber(globals.FilesTopic, engine.SubscribeFiles)); err != nil {
+		service.Server().NewSubscriber(globals.FilesTopic, &engine.Files{
+			Client: service.Client(),
+		})); err != nil {
 		log.Fatal(err)
 	}
 

@@ -9,14 +9,20 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	search_proto "github.com/kazoup/platform/search/srv/proto/search"
 	lib "github.com/mattbaird/elastigo/lib"
+	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"os"
 )
 
+type FilesChannel struct {
+	FileMessage *crawler.FileMessage
+	Client      client.Client
+}
+
 type elastic struct {
 	conn                 *lib.Conn
 	bulk                 *lib.BulkIndexer
-	filesChannel         chan *crawler.FileMessage
+	filesChannel         chan *FilesChannel
 	slackUsersChannel    chan *crawler.SlackUserMessage
 	slackChannelsChannel chan *crawler.SlackChannelMessage
 	crawlerFinished      chan *crawler.CrawlerFinishedMessage
@@ -24,7 +30,7 @@ type elastic struct {
 
 func init() {
 	engine.Register(&elastic{
-		filesChannel:         make(chan *crawler.FileMessage),
+		filesChannel:         make(chan *FilesChannel),
 		slackUsersChannel:    make(chan *crawler.SlackUserMessage),
 		slackChannelsChannel: make(chan *crawler.SlackChannelMessage),
 		crawlerFinished:      make(chan *crawler.CrawlerFinishedMessage),
@@ -76,8 +82,11 @@ func (e *elastic) Create(ctx context.Context, req *db.CreateRequest) (*db.Create
 }
 
 // Subscribe to crawler file messages
-func (e *elastic) SubscribeFiles(ctx context.Context, msg *crawler.FileMessage) error {
-	e.filesChannel <- msg
+func (e *elastic) SubscribeFiles(ctx context.Context, c client.Client, msg *crawler.FileMessage) error {
+	e.filesChannel <- &FilesChannel{
+		FileMessage: msg,
+		Client:      c,
+	}
 
 	return nil
 }
