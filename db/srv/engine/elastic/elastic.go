@@ -2,59 +2,38 @@ package elastic
 
 import (
 	"encoding/json"
-	"errors"
-	"log"
-
-	"os"
-
 	"github.com/kazoup/gabs"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/kazoup/platform/db/srv/engine"
-	data "github.com/kazoup/platform/db/srv/engine/elastic/data"
 	db "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/lib/globals"
 	search_proto "github.com/kazoup/platform/search/srv/proto/search"
 	lib "github.com/mattbaird/elastigo/lib"
+	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	"os"
 )
+
+type FilesChannel struct {
+	FileMessage *crawler.FileMessage
+	Client      client.Client
+}
 
 type elastic struct {
 	conn                 *lib.Conn
 	bulk                 *lib.BulkIndexer
-	filesChannel         chan *crawler.FileMessage
+	filesChannel         chan *FilesChannel
 	slackUsersChannel    chan *crawler.SlackUserMessage
 	slackChannelsChannel chan *crawler.SlackChannelMessage
 	crawlerFinished      chan *crawler.CrawlerFinishedMessage
-	esMapping            *[]byte // For files
-	esMappingDatasources *[]byte // For datasources
-	esSettings           *[]byte // For files index
 }
 
 func init() {
-	es_mapping, err := data.Asset("data/es_mapping_files_new.json")
-	if err != nil {
-		// Asset was not found.
-		log.Fatal(err)
-	}
-	es_mapping_datasources, err := data.Asset("data/es_mapping_datasources.json")
-	if err != nil {
-		// Asset was not found.
-		log.Fatal(err)
-	}
-	es_settings, err := data.Asset("data/es_settings.json")
-	if err != nil {
-		// Asset was not found.
-		log.Fatal(err)
-	}
-
 	engine.Register(&elastic{
-		filesChannel:         make(chan *crawler.FileMessage),
+		filesChannel:         make(chan *FilesChannel),
 		slackUsersChannel:    make(chan *crawler.SlackUserMessage),
 		slackChannelsChannel: make(chan *crawler.SlackChannelMessage),
 		crawlerFinished:      make(chan *crawler.CrawlerFinishedMessage),
-		esMapping:            &es_mapping,
-		esMappingDatasources: &es_mapping_datasources,
-		esSettings:           &es_settings,
 	})
 }
 
@@ -103,8 +82,11 @@ func (e *elastic) Create(ctx context.Context, req *db.CreateRequest) (*db.Create
 }
 
 // Subscribe to crawler file messages
-func (e *elastic) SubscribeFiles(ctx context.Context, msg *crawler.FileMessage) error {
-	e.filesChannel <- msg
+func (e *elastic) SubscribeFiles(ctx context.Context, c client.Client, msg *crawler.FileMessage) error {
+	e.filesChannel <- &FilesChannel{
+		FileMessage: msg,
+		Client:      c,
+	}
 
 	return nil
 }
@@ -322,71 +304,20 @@ func (e *elastic) SearchById(ctx context.Context, req *db.SearchByIdRequest) (*d
 }
 
 // CreateIndexWithSettings creates an ES index with settings
-func (e *elastic) CreateIndexWithSettings(ctx context.Context, req *db.CreateIndexWithSettingsRequest) (*db.CreateIndexWithSettingsResponse, error) {
-	var settingsMap map[string]interface{}
-
+func (e *elastic) CreateIndex(ctx context.Context, req *db.CreateIndexRequest) (*db.CreateIndexResponse, error) {
 	exists, err := e.conn.IndicesExists(req.Index)
 	if err != nil {
-		return &db.CreateIndexWithSettingsResponse{}, err
+		return &db.CreateIndexResponse{}, err
 	}
 
 	if !exists {
-		if err := json.Unmarshal(*e.esSettings, &settingsMap); err != nil {
-			return &db.CreateIndexWithSettingsResponse{}, err
-		}
-
-		_, err := e.conn.CreateIndexWithSettings(req.Index, settingsMap)
+		_, err := e.conn.CreateIndex(req.Index)
 		if err != nil {
-			return &db.CreateIndexWithSettingsResponse{}, err
+			return &db.CreateIndexResponse{}, err
 		}
 	}
 
-	return &db.CreateIndexWithSettingsResponse{}, nil
-}
-
-// PutMappingFromJSON puts a mapping into ES
-func (e *elastic) PutMappingFromJSON(ctx context.Context, req *db.PutMappingFromJSONRequest) (*db.PutMappingFromJSONResponse, error) {
-	var clusterHealth lib.ClusterHealthResponse
-	var m []byte
-	var err error
-
-	// Check for cluster health, continue when changes from red to safer (yellow / green)
-	// http://xbib.org/elasticsearch/2.1.1/apidocs/org/elasticsearch/indices/IndexPrimaryShardNotAllocatedException.html
-	clusterHealth, err = e.conn.Health(req.Index)
-	if err != nil {
-		return &db.PutMappingFromJSONResponse{}, err
-	}
-
-	for clusterHealth.Status == "red" {
-		clusterHealth, err = e.conn.Health(req.Index)
-		if err != nil {
-			return &db.PutMappingFromJSONResponse{}, err
-		}
-	}
-
-	if len(req.Type) == 0 {
-		return nil, errors.New("document type required")
-	}
-
-	if _, err := e.conn.CloseIndex(req.Index); err != nil {
-		return &db.PutMappingFromJSONResponse{}, err
-	}
-
-	if req.Index == globals.IndexDatasources {
-		m = *e.esMappingDatasources
-	} else {
-		m = *e.esMapping
-	}
-
-	if err := e.conn.PutMappingFromJSON(req.Index, req.Type, m); err != nil {
-		return nil, err
-	}
-
-	if _, err := e.conn.OpenIndex(req.Index); err != nil {
-		return &db.PutMappingFromJSONResponse{}, err
-	}
-
-	return &db.PutMappingFromJSONResponse{}, nil
+	return &db.CreateIndexResponse{}, nil
 }
 
 // Status elasticsearch cluster

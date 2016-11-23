@@ -15,13 +15,16 @@ import (
 	"time"
 )
 
-var Broker broker.Broker
+type CrawlerStarted struct {
+	Client client.Client
+	Broker broker.Broker
+}
 
 // SubscribeCrawlerStarted receives CrawlerStartedMessage and publish to NotificationTopic
-func SubscribeCrawlerStarted(ctx context.Context, msg *crawler.CrawlerStartedMessage) error {
+func (cs *CrawlerStarted) SubscribeCrawlerStarted(ctx context.Context, msg *crawler.CrawlerStartedMessage) error {
 	var ds *proto.Endpoint
 
-	c := db_proto.NewDBClient(globals.DB_SERVICE_NAME, nil)
+	c := db_proto.NewDBClient(globals.DB_SERVICE_NAME, cs.Client)
 	rsp, err := c.Read(ctx, &db_proto.ReadRequest{
 		Index: "datasources",
 		Type:  "datasource",
@@ -44,18 +47,23 @@ func SubscribeCrawlerStarted(ctx context.Context, msg *crawler.CrawlerStartedMes
 	}
 
 	// Publish notification
-	if err := client.Publish(ctx, client.NewPublication(globals.NotificationTopic, nm)); err != nil {
+	if err := cs.Client.Publish(ctx, cs.Client.NewPublication(globals.NotificationTopic, nm)); err != nil {
 		return err
 	}
 
 	return nil
 }
 
+type CrawlerFinished struct {
+	Client client.Client
+	Broker broker.Broker
+}
+
 // SubscribeCrawlerFinished sets last scan timestamp for the datasource after being scanned and updates crawler state
-func SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedMessage) error {
+func (cf *CrawlerFinished) SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedMessage) error {
 	var ds *proto.Endpoint
 
-	c := db_proto.NewDBClient(globals.DB_SERVICE_NAME, nil)
+	c := db_proto.NewDBClient(globals.DB_SERVICE_NAME, cf.Client)
 	rsp, err := c.Read(ctx, &db_proto.ReadRequest{
 		Index: "datasources",
 		Type:  "datasource",
@@ -94,15 +102,20 @@ func SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedM
 	}
 
 	// Publish notification
-	if err := client.Publish(ctx, client.NewPublication(globals.NotificationTopic, nm)); err != nil {
+	if err := cf.Client.Publish(ctx, cf.Client.NewPublication(globals.NotificationTopic, nm)); err != nil {
 		return err
 	}
 
 	return nil
 }
 
+type DeleteBucket struct {
+	Client client.Client
+	Broker broker.Broker
+}
+
 // SubscribeDeleteBucket subscribes to DeleteBucket Message to clean un a bicket in GC storage
-func SubscribeDeleteBucket(ctx context.Context, msg *proto.DeleteBucketMessage) error {
+func (db *DeleteBucket) SubscribeDeleteBucket(ctx context.Context, msg *proto.DeleteBucketMessage) error {
 	cfs, err := fs.NewFsFromEndpoint(msg.Endpoint)
 	if err != nil {
 		return err
@@ -111,7 +124,12 @@ func SubscribeDeleteBucket(ctx context.Context, msg *proto.DeleteBucketMessage) 
 	return cfs.DeleteIndexBucketFromGCS()
 }
 
+type DeleteFileInBucket struct {
+	Client client.Client
+	Broker broker.Broker
+}
+
 // SubscribeCleanBucket subscribes to DCleanBucket Message to remove thumbs not longer related with document in index
-func SubscribeDeleteFileInBucket(ctx context.Context, msg *proto.DeleteFileInBucketMessage) error {
+func (dfb *DeleteFileInBucket) SubscribeDeleteFileInBucket(ctx context.Context, msg *proto.DeleteFileInBucketMessage) error {
 	return fs.DeleteFile(msg.Index, msg.FileId)
 }

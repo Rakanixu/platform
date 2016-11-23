@@ -64,20 +64,10 @@ func (db *DB) DeleteByQuery(ctx context.Context, req *proto.DeleteByQueryRequest
 }
 
 // CreateIndexWithSettings db srv handler
-func (db *DB) CreateIndexWithSettings(ctx context.Context, req *proto.CreateIndexWithSettingsRequest, rsp *proto.CreateIndexWithSettingsResponse) error {
-	_, err := engine.CreateIndexWithSettings(ctx, req)
+func (db *DB) CreateIndex(ctx context.Context, req *proto.CreateIndexRequest, rsp *proto.CreateIndexResponse) error {
+	_, err := engine.CreateIndex(ctx, req)
 	if err != nil {
 		return errors.InternalServerError("go.micro.srv.db.CreateIndexWithSettings", err.Error())
-	}
-
-	return nil
-}
-
-// CreateIndexWithSettings db srv handler
-func (db *DB) PutMappingFromJSON(ctx context.Context, req *proto.PutMappingFromJSONRequest, rsp *proto.PutMappingFromJSONResponse) error {
-	_, err := engine.PutMappingFromJSON(ctx, req)
-	if err != nil {
-		return errors.InternalServerError("go.micro.srv.db.PutMappingFromJSON", err.Error())
 	}
 
 	return nil
