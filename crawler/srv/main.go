@@ -9,7 +9,6 @@ import (
 	"github.com/kazoup/platform/lib/categories"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/wrappers"
-	"github.com/micro/go-micro/server"
 	_ "github.com/micro/go-plugins/broker/nats"
 	_ "github.com/micro/go-plugins/transport/tcp"
 )
@@ -37,7 +36,7 @@ func main() {
 	service.Init()
 
 	// Run server
-	if err := server.Run(); err != nil {
+	if err := service.Run(); err != nil {
 		log.Fatal(err)
 	}
 }
