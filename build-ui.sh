@@ -9,5 +9,5 @@ set -x
 rm -rf  ui/web/html
 cd ui/src && npm install && bower install
 npm install polymer-cli
-polymer build -v
+node_modules/polymer-cli/bin/polymer.js build -v
 cd .. && cp -r src/build/bundled web/html
