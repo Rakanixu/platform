@@ -5,9 +5,6 @@ set -x
 
 REGISTRY=kazoup
 
-# Build UI 
-cd ui/src && npm install && bower install
-# Used to rebuild all the things
 
 find * -type d -maxdepth 1 -print | while read dir; do
 	if [ ! -f $dir/Dockerfile ]; then
