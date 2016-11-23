@@ -19,6 +19,7 @@ if (isWidget) {
         height: 10000, // Gets maximun height of screen, so for laaarge screens gets whole height space
         width: 400,
         resizable: true,
+        showDockIcon: false,
         useContentSize: true,
         windowPosition: 'topRight'
     });
