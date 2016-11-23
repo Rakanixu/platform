@@ -72,7 +72,7 @@ func (dfs *DropboxFs) GetThumbnail(id string) (string, error) {
 }
 
 // CreateFile creates a file in dropbox and index it on Elastic Search
-func (dfs *DropboxFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.CreateResponse, error) {
+func (dfs *DropboxFs) CreateFile(ctx context.Context, c client.Client, rq file_proto.CreateRequest) (*file_proto.CreateResponse, error) {
 	// https://www.dropbox.com/developers/documentation/http/documentation#files-upload
 	folderPath, err := osext.ExecutableFolder()
 	if err != nil {
@@ -86,7 +86,7 @@ func (dfs *DropboxFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.Creat
 	}
 	defer t.Close()
 
-	c := &http.Client{}
+	hc := &http.Client{}
 	req, err := http.NewRequest("POST", globals.DropboxFileUpload, t)
 	if err != nil {
 		return nil, err
@@ -99,7 +99,7 @@ func (dfs *DropboxFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.Creat
 		"mute": false
 	}`)
 	req.Header.Set("Content-Type", "application/octet-stream")
-	rsp, err := c.Do(req)
+	rsp, err := hc.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +111,7 @@ func (dfs *DropboxFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.Creat
 	}
 
 	kfd := file.NewKazoupFileFromDropboxFile(df, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
-	if err := file.IndexAsync(kfd, globals.FilesTopic, dfs.Endpoint.Index, true); err != nil {
+	if err := file.IndexAsync(c, kfd, globals.FilesTopic, dfs.Endpoint.Index, true); err != nil {
 		return nil, err
 	}
 
@@ -255,7 +255,7 @@ func (dfs *DropboxFs) ShareFile(ctx context.Context, c client.Client, req file_p
 		return "", err
 	}
 
-	if err := file.IndexAsync(f, globals.FilesTopic, dfs.Endpoint.Index, true); err != nil {
+	if err := file.IndexAsync(c, f, globals.FilesTopic, dfs.Endpoint.Index, true); err != nil {
 		return "", err
 	}
 

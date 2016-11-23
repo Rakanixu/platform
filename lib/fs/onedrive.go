@@ -128,7 +128,7 @@ func (ofs *OneDriveFs) GetThumbnail(id string) (string, error) {
 }
 
 // CreateFile creates a one drive document and index it on Elastic Search
-func (ofs *OneDriveFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.CreateResponse, error) {
+func (ofs *OneDriveFs) CreateFile(ctx context.Context, c client.Client, rq file_proto.CreateRequest) (*file_proto.CreateResponse, error) {
 	if err := ofs.refreshToken(); err != nil {
 		log.Println(err)
 	}
@@ -145,7 +145,7 @@ func (ofs *OneDriveFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.Crea
 	}
 	defer t.Close()
 
-	c := &http.Client{}
+	hc := &http.Client{}
 	// https://dev.onedrive.com/items/upload_put.htm
 	url := fmt.Sprintf("%sroot:/%s.%s:/content", globals.OneDriveEndpoint+Drive, rq.FileName, globals.GetDocumentTemplate(rq.MimeType, false))
 	req, err := http.NewRequest("PUT", url, t) // We require a template to be able to open / edit this files online
@@ -154,7 +154,7 @@ func (ofs *OneDriveFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.Crea
 	if err != nil {
 		return nil, err
 	}
-	res, err := c.Do(req)
+	res, err := hc.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +166,7 @@ func (ofs *OneDriveFs) CreateFile(rq file_proto.CreateRequest) (*file_proto.Crea
 	}
 
 	kfo := file.NewKazoupFileFromOneDriveFile(f, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)
-	if err := file.IndexAsync(kfo, globals.FilesTopic, ofs.Endpoint.Index, true); err != nil {
+	if err := file.IndexAsync(c, kfo, globals.FilesTopic, ofs.Endpoint.Index, true); err != nil {
 		return nil, err
 	}
 

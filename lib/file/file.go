@@ -27,7 +27,7 @@ type File interface {
 	GetBase64() string
 }
 
-func IndexAsync(file File, topic, index string, notify bool) error {
+func IndexAsync(c client.Client, file File, topic, index string, notify bool) error {
 	b, err := json.Marshal(file)
 	if err != nil {
 		return err
@@ -41,7 +41,7 @@ func IndexAsync(file File, topic, index string, notify bool) error {
 		Data:   string(b),
 	}
 
-	if err := client.Publish(context.Background(), client.NewPublication(topic, msg)); err != nil {
+	if err := c.Publish(context.Background(), c.NewPublication(topic, msg)); err != nil {
 		return err
 	}
 

@@ -13,15 +13,19 @@ import (
 	"time"
 )
 
+type Crawler struct {
+	Client client.Client
+}
+
 // Scans subscriber, receive endpoint to crawl it
-func Scans(ctx context.Context, endpoint *datasource.Endpoint) error {
+func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) error {
 	cfs, err := fs.NewFsFromEndpoint(endpoint)
 	if err != nil {
 		return err
 	}
 
 	// Publish crawler started, or is just going to start..
-	if err := client.Publish(context.Background(), client.NewPublication(globals.CrawlerStartedTopic, &crawler_proto.CrawlerStartedMessage{
+	if err := c.Client.Publish(context.Background(), c.Client.NewPublication(globals.CrawlerStartedTopic, &crawler_proto.CrawlerStartedMessage{
 		UserId:       endpoint.UserId,
 		DatasourceId: endpoint.Id,
 	})); err != nil {
@@ -29,7 +33,7 @@ func Scans(ctx context.Context, endpoint *datasource.Endpoint) error {
 	}
 
 	// Receive files founded by FileSystem
-	c, r, err := cfs.List()
+	fc, r, err := cfs.List()
 	if err != nil {
 		return err
 	}
@@ -41,7 +45,7 @@ func Scans(ctx context.Context, endpoint *datasource.Endpoint) error {
 			time.Sleep(time.Second * 8)
 
 			// Clear index (files that no longer exists, rename, etc..)
-			if err := globals.ClearIndex(endpoint); err != nil {
+			if err := globals.ClearIndex(c.Client, endpoint); err != nil {
 				log.Println("ERROR clearing index after scan", err)
 			}
 
@@ -49,16 +53,16 @@ func Scans(ctx context.Context, endpoint *datasource.Endpoint) error {
 				DatasourceId: endpoint.Id,
 			}
 			// Publish crawling process has finished
-			if err := client.Publish(context.Background(), client.NewPublication(globals.CrawlerFinishedTopic, msg)); err != nil {
+			if err := c.Client.Publish(context.Background(), c.Client.NewPublication(globals.CrawlerFinishedTopic, msg)); err != nil {
 				return err
 			}
-			close(c)
+			close(fc)
 			close(r)
 
 			return nil
 		// Channel receives File to be indexed by Elastic Search
-		case f := <-c:
-			if err := file.IndexAsync(f, globals.FilesTopic, f.GetIndex(), false); err != nil {
+		case f := <-fc:
+			if err := file.IndexAsync(c.Client, f, globals.FilesTopic, f.GetIndex(), false); err != nil {
 				log.Println("Error indexing async file", err)
 			}
 		}

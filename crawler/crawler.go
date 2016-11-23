@@ -1,8 +1,9 @@
-package auth
+package crawler
 
 import (
 	"github.com/kazoup/platform/crawler/srv/subscriber"
 	"github.com/kazoup/platform/lib/categories"
+	//"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/cli"
@@ -22,7 +23,9 @@ func srv(ctx *cli.Context) {
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.ScanTopic,
-			subscriber.Scans,
+			&subscriber.Crawler{
+				Client: service.Client(),
+			},
 		),
 	); err != nil {
 		log.Fatal(err)
