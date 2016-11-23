@@ -1,6 +1,0 @@
-<html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../expandjs/expandjs.html">
-<link rel="import" href="../xp-master-behavior/xp-master-behavior.html">
-
-<script>Polymer.XPBreadcrumbBehaviorImp={observers:["_stepsObserver(steps.*)"],properties:{current:{notify:!0,readOnly:!0},steps:{notify:!0,readOnly:!0,value:function(){return[]}}},_stepsObserver:function(){var e=this,r=e.current,t=XP.findElement(Polymer.dom(e),".breadcrumb-step:last-of-type");r&&(r.active=!1),t&&(t.active=!0),e._setCurrent(t)},created:function(){this.classList.add("breadcrumb")},ready:function(){this.slavesMap.steps=".breadcrumb-step"}},Polymer.XPBreadcrumbBehavior=[Polymer.XPMasterBehavior,Polymer.XPBreadcrumbBehaviorImp];</script>
-</head><body></body></html>
