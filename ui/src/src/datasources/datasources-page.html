@@ -198,8 +198,8 @@
             notify: false,
             value: function() {
               return {
-                service: 'com.kazoup.srv.datasource',
-                method: 'DataSource.Search',
+                service: window.Endpoints.srvs.datasource.srv,
+                method: window.Endpoints.srvs.datasource.search,
                 request: {
                   from: 0,
                   size: 9999,
@@ -214,8 +214,8 @@
             notify: false,
             value: function() {
               return {
-                service: 'com.kazoup.srv.datasource',
-                method: 'DataSource.Scan',
+                service: window.Endpoints.srvs.datasource.srv,
+                method: window.Endpoints.srvs.datasource.scan,
                 request: {
                   id: ''
                 }
@@ -227,8 +227,8 @@
             notify: false,
             value: function() {
               return {
-                service: 'com.kazoup.srv.datasource',
-                method: 'DataSource.Delete',
+                service: window.Endpoints.srvs.datasource.srv,
+                method: window.Endpoints.srvs.datasource.delete,
                 request: {
                   id: ''
                 }

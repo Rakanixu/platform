@@ -101,8 +101,8 @@
             notify: false,
             value: function() {
               return {
-                service: 'com.kazoup.srv.file',
-                method: 'File.Delete',
+                service: window.Endpoints.srvs.file.srv,
+                method: window.Endpoints.srvs.file.delete,
                 request: {
                   datasource_id: '',     // Datasource ID (file belongs to)
                   index: '',             // Datasource index (file belongs to)
