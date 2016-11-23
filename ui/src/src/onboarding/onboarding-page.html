@@ -109,7 +109,6 @@
         ],
         created: function() {
           if (localStorage.getItem('show_onboarding') != 'false') {
-            localStorage.setItem('show_onboarding', 'false');
             this.async(function() {
               this.fireEvent('onboarding-page-activated', {});
             }, 10);
@@ -128,6 +127,7 @@
           }
         },
         goToApp: function() {
+          localStorage.setItem('show_onboarding', 'false');
           this.fireEvent('login-auth0-activated', {});
         }
       })
