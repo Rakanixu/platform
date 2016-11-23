@@ -8,6 +8,7 @@ import (
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/metadata"
 	"golang.org/x/net/context"
@@ -24,7 +25,7 @@ type ImageHandler struct {
 
 func NewImageHandler() *ImageHandler {
 	ih := &ImageHandler{
-		dbclient:         db.NewDBClient(globals.DB_SERVICE_NAME, client.NewClient()),
+		dbclient:         db.NewDBClient(globals.DB_SERVICE_NAME, wrappers.NewKazoupClient()),
 		datasourceClient: datasource.NewDataSourceClient(globals.DATASOURCE_SERVICE_NAME, client.NewClient()),
 		fs:               make([]fs.Fs, 0),
 	}
