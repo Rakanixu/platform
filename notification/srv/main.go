@@ -19,7 +19,7 @@ func main() {
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.NotificationTopic,
-			subscriber.Proxy{
+			&subscriber.Proxy{
 				Broker: service.Server().Options().Broker,
 			},
 		),
