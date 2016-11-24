@@ -4,11 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	db "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
-	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/metadata"
 	"golang.org/x/net/context"
@@ -18,19 +16,13 @@ import (
 )
 
 type ImageHandler struct {
-	dbclient         db.DBClient
-	datasourceClient datasource.DataSourceClient
-	fs               []fs.Fs
+	fs []fs.Fs
 }
 
 func NewImageHandler() *ImageHandler {
 	ih := &ImageHandler{
-		dbclient:         db.NewDBClient(globals.DB_SERVICE_NAME, wrappers.NewKazoupClient()),
-		datasourceClient: datasource.NewDataSourceClient(globals.DATASOURCE_SERVICE_NAME, client.NewClient()),
-		fs:               make([]fs.Fs, 0),
+		fs: make([]fs.Fs, 0),
 	}
-
-	//ih.loadDatasources()
 
 	return ih
 }
@@ -69,7 +61,7 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"Authorization": token,
 	})
 
-	f, err := file.GetFileByID(ctx, md5_user_id, file_id, ih.dbclient)
+	f, err := file.GetFileByID(ctx, md5_user_id, file_id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -151,14 +143,20 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ih *ImageHandler) loadDatasources(ctx context.Context) {
-	rsp, err := ih.datasourceClient.Search(ctx, &datasource.SearchRequest{
-		Index: "datasources",
-		Type:  "datasource",
-		From:  0,
-		Size:  9999,
-	})
-	if err != nil {
-		log.Println("ERROR retrieveing datasources for image server")
+	req := client.DefaultClient.NewRequest(
+		globals.DATASOURCE_SERVICE_NAME,
+		"DataSource.Search",
+		&datasource.SearchRequest{
+			Index: "datasources",
+			Type:  "datasource",
+			From:  0,
+			Size:  9999,
+		},
+	)
+	rsp := &datasource.SearchResponse{}
+
+	if err := client.DefaultClient.Call(ctx, req, rsp); err != nil {
+		log.Println("ERROR retrieveing datasources for image server", err)
 		return
 	}
 
