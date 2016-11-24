@@ -3,11 +3,11 @@ package main
 import (
 	"log"
 
+	"github.com/kazoup/platform/lib/globals"
+	_ "github.com/kazoup/platform/lib/plugins"
 	proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/kazoup/platform/notification/web/sockets"
 	"github.com/micro/go-micro/client"
-	_ "github.com/micro/go-plugins/broker/nats"
-	_ "github.com/micro/go-plugins/transport/tcp"
 	microweb "github.com/micro/go-web"
 	"golang.org/x/net/websocket"
 )
@@ -19,7 +19,7 @@ func main() {
 	web.Handle("/platform/notify", websocket.Handler(sockets.Stream))
 
 	sockets.NotificationClient = proto.NewNotificationClient(
-		"com.kazoup.srv.notification",
+		globals.NOTIFICATION_SERVICE_NAME,
 		client.DefaultClient,
 	)
 

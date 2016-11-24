@@ -1,7 +1,10 @@
 package notification
 
 import (
+	"log"
+
 	"github.com/kazoup/platform/lib/globals"
+	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/kazoup/platform/notification/srv/handler"
 	proto "github.com/kazoup/platform/notification/srv/proto/notification"
@@ -9,11 +12,8 @@ import (
 	"github.com/kazoup/platform/notification/web/sockets"
 	"github.com/micro/cli"
 	"github.com/micro/go-micro/client"
-	_ "github.com/micro/go-plugins/broker/nats"
-	_ "github.com/micro/go-plugins/transport/tcp"
 	microweb "github.com/micro/go-web"
 	"golang.org/x/net/websocket"
-	"log"
 )
 
 func srv(ctx *cli.Context) {

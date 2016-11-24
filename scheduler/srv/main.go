@@ -3,10 +3,9 @@ package main
 import (
 	"log"
 
+	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/kazoup/platform/scheduler/srv/handler"
-	_ "github.com/micro/go-plugins/broker/nats"
-	_ "github.com/micro/go-plugins/transport/tcp"
 )
 
 func main() {
