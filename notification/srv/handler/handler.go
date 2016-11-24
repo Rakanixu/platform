@@ -5,6 +5,7 @@ import (
 	"github.com/micro/go-micro/errors"
 	"github.com/micro/go-micro/server"
 	"golang.org/x/net/context"
+	"log"
 )
 
 type Notification struct {
@@ -13,12 +14,12 @@ type Notification struct {
 
 func (n *Notification) Stream(ctx context.Context, req *proto.StreamRequest, stream proto.Notification_StreamStream) error {
 	if len(req.UserId) == 0 {
-		return errors.BadRequest("go.micro.srv.message", "invalid user_id")
+		return errors.BadRequest("go.micro.srv.notification.Stream", "invalid user_id")
 	}
 
 	ch, exit, err := StreamNotifications(n.Server, req)
 	if err != nil {
-		return errors.InternalServerError("go.micro.srv.message", err.Error())
+		return errors.InternalServerError("go.micro.srv.notification.StreamNotifications: ", err.Error())
 	}
 
 	defer func() {
@@ -30,6 +31,7 @@ func (n *Notification) Stream(ctx context.Context, req *proto.StreamRequest, str
 		select {
 		case e := <-ch:
 			if err := stream.Send(&proto.StreamResponse{Message: e}); err != nil {
+				log.Println("ERROR sending notification message over stream: ", err)
 				return err
 			}
 		}
