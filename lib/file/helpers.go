@@ -23,7 +23,7 @@ import (
 )
 
 // GetFileByID retrieves a file given its id and the user belongs to
-func GetFileByID(ctx context.Context, md5UserId, id string, c db.DBClient) (File, error) {
+func GetFileByID(ctx context.Context, md5UserId, id string) (File, error) {
 	rq := client.DefaultClient.NewRequest(
 		globals.DB_SERVICE_NAME,
 		"DB.SearchById",
