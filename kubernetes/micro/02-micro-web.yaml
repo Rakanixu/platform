@@ -19,9 +19,8 @@ spec:
               cpu: "10m"
           command: [
             "/micro",
-            "--registry=consul",
+            "--registry=kubernetes",
             "--web_namespace=com.kazoup.web",
-            "--registry_address=$(REGISTRY_SERVICE_HOST)",
             "--register_ttl=60",
             "--register_interval=30",
             "--web_cors=*",
@@ -31,7 +30,7 @@ spec:
             "--enable_stats",
             "web"
           ]
-          image: microhq/micro:latest
+          image: eu.gcr.io/desktop-1470249894548/micro-web:latest
           imagePullPolicy: Always
           ports:
           - containerPort: 8082
