@@ -16,7 +16,7 @@ spec:
       - name: ui-web
         command: [
                   "/web",
-                  "--registry_address=$(REGISTRY_SERVICE_HOST)",
+                  "--registry=kubernetes",    
                   "--server_address=0.0.0.0:9090",
                   "--register_ttl=60",
                   "--register_interval=30",

@@ -13,8 +13,7 @@ spec:
       containers:
       - name: notification-web
         command: [
-                  "/web",
-                  "--registry_address=$(REGISTRY_SERVICE_HOST)",
+                  "/web",                 
                   "--server_address=0.0.0.0:9090",
                   "--register_ttl=60",
                   "--register_interval=30",
