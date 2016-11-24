@@ -10,7 +10,6 @@ import (
 )
 
 func main() {
-
 	service := web.NewService(web.Name("com.kazoup.web.auth"))
 
 	service.HandleFunc("/google/login", handler.HandleGoogleLogin)

@@ -13,6 +13,7 @@ import (
 	"github.com/kazoup/platform/lib/local"
 	"github.com/kazoup/platform/lib/onedrive"
 	"github.com/kazoup/platform/lib/slack"
+	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	googledrive "google.golang.org/api/drive/v3"
 	"net/url"
@@ -23,16 +24,22 @@ import (
 
 // GetFileByID retrieves a file given its id and the user belongs to
 func GetFileByID(ctx context.Context, md5UserId, id string, c db.DBClient) (File, error) {
-	dbres, err := c.SearchById(ctx, &db.SearchByIdRequest{
-		Index: md5UserId,
-		Type:  "file",
-		Id:    id,
-	})
-	if err != nil {
+	rq := client.DefaultClient.NewRequest(
+		globals.DB_SERVICE_NAME,
+		"DB.SearchById",
+		&db.SearchByIdRequest{
+			Index: md5UserId,
+			Type:  "file",
+			Id:    id,
+		},
+	)
+	rs := &db.SearchByIdResponse{}
+
+	if err := client.DefaultClient.Call(ctx, rq, rs); err != nil {
 		return nil, err
 	}
 
-	f, err := NewFileFromString(dbres.Result)
+	f, err := NewFileFromString(rs.Result)
 	if err != nil {
 		return nil, err
 	}
