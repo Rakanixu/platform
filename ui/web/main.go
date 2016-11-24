@@ -5,8 +5,7 @@ import (
 	"net/http"
 
 	"github.com/kazoup/platform/lib/globals"
-	_ "github.com/micro/go-plugins/broker/nats"
-	_ "github.com/micro/go-plugins/transport/tcp"
+	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/micro/go-web"
 )
 
