@@ -28,7 +28,7 @@ find * -type d -maxdepth 1 -print | while read dir; do
 
 	# build docker image
 	docker build -t $REGISTRY/$IMAGE .
-
+	docker tag $REGISTRY/$IMAGE eu.gcr.io/desktop-147024989454/$IMAGE:latest
 	
 	# remove binary
 	rm ${dir#*/}

@@ -3,7 +3,7 @@
 set -e
 set -x
 
-REGISTRY=kazoup
+REGISTRY=eu.gcr.io/desktop-1470249894548
 
 # Used to rebuild all the things
 
@@ -19,7 +19,7 @@ find * -type d -maxdepth 1 -print | while read dir; do
 
  	
 	# push docker image
-	docker push $REGISTRY/$IMAGE
+	gcloud docker push $REGISTRY/$IMAGE
 	
 
 
