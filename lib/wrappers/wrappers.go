@@ -158,10 +158,10 @@ func DesktopWrap(c client.Client) client.Client {
 }
 
 func NewKazoupClient() client.Client {
-	c := client.NewClient(
-		client.Wrap(LogWrap),
-	)
-	return c
+	// c := client.NewClient(
+	// 	client.Wrap(LogWrap),
+	// )
+	return client.NewClient()
 }
 
 func NewKazoupService(name string) micro.Service {
