@@ -143,6 +143,8 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ih *ImageHandler) loadDatasources(ctx context.Context) {
+
+	//FIXME: mazimun of 9999 datasources. paginate
 	req := client.DefaultClient.NewRequest(
 		globals.DATASOURCE_SERVICE_NAME,
 		"DataSource.Search",
@@ -171,6 +173,7 @@ func (ih *ImageHandler) loadDatasources(ctx context.Context) {
 		if err != nil {
 			log.Println(err.Error())
 		}
+		//FIXME: we are appending to existing ones, so we end up with many copies of same data in memory. just dump and append new data
 		ih.fs = append(ih.fs, fsfe)
 	}
 }

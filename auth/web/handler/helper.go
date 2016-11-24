@@ -45,7 +45,6 @@ func SaveDatasource(ctx context.Context, user string, url string, token *oauth2.
 
 //PublishNotification send data source created notification
 func PublishNotification(uID string) error {
-	//c := client.NewClient()
 	c := wrappers.NewKazoupClient()
 	n := &notification_proto.NotificationMessage{
 		Info:   "Datasource created succesfully",
