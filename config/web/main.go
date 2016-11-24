@@ -4,8 +4,7 @@ import (
 	"log"
 
 	"github.com/kazoup/platform/config/web/sockets"
-	_ "github.com/micro/go-plugins/broker/nats"
-	_ "github.com/micro/go-plugins/transport/tcp"
+	_ "github.com/kazoup/platform/lib/plugins"
 	microweb "github.com/micro/go-web"
 	"golang.org/x/net/websocket"
 )

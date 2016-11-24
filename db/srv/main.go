@@ -4,13 +4,11 @@ import (
 	"log"
 
 	"github.com/kazoup/platform/db/srv/engine"
-	//_ "github.com/kazoup/platform/db/srv/engine/bleve"
 	_ "github.com/kazoup/platform/db/srv/engine/elastic"
 	"github.com/kazoup/platform/db/srv/handler"
 	"github.com/kazoup/platform/lib/globals"
+	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
-	_ "github.com/micro/go-plugins/broker/nats"
-	_ "github.com/micro/go-plugins/transport/tcp"
 )
 
 func main() {

@@ -5,10 +5,9 @@ import (
 	"os"
 	"path/filepath"
 
+	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/media/web/handler"
 	"github.com/micro/cli"
-	_ "github.com/micro/go-plugins/broker/nats"
-	_ "github.com/micro/go-plugins/transport/tcp"
 	microweb "github.com/micro/go-web"
 )
 

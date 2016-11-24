@@ -4,8 +4,7 @@ import (
 	"log"
 
 	"github.com/kazoup/platform/auth/web/handler"
-	_ "github.com/micro/go-plugins/broker/nats"
-	_ "github.com/micro/go-plugins/transport/tcp"
+	_ "github.com/kazoup/platform/lib/plugins"
 	web "github.com/micro/go-web"
 )
 

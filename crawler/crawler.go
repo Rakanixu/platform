@@ -4,12 +4,12 @@ import (
 	"github.com/kazoup/platform/crawler/srv/subscriber"
 	"github.com/kazoup/platform/lib/categories"
 	//"github.com/kazoup/platform/lib/globals"
+	"log"
+
 	"github.com/kazoup/platform/lib/globals"
+	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/cli"
-	_ "github.com/micro/go-plugins/broker/nats"
-	_ "github.com/micro/go-plugins/transport/tcp"
-	"log"
 )
 
 func srv(ctx *cli.Context) {
