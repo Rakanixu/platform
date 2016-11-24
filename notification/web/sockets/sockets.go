@@ -5,7 +5,6 @@ import (
 
 	"github.com/kazoup/platform/lib/globals"
 	proto "github.com/kazoup/platform/notification/srv/proto/notification"
-	"github.com/micro/go-micro/client"
 	"golang.org/x/net/websocket"
 )
 
