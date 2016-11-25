@@ -1,19 +1,19 @@
-apiVersion: v1
-kind: ReplicationController
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
   namespace: default
   name: micro-web
 spec:
-  replicas: 3
-  selector:
-    name: micro-web
+  replicas: 1
+  revisionHistoryLimit: 3
   template:
     metadata:
       labels:
         name: micro-web
+        app: micro-web
     spec:
       containers:
-        - name: web
+        - name: micro-web
           resources:
             limits:
               cpu: "10m"
@@ -27,6 +27,8 @@ spec:
             "--enable_tls",
             "--tls_cert_file=/secrets/tls.crt",
             "--tls_key_file=/secrets/tls.key",
+            "--broker=nats",
+            "--broker_address=nats:4222",
             "--enable_stats",
             "web"
           ]
