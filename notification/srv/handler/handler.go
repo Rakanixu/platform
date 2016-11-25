@@ -39,6 +39,14 @@ func (n *Notification) Stream(ctx context.Context, req *proto.StreamRequest, str
 		return nil
 	})
 
+	if err := stream.Send(&proto.StreamResponse{
+		Message: &proto.NotificationMessage{
+			Info: "INFO1",
+		},
+	}); err != nil {
+		log.Println("INFO1", err)
+	}
+
 	//ch, exit, err := StreamNotifications(n.Server, req)
 	if err != nil {
 		return errors.InternalServerError("go.micro.srv.notification.StreamNotifications: ", err.Error())
@@ -48,6 +56,15 @@ func (n *Notification) Stream(ctx context.Context, req *proto.StreamRequest, str
 		close(exit)
 		stream.Close()
 	}()*/
+
+	if err := stream.Send(&proto.StreamResponse{
+		Message: &proto.NotificationMessage{
+			Info: "INFO2",
+		},
+	}); err != nil {
+		log.Println("INFO2", err)
+	}
+
 	/*
 		for {
 			select {
@@ -58,6 +75,9 @@ func (n *Notification) Stream(ctx context.Context, req *proto.StreamRequest, str
 				}
 			}
 		}*/
+	exit := make(chan bool)
+
+	<-exit
 
 	return nil
 }
