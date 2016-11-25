@@ -28,6 +28,16 @@ func main() {
 
 	// Notification handler instantiate with service broker
 	// It will allow to subscribe to topics and then stream actions back to clients
+	/*	if err := service.Server().Handle(
+			service.Server().NewHandler(
+				&handler.Notification{
+					Server: service.Server(),
+				},
+			),
+		); err != nil {
+			log.Fatal(err)
+		}*/
+
 	proto.RegisterNotificationHandler(service.Server(), &handler.Notification{
 		Server: service.Server(),
 	})
