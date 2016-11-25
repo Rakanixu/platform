@@ -31,10 +31,10 @@ func StreamNotifications(s server.Server, req *proto.StreamRequest) (chan *proto
 		return nil, nil, err
 	}
 
-	go func() {
+	/*	go func() {
 		<-exit
 		sub.Unsubscribe()
-	}()
+	}()*/
 
 	return che, exit, nil
 }

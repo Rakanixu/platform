@@ -13,6 +13,11 @@ var NotificationClient proto.NotificationClient
 func Stream(ws *websocket.Conn) {
 	var m map[string]interface{}
 
+	if err := websocket.JSON.Send(ws, `{"hello": "hi"}`); err != nil {
+		fmt.Println("ERROR sending hello", err)
+		return
+	}
+
 	if err := websocket.JSON.Receive(ws, &m); err != nil {
 		fmt.Println("ERROR receiving user_id /notificaion/platform/notify", err)
 		return
