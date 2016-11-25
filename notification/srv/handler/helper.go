@@ -13,7 +13,7 @@ func StreamNotifications(s server.Server, req *proto.StreamRequest) (chan *proto
 	exit := make(chan bool)
 
 	// We subscribe directly to the broker to be able to handle the data internally
-	sub, err := s.Options().Broker.Subscribe(globals.NotificationTopic, func(p broker.Publication) error {
+	_, err := s.Options().Broker.Subscribe(globals.NotificationTopic, func(p broker.Publication) error {
 		var e *proto.NotificationMessage
 
 		if err := json.Unmarshal(p.Message().Body, &e); err != nil {
@@ -31,10 +31,10 @@ func StreamNotifications(s server.Server, req *proto.StreamRequest) (chan *proto
 		return nil, nil, err
 	}
 
-	go func() {
+	/*	go func() {
 		<-exit
 		sub.Unsubscribe()
-	}()
+	}()*/
 
 	return che, exit, nil
 }
