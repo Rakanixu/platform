@@ -31,7 +31,7 @@ func main() {
 	if err := service.Server().Handle(
 		service.Server().NewHandler(
 			&handler.Notification{
-				Service: service,
+				Server: service.Server(),
 			},
 		),
 	); err != nil {

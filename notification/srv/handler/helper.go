@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"github.com/kazoup/platform/lib/globals"
 	proto "github.com/kazoup/platform/notification/srv/proto/notification"
-	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/broker"
+	"github.com/micro/go-micro/server"
 )
 
-func StreamNotifications(s micro.Service, req *proto.StreamRequest) (chan *proto.NotificationMessage, chan bool, error) {
+func StreamNotifications(s server.Server, req *proto.StreamRequest) (chan *proto.NotificationMessage, chan bool, error) {
 	che := make(chan *proto.NotificationMessage, 10000) // To be sure channel is not blocked
 	exit := make(chan bool)
 

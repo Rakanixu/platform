@@ -15,13 +15,13 @@ import (
 func main() {
 	web := microweb.NewService(microweb.Name("com.kazoup.web.notification"))
 
-	// Attach socket stream
-	web.Handle("/platform/notify", websocket.Handler(sockets.Stream))
-
 	sockets.NotificationClient = proto.NewNotificationClient(
 		globals.NOTIFICATION_SERVICE_NAME,
 		client.DefaultClient,
 	)
+
+	// Attach socket stream
+	web.Handle("/platform/notify", websocket.Handler(sockets.Stream))
 
 	if err := web.Init(); err != nil {
 		log.Fatal(err)
