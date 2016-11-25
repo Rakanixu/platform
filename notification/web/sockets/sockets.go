@@ -5,6 +5,7 @@ import (
 
 	"github.com/kazoup/platform/lib/globals"
 	proto "github.com/kazoup/platform/notification/srv/proto/notification"
+	"github.com/micro/go-micro/client"
 	"golang.org/x/net/websocket"
 )
 
@@ -23,9 +24,13 @@ func Stream(ws *websocket.Conn) {
 		return
 	}
 
-	stream, err := NotificationClient.Stream(globals.NewSystemContext(), &proto.StreamRequest{
+	stream, err := client.DefaultClient.Stream(globals.NewSystemContext(), &proto.StreamRequest{
 		UserId: m["user_id"].(string),
 	})
+
+	/*	stream, err := NotificationClient.Stream(globals.NewSystemContext(), &proto.StreamRequest{
+		UserId: m["user_id"].(string),
+	})*/
 	if err != nil {
 		fmt.Println("ERROR opening stream for notifications", err)
 		return

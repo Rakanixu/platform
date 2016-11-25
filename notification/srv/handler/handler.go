@@ -2,14 +2,14 @@ package handler
 
 import (
 	proto "github.com/kazoup/platform/notification/srv/proto/notification"
+	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/errors"
-	"github.com/micro/go-micro/server"
 	"golang.org/x/net/context"
 	"log"
 )
 
 type Notification struct {
-	Server server.Server
+	Service micro.Service
 }
 
 func (n *Notification) Stream(ctx context.Context, req *proto.StreamRequest, stream proto.Notification_StreamStream) error {
@@ -17,7 +17,7 @@ func (n *Notification) Stream(ctx context.Context, req *proto.StreamRequest, str
 		return errors.BadRequest("go.micro.srv.notification.Stream", "invalid user_id")
 	}
 
-	ch, exit, err := StreamNotifications(n.Server, req)
+	ch, exit, err := StreamNotifications(n.Service, req)
 	if err != nil {
 		return errors.InternalServerError("go.micro.srv.notification.StreamNotifications: ", err.Error())
 	}

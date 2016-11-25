@@ -33,9 +33,15 @@ func srv(ctx *cli.Context) {
 
 	// Notification handler instantiate with service broker
 	// It will allow to subscribe to topics and then stream actions back to clients
-	proto.RegisterNotificationHandler(service.Server(), &handler.Notification{
-		Server: service.Server(),
-	})
+	if err := service.Server().Handle(
+		service.Server().NewHandler(
+			&handler.Notification{
+				Service: service,
+			},
+		),
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	// Run server
 	if err := service.Run(); err != nil {
