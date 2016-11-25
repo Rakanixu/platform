@@ -23,6 +23,8 @@ func Stream(ws *websocket.Conn) {
 		return
 	}
 
+	fmt.Println("MSG received", m["user_id"].(string))
+
 	stream, err := NotificationClient.Stream(globals.NewSystemContext(), &proto.StreamRequest{
 		UserId: m["user_id"].(string),
 	})
