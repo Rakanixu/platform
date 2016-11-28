@@ -1,8 +1,8 @@
 package handler
 
 import (
+	"fmt"
 	proto "github.com/kazoup/platform/notification/srv/proto/notification"
-	"github.com/micro/go-micro/errors"
 	"github.com/micro/go-micro/server"
 	"golang.org/x/net/context"
 	"log"
@@ -12,16 +12,25 @@ type Notification struct {
 	Server server.Server
 }
 
-func (n *Notification) Stream(ctx context.Context, req *proto.StreamRequest, stream proto.Notification_StreamStream) error {
-	if len(req.UserId) == 0 {
-		return errors.BadRequest("go.micro.srv.notification.Stream", "invalid user_id")
+func (n *Notification) Stream(ctx context.Context, stream server.Streamer) error {
+	/*
+		if len(req.UserId) == 0 {
+			return errors.BadRequest("go.micro.srv.notification.Stream", "invalid user_id")
+		}
+	*/
+	fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!")
+
+	req := &proto.StreamRequest{}
+	if err := stream.Recv(req); err != nil {
+		fmt.Println("ERROR receiving stream request", err)
+		return err
 	}
 
-	log.Println("StreamNotifications(n.Server, req)")
+	log.Println("StreamNotifications(n.Server, req)", req.UserId)
 
 	ch, exit, err := StreamNotifications(n.Server, req)
 	if err != nil {
-		return errors.InternalServerError("go.micro.srv.notification.StreamNotifications: ", err.Error())
+		return err
 	}
 
 	defer func() {

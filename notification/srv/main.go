@@ -7,7 +7,7 @@ import (
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/kazoup/platform/notification/srv/handler"
-	proto "github.com/kazoup/platform/notification/srv/proto/notification"
+	//proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/kazoup/platform/notification/srv/subscriber"
 )
 
@@ -28,19 +28,19 @@ func main() {
 
 	// Notification handler instantiate with service broker
 	// It will allow to subscribe to topics and then stream actions back to clients
-	/*	if err := service.Server().Handle(
-			service.Server().NewHandler(
-				&handler.Notification{
-					Server: service.Server(),
-				},
-			),
-		); err != nil {
-			log.Fatal(err)
-		}*/
+	if err := service.Server().Handle(
+		service.Server().NewHandler(
+			&handler.Notification{
+				Server: service.Server(),
+			},
+		),
+	); err != nil {
+		log.Fatal(err)
+	}
 
-	proto.RegisterNotificationHandler(service.Server(), &handler.Notification{
+	/*	proto.RegisterNotificationHandler(service.Server(), &handler.Notification{
 		Server: service.Server(),
-	})
+	})*/
 
 	service.Init()
 	// Run server
