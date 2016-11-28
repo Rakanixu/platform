@@ -1,19 +1,17 @@
 package fs
 
 import (
-	"bytes"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
-	img "github.com/kazoup/platform/lib/image"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/storage/v1"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -28,8 +26,8 @@ type Fs interface {
 	CreateFile(context.Context, client.Client, file_proto.CreateRequest) (*file_proto.CreateResponse, error)
 	DeleteFile(context.Context, client.Client, file_proto.DeleteRequest) (*file_proto.DeleteResponse, error)
 	ShareFile(context.Context, client.Client, file_proto.ShareRequest) (string, error)
-	DownloadFile(string, ...string) ([]byte, error)
-	UploadFile([]byte, string) error
+	DownloadFile(string, ...string) (io.ReadCloser, error)
+	UploadFile(io.Reader, string) error
 	SignedObjectStorageURL(string) (string, error)
 	DeleteIndexBucketFromGCS() error
 	GetDatasourceId() string
@@ -104,16 +102,6 @@ func NewFsFromEndpoint(e *datasource_proto.Endpoint) (Fs, error) {
 	return nil, errors.New("Error parsing URL")
 }
 
-// FileToBase64 converts a slice of bytes to base64 string.
-func FileToBase64(file []byte) (string, error) {
-	b, err := img.Thumbnail(file, globals.THUMBNAIL_WIDTH)
-	if err != nil {
-		return "", err
-	}
-
-	return base64.StdEncoding.EncodeToString(b), nil
-}
-
 //SignedObjectStorageURL returns a temporary valid URL to the resource
 func SignedObjectStorageURL(index, objName string) (string, error) {
 	// Refresh when resource expires. 1 hour availability since was requested.
@@ -128,7 +116,7 @@ func SignedObjectStorageURL(index, objName string) (string, error) {
 }
 
 // UploadFile uploads a file into google cloud storage
-func UploadFile(file []byte, index, fID string) error {
+func UploadFile(r io.Reader, index, fID string) error {
 	c, err := google.DefaultClient(context.Background(), storage.DevstorageFullControlScope)
 	if err != nil {
 		return err
@@ -151,7 +139,7 @@ func UploadFile(file []byte, index, fID string) error {
 
 	_, err = srv.Objects.Insert(index, &storage.Object{
 		Name: fID,
-	}).Media(bytes.NewReader(file)).Do()
+	}).Media(r).Do()
 	if err != nil {
 		return err
 	}

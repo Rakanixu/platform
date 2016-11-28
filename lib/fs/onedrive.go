@@ -17,7 +17,7 @@ import (
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -258,7 +258,7 @@ func (ofs *OneDriveFs) ShareFile(ctx context.Context, c client.Client, req file_
 }
 
 // DownloadFile retrieves a file
-func (ofs *OneDriveFs) DownloadFile(id string, opts ...string) ([]byte, error) {
+func (ofs *OneDriveFs) DownloadFile(id string, opts ...string) (io.ReadCloser, error) {
 	//POST /drive/items/{item-id}/action.invite
 	if err := ofs.refreshToken(); err != nil {
 		log.Println(err)
@@ -277,18 +277,12 @@ func (ofs *OneDriveFs) DownloadFile(id string, opts ...string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
 
-	b, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return b, nil
+	return res.Body, nil
 }
 
 // UploadFile uploads a file into google cloud storage
-func (ofs *OneDriveFs) UploadFile(file []byte, fId string) error {
+func (ofs *OneDriveFs) UploadFile(file io.Reader, fId string) error {
 	return UploadFile(file, ofs.Endpoint.Index, fId)
 }
 
@@ -461,12 +455,12 @@ func (ofs *OneDriveFs) getDirChildren(id string) error {
 func (ofs *OneDriveFs) pushToFilesChannel(f onedrive.OneDriveFile) error {
 	n := strings.Split(f.Name, ".")
 	if categories.GetDocType("."+n[len(n)-1]) == globals.CATEGORY_PICTURE {
-		b, err := ofs.DownloadFile(f.ID)
+		pr, err := ofs.DownloadFile(f.ID)
 		if err != nil {
 			log.Println("ERROR downloading onedrive file: %s", err)
 		}
 
-		b, err = image.Thumbnail(b, globals.THUMBNAIL_WIDTH)
+		b, err := image.Thumbnail(pr, globals.THUMBNAIL_WIDTH)
 		if err != nil {
 			log.Println("ERROR generating thumbnail for onedrive file: %s", err)
 		}

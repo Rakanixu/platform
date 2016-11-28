@@ -9,21 +9,22 @@ import (
 	"image/jpeg"
 	_ "image/jpeg"
 	_ "image/png"
+	"io"
 )
 
-func Thumbnail(file []byte, width int) ([]byte, error) {
-	img, _, err := image.Decode(bytes.NewReader(file))
+func Thumbnail(rd io.ReadCloser, width int) (io.Reader, error) {
+	defer rd.Close()
+
+	img, _, err := image.Decode(rd)
 	if err != nil {
 		return nil, err
 	}
-
-	ni := resize.Resize(uint(width), 0, img, resize.MitchellNetravali)
 
 	buf := new(bytes.Buffer)
-	err = jpeg.Encode(buf, ni, nil)
+	err = jpeg.Encode(buf, resize.Resize(uint(width), 0, img, resize.MitchellNetravali), nil)
 	if err != nil {
 		return nil, err
 	}
 
-	return buf.Bytes(), nil
+	return bytes.NewReader(buf.Bytes()), nil
 }
