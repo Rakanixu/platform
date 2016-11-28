@@ -1,24 +1,15 @@
 package main
 
 import (
-	"log"
-
-	//"github.com/kazoup/platform/lib/globals"
 	_ "github.com/kazoup/platform/lib/plugins"
-	//proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/kazoup/platform/notification/web/sockets"
-	//"github.com/micro/go-micro/client"
 	microweb "github.com/micro/go-web"
 	"golang.org/x/net/websocket"
+	"log"
 )
 
 func main() {
 	web := microweb.NewService(microweb.Name("com.kazoup.web.notification"))
-
-	/*	sockets.NotificationClient = proto.NewNotificationClient(
-		globals.NOTIFICATION_SERVICE_NAME,
-		client.DefaultClient,
-	)*/
 
 	// Attach socket stream
 	web.Handle("/platform/notify", websocket.Handler(sockets.Stream))

@@ -1,14 +1,12 @@
 package main
 
 import (
-	"log"
-
 	"github.com/kazoup/platform/lib/globals"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/kazoup/platform/notification/srv/handler"
-	//proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/kazoup/platform/notification/srv/subscriber"
+	"log"
 )
 
 func main() {
@@ -37,10 +35,6 @@ func main() {
 	); err != nil {
 		log.Fatal(err)
 	}
-
-	/*	proto.RegisterNotificationHandler(service.Server(), &handler.Notification{
-		Server: service.Server(),
-	})*/
 
 	service.Init()
 	// Run server
