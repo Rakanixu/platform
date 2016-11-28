@@ -16,7 +16,7 @@ import (
 	"github.com/kazoup/platform/lib/image"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -263,7 +263,7 @@ func (dfs *DropboxFs) ShareFile(ctx context.Context, c client.Client, req file_p
 }
 
 // DownloadFile retrieves a file
-func (dfs *DropboxFs) DownloadFile(id string, opts ...string) ([]byte, error) {
+func (dfs *DropboxFs) DownloadFile(id string, opts ...string) (io.ReadCloser, error) {
 	c := &http.Client{}
 	req, err := http.NewRequest(http.MethodPost, globals.DropboxFileDownload, nil)
 	if err != nil {
@@ -271,24 +271,18 @@ func (dfs *DropboxFs) DownloadFile(id string, opts ...string) ([]byte, error) {
 	}
 	req.Header.Set("Authorization", dfs.Token())
 	req.Header.Set("Dropbox-API-Arg", `{
-		"path": "`+id+`"
-	}`)
+			"path": "`+id+`"
+		}`)
 	rsp, err := c.Do(req)
 	if err != nil {
 		return nil, err
 	}
-	defer rsp.Body.Close()
 
-	b, err := ioutil.ReadAll(rsp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return b, nil
+	return rsp.Body, nil
 }
 
 // UploadFile uploads a file into google cloud storage
-func (dfs *DropboxFs) UploadFile(file []byte, fId string) error {
+func (dfs *DropboxFs) UploadFile(file io.Reader, fId string) error {
 	return UploadFile(file, dfs.Endpoint.Index, fId)
 }
 
@@ -367,12 +361,12 @@ func (dfs *DropboxFs) getFiles() error {
 	for _, v := range filesRsp.Entries {
 		name := strings.Split(v.Name, ".")
 		if categories.GetDocType("."+name[len(name)-1]) == globals.CATEGORY_PICTURE {
-			b, err := dfs.DownloadFile(v.ID)
+			pr, err := dfs.DownloadFile(v.ID)
 			if err != nil {
 				log.Println("ERROR downloading dropbox file: %s", err)
 			}
 
-			b, err = image.Thumbnail(b, globals.THUMBNAIL_WIDTH)
+			b, err := image.Thumbnail(pr, globals.THUMBNAIL_WIDTH)
 			if err != nil {
 				log.Println("ERROR generating thumbnail for dropbox file: %s", err)
 			}
