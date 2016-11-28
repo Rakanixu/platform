@@ -35,12 +35,6 @@
           this.$.socket.open();
 
           //clearTimeout(this.reconnectTimeout);
-
-          this.async(function() {
-            this.$.socket.send({
-              user_id: userId
-            });
-          }, 7000);
         },
         _onOpen: function(e) {
           console.log('_onOpen', e.detail);
@@ -77,6 +71,11 @@
                 }
               }, 1200);
             }
+          // Get connected state from server and send UserId
+          } else if (e.detail.connected) {
+            this.$.socket.send({
+              user_id: Auth.getUserId()
+            });
           }
         },
         _onError: function(e) {
