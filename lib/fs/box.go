@@ -18,7 +18,6 @@ import (
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"io"
-	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -275,7 +274,7 @@ func (bfs *BoxFs) ShareFile(ctx context.Context, c client.Client, req file_proto
 }
 
 // DownloadFile retrieves a file
-func (bfs *BoxFs) DownloadFile(id string, opts ...string) ([]byte, error) {
+func (bfs *BoxFs) DownloadFile(id string, opts ...string) (io.ReadCloser, error) {
 	c := &http.Client{}
 	url := fmt.Sprintf("%s%s/content", globals.BoxFileMetadataEndpoint, id)
 	r, err := http.NewRequest(http.MethodGet, url, nil)
@@ -287,18 +286,12 @@ func (bfs *BoxFs) DownloadFile(id string, opts ...string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rsp.Body.Close()
 
-	b, err := ioutil.ReadAll(rsp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return b, nil
+	return rsp.Body, nil
 }
 
 // UploadFile uploads a file into google cloud storage
-func (bfs *BoxFs) UploadFile(file []byte, fId string) error {
+func (bfs *BoxFs) UploadFile(file io.Reader, fId string) error {
 	return UploadFile(file, bfs.Endpoint.Index, fId)
 }
 
@@ -376,17 +369,17 @@ func (bfs *BoxFs) getMetadataFromFile(id string) error {
 
 	name := strings.Split(fm.Name, ".")
 	if categories.GetDocType("."+name[len(name)-1]) == globals.CATEGORY_PICTURE {
-		b, err := bfs.DownloadFile(fm.ID)
+		rc, err := bfs.DownloadFile(fm.ID)
 		if err != nil {
 			log.Println("ERROR downloading box file: %s", err)
 		}
 
-		b, err = image.Thumbnail(b, globals.THUMBNAIL_WIDTH)
+		rd, err := image.Thumbnail(rc, globals.THUMBNAIL_WIDTH)
 		if err != nil {
 			log.Println("ERROR generating thumbnail for box file: %s", err)
 		}
 
-		if err := bfs.UploadFile(b, fm.ID); err != nil {
+		if err := bfs.UploadFile(rd, fm.ID); err != nil {
 			log.Println("ERROR uploading thumbnail for box file: %s", err)
 		}
 	}

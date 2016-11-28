@@ -10,6 +10,7 @@ import (
 	"github.com/kazoup/platform/lib/local"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -84,12 +85,12 @@ func (lfs *LocalFs) ShareFile(ctx context.Context, c client.Client, req file_pro
 }
 
 // DownloadFile retrieves a file
-func (lfs *LocalFs) DownloadFile(id string, opts ...string) ([]byte, error) {
+func (lfs *LocalFs) DownloadFile(id string, opts ...string) (io.ReadCloser, error) {
 	return nil, nil
 }
 
 // UploadFile uploads a file into google cloud storage
-func (lfs *LocalFs) UploadFile(file []byte, fId string) error {
+func (lfs *LocalFs) UploadFile(file io.Reader, fId string) error {
 	return UploadFile(file, lfs.Endpoint.Index, fId)
 }
 

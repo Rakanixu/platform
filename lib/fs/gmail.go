@@ -1,6 +1,7 @@
 package fs
 
 import (
+	"bytes"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -14,6 +15,8 @@ import (
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	gmail "google.golang.org/api/gmail/v1"
+	"io"
+	"io/ioutil"
 	"log"
 	"strings"
 	"time"
@@ -79,7 +82,7 @@ func (gfs *GmailFs) ShareFile(ctx context.Context, c client.Client, req file_pro
 }
 
 // DownloadFile retrieves a file
-func (gfs *GmailFs) DownloadFile(id string, opts ...string) ([]byte, error) {
+func (gfs *GmailFs) DownloadFile(id string, opts ...string) (io.ReadCloser, error) {
 	cfg := globals.NewGmailOauthConfig()
 	c := cfg.Client(context.Background(), &oauth2.Token{
 		AccessToken:  gfs.Endpoint.Token.AccessToken,
@@ -108,11 +111,12 @@ func (gfs *GmailFs) DownloadFile(id string, opts ...string) ([]byte, error) {
 		return nil, err
 	}
 
-	return b, nil
+	return ioutil.NopCloser(bytes.NewReader(b)), nil
+
 }
 
 // UploadFile uploads a file into google cloud storage
-func (gfs *GmailFs) UploadFile(file []byte, fId string) error {
+func (gfs *GmailFs) UploadFile(file io.Reader, fId string) error {
 	return UploadFile(file, gfs.Endpoint.Index, fId)
 }
 
@@ -210,12 +214,12 @@ func (gfs *GmailFs) pushMessagesToChanForPage(s *gmail.Service, msgs []*gmail.Me
 			}
 
 			if vl.MimeType == globals.MIME_PNG || vl.MimeType == globals.MIME_JPG || vl.MimeType == globals.MIME_JPEG {
-				b, err := gfs.DownloadFile(v.Id, vl.Body.AttachmentId)
+				pr, err := gfs.DownloadFile(v.Id, vl.Body.AttachmentId)
 				if err != nil {
 					log.Println("ERROR downloading gmail file: %s", err)
 				}
 
-				b, err = image.Thumbnail(b, globals.THUMBNAIL_WIDTH)
+				b, err := image.Thumbnail(pr, globals.THUMBNAIL_WIDTH)
 				if err != nil {
 					log.Println("ERROR generating thumbnail for gmail file: %s", err)
 				}

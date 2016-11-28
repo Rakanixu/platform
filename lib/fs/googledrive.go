@@ -13,7 +13,7 @@ import (
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"google.golang.org/api/drive/v3"
-	"io/ioutil"
+	"io"
 	"log"
 	"time"
 )
@@ -155,7 +155,7 @@ func (gfs *GoogleDriveFs) ShareFile(ctx context.Context, c client.Client, req fi
 }
 
 // DownloadFile retrieves a file from google drive
-func (gfs *GoogleDriveFs) DownloadFile(id string, opts ...string) ([]byte, error) {
+func (gfs *GoogleDriveFs) DownloadFile(id string, opts ...string) (io.ReadCloser, error) {
 	srv, err := gfs.getDriveService()
 	if err != nil {
 		return nil, err
@@ -165,18 +165,12 @@ func (gfs *GoogleDriveFs) DownloadFile(id string, opts ...string) ([]byte, error
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
 
-	b, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return b, nil
+	return res.Body, nil
 }
 
 // UploadFile uploads a file into google cloud storage
-func (gfs *GoogleDriveFs) UploadFile(file []byte, fId string) error {
+func (gfs *GoogleDriveFs) UploadFile(file io.Reader, fId string) error {
 	return UploadFile(file, gfs.Endpoint.Index, fId)
 }
 
@@ -248,17 +242,17 @@ func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
 		}
 
 		if c == globals.CATEGORY_PICTURE {
-			b, err := gfs.DownloadFile(v.Id)
+			rc, err := gfs.DownloadFile(v.Id)
 			if err != nil {
-				log.Println("ERROR downloading googledrive file: %s", err)
+				log.Println("ERROR downloading googledrive file: ", err)
 			}
 
-			b, err = image.Thumbnail(b, globals.THUMBNAIL_WIDTH)
+			rd, err := image.Thumbnail(rc, globals.THUMBNAIL_WIDTH)
 			if err != nil {
 				log.Println("ERROR generating thumbnail for googledrive file: %s", err)
 			}
 
-			if err := gfs.UploadFile(b, v.Id); err != nil {
+			if err := gfs.UploadFile(rd, v.Id); err != nil {
 				log.Println("ERROR uploading thumbnail for googledrive file: %s", err)
 			}
 		}

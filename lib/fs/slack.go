@@ -13,7 +13,7 @@ import (
 	"github.com/kazoup/platform/lib/slack"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -111,7 +111,7 @@ func (sfs *SlackFs) ShareFile(ctx context.Context, c client.Client, req file_pro
 }
 
 // DownloadFile retrieves a file
-func (sfs *SlackFs) DownloadFile(url string, opts ...string) ([]byte, error) {
+func (sfs *SlackFs) DownloadFile(url string, opts ...string) (io.ReadCloser, error) {
 	c := &http.Client{}
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -122,18 +122,12 @@ func (sfs *SlackFs) DownloadFile(url string, opts ...string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
 
-	b, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	return b, nil
+	return res.Body, nil
 }
 
 // UploadFile uploads a file into google cloud storage
-func (sfs *SlackFs) UploadFile(file []byte, fId string) error {
+func (sfs *SlackFs) UploadFile(file io.Reader, fId string) error {
 	return UploadFile(file, sfs.Endpoint.Index, fId)
 }
 
@@ -246,12 +240,12 @@ func (sfs *SlackFs) getFiles(page int) error {
 
 	for _, v := range filesRsp.Files {
 		if categories.GetDocType("."+v.Filetype) == globals.CATEGORY_PICTURE {
-			b, err := sfs.DownloadFile(v.URLPrivateDownload)
+			pr, err := sfs.DownloadFile(v.URLPrivateDownload)
 			if err != nil {
 				log.Println("ERROR downloading slack file: ", err)
 			}
 
-			b, err = image.Thumbnail(b, globals.THUMBNAIL_WIDTH)
+			b, err := image.Thumbnail(pr, globals.THUMBNAIL_WIDTH)
 			if err != nil {
 				log.Println("ERROR generating thumbnail for slack file: ", err)
 			}
