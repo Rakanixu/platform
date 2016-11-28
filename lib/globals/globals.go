@@ -36,6 +36,7 @@ const (
 	CrawlerStartedTopic       string = NAMESPACE + ".topic.crawlerstarted"
 	CrawlerFinishedTopic      string = NAMESPACE + ".topic.crawlerfinished"
 	NotificationTopic         string = NAMESPACE + ".topic.notification"
+	NotificationProxyTopic    string = NAMESPACE + ".topic.notificationproxy"
 	DeleteBucketTopic         string = NAMESPACE + ".topic.deletebucket"
 	DeleteFileInBucketTopic   string = NAMESPACE + ".topic.deletefileinbucket"
 
