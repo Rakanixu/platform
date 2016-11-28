@@ -5,6 +5,7 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/wrappers"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
+	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -45,7 +46,6 @@ func SaveDatasource(ctx context.Context, user string, url string, token *oauth2.
 
 //PublishNotification send data source created notification
 func PublishNotification(uID string) error {
-	c := wrappers.NewKazoupClient()
 	n := &notification_proto.NotificationMessage{
 		Info:   "Datasource created succesfully",
 		Method: globals.NOTIFY_REFRESH_DATASOURCES,
@@ -53,5 +53,8 @@ func PublishNotification(uID string) error {
 	}
 
 	// Publish scan topic, crawlers should pick up message and start scanning
-	return c.Publish(globals.NewSystemContext(), c.NewPublication(globals.NotificationTopic, n))
+	return client.DefaultClient.Publish(
+		globals.NewSystemContext(),
+		client.DefaultClient.NewPublication(globals.NotificationTopic, n),
+	)
 }
