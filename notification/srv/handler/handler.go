@@ -13,34 +13,31 @@ type Notification struct {
 }
 
 func (n *Notification) Stream(ctx context.Context, stream server.Streamer) error {
-	/*
-		if len(req.UserId) == 0 {
-			return errors.BadRequest("go.micro.srv.notification.Stream", "invalid user_id")
-		}
-	*/
-	fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!")
-
+	// Listen for StreamRequest (this is blocking)
 	req := &proto.StreamRequest{}
 	if err := stream.Recv(req); err != nil {
 		fmt.Println("ERROR receiving stream request", err)
 		return err
 	}
 
-	log.Println("StreamNotifications(n.Server, req)", req.UserId)
-
+	// StreamNotifications subscribes to NotificationTopic and return channels for communications
 	ch, exit, err := StreamNotifications(n.Server, req)
 	if err != nil {
+		fmt.Println("ERROR StreamNotifications", err)
 		return err
 	}
 
+	fmt.Println("Defer stream.close", err)
 	defer func() {
-		log.Println("EXIST CLOSE")
 		close(exit)
+		fmt.Println("stream.closed", err)
 		stream.Close()
 	}()
 
 	for {
 		select {
+		// Listen over the open channel, all received notification will be pushed over this channel
+		// Once channel retrieves data, send it back over the stream
 		case e := <-ch:
 			if err := stream.Send(&proto.StreamResponse{Message: e}); err != nil {
 				log.Println("ERROR sending notification message over stream: ", err)
@@ -48,6 +45,8 @@ func (n *Notification) Stream(ctx context.Context, stream server.Streamer) error
 			}
 		}
 	}
+
+	fmt.Println("Stream before return nil")
 
 	return nil
 }

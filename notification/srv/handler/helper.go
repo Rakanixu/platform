@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/kazoup/platform/lib/globals"
 	proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/broker"
@@ -20,6 +21,8 @@ func StreamNotifications(s server.Server, req *proto.StreamRequest) (chan *proto
 			return err
 		}
 
+		fmt.Println("s.Options().Broker.Subscribe", req, e)
+
 		if req.UserId == e.UserId {
 			che <- e
 		}
@@ -28,6 +31,7 @@ func StreamNotifications(s server.Server, req *proto.StreamRequest) (chan *proto
 	})
 
 	if err != nil {
+		fmt.Println("ERROR s.Options().Broker.Subscribe", err)
 		return nil, nil, err
 	}
 
@@ -35,6 +39,8 @@ func StreamNotifications(s server.Server, req *proto.StreamRequest) (chan *proto
 		<-exit
 		sub.Unsubscribe()
 	}()
+
+	fmt.Println("Channels returned")
 
 	return che, exit, nil
 }
