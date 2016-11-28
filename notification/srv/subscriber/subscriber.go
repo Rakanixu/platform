@@ -5,6 +5,7 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/broker"
+	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 )
 
@@ -19,7 +20,7 @@ func (p *Proxy) SubscriberProxy(ctx context.Context, notificationMsg *proto.Noti
 		return err
 	}
 	// Publish on the broker, it allows to handle data properly in broker Handler
-	if err := p.Broker.Publish(globals.NotificationTopic, &broker.Message{
+	if err := client.DefaultClient.Options().Broker.Publish(globals.NotificationProxyTopic, &broker.Message{
 		Body: b,
 	}); err != nil {
 		return err
