@@ -21,7 +21,8 @@ func srv(ctx *cli.Context) {
 		service.Server().NewSubscriber(
 			globals.NotificationTopic,
 			&subscriber.Proxy{
-				Broker: service.Server().Options().Broker,
+				Client: service.Client(),
+				Server: service.Server(),
 			},
 		),
 	); err != nil {

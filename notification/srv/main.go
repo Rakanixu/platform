@@ -17,7 +17,8 @@ func main() {
 		service.Server().NewSubscriber(
 			globals.NotificationTopic,
 			&subscriber.Proxy{
-				Broker: service.Server().Options().Broker,
+				Server: service.Server(),
+				Client: service.Client(),
 			},
 		),
 	); err != nil {
