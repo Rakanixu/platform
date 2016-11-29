@@ -56,7 +56,7 @@ func NewOneDriveFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 }
 
 // List returns 2 channels, for files and state. Discover files in one drive datasources
-func (ofs *OneDriveFs) List() (chan file.File, chan bool, error) {
+func (ofs *OneDriveFs) List(c client.Client) (chan file.File, chan bool, error) {
 	go func() {
 		ofs.LastDirTime = time.Now().Unix()
 		for {

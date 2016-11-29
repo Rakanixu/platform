@@ -39,7 +39,7 @@ func NewGmailFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 }
 
 // List returns 2 channels, for files and state. Discover attached files in google mail
-func (gfs *GmailFs) List() (chan file.File, chan bool, error) {
+func (gfs *GmailFs) List(c client.Client) (chan file.File, chan bool, error) {
 	go func() {
 		if err := gfs.getMessages(); err != nil {
 			log.Println(err)

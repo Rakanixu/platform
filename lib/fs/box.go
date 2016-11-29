@@ -54,7 +54,7 @@ func NewBoxFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 }
 
 // List returns 2 channels, one for files , other for the state. Goes over a datasource and discover files
-func (bfs *BoxFs) List() (chan file.File, chan bool, error) {
+func (bfs *BoxFs) List(c client.Client) (chan file.File, chan bool, error) {
 	bfs.refreshToken()
 
 	go func() {

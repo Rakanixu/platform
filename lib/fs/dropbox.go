@@ -41,7 +41,7 @@ func NewDropboxFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 }
 
 // List returns 2 channels, for files and state. Discover files in dropbox datasource
-func (dfs *DropboxFs) List() (chan file.File, chan bool, error) {
+func (dfs *DropboxFs) List(c client.Client) (chan file.File, chan bool, error) {
 	go func() {
 		if err := dfs.getFiles(); err != nil {
 			log.Println("ERROR geting files from dropbox ", err.Error())
