@@ -14,11 +14,11 @@ spec:
       - name: datasource-srv
         command: [
                   "/srv",
-                  "--registry=kubernetes",        
+                  "--registry=consul",
+                  "--registry_address=$(REGISTRY_SERVICE_HOST)",        
                   "--server_address=0.0.0.0:9090",
                   "--broker=nats",
                   "--broker_address=nats:4222",
-    
                   ]
         image: eu.gcr.io/desktop-1470249894548/datasource-srv:latest
         env:
