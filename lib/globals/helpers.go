@@ -44,7 +44,7 @@ func deleteFilesNoExistsFromGCS(c client.Client, e *datasource_proto.Endpoint, f
 
 	for _, v := range r {
 		// Publish message to clean async the bucket that stores the thumbnails in GC storage
-		if err := client.Publish(NewSystemContext(), client.NewPublication(DeleteFileInBucketTopic, &datasource_proto.DeleteFileInBucketMessage{
+		if err := c.Publish(NewSystemContext(), c.NewPublication(DeleteFileInBucketTopic, &datasource_proto.DeleteFileInBucketMessage{
 			FileId: v.Original.Id,
 			Index:  e.Index,
 		})); err != nil {
