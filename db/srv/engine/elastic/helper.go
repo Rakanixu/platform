@@ -217,11 +217,14 @@ func (e *ElasticQuery) QueryById() (string, error) {
 func (e *ElasticQuery) defaultSorting() string {
 	var buffer bytes.Buffer
 
-	// TODO: better way to avoid sorting on well known indexes.
-	if (e.From != 0 || e.Size != 0) &&
-		(e.Index != globals.IndexDatasources && e.Index != globals.IndexFlags) &&
-		len(e.Term) == 0 {
+	// Sorting for no datasource indexes
+	if (e.From != 0 || e.Size != 0) && e.Index != globals.IndexDatasources && len(e.Term) == 0 {
 		buffer.WriteString(`{"is_dir": "desc"},{"modified":"desc"},{"file_size": "desc"}`)
+	}
+
+	// Sorting for datasources
+	if (e.From != 0 || e.Size != 0) && e.Index == globals.IndexDatasources {
+		buffer.WriteString(`{"url": "desc"}`)
 	}
 
 	return buffer.String()
