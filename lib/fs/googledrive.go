@@ -35,7 +35,7 @@ func NewGoogleDriveFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 }
 
 // List returns 2 channels, for files and state. Discover files in google drive datasource
-func (gfs *GoogleDriveFs) List() (chan file.File, chan bool, error) {
+func (gfs *GoogleDriveFs) List(c client.Client) (chan file.File, chan bool, error) {
 	go func() {
 		if err := gfs.getFiles(); err != nil {
 			log.Println(err)

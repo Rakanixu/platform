@@ -37,13 +37,13 @@ func NewSlackFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 }
 
 // List returns 2 channels, for files and state. Discover files in slack datasource
-func (sfs *SlackFs) List() (chan file.File, chan bool, error) {
+func (sfs *SlackFs) List(c client.Client) (chan file.File, chan bool, error) {
 	go func() {
-		if err := sfs.getUsers(); err != nil {
+		if err := sfs.getUsers(c); err != nil {
 			log.Println(err)
 		}
 
-		if err := sfs.getChannels(); err != nil {
+		if err := sfs.getChannels(c); err != nil {
 			log.Println(err)
 		}
 
@@ -142,7 +142,7 @@ func (sfs *SlackFs) DeleteIndexBucketFromGCS() error {
 }
 
 // getUsers retrieves users from slack team
-func (sfs *SlackFs) getUsers() error {
+func (sfs *SlackFs) getUsers(cl client.Client) error {
 	data := make(url.Values)
 	data.Add("token", sfs.Endpoint.Token.AccessToken)
 
@@ -172,7 +172,7 @@ func (sfs *SlackFs) getUsers() error {
 			Data:  string(b),
 		}
 
-		if err := client.Publish(context.Background(), client.NewPublication(globals.SlackUsersTopic, msg)); err != nil {
+		if err := cl.Publish(context.Background(), cl.NewPublication(globals.SlackUsersTopic, msg)); err != nil {
 			return err
 		}
 	}
@@ -181,7 +181,7 @@ func (sfs *SlackFs) getUsers() error {
 }
 
 // getChannels retrieves channels from slack team
-func (sfs *SlackFs) getChannels() error {
+func (sfs *SlackFs) getChannels(cl client.Client) error {
 	data := make(url.Values)
 	data.Add("token", sfs.Endpoint.Token.AccessToken)
 
@@ -210,7 +210,7 @@ func (sfs *SlackFs) getChannels() error {
 			Data:  string(b),
 		}
 
-		if err := client.Publish(context.Background(), client.NewPublication(globals.SlackChannelsTopic, msg)); err != nil {
+		if err := cl.Publish(context.Background(), cl.NewPublication(globals.SlackChannelsTopic, msg)); err != nil {
 			return err
 		}
 	}

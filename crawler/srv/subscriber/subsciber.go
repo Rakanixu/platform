@@ -33,7 +33,7 @@ func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) erro
 	}
 
 	// Receive files founded by FileSystem
-	fc, r, err := cfs.List()
+	fc, r, err := cfs.List(c.Client)
 	if err != nil {
 		return err
 	}
