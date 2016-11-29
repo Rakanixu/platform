@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	proto "github.com/kazoup/platform/notification/srv/proto/notification"
+	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/server"
 	"golang.org/x/net/context"
 	"log"
@@ -10,6 +11,7 @@ import (
 
 type Notification struct {
 	Server server.Server
+	Client client.Client
 }
 
 func (n *Notification) Stream(ctx context.Context, stream server.Streamer) error {
@@ -21,7 +23,7 @@ func (n *Notification) Stream(ctx context.Context, stream server.Streamer) error
 	}
 
 	// StreamNotifications subscribes to NotificationTopic and return channels for communications
-	ch, exit, err := StreamNotifications(n.Server, req)
+	ch, exit, err := StreamNotifications(n, req)
 	if err != nil {
 		fmt.Println("ERROR StreamNotifications", err)
 		return err

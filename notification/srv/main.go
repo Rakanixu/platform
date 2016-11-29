@@ -30,6 +30,7 @@ func main() {
 		service.Server().NewHandler(
 			&handler.Notification{
 				Server: service.Server(),
+				Client: service.Client(),
 			},
 		),
 	); err != nil {
