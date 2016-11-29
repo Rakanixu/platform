@@ -29,10 +29,8 @@ func (n *Notification) Stream(ctx context.Context, stream server.Streamer) error
 		return err
 	}
 
-	fmt.Println("Defer stream.close", err)
 	defer func() {
 		close(exit)
-		fmt.Println("stream.closed", err)
 		stream.Close()
 	}()
 
@@ -47,8 +45,6 @@ func (n *Notification) Stream(ctx context.Context, stream server.Streamer) error
 			}
 		}
 	}
-
-	fmt.Println("Stream before return nil")
 
 	return nil
 }
