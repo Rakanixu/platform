@@ -38,7 +38,7 @@ func NewLocalFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 }
 
 // List returns 2 channels, for files and state. Discover local files
-func (lfs *LocalFs) List() (chan file.File, chan bool, error) {
+func (lfs *LocalFs) List(c client.Client) (chan file.File, chan bool, error) {
 	go func() {
 		if err := lfs.walkDatasourceParents(); err != nil {
 			log.Println("ERROR", err)

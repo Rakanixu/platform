@@ -41,7 +41,6 @@ const (
 	DeleteFileInBucketTopic   string = NAMESPACE + ".topic.deletefileinbucket"
 
 	IndexDatasources  = "datasources"
-	IndexFlags        = "flags"
 	IndexHelper       = "files_helper"
 	FileType          = "file"
 	FoldeType         = "folder"
