@@ -299,6 +299,8 @@
           this.closeDatasourceDialog();
         },
         refreshDatasources: function(data) {
+          this.headers = Auth.getHeaders();
+
           this.$.rpcGetDatasources.generateRequest();
         },
         startScan: function(e) {

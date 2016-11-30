@@ -58,6 +58,8 @@
         },
         datasourcesChanged: function(newVal, oldVal) {
           if (this.datasources && this.datasources.length > 0) {
+
+            console.log("datasourcesChanged")
             if (this.worker) {
               this.worker.terminate();
               this.worker = undefined;
@@ -80,12 +82,12 @@
           }
         },
         _handleStartScanAll: function(e) {
-          debugger;
           // Background task, do not bother user
+          console.log("Outdated datasources on queue to be scan");
         },
         _handleError: function(e) {
-          debugger;
           // Background task, do not bother user
+          console.log("ERROR sending messages to scan outdated datasources");
         }
       })
     }());

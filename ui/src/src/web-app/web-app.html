@@ -423,7 +423,7 @@
 
         <filter-converter id="filterConverter"></filter-converter>
 
-        <scheduler-client datasources="{{datasourceResults}}"></scheduler-client>
+        <scheduler-client datasources="[[datasourceResults]]"></scheduler-client>
 
         <paper-toast id="toast" text=""></paper-toast>
 
@@ -1006,6 +1006,8 @@
             },
             refreshSearch: function(data) {
                 this.clearIronList();
+
+                this.headers = Auth.getHeaders();
                 this.search();
             },
             searchAsYouType: function(e, detail) {
