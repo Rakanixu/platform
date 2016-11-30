@@ -2,6 +2,7 @@ package fs
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
@@ -236,30 +237,38 @@ func (gfs *GoogleDriveFs) getNextPage(srv *drive.Service, nextPageToken string) 
 // pushFilesToChanForPage sends discovered files to the file system channel
 func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
 	for _, v := range files {
-		c := categories.GetDocType("." + v.FullFileExtension)
-		if len(v.FullFileExtension) == 0 {
-			c = categories.GetDocType(v.MimeType)
-		}
-
-		if c == globals.CATEGORY_PICTURE {
-			rc, err := gfs.DownloadFile(v.Id)
-			if err != nil {
-				log.Println("ERROR downloading googledrive file: ", err)
-			}
-
-			rd, err := image.Thumbnail(rc, globals.THUMBNAIL_WIDTH)
-			if err != nil {
-				log.Println("ERROR generating thumbnail for googledrive file: %s", err)
-			}
-
-			if err := gfs.UploadFile(rd, v.Id); err != nil {
-				log.Println("ERROR uploading thumbnail for googledrive file: %s", err)
-			}
+		if err := gfs.generateThumbnail(v); err != nil {
+			log.Println(err)
 		}
 
 		f := file.NewKazoupFileFromGoogleDriveFile(v, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
 
 		gfs.FilesChan <- f
+	}
+
+	return nil
+}
+
+func (gfs *GoogleDriveFs) generateThumbnail(f *drive.File) error {
+	c := categories.GetDocType("." + f.FullFileExtension)
+	if len(f.FullFileExtension) == 0 {
+		c = categories.GetDocType(f.MimeType)
+	}
+
+	if c == globals.CATEGORY_PICTURE {
+		rc, err := gfs.DownloadFile(f.Id)
+		if err != nil {
+			return errors.New("ERROR downloading googledrive file")
+		}
+
+		rd, err := image.Thumbnail(rc, globals.THUMBNAIL_WIDTH)
+		if err != nil {
+			return errors.New("ERROR generating thumbnail for googledrive file")
+		}
+
+		if err := gfs.UploadFile(rd, f.Id); err != nil {
+			return errors.New("ERROR uploading thumbnail for googledrive file")
+		}
 	}
 
 	return nil

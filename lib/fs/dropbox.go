@@ -359,21 +359,8 @@ func (dfs *DropboxFs) getFiles() error {
 	}
 
 	for _, v := range filesRsp.Entries {
-		name := strings.Split(v.Name, ".")
-		if categories.GetDocType("."+name[len(name)-1]) == globals.CATEGORY_PICTURE {
-			pr, err := dfs.DownloadFile(v.ID)
-			if err != nil {
-				log.Println("ERROR downloading dropbox file: %s", err)
-			}
-
-			b, err := image.Thumbnail(pr, globals.THUMBNAIL_WIDTH)
-			if err != nil {
-				log.Println("ERROR generating thumbnail for dropbox file: %s", err)
-			}
-
-			if err := dfs.UploadFile(b, v.ID); err != nil {
-				log.Println("ERROR uploading thumbnail for dropbox file: %s", err)
-			}
+		if err := dfs.generateThumbnail(v); err != nil {
+			log.Println(err)
 		}
 
 		f := file.NewKazoupFileFromDropboxFile(&v, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
@@ -390,6 +377,29 @@ func (dfs *DropboxFs) getFiles() error {
 
 	if filesRsp.HasMore {
 		dfs.getNextPage(filesRsp.Cursor)
+	}
+
+	return nil
+}
+
+// generateThumbnail downloads original picture, resize and uploads to Google storage
+func (dfs *DropboxFs) generateThumbnail(f dropbox.DropboxFile) error {
+	name := strings.Split(f.Name, ".")
+
+	if categories.GetDocType("."+name[len(name)-1]) == globals.CATEGORY_PICTURE {
+		pr, err := dfs.DownloadFile(f.ID)
+		if err != nil {
+			return errors.New("ERROR downloading dropbox file")
+		}
+
+		b, err := image.Thumbnail(pr, globals.THUMBNAIL_WIDTH)
+		if err != nil {
+			return errors.New("ERROR generating thumbnail for dropbox file")
+		}
+
+		if err := dfs.UploadFile(b, f.ID); err != nil {
+			return errors.New("ERROR uploading thumbnail for dropbox file")
+		}
 	}
 
 	return nil

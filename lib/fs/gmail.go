@@ -213,20 +213,8 @@ func (gfs *GmailFs) pushMessagesToChanForPage(s *gmail.Service, msgs []*gmail.Me
 				Name:         vl.Filename,
 			}
 
-			if vl.MimeType == globals.MIME_PNG || vl.MimeType == globals.MIME_JPG || vl.MimeType == globals.MIME_JPEG {
-				pr, err := gfs.DownloadFile(v.Id, vl.Body.AttachmentId)
-				if err != nil {
-					log.Println("ERROR downloading gmail file: %s", err)
-				}
-
-				b, err := image.Thumbnail(pr, globals.THUMBNAIL_WIDTH)
-				if err != nil {
-					log.Println("ERROR generating thumbnail for gmail file: %s", err)
-				}
-
-				if err := gfs.UploadFile(b, gf.Id); err != nil {
-					log.Println("ERROR uploading thumbnail for gmail file: %s", err)
-				}
+			if err := gfs.generateThumbnail(gf, v, vl); err != nil {
+				log.Println(err)
 			}
 
 			ext := strings.Split(strings.Replace(vl.Filename, " ", "-", 1), ".")
@@ -238,6 +226,27 @@ func (gfs *GmailFs) pushMessagesToChanForPage(s *gmail.Service, msgs []*gmail.Me
 			if f != nil {
 				gfs.FilesChan <- f
 			}
+		}
+	}
+
+	return nil
+}
+
+// generateThumbnail downloads original picture, resize and uploads to Google storage
+func (gfs *GmailFs) generateThumbnail(gf *gmailhelper.GmailFile, msg *gmail.Message, msgp *gmail.MessagePart) error {
+	if msgp.MimeType == globals.MIME_PNG || msgp.MimeType == globals.MIME_JPG || msgp.MimeType == globals.MIME_JPEG {
+		pr, err := gfs.DownloadFile(msg.Id, msgp.Body.AttachmentId)
+		if err != nil {
+			return errors.New("ERROR downloading gmail file")
+		}
+
+		b, err := image.Thumbnail(pr, globals.THUMBNAIL_WIDTH)
+		if err != nil {
+			return errors.New("ERROR generating thumbnail for gmail file")
+		}
+
+		if err := gfs.UploadFile(b, gf.Id); err != nil {
+			return errors.New("ERROR uploading thumbnail for gmail file: %s")
 		}
 	}
 
