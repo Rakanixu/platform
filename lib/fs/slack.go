@@ -2,6 +2,7 @@ package fs
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
@@ -239,20 +240,8 @@ func (sfs *SlackFs) getFiles(page int) error {
 	}
 
 	for _, v := range filesRsp.Files {
-		if categories.GetDocType("."+v.Filetype) == globals.CATEGORY_PICTURE {
-			pr, err := sfs.DownloadFile(v.URLPrivateDownload)
-			if err != nil {
-				log.Println("ERROR downloading slack file: ", err)
-			}
-
-			b, err := image.Thumbnail(pr, globals.THUMBNAIL_WIDTH)
-			if err != nil {
-				log.Println("ERROR generating thumbnail for slack file: ", err)
-			}
-
-			if err := sfs.UploadFile(b, v.ID); err != nil {
-				log.Println("ERROR uploading thumbnail for slack file: ", err)
-			}
+		if err := sfs.generateThumbnail(v); err != nil {
+			log.Println(err)
 		}
 
 		f := file.NewKazoupFileFromSlackFile(&v, sfs.Endpoint.Id, sfs.Endpoint.UserId, sfs.Endpoint.Index)
@@ -262,6 +251,27 @@ func (sfs *SlackFs) getFiles(page int) error {
 
 	if filesRsp.Paging.Pages >= page {
 		sfs.getFiles(page + 1)
+	}
+
+	return nil
+}
+
+// generateThumbnail downloads original picture, resize and uploads to Google storage
+func (sfs *SlackFs) generateThumbnail(sf slack.SlackFile) error {
+	if categories.GetDocType("."+sf.Filetype) == globals.CATEGORY_PICTURE {
+		pr, err := sfs.DownloadFile(sf.URLPrivateDownload)
+		if err != nil {
+			return errors.New("ERROR downloading slack file")
+		}
+
+		b, err := image.Thumbnail(pr, globals.THUMBNAIL_WIDTH)
+		if err != nil {
+			return errors.New("ERROR generating thumbnail for slack file")
+		}
+
+		if err := sfs.UploadFile(b, sf.ID); err != nil {
+			return errors.New("ERROR uploading thumbnail for slack file")
+		}
 	}
 
 	return nil

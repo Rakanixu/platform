@@ -367,25 +367,35 @@ func (bfs *BoxFs) getMetadataFromFile(id string) error {
 		return err
 	}
 
-	name := strings.Split(fm.Name, ".")
-	if categories.GetDocType("."+name[len(name)-1]) == globals.CATEGORY_PICTURE {
-		rc, err := bfs.DownloadFile(fm.ID)
-		if err != nil {
-			log.Println("ERROR downloading box file: %s", err)
-		}
-
-		rd, err := image.Thumbnail(rc, globals.THUMBNAIL_WIDTH)
-		if err != nil {
-			log.Println("ERROR generating thumbnail for box file: %s", err)
-		}
-
-		if err := bfs.UploadFile(rd, fm.ID); err != nil {
-			log.Println("ERROR uploading thumbnail for box file: %s", err)
-		}
+	if err := bfs.generateThumbnail(fm); err != nil {
+		log.Println(err)
 	}
 
 	f := file.NewKazoupFileFromBoxFile(fm, bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
 	bfs.FilesChan <- f
+
+	return nil
+}
+
+// generateThumbnail downloads original picture, resize and uploads to Google storage
+func (bfs *BoxFs) generateThumbnail(fm *box.BoxFileMeta) error {
+	name := strings.Split(fm.Name, ".")
+
+	if categories.GetDocType("."+name[len(name)-1]) == globals.CATEGORY_PICTURE {
+		rc, err := bfs.DownloadFile(fm.ID)
+		if err != nil {
+			return errors.New("ERROR downloading box file")
+		}
+
+		rd, err := image.Thumbnail(rc, globals.THUMBNAIL_WIDTH)
+		if err != nil {
+			return errors.New("ERROR generating thumbnail for box file")
+		}
+
+		if err := bfs.UploadFile(rd, fm.ID); err != nil {
+			return errors.New("ERROR uploading thumbnail for box file")
+		}
+	}
 
 	return nil
 }
