@@ -16,7 +16,7 @@
     "tests"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.4.0",
+    "polymer": "Polymer/polymer#^1.7.0",
     "filesize": "^3.3.0",
     "jshashes": "^1.0.6",
     "qwest": "^4.4.5",
@@ -54,5 +54,8 @@
     "paper-tooltip": "PolymerElements/paper-tooltip#^1.1.3",
     "mat-toast": "^0.10.0",
     "mat-menu": "^0.10.0"
+  },
+  "resolutions": {
+    "polymer": "^1.7.0"
   }
 }
