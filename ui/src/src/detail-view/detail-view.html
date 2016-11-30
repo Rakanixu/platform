@@ -53,12 +53,12 @@
         </video>
       </template>
 
-      <template is="dom-if" if="[[isLocalAudio(item.category, item.file_type)]]" restamp="true">
+      <!--<template is="dom-if" if="[[isLocalAudio(item.category, item.file_type)]]" restamp="true">
         <wave-player id="wavePlayer"
                      wavecolor="#21a9f5"
                      progresscolor="#b1b1b1"
                      src="[[getAsset(item.url)]]"/>
-      </template>
+      </template>-->
     </template>
 
     <template is="dom-if" if="[[isSlack(item.file_type)]]" restamp="true">
