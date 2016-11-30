@@ -19,7 +19,7 @@ spec:
                   "--server_address=0.0.0.0:9090",
                   "--broker=nats",
                   "--broker_address=nats:4222",
-                  #"--selector=cache",
+                  "--transport=tcp",
                   ]
         image: eu.gcr.io/desktop-1470249894548/search-srv:latest
         imagePullPolicy: Always
