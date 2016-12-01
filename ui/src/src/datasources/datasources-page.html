@@ -23,6 +23,7 @@
 
 <link rel="import" href="../../src/time/time-ago.html">
 <link rel="import" href="../../src/empty-state/empty-state.html">
+<link rel="import" href="../../src/scheduler/scheduler-client.html">
 
 <link rel="import" href="../../src/behaviors/util-behavior.html">
 <link rel="import" href="../../src/behaviors/endpoints-behavior.html">
@@ -134,6 +135,8 @@
     </mat-dialog>
 
     <paper-toast id="toast" duration="6000" text=""></paper-toast>
+
+    <scheduler-client datasources="[[datasourcesResults]]"></scheduler-client>
 
     <iron-ajax id="rpcGetDatasources"
                method="POST"
@@ -344,10 +347,6 @@
           this.set('loading', false);
           this.$.toast.text = 'Scan started succesfully';
           this.$.toast.show();
-
-          this.async(function() {
-            this.refreshDatasources();
-          }, 1000);
         },
         _handleDeleteDatasource: function(e) {
           this.set('loading', false);

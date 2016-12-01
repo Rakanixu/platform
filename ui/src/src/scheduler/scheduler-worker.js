@@ -3,11 +3,10 @@
 var window = self;
 
 (function() {
-  var elapsedTime = 60 * 3; // We count in seconds, not milliseconds
+  var elapsedTime = 60 * 60; // We count in seconds, not milliseconds
   var day = 60 * 60 * 24;
 
   self.initScheduler = function(e) {
-    console.log("initScheduler")
     self.datasources = e.data.datasources;
 
     self.checkTime();
@@ -18,37 +17,26 @@ var window = self;
   };
 
   self.checkTime = function() {
-
-    console.log("checkTime called" )
     self.initTime = parseInt((Date.now() / 1000), 10);
     self.pool = [];
 
     for (var i = 0; i < self.datasources.length; i++) {
-
-      //
+      // Something wrong happened, kick off scan to fix it
       if (self.datasources[i].last_scan > self.datasources[i].last_scan_started) {
         if (self.datasources[i].last_scan < self.initTime - day) {
-          console.log("DS to be scan as was incorrect for a day")
-
           self.pool.push(self.datasources[i].id);
         }
       }
 
-
-      if (self.datasources[i].last_scan < self.initTime - elapsedTime) {
-        console.log("DS to be scan it pass elapsed time", self.datasources[i].last_scan)
+      // Las scan has to be prior elapsed time, but we have to know if last scan happen a few time ago
+      // This avoid to kick off several scan while previous one is running
+      if (self.datasources[i].last_scan < self.initTime - elapsedTime &&
+        self.datasources[i].last_scan + elapsedTime > self.datasources[i].last_scan_started) {
         self.pool.push(self.datasources[i].id);
       }
-
-      // last_scan may not be set it, as never finished
-/*      if (self.datasources[i].last_scan === undefined) {
-        // Check how much time ago scann was kicked off
-        if (self.datasources[i].last_scan_started < self.initTime - elapsedTime * 2) {
-          self.pool.push(self.datasources[i].id);
-        }
-      }*/
     }
 
+    // Send DS that requires to be scan
     self.postMessage({
       scan_datasources: self.pool
     });

@@ -58,18 +58,17 @@
         },
         datasourcesChanged: function(newVal, oldVal) {
           if (this.datasources && this.datasources.length > 0) {
-
-            console.log("datasourcesChanged")
-            if (this.worker) {
-              this.worker.terminate();
-              this.worker = undefined;
-            }
+            this.terminateWorker();
 
             this.headers = Auth.getHeaders();
             this.worker = new Worker('src/scheduler/scheduler-worker.js');
 
             this.worker.addEventListener('message', function(e) {
               if (e.data.scan_datasources && e.data.scan_datasources.length > 0) {
+                // Teminate current worker when some DS has to be updated
+                // By updating DS, another worker will be initialize
+                this.terminateWorker();
+
                 this.rpcStartScanAllParams.request.datasources_id = e.data.scan_datasources;
                 this.$.rpcStartScanAll.body = this.rpcStartScanAllParams;
                 this.$.rpcStartScanAll.generateRequest();
@@ -79,6 +78,12 @@
             this.worker.postMessage({
               datasources: this.datasources
             });
+          }
+        },
+        terminateWorker: function() {
+          if (this.worker) {
+            this.worker.terminate();
+            this.worker = undefined;
           }
         },
         _handleStartScanAll: function(e) {
