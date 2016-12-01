@@ -125,6 +125,11 @@ func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId, uId, index stri
 		url = g.WebContentLink
 	}
 
+	// Do not index trashed files
+	if g.Trashed {
+		return nil
+	}
+
 	kf := &KazoupFile{
 		ID:           globals.GetMD5Hash(url),
 		UserId:       uId,

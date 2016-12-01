@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/categories"
 	"github.com/kazoup/platform/lib/file"
@@ -88,6 +89,9 @@ func (gfs *GoogleDriveFs) CreateFile(ctx context.Context, c client.Client, rq fi
 	}
 
 	kfg := file.NewKazoupFileFromGoogleDriveFile(f, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
+	if kfg == nil {
+		return nil, errors.New("ERROR CreateFile gdrive is nil")
+	}
 	if err := file.IndexAsync(c, kfg, globals.FilesTopic, gfs.Endpoint.Index, true); err != nil {
 		return nil, err
 	}
@@ -111,16 +115,26 @@ func (gfs *GoogleDriveFs) DeleteFile(ctx context.Context, c client.Client, rq fi
 	}
 
 	// Trash file
-	f, err := srv.Files.Update(rq.OriginalId, &drive.File{
+	_, err = srv.Files.Update(rq.OriginalId, &drive.File{
 		Trashed: true,
-	}).Fields("*").Do()
+	}).Do()
 	if err != nil {
 		return nil, err
 	}
 
-	// Reindex file
-	kfg := file.NewKazoupFileFromGoogleDriveFile(f, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
-	if err := file.IndexAsync(c, kfg, globals.FilesTopic, gfs.Endpoint.Index, true); err != nil {
+	// Delete file from index
+	req := c.NewRequest(
+		globals.DB_SERVICE_NAME,
+		"DB.Delete",
+		&db_proto.DeleteRequest{
+			Index: gfs.Endpoint.Index,
+			Type:  globals.FileType,
+			Id:    rq.FileId,
+		},
+	)
+	rsp := &db_proto.DeleteResponse{}
+
+	if err := c.Call(ctx, req, rsp); err != nil {
 		return nil, err
 	}
 
@@ -148,6 +162,10 @@ func (gfs *GoogleDriveFs) ShareFile(ctx context.Context, c client.Client, req fi
 	}
 
 	kfg := file.NewKazoupFileFromGoogleDriveFile(gf, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
+	if kfg == nil {
+		return "", errors.New("ERROR ShareFile gdrive is nil")
+	}
+
 	if err := file.IndexAsync(c, kfg, globals.FilesTopic, gfs.Endpoint.Index, true); err != nil {
 		return "", err
 	}
@@ -242,8 +260,9 @@ func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
 		}
 
 		f := file.NewKazoupFileFromGoogleDriveFile(v, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
-
-		gfs.FilesChan <- f
+		if f != nil {
+			gfs.FilesChan <- f
+		}
 	}
 
 	return nil
