@@ -1003,6 +1003,8 @@
             },
             refreshSearch: function(data) {
                 this.clearIronList();
+
+                this.headers = Auth.getHeaders();
                 this.search();
             },
             searchAsYouType: function(e, detail) {

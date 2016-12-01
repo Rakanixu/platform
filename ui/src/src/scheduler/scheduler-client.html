@@ -1,0 +1,100 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../../src/behaviors/async-behavior.html">
+<link rel="import" href="../../src/behaviors/endpoints-behavior.html">
+
+<dom-module id="scheduler-client">
+  <style is="custom-style" include="iron-flex iron-positioning iron-flex-alignment"></style>
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+
+    <iron-ajax id="rpcStartScanAll"
+               method="POST"
+               content-type="application/json"
+               url="[[endpoints.endpoint]]"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleStartScanAll"
+               params="[[rpcStartScanAllParams]]"
+               headers="[[headers]]"></iron-ajax>
+
+  </template>
+  <script>
+    (function() {
+      'use strict';
+
+      Polymer({
+        is: 'scheduler-client',
+        behaviors: [
+          Polymer.AsyncBehaviorImp,
+          Polymer.EndpointsBehaviorImp
+        ],
+        properties: {
+          datasources: {
+            type: Array,
+            notify: true,
+            observer: 'datasourcesChanged'
+          },
+          rpcStartScanAllParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: window.Endpoints.srvs.datasource.srv,
+                method: window.Endpoints.srvs.datasource.scanAll,
+                request: {
+                  datasources_id: [], // if set it, those will be scanned
+                  user_id: ''         // if datasources_id empty, all datasources for given user will be scanned
+                }
+              };
+            }
+          },
+        },
+        datasourcesChanged: function(newVal, oldVal) {
+          if (this.datasources && this.datasources.length > 0) {
+            this.terminateWorker();
+
+            this.headers = Auth.getHeaders();
+            this.worker = new Worker('src/scheduler/scheduler-worker.js');
+
+            this.worker.addEventListener('message', function(e) {
+              if (e.data.scan_datasources && e.data.scan_datasources.length > 0) {
+                // Teminate current worker when some DS has to be updated
+                // By updating DS, another worker will be initialize
+                this.terminateWorker();
+
+                this.rpcStartScanAllParams.request.datasources_id = e.data.scan_datasources;
+                this.$.rpcStartScanAll.body = this.rpcStartScanAllParams;
+                this.$.rpcStartScanAll.generateRequest();
+              }
+            }.bind(this));
+
+            this.worker.postMessage({
+              datasources: this.datasources
+            });
+          }
+        },
+        terminateWorker: function() {
+          if (this.worker) {
+            this.worker.terminate();
+            this.worker = undefined;
+          }
+        },
+        _handleStartScanAll: function(e) {
+          // Background task, do not bother user
+          console.log("Outdated datasources on queue to be scan");
+        },
+        _handleError: function(e) {
+          // Background task, do not bother user
+          console.log("ERROR sending messages to scan outdated datasources");
+        }
+      })
+    }());
+  </script>
+</dom-module>
