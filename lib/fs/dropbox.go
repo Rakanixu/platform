@@ -111,6 +111,10 @@ func (dfs *DropboxFs) CreateFile(ctx context.Context, c client.Client, rq file_p
 	}
 
 	kfd := file.NewKazoupFileFromDropboxFile(df, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
+	if kfd == nil {
+		return nil, errors.New("ERROR dropbox file is nil")
+	}
+
 	if err := file.IndexAsync(c, kfd, globals.FilesTopic, dfs.Endpoint.Index, true); err != nil {
 		return nil, err
 	}
@@ -324,6 +328,9 @@ func (dfs *DropboxFs) getFile(id string) (*file.KazoupDropboxFile, error) {
 	}
 
 	kfd := file.NewKazoupFileFromDropboxFile(f, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
+	if kfd == nil {
+		return nil, errors.New("ERROR dropbox file is nil")
+	}
 
 	return dfs.getFileMembers(kfd)
 }
@@ -358,22 +365,7 @@ func (dfs *DropboxFs) getFiles() error {
 		return err
 	}
 
-	for _, v := range filesRsp.Entries {
-		if err := dfs.generateThumbnail(v); err != nil {
-			log.Println(err)
-		}
-
-		f := file.NewKazoupFileFromDropboxFile(&v, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
-		// File is shared, lets get Users and Invitees to this file
-		if f.Original.HasExplicitSharedMembers {
-			f, err = dfs.getFileMembers(f)
-			if err != nil {
-				return err
-			}
-		}
-
-		dfs.FilesChan <- f
-	}
+	dfs.pushFilesToChannel(filesRsp)
 
 	if filesRsp.HasMore {
 		dfs.getNextPage(filesRsp.Cursor)
@@ -430,10 +422,7 @@ func (dfs *DropboxFs) getNextPage(cursor string) error {
 		return err
 	}
 
-	for _, v := range filesRsp.Entries {
-		f := file.NewKazoupFileFromDropboxFile(&v, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
-		dfs.FilesChan <- f
-	}
+	dfs.pushFilesToChannel(filesRsp)
 
 	if filesRsp.HasMore {
 		dfs.getNextPage(filesRsp.Cursor)
@@ -489,6 +478,29 @@ func (dfs *DropboxFs) getFileMembers(f *file.KazoupDropboxFile) (*file.KazoupDro
 	// TODO: membersRsp.Groups, I just ignore, we can attach them to the DropboxFile, so can be used in front
 
 	return f, nil
+}
+
+func (dfs *DropboxFs) pushFilesToChannel(list *dropbox.FilesListResponse) {
+	var err error
+
+	for _, v := range list.Entries {
+		if err := dfs.generateThumbnail(v); err != nil {
+			log.Println(err)
+		}
+
+		f := file.NewKazoupFileFromDropboxFile(&v, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
+		if f != nil {
+			// File is shared, lets get Users and Invitees to this file
+			if f.Original.HasExplicitSharedMembers {
+				f, err = dfs.getFileMembers(f)
+				if err != nil {
+					log.Println("ERROR getFileMembers dropbox", err)
+				}
+			}
+
+			dfs.FilesChan <- f
+		}
+	}
 }
 
 // getAccount retrieves dropbox user accounts
