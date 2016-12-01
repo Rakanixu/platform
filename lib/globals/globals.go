@@ -9,6 +9,10 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
+
+	"log"
+
 	"github.com/dgrijalva/jwt-go"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
@@ -19,7 +23,6 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"golang.org/x/oauth2/slack"
-	"io"
 )
 
 const (
@@ -301,15 +304,31 @@ func ClearIndex(c client.Client, e *datasource_proto.Endpoint) error {
 	}
 
 	// Clean the index after all messages have been published
-	dbc := db_proto.NewDBClient(DB_SERVICE_NAME, c)
-	_, err := dbc.DeleteByQuery(NewSystemContext(), &db_proto.DeleteByQueryRequest{
+	delReq := &db_proto.DeleteByQueryRequest{
 		Indexes:  []string{e.Index},
 		Types:    []string{"file"},
 		LastSeen: e.LastScanStarted,
-	})
-	if err != nil {
+	}
+	srvReq := c.NewRequest(
+		DB_SERVICE_NAME,
+		"DB.DeleteByQuery",
+		delReq,
+	)
+	srvRes := &db_proto.DeleteByQueryResponse{}
+	if err := c.Call(NewSystemContext(), srvReq, srvRes); err != nil {
+		log.Printf("Error globals.ClearIndex -  %s", err)
 		return err
 	}
+
+	// dbc := db_proto.NewDBClient(DB_SERVICE_NAME, c)
+	// _, err := dbc.DeleteByQuery(NewSystemContext(), &db_proto.DeleteByQueryRequest{
+	// 	Indexes:  []string{e.Index},
+	// 	Types:    []string{"file"},
+	// 	LastSeen: e.LastScanStarted,
+	// })
+	// if err != nil {
+	// 	return err
+	// }
 
 	return nil
 }
