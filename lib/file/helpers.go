@@ -125,6 +125,11 @@ func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId, uId, index stri
 		url = g.WebContentLink
 	}
 
+	// Do not index trashed files
+	if g.Trashed {
+		return nil
+	}
+
 	kf := &KazoupFile{
 		ID:           globals.GetMD5Hash(url),
 		UserId:       uId,
@@ -222,12 +227,17 @@ func NewKazoupFileFromDropboxFile(d *dropbox.DropboxFile, dsId, uId, index strin
 
 	// Dropbox file fall into those categories: file, folder, deleted
 	// By default, deleted files AND deleted folders will be flag as (isDir = false), then will appear on the frontend
-	// On the frontend
 	if d.Tag == globals.FoldeType {
 		isDir = true
 	}
 
 	d.DropboxTag = d.Tag // Store the tag friendly
+
+	// Do not index trashed files, as in dropbox generate rubish for basic account.
+	// Trashed files are not longer there (there are but flaged in dropbox, probably an upgrade account make them reachable)
+	if d.DropboxTag == "deleted" {
+		return nil
+	}
 
 	kf := &KazoupFile{
 		ID:           globals.GetMD5Hash(url),
