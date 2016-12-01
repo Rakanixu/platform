@@ -28,12 +28,12 @@ spec:
             "--enable_tls",
             "--tls_cert_file=/secrets/tls.crt",
             "--tls_key_file=/secrets/tls.key",
-            # "--broker=nats",
-            # "--broker_address=nats:4222",
-            # "--selector=cache",
+            "--broker=nats",
+            "--broker_address=nats:4222",
+            "--transport=tcp",
             "web"
           ]
-          image: microhq/micro #eu.gcr.io/desktop-1470249894548/micro-web:latest
+          image: eu.gcr.io/desktop-1470249894548/micro-web:latest
           imagePullPolicy: Always
           ports:
           - containerPort: 8082

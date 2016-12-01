@@ -12,6 +12,7 @@ import (
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
+	"log"
 )
 
 const (
@@ -222,6 +223,33 @@ func ScanDataSource(ctx context.Context, c client.Client, endpoint *datasource_p
 
 	if err := c.Publish(ctx, msg); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// ScanAllDatasources publishes scan messages for all datasources of a given user
+func ScanAllDatasources(ctx context.Context, c client.Client, userId string) error {
+	rsp, err := SearchDataSources(ctx, c, &datasource_proto.SearchRequest{
+		Index:  globals.IndexDatasources,
+		Type:   globals.TypeDatasource,
+		UserId: userId,
+		From:   0,
+		Size:   1000, // Per user, should not have that many
+	})
+	if err != nil {
+		return err
+	}
+
+	var endpoints []*datasource_proto.Endpoint
+	if err := json.Unmarshal([]byte(rsp.Result), &endpoints); err != nil {
+		return err
+	}
+
+	for _, v := range endpoints {
+		if err := ScanDataSource(ctx, c, v); err != nil {
+			log.Println("ERROR ScanAllDatasources, ", v, err)
+		}
 	}
 
 	return nil

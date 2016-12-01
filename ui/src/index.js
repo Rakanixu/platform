@@ -39,7 +39,8 @@ var Endpoints = (function() {
               create: 'DataSource.Create',
               delete: 'DataSource.Delete',
               search: 'DataSource.Search',
-              scan: 'DataSource.Scan'
+              scan: 'DataSource.Scan',
+              scanAll: 'DataSource.ScanAll'
           },
           db: {
               srv: 'com.kazoup.srv.db',
