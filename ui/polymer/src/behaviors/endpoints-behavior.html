@@ -1,0 +1,32 @@
+<script>
+  'use strict';
+
+  (function() {
+    var customHeaders;
+    var userId;
+
+    // window.Endpoints are defined on the electron index.js file (The one which is loaded in browser)
+    Polymer.EndpointsBehaviorImp = {
+      properties: {
+        endpoints: {
+          type: Object,
+          notify: true,
+          value: function () {
+            return window.Endpoints
+          }
+        }
+      },
+      getToken: function() {
+        return localStorage.getItem('token');
+      },
+      checkUnauthorize: function() {
+        // Unauthorize
+        if (event.detail.request.xhr.response && event.detail.request.xhr.response.code === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('id_token');
+          this.set('route.path', '/login');
+        }
+      }
+    };
+  }());
+</script>

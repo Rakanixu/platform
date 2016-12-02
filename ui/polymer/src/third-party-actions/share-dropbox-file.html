@@ -1,0 +1,154 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/iron-icons/device-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+
+<link rel="import" href="../../bower_components/mat-icon/mat-icon.html">
+<link rel="import" href="../../bower_components/mat-icons/mat-icons.html">
+<link rel="import" href="../../bower_components/mat-icons/hardware-icons.html">
+<link rel="import" href="../../bower_components/mat-icons/action-icons.html">
+<link rel="import" href="../../bower_components/mat-icon-button/mat-icon-button.html">
+
+<link rel="import" href="../../bower_components/mat-dialog/mat-dialog.html">
+
+<link rel="import" href="../../src/behaviors/endpoints-behavior.html">
+<link rel="import" href="../../src/behaviors/map-behavior.html">
+<link rel="import" href="../../src/behaviors/util-behavior.html">
+
+<dom-module id="share-dropbox-file">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style>
+      :host {
+        display: block;
+      }
+
+      mat-dialog {
+        width: 340px;
+      }
+
+      paper-icon-button {
+        color: #fff;
+      }
+
+      #selectTargetDialog paper-button {
+        padding: 0;
+        width: 100%;
+      }
+
+      #selectTargetDialog paper-button mat-item {
+        width: 100%;
+      }
+    </style>
+
+    <paper-icon-button id="share"
+                       on-tap="openShareFileDialog"
+                       icon="social:share"
+                       color="black"></paper-icon-button>
+
+    <mat-dialog id="shareFileDialog" label="">
+      <div>
+        <mat-text-field id="email"
+                        class="flex"
+                        model="{{emailAddress}}"
+                        label="Add email address"></mat-text-field>
+      </div>
+      <mat-button class="action" label="SHARE" on-tap="shareFile"></mat-button>
+      <mat-button class="action" label="Cancel" on-tap="closeShareFileDialog"></mat-button>
+    </mat-dialog>
+
+
+    <paper-toast id="toast" duration="6000" text=""></paper-toast>
+
+    <iron-ajax id="rpcShareFile"
+               method="POST"
+               content-type="application/json"
+               url="[[endpoints.endpoint]]"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleShareFile"
+               params="[[rpcShareFileParams]]"
+               headers="[[headers]]"></iron-ajax>
+
+  </template>
+
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'share-dropbox-file',
+        behaviors: [
+          Polymer.EndpointsBehaviorImp,
+          Polymer.UtilBehaviorImp,
+          Polymer.MapBehaviorImp
+        ],
+        properties: {
+          item: {
+            type: Object,
+            notify: true,
+            reflectToAttribute: true
+          },
+          emailAddress: {
+            type: String,
+            notify: false
+          },
+          rpcShareFileParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: window.Endpoints.srvs.file.srv,
+                method: window.Endpoints.srvs.file.share,
+                request: {
+                  datasource_id: '',    // Need to set, but ignored for dropbox (backend)
+                  index: '',            // Ignored for dropbox (backend)
+                  file_id: '',          // Ignored for dropbox (backend)
+                  original_id: '',      // Dropbox file identifier
+                  destination_id: '',   // This will be an email address to which permissions are being granted
+                  share_publicly: false // Ignored for dropbox (backend)
+                }
+              };
+            }
+          }
+        },
+        openShareFileDialog: function(e) {
+          this.$.shareFileDialog.show();
+        },
+        closeShareFileDialog: function() {
+          this.$.shareFileDialog.hide();
+        },
+        shareFile: function(e) {
+          this.headers = Auth.getHeaders();
+
+          // Required
+          this.rpcShareFileParams.request.datasource_id = this.item.datasource_id;
+          this.rpcShareFileParams.request.original_id = this.item.original.id;
+          this.rpcShareFileParams.request.destination_id = this.emailAddress;
+
+          this.$.rpcShareFile.body = this.rpcShareFileParams;
+          this.$.rpcShareFile.generateRequest();
+        },
+        _handleShareFile: function(e) {
+          if (e.detail.response) {
+            this.closeShareFileDialog();
+          }
+        },
+        _handleError: function(e) {
+          this.checkUnauthorize(e);
+
+          if (e.detail.request && e.detail.request.response) {
+            this.$.toast.text = e.detail.request.response.detail;
+            this.$.toast.show();
+          }
+        }
+      });
+    }());
+  </script>
+</dom-module>
