@@ -18,11 +18,11 @@
 <script src="../bower_components/filesize/lib/filesize.min.js"></script>
 
 <link rel="import" href="../src/styles/theme.html">
-
 <link rel="import" href="behaviors/map-behavior.html">
 <link rel="import" href="onboarding/onboarding-page.html">
 <link rel="import" href="auth0/login-auth0.html">
 <link rel="import" href="search/search-page.html">
+<link rel="import" href="settings/settings-page.html">
 
 <dom-module id="kazoup-app">
   <template>
@@ -87,6 +87,7 @@
           <onboarding-page route="{{route}}" name="onboarding"></onboarding-page>
           <login-auth0 route="{{route}}" name="login"></login-auth0>
           <search-page route="{{route}}" name="search"></search-page>
+          <settings-page route="{{route}}" name="settings"></settings-page>
 
           <my-view404 name="my-view404"></my-view404>
         </iron-pages>
