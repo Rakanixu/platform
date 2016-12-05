@@ -7,6 +7,9 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/xray"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/micro/cli"
@@ -17,6 +20,7 @@ import (
 	"github.com/micro/go-micro/registry"
 	"github.com/micro/go-micro/selector"
 	"github.com/micro/go-micro/server"
+	"github.com/micro/go-plugins/wrapper/trace/awsxray"
 	"golang.org/x/net/context"
 )
 
@@ -158,10 +162,27 @@ func DesktopWrap(c client.Client) client.Client {
 }
 
 func NewKazoupClient() client.Client {
+
 	return client.NewClient()
 }
 
+func NewKazoupClientWithXrayTrace(x *xray.XRay) client.Client {
+
+	return client.NewClient(
+		client.WrapCall(awsxray.NewCallWrapper(x)),
+	)
+}
+
 func NewKazoupService(name string) micro.Service {
+
+	//Get AWS session credentials in ~/.aws/credentials
+	sess, err := session.NewSession()
+	if err != nil {
+		log.Fatal(err)
+	}
+	// New AWSXRAY with default
+	x := xray.New(sess, &aws.Config{Region: aws.String("eu-west-1")})
+
 	//FIXME hacked we should just pass micro.Flags
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -180,9 +201,10 @@ func NewKazoupService(name string) micro.Service {
 			micro.Metadata(md),
 			micro.RegisterTTL(time.Minute),
 			micro.RegisterInterval(time.Second*30),
-			micro.Client(NewKazoupClient()),
+			micro.Client(NewKazoupClientWithXrayTrace(x)),
+			micro.WrapClient(awsxray.NewClientWrapper(x)),
 			micro.WrapSubscriber(SubscriberWrapper),
-			micro.WrapHandler(AuthWrapper),
+			micro.WrapHandler(awsxray.NewHandlerWrapper(x), AuthWrapper),
 			micro.Flags(
 				cli.StringFlag{
 					Name:   "elasticsearch_hosts",
@@ -205,9 +227,10 @@ func NewKazoupService(name string) micro.Service {
 		micro.Metadata(md),
 		micro.RegisterTTL(time.Minute),
 		micro.RegisterInterval(time.Second*30),
-		micro.Client(NewKazoupClient()),
+		micro.Client(NewKazoupClientWithXrayTrace(x)),
 		micro.WrapSubscriber(SubscriberWrapper),
-		micro.WrapHandler(AuthWrapper),
+		micro.WrapClient(awsxray.NewClientWrapper(x)),
+		micro.WrapHandler(awsxray.NewHandlerWrapper(x), AuthWrapper),
 	)
 	return service
 }
