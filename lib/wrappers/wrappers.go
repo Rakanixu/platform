@@ -166,10 +166,17 @@ func NewKazoupClient() client.Client {
 	return client.NewClient()
 }
 
-func NewKazoupClientWithXrayTrace(x *xray.XRay) client.Client {
-
+func NewKazoupClientWithXrayTrace(sess *session.Session) client.Client {
+	opts := []awsxray.Option{
+		// Used as segment name
+		awsxray.WithName("com.kazoup.client"),
+		// Specify X-Ray Daemon Address
+		// awsxray.WithDaemon("localhost:2000"),
+		// Or X-Ray Client
+		awsxray.WithClient(xray.New(sess, &aws.Config{Region: aws.String("eu-west-1")})),
+	}
 	return client.NewClient(
-		client.WrapCall(awsxray.NewCallWrapper(x)),
+		client.WrapCall(awsxray.NewCallWrapper(opts...)),
 	)
 }
 
@@ -181,7 +188,15 @@ func NewKazoupService(name string) micro.Service {
 		log.Fatal(err)
 	}
 	// New AWSXRAY with default
-	x := xray.New(sess, &aws.Config{Region: aws.String("eu-west-1")})
+	//x := xray.New(sess, &aws.Config{Region: aws.String("eu-west-1")})
+	opts := []awsxray.Option{
+		// Used as segment name
+		awsxray.WithName(name),
+		// Specify X-Ray Daemon Address
+		// awsxray.WithDaemon("localhost:2000"),
+		// Or X-Ray Client
+		awsxray.WithClient(xray.New(sess, &aws.Config{Region: aws.String("eu-west-1")})),
+	}
 
 	//FIXME hacked we should just pass micro.Flags
 	hostname, err := os.Hostname()
@@ -201,10 +216,10 @@ func NewKazoupService(name string) micro.Service {
 			micro.Metadata(md),
 			micro.RegisterTTL(time.Minute),
 			micro.RegisterInterval(time.Second*30),
-			micro.Client(NewKazoupClientWithXrayTrace(x)),
-			micro.WrapClient(awsxray.NewClientWrapper(x)),
+			micro.Client(NewKazoupClientWithXrayTrace(sess)),
+			micro.WrapClient(awsxray.NewClientWrapper(opts...)),
 			micro.WrapSubscriber(SubscriberWrapper),
-			micro.WrapHandler(awsxray.NewHandlerWrapper(x), AuthWrapper),
+			micro.WrapHandler(awsxray.NewHandlerWrapper(opts...), AuthWrapper),
 			micro.Flags(
 				cli.StringFlag{
 					Name:   "elasticsearch_hosts",
@@ -227,10 +242,10 @@ func NewKazoupService(name string) micro.Service {
 		micro.Metadata(md),
 		micro.RegisterTTL(time.Minute),
 		micro.RegisterInterval(time.Second*30),
-		micro.Client(NewKazoupClientWithXrayTrace(x)),
+		micro.Client(NewKazoupClientWithXrayTrace(sess)),
 		micro.WrapSubscriber(SubscriberWrapper),
-		micro.WrapClient(awsxray.NewClientWrapper(x)),
-		micro.WrapHandler(awsxray.NewHandlerWrapper(x), AuthWrapper),
+		micro.WrapClient(awsxray.NewClientWrapper(opts...)),
+		micro.WrapHandler(awsxray.NewHandlerWrapper(opts...), AuthWrapper),
 	)
 	return service
 }
