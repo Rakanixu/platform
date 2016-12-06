@@ -7,6 +7,9 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/xray"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/micro/cli"
@@ -17,6 +20,7 @@ import (
 	"github.com/micro/go-micro/registry"
 	"github.com/micro/go-micro/selector"
 	"github.com/micro/go-micro/server"
+	"github.com/micro/go-plugins/wrapper/trace/awsxray"
 	"golang.org/x/net/context"
 )
 
@@ -158,10 +162,42 @@ func DesktopWrap(c client.Client) client.Client {
 }
 
 func NewKazoupClient() client.Client {
+
 	return client.NewClient()
 }
 
+func NewKazoupClientWithXrayTrace(sess *session.Session) client.Client {
+	opts := []awsxray.Option{
+		// Used as segment name
+		awsxray.WithName("com.kazoup.client"),
+		// Specify X-Ray Daemon Address
+		// awsxray.WithDaemon("localhost:2000"),
+		// Or X-Ray Client
+		awsxray.WithClient(xray.New(sess, &aws.Config{Region: aws.String("eu-west-1")})),
+	}
+	return client.NewClient(
+		client.WrapCall(awsxray.NewCallWrapper(opts...)),
+	)
+}
+
 func NewKazoupService(name string) micro.Service {
+
+	//Get AWS session credentials in ~/.aws/credentials
+	sess, err := session.NewSession()
+	if err != nil {
+		log.Fatal(err)
+	}
+	// New AWSXRAY with default
+	//x := xray.New(sess, &aws.Config{Region: aws.String("eu-west-1")})
+	opts := []awsxray.Option{
+		// Used as segment name
+		awsxray.WithName(name),
+		// Specify X-Ray Daemon Address
+		// awsxray.WithDaemon("localhost:2000"),
+		// Or X-Ray Client
+		awsxray.WithClient(xray.New(sess, &aws.Config{Region: aws.String("eu-west-1")})),
+	}
+
 	//FIXME hacked we should just pass micro.Flags
 	hostname, err := os.Hostname()
 	if err != nil {
@@ -180,9 +216,10 @@ func NewKazoupService(name string) micro.Service {
 			micro.Metadata(md),
 			micro.RegisterTTL(time.Minute),
 			micro.RegisterInterval(time.Second*30),
-			micro.Client(NewKazoupClient()),
+			micro.Client(NewKazoupClientWithXrayTrace(sess)),
+			micro.WrapClient(awsxray.NewClientWrapper(opts...)),
 			micro.WrapSubscriber(SubscriberWrapper),
-			micro.WrapHandler(AuthWrapper),
+			micro.WrapHandler(awsxray.NewHandlerWrapper(opts...), AuthWrapper),
 			micro.Flags(
 				cli.StringFlag{
 					Name:   "elasticsearch_hosts",
@@ -205,9 +242,10 @@ func NewKazoupService(name string) micro.Service {
 		micro.Metadata(md),
 		micro.RegisterTTL(time.Minute),
 		micro.RegisterInterval(time.Second*30),
-		micro.Client(NewKazoupClient()),
+		micro.Client(NewKazoupClientWithXrayTrace(sess)),
 		micro.WrapSubscriber(SubscriberWrapper),
-		micro.WrapHandler(AuthWrapper),
+		micro.WrapClient(awsxray.NewClientWrapper(opts...)),
+		micro.WrapHandler(awsxray.NewHandlerWrapper(opts...), AuthWrapper),
 	)
 	return service
 }
