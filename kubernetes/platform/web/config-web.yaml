@@ -32,7 +32,7 @@ spec:
           mountPath: "/google-cloud-service-account"
           readOnly: true
         - name: aws-credentials
-          mountPath: "/root/.aws/credentials"
+          mountPath: "/root/.aws"
           readOnly: true
       volumes:
       - name: google-cloud-service-account

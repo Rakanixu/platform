@@ -43,7 +43,7 @@ spec:
             mountPath: "/secrets"
             readOnly: true
           - name: aws-credentials
-            mountPath: "/root/.aws/credentials"
+            mountPath: "/root/.aws"
             readOnly: true
       volumes:
       - name: secrets
