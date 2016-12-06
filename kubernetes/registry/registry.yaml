@@ -16,7 +16,7 @@ spec:
       containers:
         - name: registry
           command: [ "/bin/start", "-server", "-bootstrap-expect", "3", "-join", $(REGISTRY_SERVICE_HOST) ]
-          image: consul:latest
+          image: progrium/consul:latest
           imagePullPolicy: Always
           ports:
           - containerPort: 8500
