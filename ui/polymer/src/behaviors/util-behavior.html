@@ -38,7 +38,14 @@
 
     Polymer.UtilBehaviorImp = {
       openMenu: function() {
-        this.$.navDrawerPanel.openDrawer()
+        document.querySelector('kazoup-app')
+          .root.querySelector('main-menu')
+          .root.querySelector('#navDrawerPanel').openDrawer();
+      },
+      closeMenu: function() {
+        document.querySelector('kazoup-app')
+          .root.querySelector('main-menu')
+          .root.querySelector('#navDrawerPanel').closeDrawer();
       },
       openFile: function(url) {
         if (window && window.process && window.process.type) {

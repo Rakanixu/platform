@@ -22,7 +22,7 @@
 <dom-module id="create-file">
   <template>
     <style include="iron-flex iron-flex-alignment"></style>
-    <style>
+    <style include="shared-styles">
       :host {
         display: block;
       }
@@ -139,8 +139,6 @@
                      value="{{fileName}}"
                      required
                      auto-validate></paper-input>
-
-
       </div>
       <mat-button class="action" label="CREATE" on-tap="createFile"></mat-button>
       <mat-button class="action" label="Cancel" on-tap="closeSetFileNameDialog"></mat-button>
@@ -203,7 +201,15 @@
             }
           },
           selectedDatasource: {
-            observer: 'selectedDatasourceChanged'
+            type: Object,
+            notify: true,
+            reflectToAttribute: true,
+            value: function() {
+              return {
+                type: '',
+                id: ''
+              }
+            }
           },
           itemSelected: {
             observer: 'itemSeletedChanged'
@@ -214,26 +220,47 @@
             value: false
           }
         },
-        selectedDatasourceChanged: function(newVal, oldVal) {
-          this.set(
-            'createFileIconVisible',
-            (
-              newVal.type === 'googledrive' ||
-              newVal.type === 'onedrive' ||
-              newVal.type === 'dropbox' ||
-              newVal.type === 'box'
-            )
-          );
+        observers: [
+          '_routeData(queryParams)',
+          '_datasourcesChanged(datasourceResults)'
+        ],
+        _routeData: function(data) {
+          var datasource = _.find(this.datasourceResults, {
+            index: data.index
+          });
+
+          this.set('createFileIconVisible', false);
+
+          if (!_.isEmpty(datasource)) {
+            this.selectedDatasource.type = this.getDatasourceType(datasource.url);
+            this.selectedDatasource.id = datasource.id;
+
+            this.set('selectedDatasource', {
+              type: this.getDatasourceType(datasource.url),
+              id: datasource.id
+            })
+
+            this.set(
+              'createFileIconVisible',
+              (
+                this.selectedDatasource.type === 'googledrive' ||
+                this.selectedDatasource.type === 'onedrive' ||
+                this.selectedDatasource.type === 'dropbox' ||
+                this.selectedDatasource.type === 'box'
+              )
+            );
+          }
+        },
+        _datasourcesChanged: function(datasources) {
+          if (this.datasourceResults.length) {
+            this._routeData(this.queryParams);
+          }
         },
         itemSeletedChanged: function(newVal, oldVal) {
           // Handle paper-fab visibility
-          if (this.itemSelected !== undefined) {
-            if (this.mediaQueryMedium === false && this.itemSelected) {
-              this.$.createFileIcon.style.display = 'none';
-            } else {
-              this.$.createFileIcon.style.display = 'block';
-            }
-          }
+          (this.itemSelected === true) ?
+            this.$.createFileIcon.style.display = 'none' :
+            this.$.createFileIcon.style.display = 'block';
         },
         openCreateFileDialog: function(e) {
           this.$.createFileDialog.show();

@@ -54,7 +54,7 @@
 <dom-module id="settings-page">
   <template>
     <style include="iron-flex iron-flex-alignment"></style>
-    <style>
+    <style include="shared-styles">
       :host {
         display: block;
       }
@@ -87,104 +87,48 @@
       }
     </style>
 
-    <paper-drawer-panel id="navDrawerPanel" responsive-width="1280px">
-      <!-- Nav Content -->
-      <div class="nav" drawer>
-        <paper-toolbar class="medium-tall left-menu">
-          <mat-avatar icon-src="[[profile.picture]]"></mat-avatar>
-          <mat-item class="bottom light username"
-                    label="[[profile.name]]"></mat-item>
+    <paper-drawer-panel id="mainDrawerPanel"
+                        responsive-width="99999px"
+                        disable-swipe="true"
+                        right-drawer main>
+      <paper-header-panel id="mainPaperHeaderPanel" class="list-panel main" main>
+
+        <!-- List Toolbar -->
+        <paper-toolbar class="medium-tall">
+          <paper-icon-button icon="menu"
+                             on-tap="openMenu"
+                             hidden$="[[mediaQueryLarge]]"></paper-icon-button>
+
+          <div class="flex horizontal layout">
+            <div class="title flex">Settings</div>
+            <paper-fab id="addDatasourceIcon"
+                       icon="icons:add"
+                       title="Add datasource"
+                       on-tap="openDatasourceDialog"
+                       hidden$="[[!addDatasourceIconVisible]]"></paper-fab>
+          </div>
+
+          <paper-tabs class="middle horizontal layout fit" selected="{{selectedTab}}" scrollable>
+            <paper-tab class="flex">DATA SOURCES</paper-tab>
+          </paper-tabs>
+
+          <paper-progress id="progressBar"
+                          class="middle fit"
+                          hidden$="[[!loading]]"
+                          indeterminate></paper-progress>
         </paper-toolbar>
 
-        <div style="height:100%; overflow-y:auto;">
-          <div class="menu-content">
-            <paper-menu id="mainMenu" selected="-1">
-              <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.all]]" data-index="0">
-                <iron-icon icon="icons:home" item-icon></iron-icon>My Files
-              </paper-icon-item>
-
-              <template is="dom-repeat" items="[[datasourceResults]]">
-                <paper-icon-item on-tap="showDatasourceSearch" id="datasource[[item.id]]">
-                  <iron-icon icon="[[getDatasourceIcon(item.url)]]" item-icon></iron-icon>[[getDatasourcePrettyType(item.url)]]
-                </paper-icon-item>
-                <paper-tooltip for="datasource[[item.id]]">[[getDatasourceUrl(item.url)]]</paper-tooltip>
-              </template>
-              <mat-divider></mat-divider>
-
-              <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.documents]]" data-index="1">
-                <iron-icon icon="editor:insert-drive-file" item-icon></iron-icon>Documents
-              </paper-icon-item>
-              <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.videos]]" data-index="2">
-                <iron-icon icon="av:movie" item-icon></iron-icon>Movies
-              </paper-icon-item>
-              <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.images]]" data-index="3">
-                <iron-icon icon="image:camera-alt" item-icon></iron-icon>Pictures
-              </paper-icon-item>
-              <paper-icon-item on-tap="showCategorySearch" data-value$="[[categoriesMap.audios]]" data-index="4">
-                <iron-icon icon="image:audiotrack" item-icon></iron-icon>Audio
-              </paper-icon-item>
-            </paper-menu>
-
-            <mat-divider></mat-divider>
-
-            <paper-menu id="secondaryMenu" selected="0">
-              <paper-icon-item id="settings" on-tap="showSettingsPage">
-                <iron-icon icon="icons:settings" item-icon></iron-icon>Settings
-              </paper-icon-item>
-              <paper-icon-item id="intercom_launch">
-                <iron-icon icon="icons:feedback" item-icon></iron-icon>Feedback
-              </paper-icon-item>
-              <paper-icon-item id="logout" on-tap="logout">
-                <iron-icon icon="icons:power-settings-new" item-icon></iron-icon>Sign out
-              </paper-icon-item>
-            </paper-menu>
-          </div>
+        <!-- Search results -->
+        <div class="vertical layout center-justified" style="height:100%;">
+          <neon-animated-pages id="neonPages"
+                               selected="[[selectedTab]]">
+            <neon-animatable>
+              <datasources-page datasources-results="{{datasourceResults}}"></datasources-page>
+            </neon-animatable>
+          </neon-animated-pages>
         </div>
-      </div>
 
-      <paper-drawer-panel id="mainDrawerPanel"
-                          responsive-width="99999px"
-                          disable-swipe="true"
-                          right-drawer main>
-        <paper-header-panel id="mainPaperHeaderPanel" class="list-panel main" main>
-
-          <!-- List Toolbar -->
-          <paper-toolbar class="medium-tall">
-            <paper-icon-button icon="menu"
-                               on-tap="openMenu"
-                               hidden$="[[mediaQueryLarge]]"></paper-icon-button>
-
-            <div class="flex horizontal layout">
-              <div class="title flex">Settings</div>
-              <paper-fab id="addDatasourceIcon"
-                         icon="icons:add"
-                         title="Add datasource"
-                         on-tap="openDatasourceDialog"
-                         hidden$="[[!addDatasourceIconVisible]]"></paper-fab>
-            </div>
-
-            <paper-tabs class="middle horizontal layout fit" selected="{{selectedTab}}" scrollable>
-              <paper-tab class="flex">DATA SOURCES</paper-tab>
-            </paper-tabs>
-
-            <paper-progress id="progressBar"
-                            class="middle fit"
-                            hidden$="[[!loading]]"
-                            indeterminate></paper-progress>
-          </paper-toolbar>
-
-          <!-- Search results -->
-          <div class="vertical layout center-justified" style="height:100%;">
-            <neon-animated-pages id="neonPages"
-                                 selected="[[selectedTab]]">
-              <neon-animatable>
-                <datasources-page datasources-results="{{datasourceResults}}"></datasources-page>
-              </neon-animatable>
-            </neon-animated-pages>
-          </div>
-
-        </paper-header-panel>
-      </paper-drawer-panel>
+      </paper-header-panel>
     </paper-drawer-panel>
 
     <paper-toast id="toast" text=""></paper-toast>
@@ -202,95 +146,24 @@
         is: 'settings-page',
         behaviors: [
           Polymer.UtilBehaviorImp,
-          Polymer.NavBehaviorImp,
-          Polymer.MapBehaviorImp,
-          Polymer.CommonBehaviorImp
+          Polymer.MapBehaviorImp
         ],
         properties: {
+          loading: {
+            type: Boolean,
+            notify: true,
+            value: false
+          },
           selectedTab: {
             type: Object,
             notify: false,
-            value: 0,
-            observer: 'selectedTabChanged'
+            value: 0
           },
           addDatasourceIconVisible: {
             type: Boolean,
             notify: false,
             value: true
           }
-        },
-        selectedTabChanged: function(newVal, oldVal) {
-          if (oldVal !== undefined) {
-            this.activatePage();
-          }
-        },
-        activatePage: function() {
-          this.set('addDatasourceIconVisible', false);
-
-          this.profile = Auth.getProfile();
-
-          this.$.mainMenu.selected = "-1";
-          this.$.secondaryMenu.selected = "0";
-
-          if (document.querySelector('iron-pages').selected !== 3) {
-            document.querySelector('iron-pages').selected = 3;
-          }
-
-          switch (this.selectedTab) {
-            case 0:
-              this.set('addDatasourceIconVisible', true);
-              this.fireEvent('datasources-page-activated');
-              break;
-            case 1:
-              this.fireEvent('configuration-page-activated');
-              break;
-          }
-
-          this.setMenuHeight();
-        },
-        showDatasourceSearch: function(e) {
-          this.fireEvent('web-app-activated', {
-            e: {
-              model: {
-                __data__: {
-                  item: e.model.__data__.item
-                }
-              },
-              selectedCategory: {
-                index: e.model.__data__.index + 1,
-                label: 'Search'
-              }
-            },
-            callback: 'browseDatasource' // Internal method to be call
-          });
-        },
-        showCategorySearch: function(e) {
-          var index = parseInt(e.currentTarget.dataset.index, 10);
-
-          if (this.datasourceResults && this.datasourceResults.length > 0) {
-            index += this.datasourceResults.length;
-          }
-
-          this.fireEvent('web-app-activated', {
-            e: {
-              currentTarget: {
-                dataset: {
-                  value: e.currentTarget.dataset.value
-                }
-              },
-              selectedCategory: {
-                index: index,
-                label: (e.currentTarget.dataset.index == 0) ? 'My Files' : ''
-              }
-            },
-            callback: 'setCategory' // Internal method to be call
-          });
-        },
-        ready: function() {
-          window.addEventListener('settings-page-activated', this.init.bind(this));
-        },
-        init: function(e, detail) {
-          this.activatePage();
         }
       });
     }());

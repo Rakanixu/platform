@@ -27,7 +27,6 @@
 
 <link rel="import" href="../../src/behaviors/util-behavior.html">
 <link rel="import" href="../../src/behaviors/endpoints-behavior.html">
-<link rel="import" href="../../src/behaviors/nav-behavior.html">
 <link rel="import" href="../../src/behaviors/map-behavior.html">
 
 <dom-module id="datasources-page">
@@ -188,9 +187,7 @@
         is: 'datasources-page',
         behaviors: [
           Polymer.UtilBehaviorImp,
-          Polymer.NavBehaviorImp,
           Polymer.MapBehaviorImp,
-          Polymer.CommonBehaviorImp,
           Polymer.EndpointsBehaviorImp
         ],
         properties: {

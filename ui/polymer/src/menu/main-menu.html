@@ -1,0 +1,221 @@
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/av-icons.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-media-query/iron-media-query.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
+<link rel="import" href="../../bower_components/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
+
+<link rel="import" href="../../src/search/search-page.html">
+<link rel="import" href="../../src/settings/settings-page.html">
+
+<dom-module id="main-menu">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: inherit;
+      }
+    </style>
+
+    <paper-drawer-panel id="navDrawerPanel" responsive-width="1280px">
+      <!-- Nav Content -->
+      <div class="nav" drawer>
+        <paper-toolbar class="medium-tall left-menu">
+          <mat-avatar icon-src="[[profile.picture]]"></mat-avatar>
+          <mat-item class="bottom light username"
+                    label="[[profile.name]]"></mat-item>
+        </paper-toolbar>
+
+        <div style="height:100%; overflow-y:auto;">
+          <div class="menu-content">
+            <paper-menu id="mainMenu" selected="{{selectedCategory.index}}">
+              <a on-tap="closeMenu" href$="/u/search?index=[[md5UserId]]">
+                <paper-icon-item>
+                  <iron-icon icon="icons:home" item-icon></iron-icon>My Files
+                </paper-icon-item>
+              </a>
+
+              <template is="dom-repeat" items="[[datasourceResults]]">
+                <a on-tap="closeMenu" href$="/u/search?index=[[item.index]]">
+                  <paper-icon-item>
+                    <iron-icon icon="[[getDatasourceIcon(item.url)]]" item-icon></iron-icon>[[getDatasourcePrettyType(item.url)]]
+                  </paper-icon-item>
+                  <paper-tooltip for="datasource[[item.id]]">[[getDatasourceUrl(item.url)]]</paper-tooltip>
+                </a>
+              </template>
+              <mat-divider></mat-divider>
+
+              <a on-tap="closeMenu" href$="/u/search?category=[[categoriesMap.documents]]&index=[[md5UserId]]">
+                <paper-icon-item>
+                  <iron-icon icon="editor:insert-drive-file" item-icon></iron-icon>Documents
+                </paper-icon-item>
+              </a>
+              <a on-tap="closeMenu" href$="/u/search?category=[[categoriesMap.videos]]&index=[[md5UserId]]">
+                <paper-icon-item>
+                  <iron-icon icon="av:movie" item-icon></iron-icon>Movies
+                </paper-icon-item>
+              </a>
+              <a on-tap="closeMenu" href$="/u/search?category=[[categoriesMap.images]]&index=[[md5UserId]]">
+                <paper-icon-item>
+                  <iron-icon icon="image:camera-alt" item-icon></iron-icon>Pictures
+                </paper-icon-item>
+              </a>
+              <a on-tap="closeMenu" href$="/u/search?category=[[categoriesMap.audios]]&index=[[md5UserId]]">
+                <paper-icon-item>
+                  <iron-icon icon="image:audiotrack" item-icon></iron-icon>Audio
+                </paper-icon-item>
+              </a>
+            </paper-menu>
+
+            <mat-divider></mat-divider>
+
+            <paper-menu id="secondaryMenu" selected="-1">
+              <paper-icon-item on-tap="showSettingsPage">
+                <iron-icon icon="icons:settings" item-icon></iron-icon>Settings
+              </paper-icon-item>
+              <paper-icon-item id="intercom_launch">
+                <iron-icon icon="icons:feedback" item-icon></iron-icon>Feedback
+              </paper-icon-item>
+              <paper-icon-item id="logout" on-tap="logout">
+                <iron-icon icon="icons:power-settings-new" item-icon></iron-icon>Sign out
+              </paper-icon-item>
+            </paper-menu>
+          </div>
+        </div>
+      </div>
+
+      <div main>
+        <iron-pages id="authPages">
+          <search-page id="search"
+                       route="{{route}}"
+                       subroute="{{subroute}}"
+                       query-params="{{queryParams}}"
+                       datasource-results="{{datasourceResults}}"
+                       name="search"></search-page>
+          <settings-page id="settings"
+                         route="{{route}}"
+                         subroute="{{subroute}}"
+                         query-params="{{queryParams}}"
+                         datasource-results="{{datasourceResults}}"
+                         name="settings"></settings-page>
+        </iron-pages>
+      </div>
+
+    </paper-drawer-panel>
+
+    <paper-toast id="toast" text=""></paper-toast>
+
+    <iron-ajax id="rpcGetDatasources"
+               method="POST"
+               content-type="application/json"
+               url="[[endpoints.endpoint]]"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleGetDatasource"
+               params="[[rpcGetDatasourcesParams]]"
+               headers="[[headers]]"></iron-ajax>
+  </template>
+
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'main-menu',
+        behaviors: [
+          Polymer.MapBehaviorImp,
+          Polymer.EndpointsBehaviorImp,
+          Polymer.UtilBehaviorImp
+        ],
+        properties: {
+          datasourceResults: {
+            type: Array,
+            notify: true,
+            value: function() {
+              return [];
+            }
+          },
+          rpcGetDatasourcesParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: window.Endpoints.srvs.datasource.srv,
+                method: window.Endpoints.srvs.datasource.search,
+                request: {
+                  index: 'datasources',
+                  type: 'datasource',
+                  from: 0,
+                  size: 9999
+                }
+              };
+            }
+          }
+        },
+        observers: [
+          '_route(route.path)'
+        ],
+        _route: function(path) {
+          if (path.indexOf(this.pagesMap.u.path) === 0) {
+            this.init();
+
+            switch (path) {
+              case this.pagesMap.search.path:
+                this.$.authPages.selected = 0;
+                break;
+              case this.pagesMap.settings.path:
+                this.$.authPages.selected = 1;
+                break;
+            }
+          }
+        },
+        init: function() {
+          this.md5UserId = Auth.getMD5UserId();
+          this.headers = Auth.getHeaders();
+          this.profile = Auth.getProfile();
+          this.$.rpcGetDatasources.body = this.rpcGetDatasourcesParams;
+          this.$.rpcGetDatasources.generateRequest();
+        },
+        showSettingsPage: function(e) {
+          this.closeMenu();
+          this.set('route.path', this.pagesMap.settings.path);
+        },
+        logout: function() {
+          Auth.clear();
+
+          this.set('route.path', this.pagesMap.login.path);
+        },
+        _handleGetDatasource: function(e) {
+          if (e.detail.response && e.detail.response.result) {
+            var results = JSON.parse(e.detail.response.result);
+
+            // List datasources
+            this.set('datasourceResults', results ? results : []);
+          }
+        },
+        _handleError: function(e, detail) {
+          this.checkUnauthorize(e);
+        }
+      });
+    }());
+  </script>
+</dom-module>

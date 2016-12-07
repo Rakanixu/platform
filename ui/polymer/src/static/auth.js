@@ -48,6 +48,7 @@ window.Auth = (function() {
         return;
       }
       _profile = profile;
+      localStorage.setItem('profile', JSON.stringify(profile));
 
       window.intercomSettings = {
         name: _profile.name,
@@ -68,8 +69,8 @@ window.Auth = (function() {
           'Authorization': response.id_token
         };
 
-        _loadSearchPage();
         _lock.hide();
+        _loadSearchPage();
       }).catch(function(e, xhr, response) {
 
       });
@@ -87,18 +88,42 @@ window.Auth = (function() {
       _customHeaders = headers;
     },
     getHeaders: function() {
+      if (_.isEmpty(_customHeaders)) {
+        return {
+          Authorization: localStorage.getItem('token')
+        }
+      }
+
       return _customHeaders;
     },
     getProfile: function() {
+      if (_.isEmpty(_profile)) {
+        return JSON.parse(localStorage.getItem('profile'));
+      }
+
       return _profile;
     },
     getUserId: function() {
-      return _profile.user_id;
+      try {
+        return this.getProfile().user_id;
+      } catch(e) {
+        return '';
+      }
     },
     getMD5UserId: function() {
-      return new Hashes.MD5().hex(_profile.user_id);
+      var profile = this.getProfile();
+
+      if (!_.isEmpty(profile) && profile.user_id) {
+        return new Hashes.MD5().hex(profile.user_id);
+      }
+
+      return '';
     },
     clear: function() {
+      localStorage.removeItem('profile');
+      localStorage.removeItem('token');
+      localStorage.removeItem('id_token');
+
       _profile = {};
       _customHeaders = {};
     }

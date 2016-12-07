@@ -16,8 +16,10 @@
             notify: true,
             value: function() {
               return {
-                index: 'files',
-                type: 'file'
+                file_type: 'files',
+                type: 'file',
+                from: 0,
+                size: 45
               };
             }
           }
@@ -27,6 +29,10 @@
           this.fireFilterChanged();
         },
         setValues: function(obj) {
+          this.set('filters', obj);
+          this.fireFilterChanged();
+        },
+        addValues: function(obj) {
           _.forEach(obj, function(val, attr) {
             this.set('filters.' + attr, val);
           }.bind(this));
