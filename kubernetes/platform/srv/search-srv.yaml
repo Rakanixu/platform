@@ -28,3 +28,17 @@ spec:
           name: search-port
         - containerPort: 10001
           name: broker-port
+        volumeMounts: 
+        - name: google-cloud-service-account
+          mountPath: "/google-cloud-service-account"
+          readOnly: true
+        - name: aws-credentials
+          mountPath: "/root/.aws"
+          readOnly: true
+      volumes:
+      - name: google-cloud-service-account
+        secret: 
+          secretName: "google-cloud-service-account"
+      - name: aws-credentials
+        secret: 
+          secretName: "aws-credentials"
