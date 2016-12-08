@@ -28,43 +28,47 @@
         <div style="height:calc(100% - 128px); overflow-y:auto;">
           <div class="menu-content">
             <paper-menu id="mainMenu">
-              <a on-tap="closeMenu" href$="/u/search?index=[[md5UserId]]">
-                <paper-icon-item>
-                  <iron-icon icon="icons:home" item-icon></iron-icon>My Files
-                </paper-icon-item>
-              </a>
+
+              <paper-icon-item on-tap="setPathWithParams"
+                               data-path="/u/search"
+                               data-params$='{"index":"[[md5UserId]]"}'>
+                <iron-icon icon="icons:home" item-icon></iron-icon>My Files
+              </paper-icon-item>
 
               <template is="dom-repeat" items="[[datasourceResults]]">
-                <a on-tap="closeMenu" href$="/u/search?index=[[item.index]]">
-                  <paper-icon-item>
-                    <iron-icon icon="[[getDatasourceIcon(item.url)]]" item-icon></iron-icon>[[getDatasourcePrettyType(item.url)]]
-                  </paper-icon-item>
-                  <paper-tooltip for="datasource[[item.id]]">[[getDatasourceUrl(item.url)]]</paper-tooltip>
-                </a>
+                <paper-icon-item on-tap="setPathWithParams"
+                                 data-path="/u/search"
+                                 data-params$='{"index":"[[item.index]]"}'>
+                  <iron-icon icon="[[getDatasourceIcon(item.url)]]" item-icon></iron-icon>[[getDatasourcePrettyType(item.url)]]
+                </paper-icon-item>
+                <paper-tooltip for="datasource[[item.id]]">[[getDatasourceUrl(item.url)]]</paper-tooltip>
               </template>
 
               <mat-divider></mat-divider>
 
-              <a on-tap="closeMenu" href$="/u/search?category=[[categoriesMap.documents]]&index=[[md5UserId]]">
-                <paper-icon-item>
-                  <iron-icon icon="editor:insert-drive-file" item-icon></iron-icon>Documents
-                </paper-icon-item>
-              </a>
-              <a on-tap="closeMenu" href$="/u/search?category=[[categoriesMap.videos]]&index=[[md5UserId]]">
-                <paper-icon-item>
-                  <iron-icon icon="av:movie" item-icon></iron-icon>Movies
-                </paper-icon-item>
-              </a>
-              <a on-tap="closeMenu" href$="/u/search?category=[[categoriesMap.images]]&index=[[md5UserId]]">
-                <paper-icon-item>
-                  <iron-icon icon="image:camera-alt" item-icon></iron-icon>Pictures
-                </paper-icon-item>
-              </a>
-              <a on-tap="closeMenu" href$="/u/search?category=[[categoriesMap.audios]]&index=[[md5UserId]]">
-                <paper-icon-item>
-                  <iron-icon icon="image:audiotrack" item-icon></iron-icon>Audio
-                </paper-icon-item>
-              </a>
+              <paper-icon-item on-tap="setPathWithParams"
+                               data-path="/u/search"
+                               data-params$='{"category":"[[categoriesMap.documents]]","index":"[[md5UserId]]"}'>
+                <iron-icon icon="editor:insert-drive-file" item-icon></iron-icon>Documents
+              </paper-icon-item>
+
+              <paper-icon-item on-tap="setPathWithParams"
+                               data-path="/u/search"
+                               data-params$='{"category":"[[categoriesMap.videos]]","index":"[[md5UserId]]"}'>
+                <iron-icon icon="av:movie" item-icon></iron-icon>Movies
+              </paper-icon-item>
+
+              <paper-icon-item on-tap="setPathWithParams"
+                               data-path="/u/search"
+                               data-params$='{"category":"[[categoriesMap.images]]","index":"[[md5UserId]]"}'>
+                <iron-icon icon="image:camera-alt" item-icon></iron-icon>Pictures
+              </paper-icon-item>
+
+              <paper-icon-item on-tap="setPathWithParams"
+                               data-path="/u/search"
+                               data-params$='{"category":"[[categoriesMap.audios]]","index":"[[md5UserId]]"}'>
+                <iron-icon icon="image:audiotrack" item-icon></iron-icon>Audio
+              </paper-icon-item>
 
               <mat-divider></mat-divider>
 
@@ -187,6 +191,12 @@
             this.$.rpcGetDatasources.body = this.rpcGetDatasourcesParams;
             this.$.rpcGetDatasources.generateRequest();
           });
+        },
+        setPathWithParams: function(e) {
+          this.closeMenu();
+
+          this.set('route.path', e.currentTarget.dataset.path);
+          this.set('route.__queryParams', JSON.parse(e.currentTarget.dataset.params));
         },
         showSettingsPage: function(e) {
           this.closeMenu();
