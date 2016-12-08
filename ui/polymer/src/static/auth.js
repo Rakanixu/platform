@@ -96,8 +96,12 @@ window.Auth = (function() {
     },
     getHeaders: function() {
       if (_.isEmpty(_customHeaders)) {
+        // https://github.com/Polymer/polymer/issues/4012
+        // Safe way to redirect to login if unauthorize
         return {
-          Authorization: localStorage.getItem('token')
+          Authorization: localStorage.getItem('token') ?
+            localStorage.getItem('token') :
+            'not_valid_bitch'
         }
       }
 

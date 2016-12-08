@@ -34,11 +34,6 @@
           Polymer.EndpointsBehaviorImp
         ],
         properties: {
-          datasources: {
-            type: Array,
-            notify: true,
-            observer: 'datasourcesChanged'
-          },
           rpcStartScanAllParams: {
             type: Object,
             notify: false,
@@ -52,14 +47,17 @@
                 }
               };
             }
-          },
+          }
         },
-        datasourcesChanged: function(newVal, oldVal) {
-          if (this.datasources && this.datasources.length > 0) {
+        observers: [
+          '_datasourcesChanged(datasourceResults)'
+        ],
+        _datasourcesChanged: function(datasources) {
+          if (datasources && datasources.length > 0) {
             this.terminateWorker();
 
             this.headers = Auth.getHeaders();
-            this.worker = new Worker('src/scheduler/scheduler-worker.js');
+            this.worker = new Worker('/src/scheduler/scheduler-worker.js');
 
             this.worker.addEventListener('message', function(e) {
               if (e.data.scan_datasources && e.data.scan_datasources.length > 0) {
@@ -74,7 +72,7 @@
             }.bind(this));
 
             this.worker.postMessage({
-              datasources: this.datasources
+              datasources: datasources
             });
           }
         },

@@ -25,6 +25,7 @@
           localStorage.removeItem('token');
           localStorage.removeItem('id_token');
           this.set('route.path', '/login');
+          this.set('route.__queryParams', {});
         }
       }
     };

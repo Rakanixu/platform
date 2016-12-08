@@ -20,6 +20,7 @@
 <link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
 
 <link rel="import" href="../../src/sockets/notify-messages.html">
+<link rel="import" href="../../src/scheduler/scheduler-client.html">
 <link rel="import" href="../../src/search/search-page.html">
 <link rel="import" href="../../src/settings/settings-page.html">
 
@@ -37,7 +38,7 @@
       }
 
       .left-menu {
-        background-image: url("https://lh3.googleusercontent.com/proxy/xm_1j45fU-DIHPPxZ7JUrkNcrP3Vt4g89c6EmJs9J-xRurCVcaDRka0Ds39IKpRYM3kKo36aSEjUtI9VMzODjpjA-LNQJ9nAPKRsk5_4AiYQkksM_1BYK90ijg=w506-h284"), radial-gradient(#ffb837 , #f13c0d );
+        background-image: url("/src/static/menu-background.jpg"), radial-gradient(#ffb837 , #f13c0d );
       }
     </style>
 
@@ -50,9 +51,9 @@
                     label="[[profile.name]]"></mat-item>
         </paper-toolbar>
 
-        <div style="height:100%; overflow-y:auto;">
+        <div style="height:calc(100% - 128px); overflow-y:auto;">
           <div class="menu-content">
-            <paper-menu id="mainMenu" selected="{{selectedCategory.index}}">
+            <paper-menu id="mainMenu">
               <a on-tap="closeMenu" href$="/u/search?index=[[md5UserId]]">
                 <paper-icon-item>
                   <iron-icon icon="icons:home" item-icon></iron-icon>My Files
@@ -67,6 +68,7 @@
                   <paper-tooltip for="datasource[[item.id]]">[[getDatasourceUrl(item.url)]]</paper-tooltip>
                 </a>
               </template>
+
               <mat-divider></mat-divider>
 
               <a on-tap="closeMenu" href$="/u/search?category=[[categoriesMap.documents]]&index=[[md5UserId]]">
@@ -89,11 +91,9 @@
                   <iron-icon icon="image:audiotrack" item-icon></iron-icon>Audio
                 </paper-icon-item>
               </a>
-            </paper-menu>
 
-            <mat-divider></mat-divider>
+              <mat-divider></mat-divider>
 
-            <paper-menu id="secondaryMenu" selected="-1">
               <paper-icon-item on-tap="showSettingsPage">
                 <iron-icon icon="icons:settings" item-icon></iron-icon>Settings
               </paper-icon-item>
@@ -140,6 +140,8 @@
                headers="[[headers]]"></iron-ajax>
 
     <notify-messages></notify-messages>
+
+    <scheduler-client datasource-results="{{datasourceResults}}"></scheduler-client>
   </template>
 
   <script>
@@ -192,6 +194,10 @@
               case this.pagesMap.settings.path:
                 this.$.authPages.selected = 1;
                 break;
+              default:
+                // Fallback, for example, when /u is hitted
+                this.set('route.path', this.pagesMap.search.path);
+                break;
             }
           }
         },
@@ -203,7 +209,10 @@
           this.$.rpcGetDatasources.generateRequest();
         },
         refreshDatasources: function() {
-          this.init();
+          this.async(function() {
+            this.$.rpcGetDatasources.body = this.rpcGetDatasourcesParams;
+            this.$.rpcGetDatasources.generateRequest();
+          });
         },
         showSettingsPage: function(e) {
           this.closeMenu();
