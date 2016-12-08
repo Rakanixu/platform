@@ -32,7 +32,7 @@
 <dom-module id="datasources-page">
   <template>
     <style include="iron-flex iron-flex-alignment"></style>
-    <style>
+    <style is="custom-style" include="shared-styles">
       :host {
         display: block;
       }
@@ -49,6 +49,18 @@
         --paper-spinner-layer-4-color: var(--accent);
       }
 
+      mat-item::shadow .content {
+        overflow: visible;
+      }
+
+      paper-fab {
+        position: fixed;
+        right: 36px;
+        top: 99px;
+        z-index: 9999;
+        background-color: var(--accent);
+      }
+
       .big {
         --iron-icon-height: 36px;
         --iron-icon-width: 36px;
@@ -59,7 +71,13 @@
       }
     </style>
 
-    <template is="dom-repeat" items="[[datasourcesResults]]" hidden$="[[emptyState.visible]]">
+    <paper-fab id="addDatasourceIcon"
+               icon="icons:add"
+               title="Add datasource"
+               on-tap="openDatasourceDialog"
+               hidden$="[[!addDatasourceIconVisible]]"></paper-fab>
+
+    <template id="datasources" is="dom-repeat" items="[[datasourcesResults]]" hidden$="[[emptyState.visible]]">
       <mat-item label="[[getDatasourcePrettyType(item.url)]]"
                 description="[[getDatasourceUrl(item.url)]]">
         <paper-spinner id$="spinner[[item.id]]" compute$="[[isSpinnerActive(item)]]"></paper-spinner>
@@ -79,6 +97,8 @@
         </mat-menu>
       </mat-item>
     </template>
+
+    <paper-spinner active></paper-spinner>
 
     <empty-state id="emptyState"
                  class="fit"
@@ -137,16 +157,6 @@
 
     <scheduler-client datasources="[[datasourcesResults]]"></scheduler-client>
 
-    <iron-ajax id="rpcGetDatasources"
-               method="POST"
-               content-type="application/json"
-               url="[[endpoints.endpoint]]"
-               handle-as="json"
-               on-error="_handleError"
-               on-response="_handleGetDatasource"
-               params="[[rpcGetDatasourceParams]]"
-               headers="[[headers]]"></iron-ajax>
-
     <iron-ajax id="rpcAddDatasource"
                method="POST"
                content-type="application/json"
@@ -191,22 +201,6 @@
           Polymer.EndpointsBehaviorImp
         ],
         properties: {
-          rpcGetDatasourceParams: {
-            type: Object,
-            notify: false,
-            value: function() {
-              return {
-                service: window.Endpoints.srvs.datasource.srv,
-                method: window.Endpoints.srvs.datasource.search,
-                request: {
-                  from: 0,
-                  size: 9999,
-                  type: 'datasource',
-                  index: 'datasources'
-                }
-              };
-            }
-          },
           rpcStartScanParams: {
             type: Object,
             notify: false,
@@ -233,13 +227,6 @@
               };
             }
           },
-          datasourcesResults: {
-            type: Array,
-            notify: true,
-            value: function() {
-              return [];
-            }
-          },
           lastDatasourceCreated: {
             type: Object,
             notify: false,
@@ -259,22 +246,36 @@
             }
           }
         },
+        observers: [
+          '_datasourcesChanged(datasourcesResults)'
+        ],
+        _datasourcesChanged: function(datasources) {
+          if (datasources !== undefined) {
+            if (datasources.length) {
+              this.set('emptyState.visible', false);
+            } else {
+              this.set('emptyState.visible', true);
+            }
+
+            this.$.datasources.render();
+          }
+        },
         ready: function() {
-          this.$.rpcGetDatasources.body = this.rpcGetDatasourceParams;
-
-          window.addEventListener('datasources-page-activated', this.init.bind(this));
-
           if (window && window.process && window.process.type) {
             ipcRenderer.on('add-folder', this._addDatasource.bind(this));
             ipcRenderer.on('auth-callback-message', this._authSuccessful.bind(this));
           }
         },
-        init: function(e, detail) {
-          this.headers = Auth.getHeaders();
-          this.set('loading', true);
+        openDatasourceDialog: function() {
+          this.$.addDatasourceDialog.show();
+        },
+        closeDatasourceDialog: function() {
+          this.$.addDatasourceDialog.hide();
+        },
+        isSpinnerActive: function(item, el) {
           this.async(function() {
-            this.$.rpcGetDatasources.generateRequest();
-          }, 300);
+            this.$$('mat-item #spinner' + item.id).active = (item.crawler_running) ? true : false;
+          })
         },
         doAuth: function(e) {
           if (window && window.process && window.process.type) {
@@ -297,24 +298,22 @@
 
           this.closeDatasourceDialog();
         },
-        refreshDatasources: function(data) {
-          this.headers = Auth.getHeaders();
-
-          this.$.rpcGetDatasources.generateRequest();
-        },
         startScan: function(e) {
+          this.headers = Auth.getHeaders();
           this.set('loading', true);
           this.rpcStartScanParams.request.id = e.model.__data__.item.id;
           this.$.rpcStartScan.body = this.rpcStartScanParams;
           this.$.rpcStartScan.generateRequest();
         },
         deleteDatasource: function(e) {
+          this.headers = Auth.getHeaders();
           this.set('loading', true);
           this.rpcDeleteDatasourceParams.request.id = e.model.__data__.item.id;
           this.$.rpcDeleteDatasource.body = this.rpcDeleteDatasourceParams;
           this.$.rpcDeleteDatasource.generateRequest();
         },
         _addDatasource: function(e, folder) {
+          this.headers = Auth.getHeaders();
           this.set('loading', true);
 
           if (folder.length > 0) {
@@ -348,21 +347,10 @@
           this.set('loading', false);
           this.$.toast.text = 'Datasource deleted succesfully';
           this.$.toast.show();
-          this.async(this.init, 1000);
-        },
-        _handleGetDatasource: function(e) {
-          this.set('loading', false);
-          if (e.detail.response && e.detail.response.result) {
-            this.set('datasourcesResults', JSON.parse(e.detail.response.result));
-            this.set('lastDatasourceCreated', {});
-
-            // this.datasourcesResults can be nil
-            if (this.datasourcesResults && this.datasourcesResults.length) {
-              this.set('emptyState.visible', false);
-            } else {
-              this.set('emptyState.visible', true);
-            }
-          }
+          this.async(
+            document.querySelector('kazoup-app').shadowRoot.querySelector('main-menu').refreshDatasources,
+            1000
+          );
         },
         _handleAddDatasource: function(e) {
           if (e.detail.response) {

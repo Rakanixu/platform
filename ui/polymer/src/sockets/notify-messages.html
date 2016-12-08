@@ -31,6 +31,15 @@
         behaviors: [
           Polymer.EndpointsBehaviorImp
         ],
+        ready: function() {
+          // Init socket when user refresh app, and auth credentials are valid and stored on localStorage
+          // Auth will retrieve userId if exists from localstorage
+          var uId = Auth.getUserId();
+
+          if (uId && uId.length > 0) {
+            this.init(uId);
+          }
+        },
         init: function(userId) {
           this.$.socket.open();
 
@@ -62,12 +71,21 @@
               }
 
               this.async(function() {
-                if (document.querySelector('datasources-page')[e.detail.method]) {
-                  document.querySelector('datasources-page')[e.detail.method](data);
+                var searchPage = document.querySelector('kazoup-app').shadowRoot
+                  .querySelector('main-menu').shadowRoot
+                  .querySelector('search-page');
+
+                var mainMenu = document.querySelector('kazoup-app').shadowRoot
+                  .querySelector('main-menu');
+
+                // refreshSearch
+                if (searchPage[e.detail.method]) {
+                  searchPage[e.detail.method](data);
                 }
 
-                if (document.querySelector('web-app')[e.detail.method]) {
-                  document.querySelector('web-app')[e.detail.method](data);
+                // refreshDatasources
+                if (mainMenu[e.detail.method]) {
+                  mainMenu[e.detail.method](data);
                 }
               }, 1200);
             }

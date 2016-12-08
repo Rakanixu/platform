@@ -1,16 +1,10 @@
-<link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/web-socket/web-socket.html">
+<link rel="import" href="../../bower_components/mat-snackbar/mat-snackbar.html">
 
 <link rel="import" href="../../src/behaviors/endpoints-behavior.html">
 
 <dom-module id="check-connection">
   <template>
-    <style>
-      :host {
-        display: none;
-      }
-    </style>
-
     <web-socket id="socket"
                 url="[[endpoints.socket]]/config/platform/ping"
                 on-open="_onOpen"
@@ -18,6 +12,11 @@
                 on-message="_onMessage"
                 on-error="_onError"
                 json></web-socket>
+
+    <mat-snackbar id="snackBar"
+                  timeout="10000000"
+                  action-color="yellow"
+                  label=""></mat-snackbar>
   </template>
 
   <script>
@@ -44,10 +43,10 @@
         },
         connectedChanged: function(newVal, oldVal) {
           if (!newVal) {
-            document.querySelector('#globalErrMsg').label = 'Connection with Kazoup servers failed. Hold on, we are trying to reconnect..';
-            document.querySelector('#globalErrMsg').show();
+            this.$.snackBar.label = 'Connection with Kazoup servers failed. Hold on, we are trying to reconnect..';
+            this.$.snackBar.show();
           } else {
-            document.querySelector('#globalErrMsg').hide();
+            this.$.snackBar.hide();
           }
         },
         ready: function() {

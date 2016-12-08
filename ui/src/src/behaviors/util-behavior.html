@@ -212,12 +212,6 @@
             break;
         }
       },
-      isSpinnerActive: function(item) {
-        if (document.querySelector('#spinner' + item.id)) {
-          // crawler_running can be true or undefined
-          document.querySelector('#spinner' + item.id).active = (item.crawler_running) ? true : false;
-        }
-      },
       crawlerRunningMsg: function(datasource) {
         if (datasource.crawler_running) {
           return 'Scanning..';

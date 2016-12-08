@@ -77,14 +77,6 @@
       paper-tabs {
         --paper-tabs-selection-bar-color: var(--accent);
       }
-
-      paper-fab {
-        position: fixed;
-        right: 36px;
-        top: 99px;
-        z-index: 9999;
-        background-color: var(--accent);
-      }
     </style>
 
     <paper-drawer-panel id="mainDrawerPanel"
@@ -101,11 +93,6 @@
 
           <div class="flex horizontal layout">
             <div class="title flex">Settings</div>
-            <paper-fab id="addDatasourceIcon"
-                       icon="icons:add"
-                       title="Add datasource"
-                       on-tap="openDatasourceDialog"
-                       hidden$="[[!addDatasourceIconVisible]]"></paper-fab>
           </div>
 
           <paper-tabs class="middle horizontal layout fit" selected="{{selectedTab}}" scrollable>
@@ -123,7 +110,7 @@
           <neon-animated-pages id="neonPages"
                                selected="[[selectedTab]]">
             <neon-animatable>
-              <datasources-page datasources-results="{{datasourceResults}}"></datasources-page>
+              <datasources-page id="datasources" datasources-results="{{datasourceResults}}"></datasources-page>
             </neon-animatable>
           </neon-animated-pages>
         </div>
@@ -157,12 +144,15 @@
           selectedTab: {
             type: Object,
             notify: false,
-            value: 0
-          },
-          addDatasourceIconVisible: {
-            type: Boolean,
-            notify: false,
-            value: true
+            value: -1
+          }
+        },
+        observers: [
+          '_route(subroute.path)'
+        ],
+        _route: function(path) {
+          if (path === this.pagesMap.settings.subpath) {
+            this.set('selectedTab', 0);
           }
         }
       });

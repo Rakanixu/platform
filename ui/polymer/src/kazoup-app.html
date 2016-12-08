@@ -22,6 +22,7 @@
 <link rel="import" href="onboarding/onboarding-page.html">
 <link rel="import" href="auth0/login-auth0.html">
 <link rel="import" href="menu/main-menu.html">
+<link rel="import" href="sockets/check-connection.html">
 
 <dom-module id="kazoup-app">
   <template>
@@ -65,12 +66,12 @@
           <onboarding-page route="{{route}}" subroute="{{subroute}}" name="onboarding"></onboarding-page>
           <login-auth0 route="{{route}}" subroute="{{subroute}}" name="login"></login-auth0>
           <main-menu route="{{route}}" subroute="{{subroute}}" query-params="{{queryParams}}" name="u"></main-menu>
-
-
           <my-view404 name="my-view404"></my-view404>
         </iron-pages>
       </app-header-layout>
     </app-drawer-layout>
+
+    <check-connection></check-connection>
   </template>
   <script>
     'use strict';
@@ -149,8 +150,9 @@
         _showPage404: function() {
           this.page = 'my-view404';
         },
-        routeTo: function(path) {
+        routeTo: function(path, params) {
           this.set('route.path', path);
+          this.set('queryParams', params);
         }
       });
     })();

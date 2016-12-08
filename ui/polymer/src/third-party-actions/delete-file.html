@@ -145,26 +145,6 @@
 
             this.$.toast.text = this.item.name + ' deleted successfully.';
             this.$.toast.show();
-
-            this.async(function() {
-              _.forEach(document.querySelector('web-app').datasourceResults, function(ds) {
-                if (ds.id === document.querySelector('web-app').selectedDatasource.id) {
-
-                  // Reload documents in selected data source expecting deleted one does not appear.
-                  document.querySelector('web-app').browseDatasource({
-                    model: {
-                      __data__: {
-                        item: ds
-                      }
-                    }
-                  })
-                  return false;
-                }
-              }, this);
-              // TODO: Will not ensure that the file has been removed from index
-              // We need push notifications or sockets. Problem with sockets, backend has to handle correctly
-              // This has to be trigger in a clever way when notification received, this is bullshit for users.
-            }, 1000);
           }
         },
         _handleError: function(e) {

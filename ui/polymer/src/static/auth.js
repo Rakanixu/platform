@@ -23,7 +23,12 @@ window.Auth = (function() {
   });
 
   function _loadSearchPage() {
-    document.querySelector('kazoup-app').routeTo(Polymer.MapBehaviorImp.properties.pagesMap.value().search.path);
+    document.querySelector('kazoup-app').routeTo(
+      Polymer.MapBehaviorImp.properties.pagesMap.value().search.path,
+      {
+        index: Auth.getMD5UserId()
+      }
+    );
   }
 
   function _authenticateUser(code) {
@@ -59,7 +64,9 @@ window.Auth = (function() {
       };
       window.Intercom('update', window.intercomSettings);
 
-      //document.querySelector('notify-messages').init(_profile.user_id);
+      document.querySelector('kazoup-app').shadowRoot
+        .querySelector('main-menu').shadowRoot
+        .querySelector('notify-messages').init(_profile.user_id);
 
       localStorage.setItem('id_token', authResult.idToken);
 

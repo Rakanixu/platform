@@ -19,6 +19,7 @@
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
 <link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
 
+<link rel="import" href="../../src/sockets/notify-messages.html">
 <link rel="import" href="../../src/search/search-page.html">
 <link rel="import" href="../../src/settings/settings-page.html">
 
@@ -33,6 +34,10 @@
       a {
         color: inherit;
         text-decoration: inherit;
+      }
+
+      .left-menu {
+        background-image: url("https://lh3.googleusercontent.com/proxy/xm_1j45fU-DIHPPxZ7JUrkNcrP3Vt4g89c6EmJs9J-xRurCVcaDRka0Ds39IKpRYM3kKo36aSEjUtI9VMzODjpjA-LNQJ9nAPKRsk5_4AiYQkksM_1BYK90ijg=w506-h284"), radial-gradient(#ffb837 , #f13c0d );
       }
     </style>
 
@@ -133,6 +138,8 @@
                on-response="_handleGetDatasource"
                params="[[rpcGetDatasourcesParams]]"
                headers="[[headers]]"></iron-ajax>
+
+    <notify-messages></notify-messages>
   </template>
 
   <script>
@@ -195,14 +202,20 @@
           this.$.rpcGetDatasources.body = this.rpcGetDatasourcesParams;
           this.$.rpcGetDatasources.generateRequest();
         },
+        refreshDatasources: function() {
+          this.init();
+        },
         showSettingsPage: function(e) {
           this.closeMenu();
           this.set('route.path', this.pagesMap.settings.path);
+          this.set('route.__queryParams', {});
         },
         logout: function() {
           Auth.clear();
 
+          this.closeMenu();
           this.set('route.path', this.pagesMap.login.path);
+          this.set('route.__queryParams', {});
         },
         _handleGetDatasource: function(e) {
           if (e.detail.response && e.detail.response.result) {
