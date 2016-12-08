@@ -379,7 +379,8 @@
                     reflectToAttribute: true,
                     value: function() {
                         return {};
-                    }
+                    },
+                    observer: '_itemChanged'
                 },
                 itemSelected: {
                     type: Boolean,
@@ -465,7 +466,7 @@
             observers: [
                 '_route(subroute.path)',
                 '_routeData(queryParams)',
-                'breadcrumbsChanged(breadcrumbs.*)'
+                '_breadcrumbsChanged(breadcrumbs.*)'
             ],
             _route: function(path) {
                 if (path === this.pagesMap.search.subpath) {
@@ -520,8 +521,16 @@
 
                 this.$.filterConverter.setValues(filters);
             },
-            breadcrumbsChanged: function(newVal, oldVal) {
+            _breadcrumbsChanged: function(newVal, oldVal) {
                 this.set('lastBreadcrumb', this.breadcrumbs[this.breadcrumbs.length - 1]);
+            },
+            _itemChanged: function() {
+                // Set file_id on app URL
+                // We are listening to changes so, we are firing search again..
+                // FIXME
+                /*if (!_.isEmpty(this.item)) {
+                    this.set('queryParams.file_id', this.item.id);
+                }*/
             },
             ready: function() {
                 var resizeCallback;
