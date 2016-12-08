@@ -1,19 +1,19 @@
 {
-  "name": "My App",
-  "short_name": "My App",
-  "start_url": "/?homescreen=1",
+  "name": "Kazoup",
+  "short_name": "Kazoup",
+  "start_url": "/",
   "display": "standalone",
-  "theme_color": "#000",
+  "theme_color": "#21a9f5",
   "background_color": "#000",
   "icons": [
     {
-      "src": "images/manifest/icon-192x192.png",
-      "sizes": "192x192",
+      "src": "images/manifest/kazoup-logo-160.png",
+      "sizes": "160x160",
       "type": "image/png"
     },
     {
-      "src": "images/manifest/icon-512x512.png",
-      "sizes": "512x512",
+      "src": "images/manifest/kazoup-logo-54.png",
+      "sizes": "54x54",
       "type": "image/png"
     }
   ]
