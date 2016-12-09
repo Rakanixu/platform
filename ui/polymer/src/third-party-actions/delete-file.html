@@ -1,0 +1,138 @@
+<dom-module id="delete-file">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style>
+      :host {
+        display: block;
+      }
+
+      mat-dialog {
+        width: 340px;
+      }
+
+      paper-icon-button {
+        color: #fff;
+      }
+
+      #selectTargetDialog paper-button {
+        padding: 0;
+        width: 100%;
+      }
+
+      #selectTargetDialog paper-button mat-item {
+        width: 100%;
+      }
+    </style>
+
+    <paper-icon-button id="delete"
+                       on-tap="openDeleteConfirmationDialog"
+                       icon="icons:delete"
+                       color="black"></paper-icon-button>
+
+    <mat-dialog id="deleteConfirmationDialog" label="">
+      <div>
+        <p>[[deleteMsg]]</p>
+      </div>
+      <mat-button class="action" label="Delete" on-tap="deleteFile"></mat-button>
+      <mat-button class="action" label="Cancel" on-tap="closeDeleteConfirmationDialog"></mat-button>
+    </mat-dialog>
+
+
+    <paper-toast id="toast" duration="6000" text=""></paper-toast>
+
+    <iron-ajax id="rpcShareFile"
+               method="POST"
+               content-type="application/json"
+               url="[[endpoints.endpoint]]"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleDeleteFile"
+               params="[[rpcDeleteFileParams]]"
+               headers="[[headers]]"></iron-ajax>
+
+  </template>
+
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'delete-file',
+        behaviors: [
+          Polymer.EndpointsBehaviorImp,
+          Polymer.UtilBehaviorImp
+        ],
+        properties: {
+          item: {
+            type: Object,
+            notify: true,
+            reflectToAttribute: true
+          },
+          deleteMsg: {
+            type: String,
+            notify: false,
+            value: ''
+          },
+          rpcDeleteFileParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: window.Endpoints.srvs.file.srv,
+                method: window.Endpoints.srvs.file.delete,
+                request: {
+                  datasource_id: '',     // Datasource ID (file belongs to)
+                  index: '',             // Datasource index (file belongs to)
+                  file_id: '',           // Kazoup file ID
+                  original_id: '',       // Original file ID
+                  original_file_path: '' // Original file path (required fro dropbox)
+                }
+              };
+            }
+          }
+        },
+        openDeleteConfirmationDialog: function(e) {
+          this.set('deleteMsg', this.item.name + ' will be deleted. \nAre you sure?');
+
+          this.$.deleteConfirmationDialog.show();
+        },
+        closeDeleteConfirmationDialog: function() {
+          this.$.deleteConfirmationDialog.hide();
+        },
+        deleteFile: function(e) {
+          this.headers = Auth.getHeaders();
+
+          this.rpcDeleteFileParams.request.datasource_id = this.item.datasource_id;
+          this.rpcDeleteFileParams.request.index = this.item.index;
+          this.rpcDeleteFileParams.request.file_id = this.item.id;
+          this.rpcDeleteFileParams.request.original_id = this.item.original.id;
+
+          if (this.item.file_type === "dropbox") {
+            this.rpcDeleteFileParams.request.original_file_path = this.item.original.path_display;
+          } else {
+            this.rpcDeleteFileParams.request.original_file_path = '';
+          }
+
+          this.$.rpcShareFile.body = this.rpcDeleteFileParams;
+          this.$.rpcShareFile.generateRequest();
+        },
+        _handleDeleteFile: function(e) {
+          if (e.detail.response) {
+            this.closeDeleteConfirmationDialog();
+
+            this.$.toast.text = this.item.name + ' deleted successfully.';
+            this.$.toast.show();
+          }
+        },
+        _handleError: function(e) {
+          this.checkUnauthorize(e);
+
+          if (e.detail.request && e.detail.request.response) {
+            this.$.toast.text = e.detail.request.response.detail;
+            this.$.toast.show();
+          }
+        }
+      });
+    }());
+  </script>
+</dom-module>

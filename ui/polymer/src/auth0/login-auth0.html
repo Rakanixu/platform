@@ -1,0 +1,31 @@
+<dom-module id="login-auth0">
+  <style is="custom-style" include="iron-flex iron-positioning iron-flex-alignment"></style>
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+  </template>
+
+  <script>
+    (function() {
+      'use strict';
+
+      Polymer({
+        is: 'login-auth0',
+        behaviors: [
+          Polymer.MapBehaviorImp
+        ],
+        observers: [
+          '_route(route.path)'
+        ],
+        _route: function(path) {
+          if (path === this.pagesMap.login.path) {
+            Auth.showLogin();
+          }
+        }
+      })
+    }());
+  </script>
+</dom-module>

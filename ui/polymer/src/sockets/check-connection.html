@@ -1,0 +1,79 @@
+<dom-module id="check-connection">
+  <template>
+    <web-socket id="socket"
+                url="[[endpoints.socket]]/config/platform/ping"
+                on-open="_onOpen"
+                on-close="_onClose"
+                on-message="_onMessage"
+                on-error="_onError"
+                json></web-socket>
+
+    <mat-snackbar id="snackBar"
+                  timeout="10000000"
+                  action-color="yellow"
+                  label=""></mat-snackbar>
+  </template>
+
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'check-connection',
+        behaviors: [
+          Polymer.EndpointsBehaviorImp
+        ],
+        properties: {
+          lastTimestamp: {
+            type: Number,
+            notify: false,
+            value: 0
+          },
+          connected: {
+            type: Boolean,
+            notify: false,
+            value: true,
+            observer: 'connectedChanged'
+          }
+        },
+        connectedChanged: function(newVal, oldVal) {
+          if (!newVal) {
+            this.$.snackBar.label = 'Connection with Kazoup servers failed. Hold on, we are trying to reconnect..';
+            this.$.snackBar.show();
+          } else {
+            this.$.snackBar.hide();
+          }
+        },
+        ready: function() {
+          this.async(function() {
+            console.log(this.$.socket.url)
+            this.$.socket.open();
+          }, 2000);
+        },
+        _onOpen: function(e) {
+
+        },
+        _onClose: function(e) {
+          clearTimeout(this.reconnectTimeout);
+          this.reconnectTimeout = setTimeout(function() {
+            this.$.socket.open();
+          }.bind(this), 2000);
+        },
+        _onMessage: function(e) {
+          var data = JSON.parse(e.detail);
+
+          this.set('lastTimestamp', data.timestamp);
+          this.set('connected', true);
+
+          clearTimeout(this.timeout);
+          this.timeout = setTimeout(function() {
+            this.set('connected', false);
+          }.bind(this), 3500);
+        },
+        _onError: function(e) {
+
+        }
+      });
+    }());
+  </script>
+</dom-module>

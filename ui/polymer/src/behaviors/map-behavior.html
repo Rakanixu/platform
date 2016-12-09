@@ -1,0 +1,83 @@
+<script>
+  'use strict';
+
+  (function() {
+    Polymer.MapBehaviorImp = {
+      properties: {
+        categoriesMap: {
+          type: Object,
+          notify: false,
+          value: function() {
+            return {
+              all: 'My Files',
+              documents: 'Documents',
+              videos: 'Movies',
+              images: 'Pictures',
+              audios: 'Audio'
+            };
+          }
+        },
+        fileTypesMap: {
+          type: Object,
+          notify: false,
+          value: function() {
+            return {
+              document: 'document',
+              presentation: 'presentation',
+              spreadsheet: 'spreadsheet',
+              text: 'text'
+            };
+          }
+        },
+        imports: {
+          type: Object,
+          notify: false,
+          value: function() {
+            // Different imports for Electron or web app
+            return window[window.appEnvironment];
+          }
+        },
+        pagesMap: {
+          type: Object,
+          notify: false,
+          value: function() {
+            return {
+              root: {
+                val: '',
+                path: '/',
+                page: ''
+              },
+              onboarding: {
+                val: 'onboarding',
+                path: '/onboarding',
+                page: 'onboarding/onboarding-page'
+              },
+              login: {
+                val: 'login',
+                path: '/login',
+                page: 'auth0/login-auth0'
+              },
+              u: {
+                val: 'u',
+                path: '/u',
+                page: 'menu/main-menu'
+              },
+              search: {
+                val: 'search',
+                path: '/u/search',
+                subpath: '/search',
+                page: 'search/search-page'
+              },
+              settings: {
+                val: 'settings',
+                path: '/u/settings',
+                subpath: '/settings',
+                page: 'settings/settings-page'
+              }
+            };
+          }
+        }
+      }
+    };
+  }());
+</script>

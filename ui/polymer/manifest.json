@@ -1,0 +1,20 @@
+{
+  "name": "Kazoup",
+  "short_name": "Kazoup",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#21a9f5",
+  "background_color": "#000",
+  "icons": [
+    {
+      "src": "images/manifest/kazoup-logo-160.png",
+      "sizes": "160x160",
+      "type": "image/png"
+    },
+    {
+      "src": "images/manifest/kazoup-logo-54.png",
+      "sizes": "54x54",
+      "type": "image/png"
+    }
+  ]
+}

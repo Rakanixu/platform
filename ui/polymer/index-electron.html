@@ -1,0 +1,97 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+        <title>Kazoup</title>
+        <meta name="description" content="Kazoup">
+
+        <link rel="icon" href="/images/favicon.ico">
+
+        <!-- See https://goo.gl/OOhYW5 -->
+        <link rel="manifest" href="/manifest.json">
+
+        <!-- See https://goo.gl/qRE0vM -->
+        <meta name="theme-color" content="#21a9f5">
+
+        <!-- Add to homescreen for Chrome on Android. Fallback for manifest.json -->
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="application-name" content="Kazoup">
+
+        <!-- Add to homescreen for Safari on iOS -->
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="Kazoup">
+
+        <!-- Homescreen icons -->
+        <link rel="apple-touch-icon" href="/images/manifest/kazoup-logo-54.png">
+        <link rel="apple-touch-icon" sizes="160x160" href="/images/manifest/kazoup-logo-160.png">
+
+        <!-- Tile icon for Windows 8 -->
+        <meta name="msapplication-TileImage" content="/images/manifest/kazoup-logo-160.png">
+        <meta name="msapplication-TileColor" content="#21a9f5">
+        <meta name="msapplication-tap-highlight" content="no">
+
+        <script>
+            // In renderer process (web page).
+            const electron = require('electron');
+            const {ipcRenderer} = electron;
+
+            document.addEventListener('DOMContentLoaded', boot);
+
+            function boot() {
+
+            }
+        </script>
+
+        <script>
+            (function(){var w=window;var ic=w.Intercom;if(typeof ic==="function"){ic('reattach_activator');ic('update',intercomSettings);}else{var d=document;var i=function(){i.c(arguments)};i.q=[];i.c=function(args){i.q.push(args)};w.Intercom=i;function l(){var s=d.createElement('script');s.type='text/javascript';s.async=true;
+                s.src='https://widget.intercom.io/widget/{app_id}';
+                var x=d.getElementsByTagName('script')[0];x.parentNode.insertBefore(s,x);}if(w.attachEvent){w.attachEvent('onload',l);}else{w.addEventListener('load',l,false);}}})()
+        </script>
+
+        <script>
+            // Setup environment
+            window.appEnvironment = 'electronApp';
+
+            // Setup Polymer options
+            window.Polymer = {
+                dom: 'shadow',
+                lazyRegister: true
+            };
+
+            // Load pre-caching Service Worker
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                    navigator.serviceWorker.register(electron.remote.app.getAppPath() + '/service-worker.js');
+                });
+            }
+        </script>
+
+        <link rel="import" href="src/kazoup-app.html">
+
+        <style>
+            body {
+                margin: 0;
+                font-family: 'Roboto', 'Noto', sans-serif;
+                line-height: 1.5;
+                min-height: 100vh;
+                background-color: #eeeeee;
+            }
+        </style>
+    </head>
+    <body>
+        <kazoup-app></kazoup-app>
+    </body>
+</html>
