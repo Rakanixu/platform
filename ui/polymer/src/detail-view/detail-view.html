@@ -19,7 +19,8 @@
     <template is="dom-if" if="[[!item.is_dir]]" restamp="true">
       <template is="dom-if" if="[[isImage(item.category)]]" restamp="true">
         <template is="dom-if" if="[[!isGmail(item.file_type)]]">
-          <iron-image src="[[endpoints.web]]/media/preview?user_id=[[md5UserId]]&file_id=[[item.id]]&width=600&mode=fit&quality=100&token=[[getToken()]]"
+          <iron-image id="detailImg"
+                      src="[[endpoints.web]]/media/preview?user_id=[[md5UserId]]&file_id=[[item.id]]&width=600&mode=fit&quality=100&token=[[getToken()]]"
                       sizing="contain"
                       placeholder="[[imports.unknownImg]]"
                       preload
@@ -333,9 +334,9 @@
           }
 
           this.async(function() {
-            if (document.querySelector('detail-view iron-image')) {
-              var height = document.querySelector('detail-view iron-image').getBoundingClientRect().width / (16/9)
-              document.querySelector('detail-view iron-image').style.height = height + 'px';
+            if (this.$$('#detailImg')) {
+              var height = this.$$('#detailImg').getBoundingClientRect().width / (16/9)
+              this.$$('#detailImg').style.height = height + 'px';
             }
           }, 250);
         },
@@ -411,7 +412,7 @@
           });
         },
         getMoreInfoFromSlack: function() {
-          var slackInfoEl = document.querySelector('#slackChannelInfo');
+          var slackInfoEl = this.$$('#slackChannelInfo');
 
           this.rpcSearchSlackUsersParams.request.id = this.item.original.user;
           this.rpcSearchSlackChannelsParams.request.id = this.item.original.channels[0];

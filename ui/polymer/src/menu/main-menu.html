@@ -32,14 +32,14 @@
 
               <paper-icon-item on-tap="setPathWithParams"
                                data-path="/u/search"
-                               data-params$='{"index":"[[md5UserId]]"}'>
+                               data-params$='{"index":"[[md5UserId]]","term":""}'>
                 <iron-icon icon="icons:home" item-icon></iron-icon>My Files
               </paper-icon-item>
 
               <template is="dom-repeat" items="[[datasourceResults]]">
                 <paper-icon-item on-tap="setPathWithParams"
                                  data-path="/u/search"
-                                 data-params$='{"index":"[[item.index]]"}'>
+                                 data-params$='{"index":"[[item.index]]","term":""}'>
                   <iron-icon icon="[[getDatasourceIcon(item.url)]]" item-icon></iron-icon>[[getDatasourcePrettyType(item.url)]]
                 </paper-icon-item>
                 <paper-tooltip for="datasource[[item.id]]">[[getDatasourceUrl(item.url)]]</paper-tooltip>
@@ -49,25 +49,25 @@
 
               <paper-icon-item on-tap="setPathWithParams"
                                data-path="/u/search"
-                               data-params$='{"category":"[[categoriesMap.documents]]","index":"[[md5UserId]]"}'>
+                               data-params$='{"category":"[[categoriesMap.documents]]","index":"[[md5UserId]]","term":""}'>
                 <iron-icon icon="editor:insert-drive-file" item-icon></iron-icon>Documents
               </paper-icon-item>
 
               <paper-icon-item on-tap="setPathWithParams"
                                data-path="/u/search"
-                               data-params$='{"category":"[[categoriesMap.videos]]","index":"[[md5UserId]]"}'>
+                               data-params$='{"category":"[[categoriesMap.videos]]","index":"[[md5UserId]]","term":""}'>
                 <iron-icon icon="av:movie" item-icon></iron-icon>Movies
               </paper-icon-item>
 
               <paper-icon-item on-tap="setPathWithParams"
                                data-path="/u/search"
-                               data-params$='{"category":"[[categoriesMap.images]]","index":"[[md5UserId]]"}'>
+                               data-params$='{"category":"[[categoriesMap.images]]","index":"[[md5UserId]]","term":""}'>
                 <iron-icon icon="image:camera-alt" item-icon></iron-icon>Pictures
               </paper-icon-item>
 
               <paper-icon-item on-tap="setPathWithParams"
                                data-path="/u/search"
-                               data-params$='{"category":"[[categoriesMap.audios]]","index":"[[md5UserId]]"}'>
+                               data-params$='{"category":"[[categoriesMap.audios]]","index":"[[md5UserId]]","term":""}'>
                 <iron-icon icon="image:audiotrack" item-icon></iron-icon>Audio
               </paper-icon-item>
 
@@ -179,6 +179,19 @@
                 break;
             }
           }
+        },
+        ready: function() {
+          window.addEventListener('main-menu-open', function() {
+            this.$.navDrawerPanel.openDrawer();
+          }.bind(this));
+
+          window.addEventListener('main-menu-close', function() {
+            this.$.navDrawerPanel.closeDrawer();
+          }.bind(this))
+
+          window.addEventListener('refresh-datasources', function() {
+            this.refreshDatasources();
+          }.bind(this));
         },
         init: function() {
           this.md5UserId = Auth.getMD5UserId();

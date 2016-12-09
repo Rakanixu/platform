@@ -545,6 +545,10 @@
                             this.checkBreadcrumbsView(0);
                     }.bind(this), 300);
                 }.bind(this));
+
+                window.addEventListener('refresh-search', function(e) {
+                    this.refreshSearch(e.detail);
+                }.bind(this));
             },
             init: function(e) {
                 this.headers = Auth.getHeaders();
@@ -827,11 +831,13 @@
                 }, 10);
             },
             clearSelectedItemStyling: function() {
-                if (document.querySelectorAll('html /deep/ .selected-item')) {
-                    _.forEach(document.querySelectorAll('html /deep/ .selected-item'), function(el) {
-                        el.classList.remove('selected-item');
-                    });
-                }
+                try{
+                    if (document.querySelectorAll('html /deep/ .selected-item')) {
+                        _.forEach(document.querySelectorAll('html /deep/ .selected-item'), function(el) {
+                            el.classList.remove('selected-item');
+                        });
+                    }
+                } catch(e) {}
             }
         });
     }()); 

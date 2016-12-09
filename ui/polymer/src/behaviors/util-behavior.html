@@ -38,14 +38,11 @@
 
     Polymer.UtilBehaviorImp = {
       openMenu: function() {
-        document.querySelector('kazoup-app')
-          .root.querySelector('main-menu')
-          .root.querySelector('#navDrawerPanel').openDrawer();
+        window.dispatchEvent(new Event('main-menu-open'));
+
       },
       closeMenu: function() {
-        document.querySelector('kazoup-app')
-          .root.querySelector('main-menu')
-          .root.querySelector('#navDrawerPanel').closeDrawer();
+        window.dispatchEvent(new Event('main-menu-close'));
       },
       openFile: function(url) {
         if (window && window.process && window.process.type) {
@@ -217,12 +214,6 @@
           case 'gmail':
             return 'kazoup:gmail';
             break;
-        }
-      },
-      isSpinnerActive: function(item) {
-        if (document.querySelector('#spinner' + item.id)) {
-          // crawler_running can be true or undefined
-          document.querySelector('#spinner' + item.id).active = (item.crawler_running) ? true : false;
         }
       },
       crawlerRunningMsg: function(datasource) {

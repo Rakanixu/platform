@@ -39,6 +39,10 @@
           if (uId && uId.length > 0) {
             this.init(uId);
           }
+
+          window.addEventListener('init-notify-messages', function(e) {
+            this.init(e.detail.user_id);
+          }.bind(this))
         },
         init: function(userId) {
           this.$.socket.open();
@@ -71,22 +75,10 @@
               }
 
               this.async(function() {
-                var searchPage = document.querySelector('kazoup-app').shadowRoot
-                  .querySelector('main-menu').shadowRoot
-                  .querySelector('search-page');
+                // refresh-search
+                // refresh-datasources
+                window.dispatchEvent(new CustomEvent(e.detail.method, data));
 
-                var mainMenu = document.querySelector('kazoup-app').shadowRoot
-                  .querySelector('main-menu');
-
-                // refreshSearch
-                if (searchPage[e.detail.method]) {
-                  searchPage[e.detail.method](data);
-                }
-
-                // refreshDatasources
-                if (mainMenu[e.detail.method]) {
-                  mainMenu[e.detail.method](data);
-                }
               }, 1200);
             }
           // Get connected state from server and send UserId

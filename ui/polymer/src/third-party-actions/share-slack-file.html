@@ -245,9 +245,6 @@
               // this.notifyPath('item.original.public_url_shared', true);
               // Workaround, set attrs in top parent element
               if (e.detail.response.public_url) {
-                document.querySelector('web-app').set('item.original.permalink_public', e.detail.response.public_url);
-                document.querySelector('web-app').set('item.original.public_url_shared', true);
-
                 this.$.toast.text = 'Public file link available.';
                 this.$.toast.show();
               } else {
