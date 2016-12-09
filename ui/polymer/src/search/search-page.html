@@ -831,11 +831,13 @@
                 }, 10);
             },
             clearSelectedItemStyling: function() {
-                if (document.querySelectorAll('html /deep/ .selected-item')) {
-                    _.forEach(document.querySelectorAll('html /deep/ .selected-item'), function(el) {
-                        el.classList.remove('selected-item');
-                    });
-                }
+                try{
+                    if (document.querySelectorAll('html /deep/ .selected-item')) {
+                        _.forEach(document.querySelectorAll('html /deep/ .selected-item'), function(el) {
+                            el.classList.remove('selected-item');
+                        });
+                    }
+                } catch(e) {}
             }
         });
     }()); 
