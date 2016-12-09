@@ -25,7 +25,8 @@
       Polymer({
         is: 'scheduler-client',
         behaviors: [
-          Polymer.EndpointsBehaviorImp
+          Polymer.EndpointsBehaviorImp,
+          Polymer.MapBehaviorImp
         ],
         properties: {
           rpcStartScanAllParams: {
@@ -51,7 +52,7 @@
             this.terminateWorker();
 
             this.headers = Auth.getHeaders();
-            this.worker = new Worker('/src/scheduler/scheduler-worker.js');
+            this.worker = new Worker(this.imports.schedulerWorker);
 
             this.worker.addEventListener('message', function(e) {
               if (e.data.scan_datasources && e.data.scan_datasources.length > 0) {

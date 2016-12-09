@@ -194,7 +194,7 @@
                                                 <iron-image background="[[documentType(item.name, item.original)]]"
                                                             class="primary image"
                                                             sizing="cover"
-                                                            placeholder="/src/static/unknown-video.png"
+                                                            placeholder="[[imports.unknownVideo]]"
                                                             src$="[[endpoints.web]]/media/preview?user_id=[[md5UserId]]&file_id=[[item.id]]&width=128&height=128&mode=fit&quality=50&token=[[getToken()]]"
                                                             preload
                                                             fade></iron-image>
@@ -235,7 +235,7 @@
                                         <div class="photoContent" tabindex$="[[tabIndex]]" on-tap="mainAction">
                                             <iron-image sizing="cover"
                                                         src$="[[endpoints.web]]/media/thumbnail?index=[[item.index]]&original_file_id=[[item.original.id]]"
-                                                        placeholder="/src/static/unknown-img.jpg"
+                                                        placeholder="[[imports.unknownImg]]"
                                                         preload
                                                         fade>
                                                 <mat-ripple></mat-ripple>

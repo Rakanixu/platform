@@ -29,6 +29,14 @@
             };
           }
         },
+        imports: {
+          type: Object,
+          notify: false,
+          value: function() {
+            // Different imports for Electron or web app
+            return window[window.appEnvironment];
+          }
+        },
         pagesMap: {
           type: Object,
           notify: false,

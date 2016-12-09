@@ -21,7 +21,7 @@
         <template is="dom-if" if="[[!isGmail(item.file_type)]]">
           <iron-image src="[[endpoints.web]]/media/preview?user_id=[[md5UserId]]&file_id=[[item.id]]&width=600&mode=fit&quality=100&token=[[getToken()]]"
                       sizing="contain"
-                      placeholder="/src/static/unknown-img.jpg"
+                      placeholder="[[imports.unknownImg]]"
                       preload
                       fade></iron-image>
         </template>

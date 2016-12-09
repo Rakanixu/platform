@@ -11,15 +11,16 @@
         text-decoration: inherit;
       }
 
-      .left-menu {
-        background-image: url("/src/static/menu-background.jpg"), radial-gradient(#ffb837 , #f13c0d );
+      paper-toolbar {
+        background: radial-gradient(#ffb837, #f13c0d);
       }
+
     </style>
 
     <paper-drawer-panel id="navDrawerPanel" responsive-width="1280px">
       <!-- Nav Content -->
       <div class="nav" drawer>
-        <paper-toolbar class="medium-tall left-menu">
+        <paper-toolbar class="medium-tall" style="background-image: url([[imports.menuBackground]])">
           <mat-avatar icon-src="[[profile.picture]]"></mat-avatar>
           <mat-item class="bottom light username"
                     label="[[profile.name]]"></mat-item>
