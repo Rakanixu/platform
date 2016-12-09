@@ -19,7 +19,7 @@
       getToken: function() {
         return localStorage.getItem('token');
       },
-      checkUnauthorize: function() {
+      checkUnauthorize: function(event) {
         // Unauthorize
         if (event.detail.request.xhr.response && event.detail.request.xhr.response.code === 401) {
           localStorage.removeItem('token');

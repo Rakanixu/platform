@@ -64,9 +64,9 @@ window.Auth = (function() {
       };
       window.Intercom('update', window.intercomSettings);
 
-      document.querySelector('kazoup-app').shadowRoot
-        .querySelector('main-menu').shadowRoot
-        .querySelector('notify-messages').init(_profile.user_id);
+      window.dispatchEvent(new CustomEvent('init-notify-messages', {
+        detail: _profile
+      }));
 
       localStorage.setItem('id_token', authResult.idToken);
 

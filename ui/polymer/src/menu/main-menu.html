@@ -180,6 +180,19 @@
             }
           }
         },
+        ready: function() {
+          window.addEventListener('main-menu-open', function() {
+            this.$.navDrawerPanel.openDrawer();
+          }.bind(this));
+
+          window.addEventListener('main-menu-close', function() {
+            this.$.navDrawerPanel.closeDrawer();
+          }.bind(this))
+
+          window.addEventListener('refresh-datasources', function() {
+            this.refreshDatasources();
+          }.bind(this));
+        },
         init: function() {
           this.md5UserId = Auth.getMD5UserId();
           this.headers = Auth.getHeaders();

@@ -116,9 +116,6 @@
             this.closeShareFileDialog();
 
             if (e.detail.response.public_url) {
-              document.querySelector('web-app').set('item.original.shared_link.url', e.detail.response.public_url);
-              document.querySelector('detail-view').set('boxInfo.shared_link', e.detail.response.public_url);
-
               this.$.toast.text = 'Public file link available.';
               this.$.toast.show();
             }

@@ -320,18 +320,16 @@
           this.set('loading', false);
           this.$.toast.text = 'Datasource deleted succesfully';
           this.$.toast.show();
-          this.async(
-            document.querySelector('kazoup-app').shadowRoot.querySelector('main-menu').refreshDatasources
-              .bind(document.querySelector('kazoup-app').shadowRoot.querySelector('main-menu')),
-            1000
-          );
+
+          this.async(function() {
+            window.dispatchEvent(new Event('refresh-datasources'));
+          }, 1000);
         },
         _handleAddDatasource: function(e) {
           if (e.detail.response) {
             this.closeDatasourceDialog();
             this.$.toast.text = 'New datasource created succesfully';
             this.$.toast.show();
-            this.setMenuHeight.call(document.querySelector('settings-page'));
             this.async(this.init, 1000);
           }
         },
