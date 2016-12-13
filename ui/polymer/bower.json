@@ -56,7 +56,8 @@
     "mat-menu": "^0.10.0",
     "app-route": "PolymerElements/app-route#^0.9.3",
     "app-layout": "PolymerElements/app-layout#^0.10.6",
-    "iron-component-page": "PolymerElements/iron-component-page#^1.1.7"
+    "iron-component-page": "PolymerElements/iron-component-page#^1.1.7",
+    "auth0-lock": "^10.7.2"
   },
   "resolutions": {
     "polymer": "^1.7.0"
