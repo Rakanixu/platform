@@ -556,7 +556,11 @@
             },
             _handleFilterChanged: function(e) {
                 this.refreshBreadcrumbs();
-                this.search();
+
+                // Fire search when search-page is active
+                if (!_.isEmpty(this.route) && this.route.path === this.pagesMap.search.path) {
+                    this.search();
+                }
             },
             _handleScroll: function(e) {
                 if (!this.$.rpcElastic.loading) {
