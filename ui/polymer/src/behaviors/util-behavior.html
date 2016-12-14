@@ -310,7 +310,7 @@
         return this.isBox(fileType) || this.isDropbox(fileType) || this.isOneDrive(fileType) || this.isGoogleDrive(fileType);
       },
       profilePicture: function(url) {
-        return (url && url.length) ? url : '../app/src/static/unknown-pic-profile.gif';
+        return (url && url.length) ? url : '/src/static/unknown-pic-profile.gif';
       },
       getGravatarUrl: function(mail) {
         return 'https://www.gravatar.com/avatar/' + new Hashes.MD5().hex(mail) + '?d=identicon'
