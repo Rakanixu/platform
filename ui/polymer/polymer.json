@@ -1,0 +1,21 @@
+{
+  "entrypoint": "index.html",
+  "shell": "src/kazoup-app.html",
+  "fragments": [
+    "src/auth0/login-auth0.html",
+    "src/onboarding/onboarding-page.html",
+    "src/menu/main-menu.html"
+  ],
+  "sourceGlobs": [
+    "src/**/*",
+    "images/**/*",
+    "bower.json"
+  ],
+  "includeDependencies": [
+    "manifest.json",
+    "bower_components/webcomponentsjs/webcomponents-lite.min.js",
+    "bower_components/qwest/qwest.min.js",
+    "bower_components/jshashes/hashes.min.js",
+    "bower_components/filesize/lib/filesize.min.js"
+  ]
+}

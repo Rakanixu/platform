@@ -1,0 +1,111 @@
+<link rel="import" href="../../bower_components/l2t-paper-slider/l2t-paper-slider.html">
+<dom-module id="onboarding-page">
+  <style is="custom-style" include="iron-flex iron-positioning iron-flex-alignment"></style>
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      l2t-paper-slider {
+        --paper-slide-height: 100%;
+      }
+
+      l2t-paper-slider paper-slide iron-image {
+        height: 60%;
+        width:80%;
+        margin:auto;
+        display: block;
+      }
+
+      l2t-paper-slider paper-slide h1,
+      l2t-paper-slider paper-slide p,
+      l2t-paper-slider paper-slide div {
+        text-align: center;
+      }
+
+      l2t-paper-slider paper-slide paper-button {
+        background-color: rgba(255,255,255,1);
+      }
+
+      h1 {
+        font-size:28px;
+        line-height:32px;
+        color: rgba(255,255,255,1);
+        font-weight:400;
+        padding-top:14px;
+      }
+
+      p {
+        font-size:15px;
+        line-height:24px;
+        padding-bottom:24px;
+        color: rgba(255,255,255,0.9);
+        font-weight:200;
+      }
+
+      .blue {
+        background-color:#2196F3;
+      }
+    </style>
+
+    <l2t-paper-slider total-slides="3" class="fit">
+      <paper-slide class="blue">
+        <iron-image sizing="contain"
+                    src="https://storage.googleapis.com/app.kazoup.io/find_files.svg"></iron-image>
+        <h1>Find files, anywhere</h1>
+        <p>Putting cloud files at your fingertips.</p>
+        <div>
+          <paper-button raised on-tap="goToApp">Get started</paper-button>
+        </div>
+      </paper-slide>
+      <paper-slide class="blue">
+        <iron-image sizing="contain"
+                    src="https://storage.googleapis.com/app.kazoup.io/share_files.svg"></iron-image>
+        <h1>Share files with anyone</h1>
+        <p>Share your files quickly anywhere.</p>
+        <div>
+          <paper-button raised on-tap="goToApp">Get started</paper-button>
+        </div>
+      </paper-slide>
+      <paper-slide class="blue">
+        <iron-image sizing="contain"
+                    src="https://storage.googleapis.com/app.kazoup.io/save_files.svg"></iron-image>
+        <h1>Save files anywhere</h1>
+        <p>Create and protect files anywhere.</p>
+        <div>
+          <paper-button raised on-tap="goToApp">Get started</paper-button>
+        </div>
+      </paper-slide>
+      
+    </l2t-paper-slider>
+  </template>
+  <script>
+    (function() {
+      'use strict';
+
+      Polymer({
+        is: 'onboarding-page',
+        behaviors: [
+          Polymer.MapBehaviorImp
+        ],
+        observers: [
+          '_route(route.path)'
+        ],
+        _route: function(path) {
+          if (path === this.pagesMap.onboarding.path || path === this.pagesMap.root.path) {
+            if (localStorage.getItem('show_onboarding') == 'false') {
+              this.async(function() {
+                this.set('route.path', this.pagesMap.login.path);
+              });
+            }
+          }
+        },
+        goToApp: function() {
+          localStorage.setItem('show_onboarding', 'false');
+          this.set('route.path', this.pagesMap.login.path);
+        }
+      })
+    }());
+  </script>
+</dom-module>

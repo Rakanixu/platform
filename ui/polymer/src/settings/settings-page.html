@@ -1,0 +1,108 @@
+<dom-module id="settings-page">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+
+      paper-header-panel {
+        -webkit-app-region: drag;
+        --paper-header-panel-shadow: {
+          height: 0;
+        }
+      }
+
+      paper-header-panel[drawer] paper-toolbar {
+        --paper-toolbar-background: var(--dark-primary);
+      }
+
+      paper-toolbar mat-text-field {
+        margin-top: 16px;
+      }
+
+      paper-tabs {
+        --paper-tabs-selection-bar-color: var(--accent);
+      }
+    </style>
+
+    <paper-drawer-panel id="mainDrawerPanel"
+                        responsive-width="99999px"
+                        disable-swipe="true"
+                        right-drawer main>
+      <paper-header-panel id="mainPaperHeaderPanel" class="list-panel main" main>
+
+        <!-- List Toolbar -->
+        <paper-toolbar class="medium-tall">
+          <paper-icon-button icon="menu"
+                             on-tap="openMenu"
+                             hidden$="[[mediaQueryLarge]]"></paper-icon-button>
+
+          <div class="flex horizontal layout">
+            <div class="title flex">Settings</div>
+          </div>
+
+          <paper-tabs class="middle horizontal layout fit" selected="{{selectedTab}}" scrollable>
+            <paper-tab class="flex">DATA SOURCES</paper-tab>
+          </paper-tabs>
+
+          <paper-progress id="progressBar"
+                          class="middle fit"
+                          hidden$="[[!loading]]"
+                          indeterminate></paper-progress>
+        </paper-toolbar>
+
+        <!-- Search results -->
+        <div class="vertical layout center-justified" style="height:100%;">
+          <neon-animated-pages id="neonPages"
+                               selected="[[selectedTab]]">
+            <neon-animatable>
+              <datasources-page id="datasources" datasources-results="{{datasourceResults}}"></datasources-page>
+            </neon-animatable>
+          </neon-animated-pages>
+        </div>
+
+      </paper-header-panel>
+    </paper-drawer-panel>
+
+    <paper-toast id="toast" text=""></paper-toast>
+
+    <iron-media-query query="(min-width: 1281px)"
+                      query-matches="{{mediaQueryLarge}}"></iron-media-query>
+
+  </template>
+
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'settings-page',
+        behaviors: [
+          Polymer.UtilBehaviorImp,
+          Polymer.MapBehaviorImp
+        ],
+        properties: {
+          loading: {
+            type: Boolean,
+            notify: true,
+            value: false
+          },
+          selectedTab: {
+            type: Object,
+            notify: false,
+            value: -1
+          }
+        },
+        observers: [
+          '_route(subroute.path)'
+        ],
+        _route: function(path) {
+          if (path === this.pagesMap.settings.subpath) {
+            this.set('selectedTab', 0);
+          }
+        }
+      });
+    }());
+  </script>
+</dom-module>

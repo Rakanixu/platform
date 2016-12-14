@@ -1,0 +1,237 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/app-route/app-location.html">
+<link rel="import" href="../bower_components/app-layout/app-drawer-layout/app-drawer-layout.html">
+<link rel="import" href="../bower_components/app-layout/app-header/app-header.html">
+<link rel="import" href="../bower_components/app-layout/app-header-layout/app-header-layout.html">
+<link rel="import" href="../bower_components/app-layout/app-scroll-effects/app-scroll-effects.html">
+<link rel="import" href="../bower_components/app-layout/app-toolbar/app-toolbar.html">
+<link rel="import" href="../bower_components/app-route/app-location.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+
+<link rel="import" href="../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../bower_components/iron-icons/av-icons.html">
+<link rel="import" href="../bower_components/iron-icons/device-icons.html">
+<link rel="import" href="../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../bower_components/iron-media-query/iron-media-query.html">
+
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-drawer-panel/paper-drawer-panel.html">
+<link rel="import" href="../bower_components/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../bower_components/paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../bower_components/paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../bower_components/paper-progress/paper-progress.html">
+<link rel="import" href="../bower_components/paper-spinner/paper-spinner.html">
+<link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="../bower_components/paper-fab/paper-fab.html">
+
+<link rel="import" href="../bower_components/web-socket/web-socket.html">
+<link rel="import" href="../bower_components/l2t-paper-slider/l2t-paper-slider.html">
+<link rel="import" href="../bower_components/neon-animation/neon-animated-pages.html">
+
+<link rel="import" href="../bower_components/mat-icon/mat-icon.html">
+<link rel="import" href="../bower_components/mat-icons/mat-icons.html">
+<link rel="import" href="../bower_components/mat-icons/hardware-icons.html">
+<link rel="import" href="../bower_components/mat-icons/action-icons.html">
+<link rel="import" href="../bower_components/mat-icons/image-icons.html">
+<link rel="import" href="../bower_components/mat-icon-button/mat-icon-button.html">
+<link rel="import" href="../bower_components/mat-menu/mat-menu.html">
+<link rel="import" href="../bower_components/mat-dialog/mat-dialog.html">
+<link rel="import" href="../bower_components/mat-avatar/mat-avatar.html">
+<link rel="import" href="../bower_components/mat-item/mat-item.html">
+<link rel="import" href="../bower_components/mat-list/mat-list.html">
+<link rel="import" href="../bower_components/mat-text-field/mat-text-field.html">
+<link rel="import" href="../bower_components/mat-ripple/mat-ripple.html">
+<link rel="import" href="../bower_components/mat-divider/mat-divider.html">
+<link rel="import" href="../bower_components/mat-breadcrumb/mat-breadcrumb.html">
+<link rel="import" href="../bower_components/mat-breadcrumb/mat-breadcrumb-step.html">
+<link rel="import" href="../bower_components/mat-toast/mat-toast.html">
+<link rel="import" href="../bower_components/mat-typography/mat-typography.html">
+<link rel="import" href="../bower_components/mat-ink/mat-ink.html">
+<link rel="import" href="../bower_components/mat-button/mat-button.html">
+<link rel="import" href="../bower_components/mat-raised-button/mat-raised-button.html">
+<link rel="import" href="../bower_components/mat-snackbar/mat-snackbar.html">
+
+<script src="../src/static/lock.min.js"></script>
+<script src="../src/static/auth.js"></script>
+<script src="../src/static/imports-map.js"></script>
+<script src="../bower_components/qwest/qwest.min.js"></script>
+<script src="../bower_components/jshashes/hashes.min.js"></script>
+<script src="../bower_components/filesize/lib/filesize.min.js"></script>
+
+<link rel="import" href="../src/styles/theme.html">
+<link rel="import" href="../src/styles/shared-styles.html">
+<link rel="import" href="../src/kazoup-icons/kazoup-icons.html">
+<link rel="import" href="../src/behaviors/util-behavior.html">
+<link rel="import" href="../src/behaviors/endpoints-behavior.html">
+<link rel="import" href="../src/behaviors/map-behavior.html">
+<link rel="import" href="../src/time/time-ago.html">
+<link rel="import" href="../src/empty-state/empty-state.html">
+<link rel="import" href="../src/filter-converter/filter-converter.html">
+
+<link rel="import" href="../src/sockets/notify-messages.html">
+<link rel="import" href="../src/sockets/check-connection.html">
+<link rel="import" href="../src/datasources/datasources-page.html">
+<link rel="import" href="../src/detail-view/detail-view.html">
+<link rel="import" href="../src/third-party-actions/share-slack-file.html">
+<link rel="import" href="../src/third-party-actions/share-google-drive-file.html">
+<link rel="import" href="../src/third-party-actions/share-one-drive-file.html">
+<link rel="import" href="../src/third-party-actions/share-dropbox-file.html">
+<link rel="import" href="../src/third-party-actions/share-box-file.html">
+<link rel="import" href="../src/third-party-actions/delete-file.html">
+<link rel="import" href="../src/third-party-actions/create-file.html">
+<link rel="import" href="../src/scheduler/scheduler-client.html">
+<link rel="import" href="../src/search/search-page.html">
+<link rel="import" href="../src/settings/settings-page.html">
+
+
+<dom-module id="kazoup-app">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+
+      app-header {
+        color: #fff;
+        background-color: var(--app-primary-color);
+      }
+
+      app-header paper-icon-button {
+        --paper-icon-button-ink-color: white;
+      }
+    </style>
+
+    <app-location route="{{route}}" query-params="{{queryParams}}"></app-location>
+    <app-route route="{{route}}" pattern="/:page" data="{{routeData}}" tail="{{subroute}}"></app-route>
+    <app-route route="{{subroute}}" pattern="/:subpage" query-params="{{queryParams}}"></app-route>
+
+    <app-drawer-layout fullbleed>
+      <app-header-layout has-scrolling-region>
+        <iron-pages selected="{{page}}" attr-for-selected="name" fallback-selection="my-view404" role="main">
+          <onboarding-page route="{{route}}" subroute="{{subroute}}" name="onboarding"></onboarding-page>
+          <login-auth0 route="{{route}}" subroute="{{subroute}}" name="login"></login-auth0>
+          <main-menu route="{{route}}" subroute="{{subroute}}" query-params="{{queryParams}}" name="u"></main-menu>
+        </iron-pages>
+      </app-header-layout>
+    </app-drawer-layout>
+
+    <check-connection></check-connection>
+  </template>
+  <script>
+    'use strict';
+
+    (function() {
+      window.Endpoints = (function() {
+        return {
+          endpoint: 'https://web.kazoup.io:8082/rpc',
+          web: 'https://web.kazoup.io:8082',
+          socket: 'wss://web.kazoup.io:8082',
+          srvs:{
+            crawler: {
+              srv: 'com.kazoup.srv.crawler',
+              search: 'Crawler.Search'
+            },
+            datasource: {
+              srv: 'com.kazoup.srv.datasource',
+              create: 'DataSource.Create',
+              delete: 'DataSource.Delete',
+              search: 'DataSource.Search',
+              scan: 'DataSource.Scan',
+              scanAll: 'DataSource.ScanAll'
+            },
+            db: {
+              srv: 'com.kazoup.srv.db',
+              create: 'DB.Create',
+              createIndex: 'DB.CreateIndex',
+              delete: 'DB.Delete',
+              read: 'DB.Read',
+              search: 'DB.Search',
+              searchById: 'DB.SearchById',
+              status: 'DB.Status',
+              update: 'DB.Update'
+            },
+            search: {
+              srv: 'com.kazoup.srv.search',
+              search: 'Search.Search',
+              aggregate: 'Search.Aggregate'
+            },
+            file: {
+              srv: 'com.kazoup.srv.file',
+              create: 'File.Create',
+              delete: 'File.Delete',
+              share: 'File.Share'
+            }
+          }
+        };
+      }());
+
+      Polymer({
+        is: 'kazoup-app',
+        behaviors: [
+          Polymer.MapBehaviorImp
+        ],
+        properties: {
+          page: {
+            type: String,
+            reflectToAttribute: true,
+            notify: true,
+            observer: '_pageChanged'
+          }
+        },
+        observers: [
+          '_routePageChanged(routeData.page)',
+          '_routePathChanged(route.path)'
+        ],
+        _routePageChanged: function(page) {
+          this.page = page || 'onboarding';
+        },
+        _routePathChanged: function(path) {
+          var validRoute = false;
+
+          // Handle not found
+          _.forOwn(this.pagesMap, function(val, key) {
+            if (val.path === path) {
+              validRoute = true;
+              return;
+            }
+          }.bind(this));
+
+          if (!validRoute) {
+            this.set('route.path', this.pagesMap.search.path);
+          }
+        },
+        _pageChanged: function(page) {
+          if (this.pagesMap[page]) {
+            page = this.pagesMap[page].page;
+          }
+
+          // Load page import on demand. Show 404 page if fails
+          var resolvedPageUrl = this.resolveUrl(page + '.html');
+          this.importHref(resolvedPageUrl, null, null, true);
+        },
+        routeTo: function(path, params) {
+          this.set('route.path', path);
+          this.set('queryParams', params);
+        }
+      });
+    })();
+  </script>
+</dom-module>

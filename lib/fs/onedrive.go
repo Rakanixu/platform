@@ -14,6 +14,7 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/image"
 	"github.com/kazoup/platform/lib/onedrive"
+	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -218,6 +219,14 @@ func (ofs *OneDriveFs) DeleteFile(ctx context.Context, c client.Client, rq file_
 	rsp := &db_proto.DeleteResponse{}
 	if err := c.Call(ctx, req, rsp); err != nil {
 		return nil, err
+	}
+
+	// Publish notification topic, let client know when to refresh itself
+	if err := c.Publish(globals.NewSystemContext(), c.NewPublication(globals.NotificationTopic, &notification_proto.NotificationMessage{
+		Method: globals.NOTIFY_REFRESH_SEARCH,
+		UserId: ofs.Endpoint.UserId,
+	})); err != nil {
+		log.Print("Publishing (notify file) error %s", err)
 	}
 
 	return &file_proto.DeleteResponse{}, nil

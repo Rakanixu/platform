@@ -1,0 +1,851 @@
+<dom-module id="search-page">
+    <template>
+        <style include="iron-flex iron-flex-alignment"></style>
+        <style include="shared-styles">
+            :host {
+                display: block;
+            }
+
+            paper-header-panel {
+                -webkit-app-region: drag;
+                --paper-header-panel-shadow: {
+                    height: 0;
+                }
+            }
+
+            paper-header-panel[drawer] paper-toolbar {
+                --paper-toolbar-background: var(--dark-primary);
+            }
+
+            paper-toolbar mat-text-field {
+                margin-top: 16px;
+            }
+
+            .lists-container {
+                height: 100%;
+            }
+
+            .info {
+                height:78px;
+                opacity: 0.65;
+                padding-right: 8px;
+            }
+
+            .prepopulated mat-item div.body {
+                background: gray;
+                border-radius: 12px;
+            }
+
+            .breadcrumbs {
+                margin-left: 60px;
+                font-family: 'Roboto', 'Noto', sans-serif;
+                -webkit-font-smoothing: antialiased;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                font-size: 20px;
+                font-weight: 400;
+                line-height: 1.2;
+                pointer-events: none;
+                -ms-flex: 1 1 0.000000001px;
+                -webkit-flex: 1;
+                flex: 1;
+                -webkit-flex-basis: 0.000000001px;
+                flex-basis: 0.000000001px;
+            }
+
+            #noFitBreadcrumbs {
+                margin-left: 40px;
+            }
+
+            #noFitBreadcrumbs mat-item mat-avatar {
+                background-color: #21a9f5;
+                pointer-events: none;
+                margin: 0 0 0 -12px;
+            }
+
+            .photoContent {
+                @apply(--layout);
+                position: relative;
+                width: 178px;
+                height: 178px;
+                margin: 1px;
+                background: white;
+                cursor: pointer;
+            }
+
+            .photoContainer:hover .detail {
+                background:rgba(0,0,0,0.6);
+            }
+
+            .photoContent > iron-image {
+                @apply(--layout-flex);
+                background: transparent;
+                --iron-image-placeholder: {
+                    background: transparent;
+                };
+            }
+
+            .photoContent > .detail {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background:rgba(0,0,0,0.4);
+                color: white;
+                font-size: 14px;
+                font-weight: 100;
+            }
+
+            .big-video mat-item iron-image {
+                width: 113px;
+                height: 72px;
+            }
+        </style>
+
+        <paper-drawer-panel id="mainDrawerPanel"
+                            responsive-width="960px"
+                            drawer-width="[[_computeListWidth(_isMobile)]]"
+                            narrow="{{_isMobile}}"
+                            force-narrow="[[!itemSelected]]"
+                            disable-swipe="true"
+                            right-drawer main>
+            <paper-header-panel id="mainPaperHeaderPanel" class="list-panel main" main>
+
+                <!-- List Toolbar -->
+                <paper-toolbar class="medium-tall">
+                    <paper-icon-button icon="menu"
+                                       on-tap="openMenu"
+                                       hidden$="[[mediaQueryLarge]]"></paper-icon-button>
+
+                    <div class="flex horizontal layout"
+                         on-tap="toggleSearch"
+                         hidden$="[[searching]]">
+                        <div class="title flex">[[title]]</div>
+                        <mat-icon-button icon="mat:search" color="white" on-tap="closeDetails"></mat-icon-button>
+                    </div>
+
+                    <mat-text-field id="search"
+                                    class="flex"
+                                    label="Search files"
+                                    on-keyup="searchAsYouType"
+                                    hidden$="[[!searching]]"></mat-text-field>
+                    <mat-icon-button id="reset"
+                                     icon="mat:clear"
+                                     on-xp-activate="resetSearch"
+                                     color="white"
+                                     hidden$="[[!searching]]"></mat-icon-button>
+
+                    <create-file query-params="{{queryParams}}"
+                                 datasource-results="{{datasourceResults}}"
+                                 item-selected="{{itemSelected}}"></create-file>
+
+                    <div class="middle breadcrumbs">
+                        <!-- Breadcrumbs while browsing. Breadcrumbs fits into screen -->
+                        <mat-breadcrumb id="fitBreadcrumbs"
+                                        class="browse"
+                                        hidden$="[[!breadcrumbsVisible]]"
+                                        shift="true">
+                            <mat-breadcrumb-step label="My Files"></mat-breadcrumb-step>
+                            <template id="breadcrumbsSteps" is="dom-repeat" items="[[breadcrumbs]]">
+                                <mat-breadcrumb-step label="[[item.label]]"></mat-breadcrumb-step>
+                            </template>
+                        </mat-breadcrumb>
+                    </div>
+
+                    <!-- Mobile breadcrumbs style like. -->
+                    <div id="noFitBreadcrumbs" class="bottom">
+                        <mat-item label="[[lastBreadcrumb.label]]"
+                                  behavior="toggle"
+                                  class="light"
+                                  target="breadcrumbsMenu"
+                                  style="font-size:20px;font-weight:400;">
+                            <mat-avatar class="secondary" icon="mat:arrow-drop-down"></mat-avatar>
+                        </mat-item>
+
+                        <mat-menu id="breadcrumbsMenu" position="baseline">
+                            <mat-option label="My Files"></mat-option>
+                            <template id="breadcrumbsStepsMenu" is="dom-repeat" items="[[breadcrumbs]]">
+                                <mat-option label="[[item.label]]"></mat-option>
+                            </template>
+                        </mat-menu>
+                    </div>
+
+                    <paper-progress id="progressBar"
+                                    class="middle fit"
+                                    hidden$="[[!loading]]"
+                                    indeterminate></paper-progress>
+                </paper-toolbar>
+
+                <div class="lists-container" hidden$="[[emptyState.visible]]">
+                    <!-- Search results -->
+                    <iron-list id="searchList" items="[[searchResults]]" on-scroll="_handleScroll">
+                        <template>
+                            <div class$="[[bigVideoClass]] [[getPrepopulatedClass(item.unknown)]]">
+                            <div class="">
+                                <template is="dom-if" if="[[!view.isGrid]]" restamp="true">
+
+                                    <template is="dom-if" if="[[!isNoVisualMedia(item.category)]]">
+                                        <mat-item on-tap="mainAction"
+                                                  label="[[item.name]]"
+                                                  description="[[item.url]]">
+
+                                            <template is="dom-if" if="[[isVideoPreview(item.category, bigVideoClass)]]" restamp="true">
+                                                <iron-image background="[[documentType(item.name, item.original)]]"
+                                                            class="primary image"
+                                                            sizing="cover"
+                                                            placeholder="[[imports.unknownVideo]]"
+                                                            src$="[[endpoints.web]]/media/preview?user_id=[[md5UserId]]&file_id=[[item.id]]&width=128&height=128&mode=fit&quality=50&token=[[getToken()]]"
+                                                            preload
+                                                            fade></iron-image>
+                                            </template>
+                                            <template is="dom-if" if="[[!isVideoPreview(item.category, bigVideoClass)]]">
+                                                <mat-avatar background="[[documentType(item.name, item.original)]]"
+                                                            class="primary"
+                                                            icon="[[getIcon(item.is_dir, item.category, item.file_type)]]"></mat-avatar>
+                                            </template>
+
+                                            <iron-icon class="secondary info info-icon"
+                                                       icon="icons:info"></iron-icon>
+                                            <span>[[timestampToHumanTime(item.modified)]][[bytesToSize(item.file_size, "with_comma")]]</span>
+                                        </mat-item>
+                                    </template>
+
+                                    <template is="dom-if" if="[[isNoVisualMedia(item.category)]]" restamp="true">
+                                        <mat-item on-tap="mainAction"
+                                                  label="[[item.name]]"
+                                                  description="[[item.url]]">
+                                            <mat-avatar background="[[documentType(item.name, item.original)]]"
+                                                        class="primary"
+                                                        icon="[[getIcon(item.is_dir, item.category, item.file_type)]]"></mat-avatar>
+                                            <iron-icon class="secondary info info-icon"
+                                                       icon="icons:info"></iron-icon>
+                                            <template is="dom-if" if="[[item.is_dir]]">
+                                                 <span>[[timestampToHumanTime(item.modified)]]</span>
+                                            </template>
+                                            <template is="dom-if" if="[[!item.is_dir]]">
+                                                <span>[[timestampToHumanTime(item.modified)]][[bytesToSize(item.file_size, "with_comma")]]</span>
+                                            </template>
+                                        </mat-item>
+                                    </template>
+                                </template>
+
+                                <template is="dom-if" if="[[view.isGrid]]" restamp="true">
+                                    <div class="photoContainer grid">
+                                        <div class="photoContent" tabindex$="[[tabIndex]]" on-tap="mainAction">
+                                            <iron-image sizing="cover"
+                                                        src$="[[endpoints.web]]/media/thumbnail?index=[[item.index]]&original_file_id=[[item.original.id]]"
+                                                        placeholder="[[imports.unknownImg]]"
+                                                        preload
+                                                        fade>
+                                                <mat-ripple></mat-ripple>
+                                            </iron-image>
+
+                                            <div class="detail">
+                                                <mat-item class="light" label="[[item.name]]">
+                                                    <iron-icon class="secondary info-icon"
+                                                               icon="icons:info"></iron-icon>
+                                                </mat-item>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                            </div>
+                        </template>
+                    </iron-list>
+                </div>
+
+                <empty-state id="emptyState"
+                             class="fit"
+                             hidden$="[[!emptyState.visible]]"
+                             icon="[[emptyState.icon]]"
+                             header="[[emptyState.header]]"></empty-state>
+
+            </paper-header-panel>
+
+            <paper-header-panel class="content-panel drawer" drawer>
+                <!-- Right Toolbar -->
+                <paper-toolbar class="medium-tall">
+                    <paper-icon-button icon="icons:close"
+                                       on-tap="closeDetails"
+                                       tabindex="-1"></paper-icon-button>
+
+                    <div class="flex"></div>
+
+                    <!-- Share functionality specific for every integration, this way any of the elements becomes unnecessary complex -->
+                    <template is="dom-if" if="[[isSlack(item.file_type)]]">
+                        <share-slack-file item="{{item}}"></share-slack-file>
+                    </template>
+
+                    <template is="dom-if" if="[[isGoogleDrive(item.file_type)]]">
+                        <share-google-drive-file item="{{item}}"></share-google-drive-file>
+                    </template>
+
+                    <template is="dom-if" if="[[isOneDrive(item.file_type)]]">
+                        <share-one-drive-file item="{{item}}"></share-one-drive-file>
+                    </template>
+
+                    <template is="dom-if" if="[[isDropbox(item.file_type)]]">
+                        <share-dropbox-file item="{{item}}"></share-dropbox-file>
+                    </template>
+
+                    <template is="dom-if" if="[[isBox(item.file_type)]]">
+                        <share-box-file item="{{item}}"></share-box-file>
+                    </template>
+
+                    <template is="dom-if" if="[[isDeleteFileAvailable(item.file_type)]]">
+                        <delete-file item="{{item}}"></delete-file>
+                    </template>
+
+                    <div class="bottom fit">
+                        <mat-item label="[[item.name]]" class="light" focused="false"></mat-item>
+                    </div>
+                </paper-toolbar>
+
+                <!-- Right Content -->
+                <div class="content">
+                    <detail-view item="{{item}}"></detail-view>
+                </div>
+            </paper-header-panel>
+
+        </paper-drawer-panel>
+
+
+        <filter-converter id="filterConverter"></filter-converter>
+
+        <paper-toast id="toast" text=""></paper-toast>
+
+        <iron-ajax id="rpcElastic"
+                   method="POST"
+                   content-type="application/json"
+                   url="[[endpoints.endpoint]]"
+                   handle-as="json"
+                   on-error="_handleError"
+                   on-response="_handleElastic"
+                   params="[[rpcElasticParams]]"
+                   headers="[[headers]]"></iron-ajax>
+
+        <iron-media-query query="(min-width: 601px)"
+                          query-matches="{{mediaQuerySmall}}"></iron-media-query>
+
+        <iron-media-query query="(min-width: 961px)"
+                          query-matches="{{mediaQueryMedium}}"></iron-media-query>
+
+        <iron-media-query query="(min-width: 1281px)"
+                          query-matches="{{mediaQueryLarge}}"></iron-media-query>
+
+    </template>
+
+    <script>
+    'use strict';
+
+    (function() {
+        Polymer({
+            is: 'search-page',
+            behaviors: [
+                Polymer.UtilBehaviorImp,
+                Polymer.MapBehaviorImp,
+                Polymer.EndpointsBehaviorImp
+            ],
+            properties: {
+                loading: {
+                    type: Boolean,
+                    notify: true,
+                    value: false
+                },
+                size: {
+                    type: Number,
+                    notify: false,
+                    value: 45
+                },
+                rpcElasticParams: {
+                    type: Object,
+                    notify: true
+                },
+                rpcResponse: {
+                    type: Object,
+                    notify: true,
+                    value: undefined
+                },
+                title: {
+                    type: String,
+                    notify: false,
+                    value: 'Search'
+                },
+                item: {
+                    type: Object,
+                    notify: true,
+                    reflectToAttribute: true,
+                    value: function() {
+                        return {};
+                    },
+                    observer: '_itemChanged'
+                },
+                itemSelected: {
+                    type: Boolean,
+                    notify: true,
+                    value: false
+                },
+                view: {
+                    type: Object,
+                    notify: true,
+                    value: function() {
+                        return {
+                            icon: 'icons:view-module',
+                            isGrid: false
+                        };
+                    }
+                },
+                searchResults: {
+                    type: Array,
+                    notify: true,
+                    value: function() {
+                        return [];
+                    }
+                },
+                totalResults: {
+                    type: Number,
+                    notify: false,
+                    value: 0
+                },
+                searching: {
+                    type: Boolean,
+                    notify: true,
+                    value: false
+                },
+                breadcrumbs: {
+                    type: Array,
+                    notify: true,
+                    value: function() {
+                        return [];
+                    }
+                },
+                breadcrumbsVisible: {
+                    type: Boolean,
+                    notify: true,
+                    value: false
+                },
+                lastBreadcrumb: {
+                    type: Object,
+                    notify: true,
+                    value: function() {
+                        return {};
+                    }
+                },
+                bigVideoClass: {
+                    type: String,
+                    notify: false,
+                    value: ''
+                },
+                emptyState: {
+                    type: Object,
+                    notify: true,
+                    value: function() {
+                        return {
+                            visible: false,
+                            icon: 'icons:search',
+                            header:  'Nope, nothing, nada. Try another search.'
+                        };
+                    }
+                },
+                datasourceMenu: {
+                    type: Object,
+                    notify: true,
+                    value: function() {
+                        return {
+                            visible: false
+                        };
+                    }
+                },
+                md5UserId: {
+                    type: String,
+                    notify: false
+                }
+            },
+            observers: [
+                '_route(subroute.path)',
+                '_routeData(queryParams)',
+                '_breadcrumbsChanged(breadcrumbs.*)'
+            ],
+            _route: function(path) {
+                if (path === this.pagesMap.search.subpath) {
+                    this.init();
+                }
+            },
+            _routeData: function(data) {
+                // merge whatever is coming plus sane defaults into custom state
+                // if user adds bullshit, his problem
+                // backend + context secures data per user
+                var filters = _.extend(data, {
+                    file_type: data.category ? '' : 'files',
+                    type: 'file',
+                    from: 0,
+                    size: this.size,
+                    depth: 0,
+                    url: ''
+                });
+
+                this.async(function() {
+                    if (data && data.term && data.term.length) {
+                        this.set('searching', true);
+                        this.$.search.input.value = data.term;
+                    } else {
+                        this.set('searching', false);
+                        this.$.search.input.value = '';
+                    }
+                    this.$.search._inputHandler();
+                });
+                this.clearIronList();
+                this.set('itemSelected', false);
+                this.set('breadcrumbsVisible', (!filters.category) ? true : false);
+                this.set('title', (filters.category) ? filters.category : 'Search');
+
+                if (filters.category === this.categoriesMap.images) {
+                    this.setGridView();
+                } else {
+                    this.setListView();
+                }
+
+                if (filters.category === this.categoriesMap.videos) {
+                    this.set('bigVideoClass', 'big-video');
+                } else {
+                    this.set('bigVideoClass', '');
+                }
+
+                this.refreshView();
+
+                if (!filters.index) {
+                    filters.index = Auth.getMD5UserId();
+                }
+
+                this.$.filterConverter.setValues(filters);
+            },
+            _breadcrumbsChanged: function(newVal, oldVal) {
+                this.set('lastBreadcrumb', this.breadcrumbs[this.breadcrumbs.length - 1]);
+            },
+            _itemChanged: function() {
+                // Set file_id on app URL
+                // We are listening to changes so, we are firing search again..
+                // FIXME
+                /*if (!_.isEmpty(this.item)) {
+                    this.set('queryParams.file_id', this.item.id);
+                }*/
+            },
+            ready: function() {
+                var resizeCallback;
+
+                this.$.filterConverter.addEventListener('filter-changed', this._handleFilterChanged.bind(this));
+
+                window.addEventListener('resize',function(e) {
+                    e.preventDefault();
+
+                    clearTimeout(resizeCallback);
+                    resizeCallback = setTimeout(function() {
+                            this.checkBreadcrumbsView(0);
+                    }.bind(this), 300);
+                }.bind(this));
+
+                window.addEventListener('refresh-search', function(e) {
+                    this.refreshSearch(e.detail);
+                }.bind(this));
+            },
+            init: function(e) {
+                this.headers = Auth.getHeaders();
+                this.profile = Auth.getProfile();
+
+                this.refreshBreadcrumbs();
+                this.refreshSearch();
+            },
+            _handleFilterChanged: function(e) {
+                this.refreshBreadcrumbs();
+
+                // Fire search when search-page is active
+                if (!_.isEmpty(this.route) && this.route.path === this.pagesMap.search.path) {
+                    this.search();
+                }
+            },
+            _handleScroll: function(e) {
+                if (!this.$.rpcElastic.loading) {
+                    if (this.$.searchList.scrollTop >
+                        ((this.$.searchList._virtualCount / this.$.searchList._itemsPerRow) *
+                        this.$.searchList._physicalAverage) - (this.$.searchList.getBoundingClientRect().height + 300)) {
+                        var from = this.$.filterConverter.getFilterAsObj().from + this.size;
+
+                        if (from < this.totalResults) {
+                            this.$.filterConverter.setValue('from', from);
+                        }
+                    }
+                }
+            },
+            _handleElastic: function(e) {
+                var result;
+
+                if (e.detail.response && e.detail.response.result) {
+                    result = JSON.parse(e.detail.response.result);
+
+                    this.set('totalResults', JSON.parse(e.detail.response.info).total);
+                    _.forEach(result, function(record) {
+                        this.push('searchResults', record);
+                    }, this);
+                    this.$.searchList.fire('iron-resize');
+
+                    if (this.searchResults.length) {
+                        this.set('emptyState.visible', false);
+                    } else {
+                        this.set('emptyState.visible', true);
+                    }
+                }
+                this.set('loading', false);
+            },
+            _computeListWidth: function(isMobile) {
+                // when in mobile screen size, make the list be 100% width to cover the whole screen
+                return isMobile ? '100%' : '35%';
+            },
+            _listTap: function() {
+                this.$.mainDrawerPanel.closeDrawer();
+            },
+            _handleError: function(e, detail) {
+                this.set('loading', false);
+                this.checkUnauthorize(e);
+
+                if (e.detail.request && e.detail.request.response) {
+                    this.$.toast.text = e.detail.request.response.detail;
+                    this.$.toast.show();
+                }
+            },
+            clearIronList: function() {
+                this.set('searchResults', []);
+                this.$.searchList.fire('iron-resize');
+            },
+            search: function() {
+                this.headers = Auth.getHeaders();
+                this.set('loading', true);
+                this.set('rpcElasticParams', {
+                    service: 'com.kazoup.srv.search',
+                    method: 'Search.Search',
+                    request: this.$.filterConverter.getFilterAsObj()
+                });
+                this.$.rpcElastic.body = this.rpcElasticParams;
+
+                if(this.$.rpcElastic.lastRequest) {
+                    // Abort previous requests, if already finished is all right, and if not, we cancel to generate the next one
+                    this.$.rpcElastic.lastRequest.abort();
+                }
+                this.$.rpcElastic.generateRequest();
+            },
+            refreshSearch: function(data) {
+                this.clearIronList();
+                this.search();
+            },
+            searchAsYouType: function(e, detail) {
+                var term = this.$.search.input.value;
+
+                if ((term.length > 2 || term.length === 0) && !this.$.rpcElastic.loading) {
+                    clearTimeout(this.searchAsYouTypeTimeout);
+                    this.searchAsYouTypeTimeout = setTimeout(function() {
+                        this.set('itemSelected', false);
+                        this.clearIronList();
+
+                        this.set('queryParams.term', term);
+                    }.bind(this), 450);
+                }
+            },
+            resetSearch: function(e, detail) {
+                this.toggleSearch();
+                this.set('itemSelected', false);
+                this.set('queryParams.term', '');
+            },
+            toggleSearch: function(e, detail) {
+                this.$.search.input.value = this.$.filterConverter.getFilterAsObj().term ?
+                  this.$.filterConverter.getFilterAsObj().term : '';
+                this.$.search._inputHandler();
+
+                this.async(function() {
+                    // Explicity remove all focus from <mat-item>
+                    _.forEach(document.querySelectorAll('mat-item'), function(el){
+                        el.setAttribute('tabindex', -1);
+                    });
+                    this.$.search.focus();
+                }, 10);
+                this.set('searching', !this.searching);
+            },
+            mainAction: function(e, detail) {
+                this.clearSelectedItemStyling();
+
+                if (e.model.__data__.item.is_dir) {
+                    // Primary action, browse one level deeper
+                    if (!e.target.classList.contains('info-icon')) {
+                        this.clearIronList();
+                        this.set('itemSelected', false);
+                        this.set('searching', false);
+
+                        this.$.filterConverter.setValues({
+                            index: Auth.getMD5UserId(),
+                            from: 0,
+                            size: this.size,
+                            type: 'file',
+                            term: '',
+                            url: e.model.__data__.item.url,
+                            depth: e.model.__data__.item.depth + 1
+                        });
+                    // Secondary action, show folder details
+                    } else {
+                        this.set('item', e.model.__data__.item);
+                        this.set('itemSelected', true);
+                        this.$.mainDrawerPanel.openDrawer();
+                        e.currentTarget.classList.add('selected-item');
+                    }
+                } else {
+                    // Primary action, open file
+                    if (!e.target.classList.contains('info-icon')) {
+                        this.openFile(e.model.__data__.item.url);
+                        this.closeDetails();
+                    // Secondary action, show details
+                    } else {
+                        this.set('item', e.model.__data__.item);
+                        this.set('itemSelected', true);
+                        this.$.mainDrawerPanel.openDrawer();
+                        e.currentTarget.classList.add('selected-item');
+
+                        if (document.querySelector('video')) {
+                            document.querySelector('video').load();
+                        }
+                        if (document.querySelector('wave-player')){
+                            try {
+                                document.querySelector('wave-player').wavesurfer.stop();
+                            } catch(e) {}
+                            document.querySelector('wave-player').deactivateAnimation();
+                            document.querySelector('wave-player').updateWavesurfer();
+                            document.querySelector('wave-player wave').remove();
+                        }
+                    }
+                }
+            },
+            closeDetails: function(e, detail) {
+                this.set('itemSelected', false);
+                this.clearSelectedItemStyling();
+                this.$.mainDrawerPanel.closeDrawer();
+            },
+            refreshView: function() {
+                this.async(function() {
+                    this.$.searchList.fire('iron-resize');
+                    this.$.searchList.notifyResize();
+                    this.$.searchList.scrollToIndex(0);
+                }, 1);
+            },
+            setGridView: function() {
+                this.set('view.icon', 'icons:view-list');
+                this.$.searchList.setAttribute('grid', '');
+                this.set('view.isGrid', true);
+            },
+            setListView: function() {
+                this.set('view.icon', 'icons:view-module');
+                this.$.searchList.removeAttribute('grid');
+                this.set('view.isGrid', false);
+            },
+            toggleView: function(e, detail) {
+                if (this.view.isGrid) {
+                    this.setListView();
+                } else {
+                    this.setGridView();
+                }
+                this.refreshView();
+            },
+            refreshBreadcrumbs: function(counter) {
+                this.set('breadcrumbs', []);
+
+                // Find selected datasource
+                var datasource = _.find(this.datasourceResults, {
+                    index: this.$.filterConverter.getFilterAsObj().index,
+                });
+
+                if (!_.isEmpty(datasource)) {
+                    var breadcrumb = {};
+
+                    switch (this.getDatasourceType(datasource.url)) {
+                        case 'slack':
+                            breadcrumb = {
+                                label: 'Slack Files'
+                            };
+                            break;
+                        case 'googledrive':
+                            breadcrumb = {
+                                label: 'Google Drive Files'
+                            };
+                            break;
+                        case 'onedrive':
+                            breadcrumb = {
+                                label: 'One Drive Files'
+                            };
+                            break;
+                        case 'dropbox':
+                            breadcrumb = {
+                                label: 'Dropbox Files'
+                            };
+                            break;
+                        case 'box':
+                            breadcrumb = {
+                                label: 'Box Files'
+                            };
+                            break;
+                        case 'gmail':
+                            breadcrumb = {
+                                label: 'Gmail Attached Files'
+                            };
+                            break;
+                    }
+
+                    breadcrumb.datasource = datasource;
+                    this.push('breadcrumbs', breadcrumb);
+                }
+
+                // Retry until datasourceResults is binded or too many retries
+                if (this.datasourceResults.length === 0) {
+                    if (counter === undefined || counter < 3) {
+                        this.async(function() {
+                            this.refreshBreadcrumbs(0);
+                        }, 200);
+                    }
+                }
+
+                this.$.breadcrumbsSteps.render();
+                this.$.breadcrumbsStepsMenu.render();
+                this.checkBreadcrumbsView(0);
+            },
+            checkBreadcrumbsView: function(count) {
+                this.async(function() {
+                    var containerWidth = this.$.fitBreadcrumbs.getBoundingClientRect().width;
+                    var crumbsWidth = 0;
+
+                    _.forEach(document.querySelectorAll('.browse mat-breadcrumb-step'), function(breadcrumb) {
+                        crumbsWidth += breadcrumb.getBoundingClientRect().width
+                    });
+
+                    if (crumbsWidth > containerWidth) {
+                        // Breadcrumbs does not fit available space, collapse as mobile
+                        this.$.noFitBreadcrumbs.style.display = 'block';
+                        this.$.fitBreadcrumbs.style.display = 'none';
+                    } else {
+                        this.$.noFitBreadcrumbs.style.display = 'none';
+                        this.$.fitBreadcrumbs.style.display = 'block';
+                    }
+
+                    if (crumbsWidth === 0 && count < 3) {
+                        this.checkBreadcrumbsView(count);
+                    }
+                }, 10);
+            },
+            clearSelectedItemStyling: function() {
+                try{
+                    if (document.querySelectorAll('html /deep/ .selected-item')) {
+                        _.forEach(document.querySelectorAll('html /deep/ .selected-item'), function(el) {
+                            el.classList.remove('selected-item');
+                        });
+                    }
+                } catch(e) {}
+            }
+        });
+    }()); 
+    </script>
+</dom-module>
