@@ -553,6 +553,9 @@
             init: function(e) {
                 this.headers = Auth.getHeaders();
                 this.profile = Auth.getProfile();
+
+                this.refreshBreadcrumbs();
+                this.refreshSearch();
             },
             _handleFilterChanged: function(e) {
                 this.refreshBreadcrumbs();
