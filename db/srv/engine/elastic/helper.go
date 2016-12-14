@@ -133,19 +133,20 @@ func (e *elastic) RemoveAlias(index string, alias string) (lib.BaseResponse, err
 // TODO: use gabs (handle JSON in go)
 // ElasticQuery to generate DSL query from params
 type ElasticQuery struct {
-	Index    string
-	Id       string
-	UserId   string
-	Term     string
-	From     int64
-	Size     int64
-	Category string
-	Url      string
-	Depth    int64
-	Type     string
-	FileType string
-	LastSeen int64
-	Aggs     []*search_proto.Aggregation
+	Index                string
+	Id                   string
+	UserId               string
+	Term                 string
+	From                 int64
+	Size                 int64
+	Category             string
+	Url                  string
+	Depth                int64
+	Type                 string
+	FileType             string
+	LastSeen             int64
+	NoKazoupFileOriginal bool
+	Aggs                 []*search_proto.Aggregation
 }
 
 // Query generates a Elasticsearch DSL query
@@ -153,6 +154,7 @@ func (e *ElasticQuery) Query() (string, error) {
 	var buffer bytes.Buffer
 
 	buffer.WriteString(`{`)
+	buffer.WriteString(e.setSource())
 	buffer.WriteString(e.filterFrom() + ",")
 	buffer.WriteString(e.filterSize() + ",")
 	buffer.WriteString(`"query": {"bool":{"must":[`)
@@ -344,6 +346,31 @@ func (e *ElasticQuery) filterFrom() string {
 
 	buffer.WriteString(`"from": `)
 	buffer.WriteString(strconv.FormatInt(e.From, 10))
+
+	return buffer.String()
+}
+
+func (e *ElasticQuery) setSource() string {
+	var buffer bytes.Buffer
+
+	if e.NoKazoupFileOriginal {
+		buffer.WriteString(`"_source": [
+			"id",
+			"user_id",
+			"name",
+			"url",
+			"modified",
+			"file_size",
+			"is_dir",
+			"category",
+			"mime_type",
+			"depth",
+			"file_type",
+			"last_seen",
+			"datasource_id",
+			"index"
+		],`)
+	}
 
 	return buffer.String()
 }

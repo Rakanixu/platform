@@ -264,12 +264,12 @@ func (gfs *GoogleDriveFs) getNextPage(srv *drive.Service, nextPageToken string) 
 // pushFilesToChanForPage sends discovered files to the file system channel
 func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
 	for _, v := range files {
-		if err := gfs.generateThumbnail(v); err != nil {
-			log.Println(err)
-		}
-
 		f := file.NewKazoupFileFromGoogleDriveFile(v, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
 		if f != nil {
+			if err := gfs.generateThumbnail(v, f.ID); err != nil {
+				log.Println(err)
+			}
+
 			gfs.FilesChan <- f
 		}
 	}
@@ -277,7 +277,7 @@ func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
 	return nil
 }
 
-func (gfs *GoogleDriveFs) generateThumbnail(f *drive.File) error {
+func (gfs *GoogleDriveFs) generateThumbnail(f *drive.File, id string) error {
 	c := categories.GetDocType("." + f.FullFileExtension)
 	if len(f.FullFileExtension) == 0 {
 		c = categories.GetDocType(f.MimeType)
@@ -294,7 +294,7 @@ func (gfs *GoogleDriveFs) generateThumbnail(f *drive.File) error {
 			return errors.New("ERROR generating thumbnail for googledrive file")
 		}
 
-		if err := gfs.UploadFile(rd, f.Id); err != nil {
+		if err := gfs.UploadFile(rd, id); err != nil {
 			return errors.New("ERROR uploading thumbnail for googledrive file")
 		}
 	}

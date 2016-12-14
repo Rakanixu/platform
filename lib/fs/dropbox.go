@@ -340,7 +340,7 @@ func (dfs *DropboxFs) getFiles() error {
 }
 
 // generateThumbnail downloads original picture, resize and uploads to Google storage
-func (dfs *DropboxFs) generateThumbnail(f dropbox.DropboxFile) error {
+func (dfs *DropboxFs) generateThumbnail(f dropbox.DropboxFile, id string) error {
 	name := strings.Split(f.Name, ".")
 
 	if categories.GetDocType("."+name[len(name)-1]) == globals.CATEGORY_PICTURE {
@@ -354,7 +354,7 @@ func (dfs *DropboxFs) generateThumbnail(f dropbox.DropboxFile) error {
 			return errors.New("ERROR generating thumbnail for dropbox file")
 		}
 
-		if err := dfs.UploadFile(b, f.ID); err != nil {
+		if err := dfs.UploadFile(b, id); err != nil {
 			return errors.New("ERROR uploading thumbnail for dropbox file")
 		}
 	}
@@ -449,10 +449,6 @@ func (dfs *DropboxFs) pushFilesToChannel(list *dropbox.FilesListResponse) {
 	var err error
 
 	for _, v := range list.Entries {
-		if err := dfs.generateThumbnail(v); err != nil {
-			log.Println(err)
-		}
-
 		f := file.NewKazoupFileFromDropboxFile(&v, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
 		if f != nil {
 			// File is shared, lets get Users and Invitees to this file
@@ -461,6 +457,10 @@ func (dfs *DropboxFs) pushFilesToChannel(list *dropbox.FilesListResponse) {
 				if err != nil {
 					log.Println("ERROR getFileMembers dropbox", err)
 				}
+			}
+
+			if err := dfs.generateThumbnail(v, f.ID); err != nil {
+				log.Println(err)
 			}
 
 			dfs.FilesChan <- f

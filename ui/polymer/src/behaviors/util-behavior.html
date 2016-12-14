@@ -226,11 +226,11 @@
       getPrepopulatedClass: function(record) {
         return record ? 'prepopulated' : '';
       },
-      documentType: function(fileName, original) {
+      documentType: function(item) {
         var extension, result = '';
 
-        if (fileName) {
-          extension = fileName.split('.')[fileName.split('.').length - 1];
+        if (item.name) {
+          extension = item.name.split('.')[item.name.split('.').length - 1];
         }
 
         switch (extension) {
@@ -252,7 +252,7 @@
         }
 
         if (result.length === 0) {
-          switch (original.mimeType) {
+          switch (item.mime_type) {
             case 'application/vnd.google-apps.document':
               result = 'blue';
               break;
@@ -310,7 +310,7 @@
         return this.isBox(fileType) || this.isDropbox(fileType) || this.isOneDrive(fileType) || this.isGoogleDrive(fileType);
       },
       profilePicture: function(url) {
-        return (url && url.length) ? url : '../app/src/static/unknown-pic-profile.gif';
+        return (url && url.length) ? url : '/src/static/unknown-pic-profile.gif';
       },
       getGravatarUrl: function(mail) {
         return 'https://www.gravatar.com/avatar/' + new Hashes.MD5().hex(mail) + '?d=identicon'

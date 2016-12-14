@@ -193,17 +193,18 @@ func (e *elastic) Search(ctx context.Context, req *db.SearchRequest) (*db.Search
 	}
 
 	eQuery := ElasticQuery{
-		Index:    req.Index,
-		UserId:   uId,
-		Term:     req.Term,
-		From:     req.From,
-		Size:     req.Size,
-		Category: req.Category,
-		Url:      req.Url,
-		Depth:    req.Depth,
-		Type:     req.Type,
-		FileType: req.FileType,
-		LastSeen: req.LastSeen,
+		Index:                req.Index,
+		UserId:               uId,
+		Term:                 req.Term,
+		From:                 req.From,
+		Size:                 req.Size,
+		Category:             req.Category,
+		Url:                  req.Url,
+		Depth:                req.Depth,
+		Type:                 req.Type,
+		FileType:             req.FileType,
+		LastSeen:             req.LastSeen,
+		NoKazoupFileOriginal: req.NoKazoupFileOriginal,
 	}
 	query, err := eQuery.Query()
 
@@ -223,7 +224,6 @@ func (e *elastic) Search(ctx context.Context, req *db.SearchRequest) (*db.Search
 		}
 		s, err := engine.TypeFactory(req.Type, string(data))
 		if err != nil {
-
 			return &db.SearchResponse{}, err
 		}
 		if err := json.Unmarshal(data, &s); err != nil {
