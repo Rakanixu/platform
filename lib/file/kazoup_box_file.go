@@ -9,7 +9,7 @@ import (
 
 type KazoupBoxFile struct {
 	KazoupFile
-	Original box.BoxFileMeta `json:"original"`
+	Original *box.BoxFileMeta `json:"original,omitempty"`
 }
 
 func (kf *KazoupBoxFile) PreviewURL(width, height, mode, quality string) string {

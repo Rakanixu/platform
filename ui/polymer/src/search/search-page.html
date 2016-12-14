@@ -26,7 +26,7 @@
             }
 
             .info {
-                height:78px;
+                height:48px;
                 opacity: 0.65;
                 padding-right: 8px;
             }
@@ -188,10 +188,10 @@
                                     <template is="dom-if" if="[[!isNoVisualMedia(item.category)]]">
                                         <mat-item on-tap="mainAction"
                                                   label="[[item.name]]"
-                                                  description="[[item.url]]">
+                                                  description="[[timestampToHumanTime(item.modified)]][[bytesToSize(item.file_size, 'with_comma')]]">
 
                                             <template is="dom-if" if="[[isVideoPreview(item.category, bigVideoClass)]]" restamp="true">
-                                                <iron-image background="[[documentType(item.name, item.original)]]"
+                                                <iron-image background$="[[documentType(item)]]"
                                                             class="primary image"
                                                             sizing="cover"
                                                             placeholder="[[imports.unknownVideo]]"
@@ -200,31 +200,27 @@
                                                             fade></iron-image>
                                             </template>
                                             <template is="dom-if" if="[[!isVideoPreview(item.category, bigVideoClass)]]">
-                                                <mat-avatar background="[[documentType(item.name, item.original)]]"
+                                                <mat-avatar background$="[[documentType(item)]]"
                                                             class="primary"
                                                             icon="[[getIcon(item.is_dir, item.category, item.file_type)]]"></mat-avatar>
                                             </template>
 
                                             <iron-icon class="secondary info info-icon"
                                                        icon="icons:info"></iron-icon>
-                                            <span>[[timestampToHumanTime(item.modified)]][[bytesToSize(item.file_size, "with_comma")]]</span>
                                         </mat-item>
                                     </template>
 
                                     <template is="dom-if" if="[[isNoVisualMedia(item.category)]]" restamp="true">
                                         <mat-item on-tap="mainAction"
                                                   label="[[item.name]]"
-                                                  description="[[item.url]]">
-                                            <mat-avatar background="[[documentType(item.name, item.original)]]"
+                                                  description="[[timestampToHumanTime(item.modified)]][[bytesToSize(item.file_size, 'with_comma')]]">
+                                            <mat-avatar background$="[[documentType(item)]]"
                                                         class="primary"
                                                         icon="[[getIcon(item.is_dir, item.category, item.file_type)]]"></mat-avatar>
                                             <iron-icon class="secondary info info-icon"
                                                        icon="icons:info"></iron-icon>
                                             <template is="dom-if" if="[[item.is_dir]]">
                                                  <span>[[timestampToHumanTime(item.modified)]]</span>
-                                            </template>
-                                            <template is="dom-if" if="[[!item.is_dir]]">
-                                                <span>[[timestampToHumanTime(item.modified)]][[bytesToSize(item.file_size, "with_comma")]]</span>
                                             </template>
                                         </mat-item>
                                     </template>
@@ -234,7 +230,7 @@
                                     <div class="photoContainer grid">
                                         <div class="photoContent" tabindex$="[[tabIndex]]" on-tap="mainAction">
                                             <iron-image sizing="cover"
-                                                        src$="[[endpoints.web]]/media/thumbnail?index=[[item.index]]&original_file_id=[[item.original.id]]"
+                                                        src$="[[endpoints.web]]/media/thumbnail?index=[[item.index]]&file_id=[[item.id]]"
                                                         placeholder="[[imports.unknownImg]]"
                                                         preload
                                                         fade>
@@ -460,7 +456,10 @@
                 },
                 md5UserId: {
                     type: String,
-                    notify: false
+                    notify: false,
+                    value: function() {
+                        return Auth.getMD5UserId();
+                    }
                 }
             },
             observers: [
@@ -483,7 +482,8 @@
                     from: 0,
                     size: this.size,
                     depth: 0,
-                    url: ''
+                    url: '',
+                    no_kazoup_file_original: true
                 });
 
                 this.async(function() {
@@ -687,7 +687,8 @@
                             type: 'file',
                             term: '',
                             url: e.model.__data__.item.url,
-                            depth: e.model.__data__.item.depth + 1
+                            depth: e.model.__data__.item.depth + 1,
+                            no_kazoup_file_original: true
                         });
                     // Secondary action, show folder details
                     } else {

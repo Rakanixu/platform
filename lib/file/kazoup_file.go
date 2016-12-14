@@ -12,6 +12,7 @@ type KazoupFile struct {
 	FileSize     int64     `json:"file_size"`
 	IsDir        bool      `json:"is_dir"`
 	Category     string    `json:"category"`
+	MimeType     string    `json:"mime_type"`
 	Depth        int64     `json:"depth"`
 	FileType     string    `json:"file_type"`
 	LastSeen     int64     `json:"last_seen"`

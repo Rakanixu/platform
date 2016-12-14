@@ -7,7 +7,7 @@ import (
 
 type KazoupDropboxFile struct {
 	KazoupFile
-	Original dropbox.DropboxFile `json:"original"`
+	Original *dropbox.DropboxFile `json:"original,omitempty"`
 }
 
 func (kf *KazoupDropboxFile) PreviewURL(width, height, mode, quality string) string {

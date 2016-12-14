@@ -463,18 +463,19 @@ func (ofs *OneDriveFs) getDirChildren(id string) error {
 
 // pushToFilesChannel
 func (ofs *OneDriveFs) pushToFilesChannel(f onedrive.OneDriveFile) error {
-	if err := ofs.generateThumbnail(f); err != nil {
+	kof := file.NewKazoupFileFromOneDriveFile(&f, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)
+
+	if err := ofs.generateThumbnail(f, kof.ID); err != nil {
 		log.Println(err)
 	}
 
-	kof := file.NewKazoupFileFromOneDriveFile(&f, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)
 	ofs.FilesChan <- kof
 
 	return nil
 }
 
 // generateThumbnail downloads original picture, resize and uploads to Google storage
-func (ofs *OneDriveFs) generateThumbnail(f onedrive.OneDriveFile) error {
+func (ofs *OneDriveFs) generateThumbnail(f onedrive.OneDriveFile, id string) error {
 	n := strings.Split(f.Name, ".")
 
 	if categories.GetDocType("."+n[len(n)-1]) == globals.CATEGORY_PICTURE {
@@ -488,7 +489,7 @@ func (ofs *OneDriveFs) generateThumbnail(f onedrive.OneDriveFile) error {
 			return errors.New("ERROR generating thumbnail for onedrive file")
 		}
 
-		if err := ofs.UploadFile(b, f.ID); err != nil {
+		if err := ofs.UploadFile(b, id); err != nil {
 			return errors.New("ERROR uploading thumbnail for onedrive file")
 		}
 	}

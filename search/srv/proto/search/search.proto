@@ -6,7 +6,6 @@ import "github.com/kazoup/platform/search/srv/proto/search/messages.proto";
 
 service Search {
   rpc Search(SearchRequest) returns (SearchResponse) {}
-  rpc SearchProxy(SearchProxyRequest) returns (SearchProxyResponse) {}
   rpc Aggregate(AggregateRequest) returns (AggregateResponse) {}
 }
 

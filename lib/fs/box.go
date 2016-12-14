@@ -376,18 +376,19 @@ func (bfs *BoxFs) getMetadataFromFile(id string) error {
 		return err
 	}
 
-	if err := bfs.generateThumbnail(fm); err != nil {
+	f := file.NewKazoupFileFromBoxFile(fm, bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
+
+	if err := bfs.generateThumbnail(fm, f.ID); err != nil {
 		log.Println(err)
 	}
 
-	f := file.NewKazoupFileFromBoxFile(fm, bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
 	bfs.FilesChan <- f
 
 	return nil
 }
 
-// generateThumbnail downloads original picture, resize and uploads to Google storage
-func (bfs *BoxFs) generateThumbnail(fm *box.BoxFileMeta) error {
+// generateThumbnail downloads original picture, resize and uploads to Google storage with kazoup id
+func (bfs *BoxFs) generateThumbnail(fm *box.BoxFileMeta, id string) error {
 	name := strings.Split(fm.Name, ".")
 
 	if categories.GetDocType("."+name[len(name)-1]) == globals.CATEGORY_PICTURE {
@@ -401,7 +402,7 @@ func (bfs *BoxFs) generateThumbnail(fm *box.BoxFileMeta) error {
 			return errors.New("ERROR generating thumbnail for box file")
 		}
 
-		if err := bfs.UploadFile(rd, fm.ID); err != nil {
+		if err := bfs.UploadFile(rd, id); err != nil {
 			return errors.New("ERROR uploading thumbnail for box file")
 		}
 	}
