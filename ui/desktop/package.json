@@ -38,7 +38,7 @@
   "scripts": {
     "postinstall": "install-app-deps",
     "start": "electron ./app --enable-logging --remote-debugging-port=9222",
-    "start_widget": "cross-env NODE_ENV=widget npm run start",
+    "widget": "cross-env NODE_ENV=widget npm run start",
     "dev": "NODE_ENV='development' npm run start",
     "dep": "cd app && npm install && cd ..",
     "dist": "npm run clean:dist && npm run dist:osx  && npm run dist:win64 && npm run dist:linux",
