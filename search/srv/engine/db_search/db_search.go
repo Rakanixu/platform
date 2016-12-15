@@ -24,15 +24,16 @@ func (d *dbSearch) Search(ctx context.Context, req *search.SearchRequest, client
 		globals.DB_SERVICE_NAME,
 		"DB.Search",
 		&db_proto.SearchRequest{
-			Index:    req.Index,
-			Term:     req.Term,
-			From:     req.From,
-			Size:     req.Size,
-			Category: req.Category,
-			Url:      req.Url,
-			Depth:    req.Depth,
-			Type:     req.Type,
-			FileType: req.FileType,
+			Index:                req.Index,
+			Term:                 req.Term,
+			From:                 req.From,
+			Size:                 req.Size,
+			Category:             req.Category,
+			Url:                  req.Url,
+			Depth:                req.Depth,
+			Type:                 req.Type,
+			FileType:             req.FileType,
+			NoKazoupFileOriginal: req.NoKazoupFileOriginal,
 		},
 	)
 	srvRes := &db_proto.SearchResponse{}
@@ -44,14 +45,6 @@ func (d *dbSearch) Search(ctx context.Context, req *search.SearchRequest, client
 	return &search.SearchResponse{
 		Result: srvRes.Result,
 		Info:   srvRes.Info,
-	}, nil
-}
-
-func (d *dbSearch) SearchProxy(ctx context.Context, req *search.SearchProxyRequest, client client.Client) (*search.SearchProxyResponse, error) {
-
-	return &search.SearchProxyResponse{
-		Result: "",
-		Info:   "",
 	}, nil
 }
 

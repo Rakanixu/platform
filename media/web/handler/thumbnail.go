@@ -14,7 +14,7 @@ func NewThumbnailHandler() *ThumbnailHandler {
 
 // ServeHTTP redirect request to google cloud storage where thumbnails are stored
 func (th *ThumbnailHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	url, err := fs.SignedObjectStorageURL(r.FormValue("index"), r.FormValue("original_file_id"))
+	url, err := fs.SignedObjectStorageURL(r.FormValue("index"), r.FormValue("file_id"))
 	if err != nil {
 		http.Error(w, fmt.Sprintf("ERROR ThumbnailHandler %s", err), http.StatusBadRequest)
 		return

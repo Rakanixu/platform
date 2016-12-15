@@ -8,7 +8,7 @@ import (
 
 type KazoupOneDriveFile struct {
 	KazoupFile
-	Original onedrive.OneDriveFile `json:"original"`
+	Original *onedrive.OneDriveFile `json:"original,omitempty"`
 }
 
 func (kf *KazoupOneDriveFile) PreviewURL(width, height, mode, quality string) string {

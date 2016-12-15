@@ -139,13 +139,14 @@ func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId, uId, index stri
 		FileSize:     g.Size,
 		IsDir:        d,
 		Category:     c,
+		MimeType:     g.MimeType,
 		Depth:        0,
 		FileType:     globals.GoogleDrive,
 		LastSeen:     time.Now().Unix(),
 		DatasourceId: dsId,
 		Index:        index,
 	}
-	return &KazoupGoogleFile{*kf, *g}
+	return &KazoupGoogleFile{*kf, g}
 }
 
 // NewKazoupFileFromSlackFile constructor
@@ -161,13 +162,14 @@ func NewKazoupFileFromSlackFile(s *slack.SlackFile, dsId, uId, index string) *Ka
 		FileSize:     s.Size,
 		IsDir:        false,
 		Category:     categories.GetDocType("." + s.Filetype),
+		MimeType:     s.Mimetype,
 		Depth:        0,
 		FileType:     globals.Slack,
 		LastSeen:     time.Now().Unix(),
 		DatasourceId: dsId,
 		Index:        index,
 	}
-	return &KazoupSlackFile{*kf, *s}
+	return &KazoupSlackFile{*kf, s}
 }
 
 func NewKazoupFileFromLocal(lf *local.LocalFile, dsId, uId, index string) *KazoupLocalFile {
@@ -194,10 +196,12 @@ func NewKazoupFileFromLocal(lf *local.LocalFile, dsId, uId, index string) *Kazou
 // NewKazoupFileFromOneDriveFile constructor
 func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile, dsId, uId, index string) *KazoupOneDriveFile {
 	isDir := true
+	mimeType := ""
 	name := strings.Split(o.Name, ".")
 
 	if len(o.File.MimeType) > 0 {
 		isDir = false
+		mimeType = o.File.MimeType
 	}
 
 	kf := &KazoupFile{
@@ -209,13 +213,14 @@ func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile, dsId, uId, index st
 		FileSize:     o.Size,
 		IsDir:        isDir,
 		Category:     categories.GetDocType("." + name[len(name)-1]),
+		MimeType:     mimeType,
 		Depth:        0,
 		FileType:     globals.OneDrive,
 		LastSeen:     time.Now().Unix(),
 		DatasourceId: dsId,
 		Index:        index,
 	}
-	return &KazoupOneDriveFile{*kf, *o}
+	return &KazoupOneDriveFile{*kf, o}
 }
 
 // NewKazoupFileFromDropboxFile constructor
@@ -248,6 +253,7 @@ func NewKazoupFileFromDropboxFile(d *dropbox.DropboxFile, dsId, uId, index strin
 		FileSize:     int64(d.Size),
 		IsDir:        isDir,
 		Category:     categories.GetDocType("." + name[len(name)-1]),
+		MimeType:     "", // TODO: mime type Not present on origial file
 		Depth:        0,
 		FileType:     globals.Dropbox,
 		LastSeen:     time.Now().Unix(),
@@ -255,7 +261,7 @@ func NewKazoupFileFromDropboxFile(d *dropbox.DropboxFile, dsId, uId, index strin
 		Index:        index,
 	}
 
-	return &KazoupDropboxFile{*kf, *d}
+	return &KazoupDropboxFile{*kf, d}
 }
 
 // NewKazoupFileFromDropboxFile constructor
@@ -281,6 +287,7 @@ func NewKazoupFileFromBoxFile(d *box.BoxFileMeta, dsId, uId, index string) *Kazo
 		FileSize:     int64(d.Size),
 		IsDir:        isDir,
 		Category:     categories.GetDocType("." + name[len(name)-1]),
+		MimeType:     "", // TODO: mime type Not present on origial file
 		Depth:        0,
 		FileType:     globals.Box,
 		LastSeen:     time.Now().Unix(),
@@ -288,7 +295,7 @@ func NewKazoupFileFromBoxFile(d *box.BoxFileMeta, dsId, uId, index string) *Kazo
 		Index:        index,
 	}
 
-	return &KazoupBoxFile{*kf, *d}
+	return &KazoupBoxFile{*kf, d}
 }
 
 // NewKazoupFileFromGmailFile constructor
@@ -309,13 +316,14 @@ func NewKazoupFileFromGmailFile(m *gmailhelper.GmailFile, dsId, uId, dsURL, inde
 		FileSize:     m.SizeEstimate,
 		IsDir:        false,
 		Category:     categories.GetDocType(fmt.Sprintf(".%s", m.Extension)),
+		MimeType:     m.MimeType,
 		Depth:        0,
 		FileType:     globals.Gmail,
 		LastSeen:     time.Now().Unix(),
 		DatasourceId: dsId,
 		Index:        index,
 	}
-	return &KazoupGmailFile{*kf, *m}
+	return &KazoupGmailFile{*kf, m}
 }
 
 func UrlDepth(str string) int64 {

@@ -14,6 +14,12 @@
           background: transparent;
         };
       }
+
+      mat-item.overflow-visible::shadow a,
+      mat-item.overflow-visible::shadow a div,
+      mat-item.overflow-visible::shadow a div div {
+        overflow: visible !important;
+      }
     </style>
 
     <template is="dom-if" if="[[!item.is_dir]]" restamp="true">
@@ -60,7 +66,7 @@
         <template is="dom-repeat" items="[[googleDriveInfo.people]]">
           <mat-avatar id$="avatar_[[item.id]]"
                       background="light"
-                      icon-src="[[profilePicture(item.photoLink)]]"></mat-avatar>
+                      icon-src$="[[profilePicture(item.photoLink)]]"></mat-avatar>
           <paper-tooltip for$="avatar_[[item.id]]">[[item.displayName]]</paper-tooltip>
         </template>
       </mat-item>
@@ -181,6 +187,15 @@
 
     <paper-toast id="toast" text=""></paper-toast>
 
+    <iron-ajax id="rpcRead"
+               method="POST"
+               content-type="application/json"
+               url="[[endpoints.endpoint]]"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleRead"
+               headers="[[headers]]"></iron-ajax>
+
     <iron-ajax id="rpcSearchSlackUsers"
                method="POST"
                content-type="application/json"
@@ -260,6 +275,21 @@
             type: Object,
             notify: true
           },
+          rpcReadParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: window.Endpoints.srvs.db.srv,
+                method: window.Endpoints.srvs.db.read,
+                request: {
+                  index: '',
+                  type: 'file',
+                  id: ''
+                }
+              };
+            }
+          },
           rpcSearchSlackUsersParams: {
             type: Object,
             notify: false,
@@ -312,33 +342,11 @@
           this.headers = Auth.getHeaders();
           this.md5UserId = Auth.getMD5UserId();
 
-          switch(this.item.file_type) {
-            case 'local':
-              this.getMoreInfoForDirectory();
-              break;
-            case 'slack':
-              this.getMoreInfoFromSlack();
-              break;
-            case 'onedrive':
-              this.getMoreInfoFromOneDrive();
-              break;
-            case 'googledrive':
-              this.getMoreInfoFromGoogleDrive();
-              break;
-            case 'dropbox':
-              this.getMoreInfoFromDropbox();
-              break;
-            case 'box':
-              this.getMoreInfoFromBox();
-              break;
-          }
+          this.rpcReadParams.request.index = newVal.index;
+          this.rpcReadParams.request.id = newVal.id;
 
-          this.async(function() {
-            if (this.$$('#detailImg')) {
-              var height = this.$$('#detailImg').getBoundingClientRect().width / (16/9)
-              this.$$('#detailImg').style.height = height + 'px';
-            }
-          }, 250);
+          this.$.rpcRead.body = this.rpcReadParams;
+          this.$.rpcRead.generateRequest();
         },
         getMoreInfoForDirectory: function() {
           var reqParams;
@@ -460,6 +468,39 @@
         },
         isGoogleDriveFileDeleted: function(fileType, trashed) {
           return this.isGoogleDrive(fileType) && trashed;
+        },
+        _handleRead: function(e) {
+          if (e.detail.response && e.detail.response.result) {
+            this.set('item.original', JSON.parse(e.detail.response.result).original);
+
+            switch(this.item.file_type) {
+              case 'local':
+                this.getMoreInfoForDirectory();
+                break;
+              case 'slack':
+                this.getMoreInfoFromSlack();
+                break;
+              case 'onedrive':
+                this.getMoreInfoFromOneDrive();
+                break;
+              case 'googledrive':
+                this.getMoreInfoFromGoogleDrive();
+                break;
+              case 'dropbox':
+                this.getMoreInfoFromDropbox();
+                break;
+              case 'box':
+                this.getMoreInfoFromBox();
+                break;
+            }
+
+            this.async(function() {
+              if (this.$$('#detailImg')) {
+                var height = this.$$('#detailImg').getBoundingClientRect().width / (16/9)
+                this.$$('#detailImg').style.height = height + 'px';
+              }
+            }, 250);
+          }
         },
         _handleAggregate: function(e) {
           var aggs = {};

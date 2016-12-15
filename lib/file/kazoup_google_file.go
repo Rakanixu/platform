@@ -8,7 +8,7 @@ import (
 
 type KazoupGoogleFile struct {
 	KazoupFile
-	Original googledrive.File `json:"original"`
+	Original *googledrive.File `json:"original,omitempty"`
 }
 
 func (kf *KazoupGoogleFile) PreviewURL(width, height, mode, quality string) string {

@@ -7,7 +7,7 @@ import (
 
 type KazoupSlackFile struct {
 	KazoupFile
-	Original slack.SlackFile `json:"original"`
+	Original *slack.SlackFile `json:"original,omitempty"`
 }
 
 func (kf *KazoupSlackFile) PreviewURL(width, height, mode, quality string) string {

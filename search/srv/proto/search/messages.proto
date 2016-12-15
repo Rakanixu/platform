@@ -12,21 +12,10 @@ message SearchRequest {
   int64 depth = 7;
   string type = 8;
   string file_type = 9;
+  bool no_kazoup_file_original = 10;
 }
 
 message SearchResponse {
-  string result = 1;
-  string info = 2;
-}
-
-message SearchProxyRequest {
-  string datasource_id = 1;
-  string term = 2;
-  int64 from = 3;
-  int64 size = 4;
-}
-
-message SearchProxyResponse {
   string result = 1;
   string info = 2;
 }

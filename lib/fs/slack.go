@@ -240,11 +240,11 @@ func (sfs *SlackFs) getFiles(page int) error {
 	}
 
 	for _, v := range filesRsp.Files {
-		if err := sfs.generateThumbnail(v); err != nil {
+		f := file.NewKazoupFileFromSlackFile(&v, sfs.Endpoint.Id, sfs.Endpoint.UserId, sfs.Endpoint.Index)
+
+		if err := sfs.generateThumbnail(v, f.ID); err != nil {
 			log.Println(err)
 		}
-
-		f := file.NewKazoupFileFromSlackFile(&v, sfs.Endpoint.Id, sfs.Endpoint.UserId, sfs.Endpoint.Index)
 
 		sfs.FilesChan <- f
 	}
@@ -257,7 +257,7 @@ func (sfs *SlackFs) getFiles(page int) error {
 }
 
 // generateThumbnail downloads original picture, resize and uploads to Google storage
-func (sfs *SlackFs) generateThumbnail(sf slack.SlackFile) error {
+func (sfs *SlackFs) generateThumbnail(sf slack.SlackFile, id string) error {
 	if categories.GetDocType("."+sf.Filetype) == globals.CATEGORY_PICTURE {
 		pr, err := sfs.DownloadFile(sf.URLPrivateDownload)
 		if err != nil {
@@ -269,7 +269,7 @@ func (sfs *SlackFs) generateThumbnail(sf slack.SlackFile) error {
 			return errors.New("ERROR generating thumbnail for slack file")
 		}
 
-		if err := sfs.UploadFile(b, sf.ID); err != nil {
+		if err := sfs.UploadFile(b, id); err != nil {
 			return errors.New("ERROR uploading thumbnail for slack file")
 		}
 	}

@@ -211,10 +211,7 @@ func (gfs *GmailFs) pushMessagesToChanForPage(s *gmail.Service, msgs []*gmail.Me
 				InternalDate: msgBdy.InternalDate,
 				SizeEstimate: msgBdy.SizeEstimate,
 				Name:         vl.Filename,
-			}
-
-			if err := gfs.generateThumbnail(gf, v, vl); err != nil {
-				log.Println(err)
+				MimeType:     vl.MimeType,
 			}
 
 			ext := strings.Split(strings.Replace(vl.Filename, " ", "-", 1), ".")
@@ -224,6 +221,10 @@ func (gfs *GmailFs) pushMessagesToChanForPage(s *gmail.Service, msgs []*gmail.Me
 			// Constructor will return nil when the attachment has no name
 			// When an attachment has no name, attachment use to be a marketing image
 			if f != nil {
+				if err := gfs.generateThumbnail(gf, v, vl, f.ID); err != nil {
+					log.Println(err)
+				}
+
 				gfs.FilesChan <- f
 			}
 		}
@@ -233,7 +234,7 @@ func (gfs *GmailFs) pushMessagesToChanForPage(s *gmail.Service, msgs []*gmail.Me
 }
 
 // generateThumbnail downloads original picture, resize and uploads to Google storage
-func (gfs *GmailFs) generateThumbnail(gf *gmailhelper.GmailFile, msg *gmail.Message, msgp *gmail.MessagePart) error {
+func (gfs *GmailFs) generateThumbnail(gf *gmailhelper.GmailFile, msg *gmail.Message, msgp *gmail.MessagePart, id string) error {
 	if msgp.MimeType == globals.MIME_PNG || msgp.MimeType == globals.MIME_JPG || msgp.MimeType == globals.MIME_JPEG {
 		pr, err := gfs.DownloadFile(msg.Id, msgp.Body.AttachmentId)
 		if err != nil {
@@ -245,7 +246,7 @@ func (gfs *GmailFs) generateThumbnail(gf *gmailhelper.GmailFile, msg *gmail.Mess
 			return errors.New("ERROR generating thumbnail for gmail file")
 		}
 
-		if err := gfs.UploadFile(b, gf.Id); err != nil {
+		if err := gfs.UploadFile(b, id); err != nil {
 			return errors.New("ERROR uploading thumbnail for gmail file: %s")
 		}
 	}
