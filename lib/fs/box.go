@@ -181,7 +181,7 @@ func (bfs *BoxFs) CreateFile(ctx context.Context, c client.Client, rq file_proto
 	}
 
 	// Construct Kazoup file from box created file and index it
-	kfb := file.NewKazoupFileFromBoxFile(&bf.Entries[0], bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
+	kfb := file.NewKazoupFileFromBoxFile(bf.Entries[0], bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
 	if err := file.IndexAsync(c, kfb, globals.FilesTopic, bfs.Endpoint.Index, true); err != nil {
 		return nil, err
 	}
@@ -274,7 +274,7 @@ func (bfs *BoxFs) ShareFile(ctx context.Context, c client.Client, req file_proto
 	}
 
 	// Reindex modified file
-	kbf := file.NewKazoupFileFromBoxFile(f, bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
+	kbf := file.NewKazoupFileFromBoxFile(*f, bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
 	if err := file.IndexAsync(c, kbf, globals.FilesTopic, bfs.Endpoint.Index, true); err != nil {
 		return "", err
 	}
@@ -376,7 +376,7 @@ func (bfs *BoxFs) getMetadataFromFile(id string) error {
 		return err
 	}
 
-	f := file.NewKazoupFileFromBoxFile(fm, bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
+	f := file.NewKazoupFileFromBoxFile(*fm, bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
 
 	if err := bfs.generateThumbnail(fm, f.ID); err != nil {
 		log.Println(err)

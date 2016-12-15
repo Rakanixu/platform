@@ -89,7 +89,7 @@ func (gfs *GoogleDriveFs) CreateFile(ctx context.Context, c client.Client, rq fi
 		return nil, err
 	}
 
-	kfg := file.NewKazoupFileFromGoogleDriveFile(f, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
+	kfg := file.NewKazoupFileFromGoogleDriveFile(*f, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
 	if kfg == nil {
 		return nil, errors.New("ERROR CreateFile gdrive is nil")
 	}
@@ -170,7 +170,7 @@ func (gfs *GoogleDriveFs) ShareFile(ctx context.Context, c client.Client, req fi
 		return "", err
 	}
 
-	kfg := file.NewKazoupFileFromGoogleDriveFile(gf, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
+	kfg := file.NewKazoupFileFromGoogleDriveFile(*gf, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
 	if kfg == nil {
 		return "", errors.New("ERROR ShareFile gdrive is nil")
 	}
@@ -264,7 +264,7 @@ func (gfs *GoogleDriveFs) getNextPage(srv *drive.Service, nextPageToken string) 
 // pushFilesToChanForPage sends discovered files to the file system channel
 func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
 	for _, v := range files {
-		f := file.NewKazoupFileFromGoogleDriveFile(v, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
+		f := file.NewKazoupFileFromGoogleDriveFile(*v, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
 		if f != nil {
 			if err := gfs.generateThumbnail(v, f.ID); err != nil {
 				log.Println(err)
