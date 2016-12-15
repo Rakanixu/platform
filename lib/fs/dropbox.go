@@ -111,7 +111,7 @@ func (dfs *DropboxFs) CreateFile(ctx context.Context, c client.Client, rq file_p
 		return nil, err
 	}
 
-	kfd := file.NewKazoupFileFromDropboxFile(df, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
+	kfd := file.NewKazoupFileFromDropboxFile(*df, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
 	if kfd == nil {
 		return nil, errors.New("ERROR dropbox file is nil")
 	}
@@ -292,7 +292,7 @@ func (dfs *DropboxFs) getFile(id string) (*file.KazoupDropboxFile, error) {
 		return nil, err
 	}
 
-	kfd := file.NewKazoupFileFromDropboxFile(f, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
+	kfd := file.NewKazoupFileFromDropboxFile(*f, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
 	if kfd == nil {
 		return nil, errors.New("ERROR dropbox file is nil")
 	}
@@ -449,7 +449,7 @@ func (dfs *DropboxFs) pushFilesToChannel(list *dropbox.FilesListResponse) {
 	var err error
 
 	for _, v := range list.Entries {
-		f := file.NewKazoupFileFromDropboxFile(&v, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
+		f := file.NewKazoupFileFromDropboxFile(v, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
 		if f != nil {
 			// File is shared, lets get Users and Invitees to this file
 			if f.Original.HasExplicitSharedMembers {

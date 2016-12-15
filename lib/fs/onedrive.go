@@ -166,7 +166,7 @@ func (ofs *OneDriveFs) CreateFile(ctx context.Context, c client.Client, rq file_
 		return nil, err
 	}
 
-	kfo := file.NewKazoupFileFromOneDriveFile(f, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)
+	kfo := file.NewKazoupFileFromOneDriveFile(*f, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)
 	if err := file.IndexAsync(c, kfo, globals.FilesTopic, ofs.Endpoint.Index, true); err != nil {
 		return nil, err
 	}
@@ -463,7 +463,7 @@ func (ofs *OneDriveFs) getDirChildren(id string) error {
 
 // pushToFilesChannel
 func (ofs *OneDriveFs) pushToFilesChannel(f onedrive.OneDriveFile) error {
-	kof := file.NewKazoupFileFromOneDriveFile(&f, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)
+	kof := file.NewKazoupFileFromOneDriveFile(f, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)
 
 	if err := ofs.generateThumbnail(f, kof.ID); err != nil {
 		log.Println(err)

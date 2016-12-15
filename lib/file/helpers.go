@@ -103,7 +103,7 @@ func NewFileFromString(s string) (File, error) {
 
 // NewKazoupFileFromGoogleDriveFile constructor
 // opts first param is base64 emcoded file (itself)
-func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId, uId, index string) *KazoupGoogleFile {
+func NewKazoupFileFromGoogleDriveFile(g googledrive.File, dsId, uId, index string) *KazoupGoogleFile {
 	t, _ := time.Parse("2006-01-02T15:04:05.000Z", g.ModifiedTime)
 
 	d := false
@@ -146,11 +146,11 @@ func NewKazoupFileFromGoogleDriveFile(g *googledrive.File, dsId, uId, index stri
 		DatasourceId: dsId,
 		Index:        index,
 	}
-	return &KazoupGoogleFile{*kf, g}
+	return &KazoupGoogleFile{*kf, &g}
 }
 
 // NewKazoupFileFromSlackFile constructor
-func NewKazoupFileFromSlackFile(s *slack.SlackFile, dsId, uId, index string) *KazoupSlackFile {
+func NewKazoupFileFromSlackFile(s slack.SlackFile, dsId, uId, index string) *KazoupSlackFile {
 	t := time.Unix(s.Timestamp, 0)
 
 	kf := &KazoupFile{
@@ -169,7 +169,7 @@ func NewKazoupFileFromSlackFile(s *slack.SlackFile, dsId, uId, index string) *Ka
 		DatasourceId: dsId,
 		Index:        index,
 	}
-	return &KazoupSlackFile{*kf, s}
+	return &KazoupSlackFile{*kf, &s}
 }
 
 func NewKazoupFileFromLocal(lf *local.LocalFile, dsId, uId, index string) *KazoupLocalFile {
@@ -194,7 +194,7 @@ func NewKazoupFileFromLocal(lf *local.LocalFile, dsId, uId, index string) *Kazou
 }
 
 // NewKazoupFileFromOneDriveFile constructor
-func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile, dsId, uId, index string) *KazoupOneDriveFile {
+func NewKazoupFileFromOneDriveFile(o onedrive.OneDriveFile, dsId, uId, index string) *KazoupOneDriveFile {
 	isDir := true
 	mimeType := ""
 	name := strings.Split(o.Name, ".")
@@ -220,11 +220,11 @@ func NewKazoupFileFromOneDriveFile(o *onedrive.OneDriveFile, dsId, uId, index st
 		DatasourceId: dsId,
 		Index:        index,
 	}
-	return &KazoupOneDriveFile{*kf, o}
+	return &KazoupOneDriveFile{*kf, &o}
 }
 
 // NewKazoupFileFromDropboxFile constructor
-func NewKazoupFileFromDropboxFile(d *dropbox.DropboxFile, dsId, uId, index string) *KazoupDropboxFile {
+func NewKazoupFileFromDropboxFile(d dropbox.DropboxFile, dsId, uId, index string) *KazoupDropboxFile {
 	isDir := false
 	name := strings.Split(d.Name, ".")
 	path := strings.Replace(d.PathDisplay, "/"+d.Name, "", 1)
@@ -261,11 +261,11 @@ func NewKazoupFileFromDropboxFile(d *dropbox.DropboxFile, dsId, uId, index strin
 		Index:        index,
 	}
 
-	return &KazoupDropboxFile{*kf, d}
+	return &KazoupDropboxFile{*kf, &d}
 }
 
 // NewKazoupFileFromDropboxFile constructor
-func NewKazoupFileFromBoxFile(d *box.BoxFileMeta, dsId, uId, index string) *KazoupBoxFile {
+func NewKazoupFileFromBoxFile(d box.BoxFileMeta, dsId, uId, index string) *KazoupBoxFile {
 	isDir := false
 	name := strings.Split(d.Name, ".")
 	url := fmt.Sprintf("https://app.box.com/%s/%s", d.Type, d.ID)
@@ -295,11 +295,11 @@ func NewKazoupFileFromBoxFile(d *box.BoxFileMeta, dsId, uId, index string) *Kazo
 		Index:        index,
 	}
 
-	return &KazoupBoxFile{*kf, d}
+	return &KazoupBoxFile{*kf, &d}
 }
 
 // NewKazoupFileFromGmailFile constructor
-func NewKazoupFileFromGmailFile(m *gmailhelper.GmailFile, dsId, uId, dsURL, index string) *KazoupGmailFile {
+func NewKazoupFileFromGmailFile(m gmailhelper.GmailFile, dsId, uId, dsURL, index string) *KazoupGmailFile {
 	if len(m.Name) == 0 {
 		return nil
 	}
@@ -323,7 +323,7 @@ func NewKazoupFileFromGmailFile(m *gmailhelper.GmailFile, dsId, uId, dsURL, inde
 		DatasourceId: dsId,
 		Index:        index,
 	}
-	return &KazoupGmailFile{*kf, m}
+	return &KazoupGmailFile{*kf, &m}
 }
 
 func UrlDepth(str string) int64 {

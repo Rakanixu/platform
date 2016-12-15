@@ -240,7 +240,7 @@ func (sfs *SlackFs) getFiles(page int) error {
 	}
 
 	for _, v := range filesRsp.Files {
-		f := file.NewKazoupFileFromSlackFile(&v, sfs.Endpoint.Id, sfs.Endpoint.UserId, sfs.Endpoint.Index)
+		f := file.NewKazoupFileFromSlackFile(v, sfs.Endpoint.Id, sfs.Endpoint.UserId, sfs.Endpoint.Index)
 
 		if err := sfs.generateThumbnail(v, f.ID); err != nil {
 			log.Println(err)
@@ -298,7 +298,7 @@ func (sfs *SlackFs) shareFilePublicly(c client.Client, id string) (string, error
 
 	// Response contains object, permalink_public attr will be modified
 	// Reindex document
-	f := file.NewKazoupFileFromSlackFile(&ssr.File, sfs.Endpoint.Id, sfs.Endpoint.UserId, sfs.Endpoint.Index)
+	f := file.NewKazoupFileFromSlackFile(ssr.File, sfs.Endpoint.Id, sfs.Endpoint.UserId, sfs.Endpoint.Index)
 	if err := file.IndexAsync(c, f, globals.FilesTopic, sfs.Endpoint.Index, true); err != nil {
 		return "", err
 	}

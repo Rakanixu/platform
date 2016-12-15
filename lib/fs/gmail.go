@@ -217,7 +217,7 @@ func (gfs *GmailFs) pushMessagesToChanForPage(s *gmail.Service, msgs []*gmail.Me
 			ext := strings.Split(strings.Replace(vl.Filename, " ", "-", 1), ".")
 			gf.Extension = ext[len(ext)-1]
 
-			f := file.NewKazoupFileFromGmailFile(gf, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Url, gfs.Endpoint.Index)
+			f := file.NewKazoupFileFromGmailFile(*gf, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Url, gfs.Endpoint.Index)
 			// Constructor will return nil when the attachment has no name
 			// When an attachment has no name, attachment use to be a marketing image
 			if f != nil {
