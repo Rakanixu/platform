@@ -295,7 +295,7 @@
                     </template>
 
                     <div class="bottom fit">
-                        <mat-item label="[[item.name]]" class="light" focused="false"></mat-item>
+                        <mat-item label="[[item.name]]" on-tap="copyTextToClipboard" data-text="[[item.name]]" class="light" focused="false"></mat-item>
                     </div>
                 </paper-toolbar>
 
