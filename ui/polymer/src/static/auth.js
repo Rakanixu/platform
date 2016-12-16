@@ -24,7 +24,7 @@ window.Auth = (function() {
 
   function _loadSearchPage() {
     document.querySelector('kazoup-app').routeTo(
-      Polymer.MapBehaviorImp.properties.pagesMap.value().search.path,
+      MapBehaviorImp.properties.pagesMap.value().search.path,
       {
         index: Auth.getMD5UserId()
       }
@@ -125,7 +125,7 @@ window.Auth = (function() {
       var profile = this.getProfile();
 
       if (!_.isEmpty(profile) && profile.user_id) {
-        return new Hashes.MD5().hex(profile.user_id);
+        return md5(profile.user_id);
       }
 
       return '';

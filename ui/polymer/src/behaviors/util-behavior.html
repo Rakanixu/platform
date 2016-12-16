@@ -36,7 +36,7 @@
       return (i > 1) ? 's ' : ' ';
     }
 
-    Polymer.UtilBehaviorImp = {
+    window.UtilBehaviorImp = {
       openMenu: function() {
         window.dispatchEvent(new Event('main-menu-open'));
 
@@ -313,7 +313,7 @@
         return (url && url.length) ? url : '/src/static/unknown-pic-profile.gif';
       },
       getGravatarUrl: function(mail) {
-        return 'https://www.gravatar.com/avatar/' + new Hashes.MD5().hex(mail) + '?d=identicon'
+        return 'https://www.gravatar.com/avatar/' + md5(mail) + '?d=identicon'
       },
       replaceAll: function(str, search, replacement) {
         return  str.replace(new RegExp(search, 'g'), replacement);
@@ -321,6 +321,26 @@
       base64DecodeUrl: function(str) {
         str = (str + '===').slice(0, str.length + (str.length % 4));
         return str.replace(/-/g, '+').replace(/_/g, '/');
+      },
+      copyTextToClipboard: function(e) {
+        // http://stackoverflow.com/questions/400212/how-do-i-copy-to-the-clipboard-in-javascript
+        var textArea = document.createElement('textarea');
+        var message = '';
+
+        textArea.value = e.currentTarget.label;
+        Polymer.dom(this.root).appendChild(textArea);
+        textArea.select();
+        try {
+          // https://developer.mozilla.org/en-US/docs/Web/API/Document/execCommand
+          if (document.execCommand('copy')) {
+            this.$.toast.text = 'Succesfuly copied to clipboard';
+            this.$.toast.show();
+          }
+        } catch (err) {
+          // Do not show
+        }
+
+        Polymer.dom(this.root).removeChild(textArea);
       }
     };
   }());

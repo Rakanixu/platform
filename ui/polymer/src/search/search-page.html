@@ -295,7 +295,7 @@
                     </template>
 
                     <div class="bottom fit">
-                        <mat-item label="[[item.name]]" class="light" focused="false"></mat-item>
+                        <mat-item label="[[item.name]]" on-tap="copyTextToClipboard" data-text="[[item.name]]" class="light" focused="false"></mat-item>
                     </div>
                 </paper-toolbar>
 
@@ -340,9 +340,9 @@
         Polymer({
             is: 'search-page',
             behaviors: [
-                Polymer.UtilBehaviorImp,
-                Polymer.MapBehaviorImp,
-                Polymer.EndpointsBehaviorImp
+                UtilBehaviorImp,
+                MapBehaviorImp,
+                EndpointsBehaviorImp
             ],
             properties: {
                 loading: {
@@ -587,7 +587,7 @@
                     this.set('totalResults', JSON.parse(e.detail.response.info).total);
                     _.forEach(result, function(record) {
                         this.push('searchResults', record);
-                    }, this);
+                    }.bind(this));
                     this.$.searchList.fire('iron-resize');
 
                     if (this.searchResults.length) {
