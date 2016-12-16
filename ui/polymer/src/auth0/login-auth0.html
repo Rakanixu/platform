@@ -1,3 +1,7 @@
+<script src="../../src/static/md5-min.js"></script>
+<script src="../../src/static/lock.min.js"></script>
+<script src="../../src/static/auth.js"></script>
+
 <dom-module id="login-auth0">
   <style is="custom-style" include="iron-flex iron-positioning iron-flex-alignment"></style>
   <template>
@@ -15,7 +19,7 @@
       Polymer({
         is: 'login-auth0',
         behaviors: [
-          Polymer.MapBehaviorImp
+          MapBehaviorImp
         ],
         observers: [
           '_route(route.path)'
