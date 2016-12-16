@@ -2,6 +2,8 @@
   "entrypoint": "index.html",
   "shell": "src/kazoup-app.html",
   "fragments": [
+    "src/behaviors/map-behavior.html",
+    "src/behaviors/endpoints-behavior.html",
     "src/auth0/login-auth0.html",
     "src/onboarding/onboarding-page.html",
     "src/menu/main-menu.html"

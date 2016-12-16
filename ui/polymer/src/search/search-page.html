@@ -340,9 +340,9 @@
         Polymer({
             is: 'search-page',
             behaviors: [
-                Polymer.UtilBehaviorImp,
-                Polymer.MapBehaviorImp,
-                Polymer.EndpointsBehaviorImp
+                UtilBehaviorImp,
+                MapBehaviorImp,
+                EndpointsBehaviorImp
             ],
             properties: {
                 loading: {
@@ -587,7 +587,7 @@
                     this.set('totalResults', JSON.parse(e.detail.response.info).total);
                     _.forEach(result, function(record) {
                         this.push('searchResults', record);
-                    }, this);
+                    }.bind(this));
                     this.$.searchList.fire('iron-resize');
 
                     if (this.searchResults.length) {

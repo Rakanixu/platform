@@ -1,4 +1,8 @@
 <link rel="import" href="../../bower_components/l2t-paper-slider/l2t-paper-slider.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../src/behaviors/map-behavior.html">
+
 <dom-module id="onboarding-page">
   <style is="custom-style" include="iron-flex iron-positioning iron-flex-alignment"></style>
   <template>
@@ -87,7 +91,7 @@
       Polymer({
         is: 'onboarding-page',
         behaviors: [
-          Polymer.MapBehaviorImp
+          MapBehaviorImp
         ],
         observers: [
           '_route(route.path)'

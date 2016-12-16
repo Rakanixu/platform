@@ -36,7 +36,7 @@
       return (i > 1) ? 's ' : ' ';
     }
 
-    Polymer.UtilBehaviorImp = {
+    window.UtilBehaviorImp = {
       openMenu: function() {
         window.dispatchEvent(new Event('main-menu-open'));
 
@@ -313,7 +313,7 @@
         return (url && url.length) ? url : '/src/static/unknown-pic-profile.gif';
       },
       getGravatarUrl: function(mail) {
-        return 'https://www.gravatar.com/avatar/' + new Hashes.MD5().hex(mail) + '?d=identicon'
+        return 'https://www.gravatar.com/avatar/' + md5(mail) + '?d=identicon'
       },
       replaceAll: function(str, search, replacement) {
         return  str.replace(new RegExp(search, 'g'), replacement);
