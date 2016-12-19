@@ -5,87 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/kazoup/platform/lib/globals"
-	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	search_proto "github.com/kazoup/platform/search/srv/proto/search"
 	lib "github.com/mattbaird/elastigo/lib"
-	"log"
 	"strconv"
 )
-
-func indexer(e *elastic) error {
-	// Files
-	go func() {
-		for {
-			select {
-			case v := <-e.filesChannel:
-				// File message can be notified, when a file is create, deleted or shared within kazoup
-				if v.FileMessage.Notify {
-					// We do not use bulk, as is just one element
-					if _, err := e.conn.Index(v.FileMessage.Index, "file", v.FileMessage.Id, nil, v.FileMessage.Data); err != nil {
-						log.Print("Bulk Indexer error %s", err)
-					}
-
-					n := &notification_proto.NotificationMessage{
-						Method: globals.NOTIFY_REFRESH_SEARCH,
-						UserId: v.FileMessage.UserId,
-					}
-
-					// Publish scan topic, crawlers should pick up message
-					if err := v.Client.Publish(globals.NewSystemContext(), v.Client.NewPublication(globals.NotificationTopic, n)); err != nil {
-						log.Print("Publishing (notify file) error %s", err)
-					}
-				} else {
-					// Use bulk as we will index groups of documents
-					if err := e.bulk.Index(v.FileMessage.Index, "file", v.FileMessage.Id, "", "", nil, v.FileMessage.Data); err != nil {
-						log.Print("Bulk Indexer error %s", err)
-					}
-				}
-			}
-
-		}
-	}()
-
-	// Slack users
-	go func() {
-		for {
-			select {
-			case v := <-e.slackUsersChannel:
-				if err := e.bulk.Index(v.Index, "user", v.Id, "", "", nil, v.Data); err != nil {
-					log.Print("Bulk Indexer error %s", err)
-				}
-			}
-
-		}
-	}()
-
-	// Slack channels
-	go func() {
-		for {
-			select {
-			case v := <-e.slackChannelsChannel:
-				if err := e.bulk.Index(v.Index, "channel", v.Id, "", "", nil, v.Data); err != nil {
-					log.Print("Bulk Indexer error %s", err)
-				}
-			}
-
-		}
-	}()
-
-	return nil
-}
-
-func enricher(e *elastic) error {
-	go func() {
-		for {
-			select {
-			case v := <-e.crawlerFinished:
-				log.Println(v)
-			}
-		}
-	}()
-
-	return nil
-}
 
 type JsonRemoveAliases struct {
 	Actions []JsonAliasRemove `json:"actions"`
@@ -117,7 +40,7 @@ func (e *elastic) RemoveAlias(index string, alias string) (lib.BaseResponse, err
 		return retval, err
 	}
 
-	body, err := e.conn.DoCommand("POST", url, nil, requestBody)
+	body, err := e.Conn.DoCommand("POST", url, nil, requestBody)
 	if err != nil {
 		return retval, err
 	}
