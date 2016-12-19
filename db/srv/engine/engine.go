@@ -3,6 +3,7 @@ package engine
 import (
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	config "github.com/kazoup/platform/db/srv/proto/config"
 	db "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/lib/file"
 	search_proto "github.com/kazoup/platform/search/srv/proto/search"
@@ -17,24 +18,36 @@ const (
 
 type Engine interface {
 	Init() error
-	SubscribeFiles(ctx context.Context, c client.Client, msg *crawler.FileMessage) error
-	SubscribeSlackUsers(ctx context.Context, msg *crawler.SlackUserMessage) error
-	SubscribeSlackChannels(ctx context.Context, msg *crawler.SlackChannelMessage) error
-	SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedMessage) error
+	DB
+	Config
+	Subscriber
+}
+
+type DB interface {
 	Create(ctx context.Context, req *db.CreateRequest) (*db.CreateResponse, error)
 	Read(ctx context.Context, req *db.ReadRequest) (*db.ReadResponse, error)
 	Update(ctx context.Context, req *db.UpdateRequest) (*db.UpdateResponse, error)
 	Delete(ctx context.Context, req *db.DeleteRequest) (*db.DeleteResponse, error)
 	DeleteByQuery(ctx context.Context, req *db.DeleteByQueryRequest) (*db.DeleteByQueryResponse, error)
-	CreateIndex(ctx context.Context, req *db.CreateIndexRequest) (*db.CreateIndexResponse, error)
-	Status(ctx context.Context, req *db.StatusRequest) (*db.StatusResponse, error)
 	Search(ctx context.Context, req *db.SearchRequest) (*db.SearchResponse, error)
 	SearchById(ctx context.Context, req *db.SearchByIdRequest) (*db.SearchByIdResponse, error)
-	AddAlias(ctx context.Context, req *db.AddAliasRequest) (*db.AddAliasResponse, error)
-	DeleteIndex(ctx context.Context, req *db.DeleteIndexRequest) (*db.DeleteIndexResponse, error)
-	DeleteAlias(ctx context.Context, req *db.DeleteAliasRequest) (*db.DeleteAliasResponse, error)
-	RenameAlias(ctx context.Context, req *db.RenameAliasRequest) (*db.RenameAliasResponse, error)
+}
+
+type Config interface {
+	CreateIndex(ctx context.Context, req *config.CreateIndexRequest) (*config.CreateIndexResponse, error)
+	Status(ctx context.Context, req *config.StatusRequest) (*config.StatusResponse, error)
+	AddAlias(ctx context.Context, req *config.AddAliasRequest) (*config.AddAliasResponse, error)
+	DeleteIndex(ctx context.Context, req *config.DeleteIndexRequest) (*config.DeleteIndexResponse, error)
+	DeleteAlias(ctx context.Context, req *config.DeleteAliasRequest) (*config.DeleteAliasResponse, error)
+	RenameAlias(ctx context.Context, req *config.RenameAliasRequest) (*config.RenameAliasResponse, error)
 	Aggregate(ctx context.Context, req *search_proto.AggregateRequest) (*search_proto.AggregateResponse, error)
+}
+
+type Subscriber interface {
+	SubscribeFiles(ctx context.Context, c client.Client, msg *crawler.FileMessage) error
+	SubscribeSlackUsers(ctx context.Context, msg *crawler.SlackUserMessage) error
+	SubscribeSlackChannels(ctx context.Context, msg *crawler.SlackChannelMessage) error
+	SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedMessage) error
 }
 
 var (
@@ -89,11 +102,11 @@ func DeleteByQuery(ctx context.Context, req *db.DeleteByQueryRequest) (*db.Delet
 	return engine.DeleteByQuery(ctx, req)
 }
 
-func CreateIndex(ctx context.Context, req *db.CreateIndexRequest) (*db.CreateIndexResponse, error) {
+func CreateIndex(ctx context.Context, req *config.CreateIndexRequest) (*config.CreateIndexResponse, error) {
 	return engine.CreateIndex(ctx, req)
 }
 
-func Status(ctx context.Context, req *db.StatusRequest) (*db.StatusResponse, error) {
+func Status(ctx context.Context, req *config.StatusRequest) (*config.StatusResponse, error) {
 	return engine.Status(ctx, req)
 }
 
@@ -105,19 +118,19 @@ func SearchById(ctx context.Context, req *db.SearchByIdRequest) (*db.SearchByIdR
 	return engine.SearchById(ctx, req)
 }
 
-func AddAlias(ctx context.Context, req *db.AddAliasRequest) (*db.AddAliasResponse, error) {
+func AddAlias(ctx context.Context, req *config.AddAliasRequest) (*config.AddAliasResponse, error) {
 	return engine.AddAlias(ctx, req)
 }
 
-func DeleteIndex(ctx context.Context, req *db.DeleteIndexRequest) (*db.DeleteIndexResponse, error) {
+func DeleteIndex(ctx context.Context, req *config.DeleteIndexRequest) (*config.DeleteIndexResponse, error) {
 	return engine.DeleteIndex(ctx, req)
 }
 
-func DeleteAlias(ctx context.Context, req *db.DeleteAliasRequest) (*db.DeleteAliasResponse, error) {
+func DeleteAlias(ctx context.Context, req *config.DeleteAliasRequest) (*config.DeleteAliasResponse, error) {
 	return engine.DeleteAlias(ctx, req)
 }
 
-func RenameAlias(ctx context.Context, req *db.RenameAliasRequest) (*db.RenameAliasResponse, error) {
+func RenameAlias(ctx context.Context, req *config.RenameAliasRequest) (*config.RenameAliasResponse, error) {
 	return engine.RenameAlias(ctx, req)
 }
 

@@ -5,6 +5,7 @@ import (
 	"github.com/kazoup/gabs"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/kazoup/platform/db/srv/engine"
+	config "github.com/kazoup/platform/db/srv/proto/config"
 	db "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/lib/globals"
 	search_proto "github.com/kazoup/platform/search/srv/proto/search"
@@ -304,24 +305,24 @@ func (e *elastic) SearchById(ctx context.Context, req *db.SearchByIdRequest) (*d
 }
 
 // CreateIndexWithSettings creates an ES index with settings
-func (e *elastic) CreateIndex(ctx context.Context, req *db.CreateIndexRequest) (*db.CreateIndexResponse, error) {
+func (e *elastic) CreateIndex(ctx context.Context, req *config.CreateIndexRequest) (*config.CreateIndexResponse, error) {
 	exists, err := e.conn.IndicesExists(req.Index)
 	if err != nil {
-		return &db.CreateIndexResponse{}, err
+		return &config.CreateIndexResponse{}, err
 	}
 
 	if !exists {
 		_, err := e.conn.CreateIndex(req.Index)
 		if err != nil {
-			return &db.CreateIndexResponse{}, err
+			return &config.CreateIndexResponse{}, err
 		}
 	}
 
-	return &db.CreateIndexResponse{}, nil
+	return &config.CreateIndexResponse{}, nil
 }
 
 // Status elasticsearch cluster
-func (e *elastic) Status(ctx context.Context, req *db.StatusRequest) (*db.StatusResponse, error) {
+func (e *elastic) Status(ctx context.Context, req *config.StatusRequest) (*config.StatusResponse, error) {
 	clusterState, err := e.conn.ClusterState(lib.ClusterStateFilter{
 		FilterNodes:        true,
 		FilterRoutingTable: true,
@@ -331,10 +332,10 @@ func (e *elastic) Status(ctx context.Context, req *db.StatusRequest) (*db.Status
 
 	b, err := json.Marshal(clusterState)
 	if err != nil {
-		return &db.StatusResponse{}, err
+		return &config.StatusResponse{}, err
 	}
 
-	response := &db.StatusResponse{
+	response := &config.StatusResponse{
 		Status: string(b),
 	}
 
@@ -342,37 +343,37 @@ func (e *elastic) Status(ctx context.Context, req *db.StatusRequest) (*db.Status
 }
 
 // AddAlias to assign indexes (aliases) per datasource
-func (e *elastic) AddAlias(ctx context.Context, req *db.AddAliasRequest) (*db.AddAliasResponse, error) {
+func (e *elastic) AddAlias(ctx context.Context, req *config.AddAliasRequest) (*config.AddAliasResponse, error) {
 	_, err := e.conn.AddAlias(req.Index, req.Alias)
 	if err != nil {
 		return nil, err
 	}
 
-	return &db.AddAliasResponse{}, nil
+	return &config.AddAliasResponse{}, nil
 }
 
 // DeleteIndex from ES
-func (e *elastic) DeleteIndex(ctx context.Context, req *db.DeleteIndexRequest) (*db.DeleteIndexResponse, error) {
+func (e *elastic) DeleteIndex(ctx context.Context, req *config.DeleteIndexRequest) (*config.DeleteIndexResponse, error) {
 	_, err := e.conn.DeleteIndex(req.Index)
 	if err != nil {
 		return nil, err
 	}
 
-	return &db.DeleteIndexResponse{}, nil
+	return &config.DeleteIndexResponse{}, nil
 }
 
 // DeleteAlias from ES
-func (e *elastic) DeleteAlias(ctx context.Context, req *db.DeleteAliasRequest) (*db.DeleteAliasResponse, error) {
+func (e *elastic) DeleteAlias(ctx context.Context, req *config.DeleteAliasRequest) (*config.DeleteAliasResponse, error) {
 	_, err := e.RemoveAlias(req.Index, req.Alias)
 	if err != nil {
 		return nil, err
 	}
 
-	return &db.DeleteAliasResponse{}, nil
+	return &config.DeleteAliasResponse{}, nil
 }
 
 // RenameAlias from ES
-func (e *elastic) RenameAlias(ctx context.Context, req *db.RenameAliasRequest) (*db.RenameAliasResponse, error) {
+func (e *elastic) RenameAlias(ctx context.Context, req *config.RenameAliasRequest) (*config.RenameAliasResponse, error) {
 	var err error
 
 	_, err = e.RemoveAlias(req.Index, req.OldAlias)
@@ -380,7 +381,7 @@ func (e *elastic) RenameAlias(ctx context.Context, req *db.RenameAliasRequest) (
 		return nil, err
 	}
 
-	_, err = e.AddAlias(ctx, &db.AddAliasRequest{
+	_, err = e.AddAlias(ctx, &config.AddAliasRequest{
 		Index: req.Index,
 		Alias: req.NewAlias,
 	})
@@ -388,7 +389,7 @@ func (e *elastic) RenameAlias(ctx context.Context, req *db.RenameAliasRequest) (
 		return nil, err
 	}
 
-	return &db.RenameAliasResponse{}, nil
+	return &config.RenameAliasResponse{}, nil
 }
 
 // Aggregate allow us to query for aggs in ES

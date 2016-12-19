@@ -3,7 +3,7 @@ package fs
 import (
 	"errors"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	db_proto "github.com/kazoup/platform/db/srv/proto/db"
+	db_config_proto "github.com/kazoup/platform/db/srv/proto/config"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
@@ -107,10 +107,10 @@ func (lfs *LocalFs) DeleteIndexBucketFromGCS() error {
 // walkDatasourceParents creates helper index, aliases and push the dirs that makes the root path of the datasource
 func (lfs *LocalFs) walkDatasourceParents() error {
 	// Create index and put mapping if does not exist
-	c := db_proto.NewDBClient(globals.DB_SERVICE_NAME, nil)
+	c := db_config_proto.NewConfigClient(globals.DB_SERVICE_NAME, nil)
 	_, err := c.CreateIndex(
 		context.Background(),
-		&db_proto.CreateIndexRequest{
+		&db_config_proto.CreateIndexRequest{
 			Index: globals.IndexHelper,
 		},
 	)
@@ -120,7 +120,7 @@ func (lfs *LocalFs) walkDatasourceParents() error {
 
 	_, err = c.AddAlias(
 		context.Background(),
-		&db_proto.AddAliasRequest{
+		&db_config_proto.AddAliasRequest{
 			Index: globals.IndexHelper,
 			Alias: globals.GetMD5Hash(lfs.Endpoint.UserId),
 		},

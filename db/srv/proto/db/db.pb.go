@@ -2,43 +2,6 @@
 // source: github.com/kazoup/platform/db/srv/proto/db/db.proto
 // DO NOT EDIT!
 
-/*
-Package go_micro_srv_db is a generated protocol buffer package.
-
-It is generated from these files:
-	github.com/kazoup/platform/db/srv/proto/db/db.proto
-
-It has these top-level messages:
-	DocRef
-	CreateRequest
-	CreateResponse
-	BulkCreateRequest
-	BulkCreateResponse
-	ReadRequest
-	ReadResponse
-	UpdateRequest
-	UpdateResponse
-	DeleteRequest
-	DeleteResponse
-	DeleteByQueryRequest
-	DeleteByQueryResponse
-	CreateIndexRequest
-	CreateIndexResponse
-	StatusRequest
-	StatusResponse
-	SearchRequest
-	SearchResponse
-	SearchByIdRequest
-	SearchByIdResponse
-	AddAliasRequest
-	AddAliasResponse
-	DeleteIndexRequest
-	DeleteIndexResponse
-	DeleteAliasRequest
-	DeleteAliasResponse
-	RenameAliasRequest
-	RenameAliasResponse
-*/
 package go_micro_srv_db
 
 import proto "github.com/golang/protobuf/proto"
@@ -56,23 +19,6 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
-// This is a compile-time assertion to ensure that this generated file
-// is compatible with the proto package it is being compiled against.
-// A compilation error at this line likely means your copy of the
-// proto package needs to be updated.
-const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
-
-type DocRef struct {
-	Index string `protobuf:"bytes,1,opt,name=index" json:"index,omitempty"`
-	Type  string `protobuf:"bytes,2,opt,name=type" json:"type,omitempty"`
-	Id    string `protobuf:"bytes,3,opt,name=id" json:"id,omitempty"`
-}
-
-func (m *DocRef) Reset()                    { *m = DocRef{} }
-func (m *DocRef) String() string            { return proto.CompactTextString(m) }
-func (*DocRef) ProtoMessage()               {}
-func (*DocRef) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
-
 type CreateRequest struct {
 	Index string `protobuf:"bytes,1,opt,name=index" json:"index,omitempty"`
 	Type  string `protobuf:"bytes,2,opt,name=type" json:"type,omitempty"`
@@ -83,7 +29,7 @@ type CreateRequest struct {
 func (m *CreateRequest) Reset()                    { *m = CreateRequest{} }
 func (m *CreateRequest) String() string            { return proto.CompactTextString(m) }
 func (*CreateRequest) ProtoMessage()               {}
-func (*CreateRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
+func (*CreateRequest) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{0} }
 
 type CreateResponse struct {
 }
@@ -91,27 +37,7 @@ type CreateResponse struct {
 func (m *CreateResponse) Reset()                    { *m = CreateResponse{} }
 func (m *CreateResponse) String() string            { return proto.CompactTextString(m) }
 func (*CreateResponse) ProtoMessage()               {}
-func (*CreateResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
-
-type BulkCreateRequest struct {
-	Index string `protobuf:"bytes,1,opt,name=index" json:"index,omitempty"`
-	Type  string `protobuf:"bytes,2,opt,name=type" json:"type,omitempty"`
-	Id    string `protobuf:"bytes,3,opt,name=id" json:"id,omitempty"`
-	Data  string `protobuf:"bytes,4,opt,name=data" json:"data,omitempty"`
-}
-
-func (m *BulkCreateRequest) Reset()                    { *m = BulkCreateRequest{} }
-func (m *BulkCreateRequest) String() string            { return proto.CompactTextString(m) }
-func (*BulkCreateRequest) ProtoMessage()               {}
-func (*BulkCreateRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
-
-type BulkCreateResponse struct {
-}
-
-func (m *BulkCreateResponse) Reset()                    { *m = BulkCreateResponse{} }
-func (m *BulkCreateResponse) String() string            { return proto.CompactTextString(m) }
-func (*BulkCreateResponse) ProtoMessage()               {}
-func (*BulkCreateResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{4} }
+func (*CreateResponse) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{1} }
 
 type ReadRequest struct {
 	Index string `protobuf:"bytes,1,opt,name=index" json:"index,omitempty"`
@@ -122,7 +48,7 @@ type ReadRequest struct {
 func (m *ReadRequest) Reset()                    { *m = ReadRequest{} }
 func (m *ReadRequest) String() string            { return proto.CompactTextString(m) }
 func (*ReadRequest) ProtoMessage()               {}
-func (*ReadRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{5} }
+func (*ReadRequest) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{2} }
 
 type ReadResponse struct {
 	Result string `protobuf:"bytes,1,opt,name=result" json:"result,omitempty"`
@@ -131,7 +57,7 @@ type ReadResponse struct {
 func (m *ReadResponse) Reset()                    { *m = ReadResponse{} }
 func (m *ReadResponse) String() string            { return proto.CompactTextString(m) }
 func (*ReadResponse) ProtoMessage()               {}
-func (*ReadResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{6} }
+func (*ReadResponse) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{3} }
 
 type UpdateRequest struct {
 	Index string `protobuf:"bytes,1,opt,name=index" json:"index,omitempty"`
@@ -143,7 +69,7 @@ type UpdateRequest struct {
 func (m *UpdateRequest) Reset()                    { *m = UpdateRequest{} }
 func (m *UpdateRequest) String() string            { return proto.CompactTextString(m) }
 func (*UpdateRequest) ProtoMessage()               {}
-func (*UpdateRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{7} }
+func (*UpdateRequest) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{4} }
 
 type UpdateResponse struct {
 }
@@ -151,7 +77,7 @@ type UpdateResponse struct {
 func (m *UpdateResponse) Reset()                    { *m = UpdateResponse{} }
 func (m *UpdateResponse) String() string            { return proto.CompactTextString(m) }
 func (*UpdateResponse) ProtoMessage()               {}
-func (*UpdateResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{8} }
+func (*UpdateResponse) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{5} }
 
 type DeleteRequest struct {
 	Index string `protobuf:"bytes,1,opt,name=index" json:"index,omitempty"`
@@ -162,7 +88,7 @@ type DeleteRequest struct {
 func (m *DeleteRequest) Reset()                    { *m = DeleteRequest{} }
 func (m *DeleteRequest) String() string            { return proto.CompactTextString(m) }
 func (*DeleteRequest) ProtoMessage()               {}
-func (*DeleteRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{9} }
+func (*DeleteRequest) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{6} }
 
 type DeleteResponse struct {
 }
@@ -170,7 +96,7 @@ type DeleteResponse struct {
 func (m *DeleteResponse) Reset()                    { *m = DeleteResponse{} }
 func (m *DeleteResponse) String() string            { return proto.CompactTextString(m) }
 func (*DeleteResponse) ProtoMessage()               {}
-func (*DeleteResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{10} }
+func (*DeleteResponse) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{7} }
 
 type DeleteByQueryRequest struct {
 	Indexes  []string `protobuf:"bytes,1,rep,name=indexes" json:"indexes,omitempty"`
@@ -186,7 +112,7 @@ type DeleteByQueryRequest struct {
 func (m *DeleteByQueryRequest) Reset()                    { *m = DeleteByQueryRequest{} }
 func (m *DeleteByQueryRequest) String() string            { return proto.CompactTextString(m) }
 func (*DeleteByQueryRequest) ProtoMessage()               {}
-func (*DeleteByQueryRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{11} }
+func (*DeleteByQueryRequest) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{8} }
 
 type DeleteByQueryResponse struct {
 }
@@ -194,41 +120,7 @@ type DeleteByQueryResponse struct {
 func (m *DeleteByQueryResponse) Reset()                    { *m = DeleteByQueryResponse{} }
 func (m *DeleteByQueryResponse) String() string            { return proto.CompactTextString(m) }
 func (*DeleteByQueryResponse) ProtoMessage()               {}
-func (*DeleteByQueryResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{12} }
-
-type CreateIndexRequest struct {
-	Index string `protobuf:"bytes,1,opt,name=index" json:"index,omitempty"`
-}
-
-func (m *CreateIndexRequest) Reset()                    { *m = CreateIndexRequest{} }
-func (m *CreateIndexRequest) String() string            { return proto.CompactTextString(m) }
-func (*CreateIndexRequest) ProtoMessage()               {}
-func (*CreateIndexRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{13} }
-
-type CreateIndexResponse struct {
-}
-
-func (m *CreateIndexResponse) Reset()                    { *m = CreateIndexResponse{} }
-func (m *CreateIndexResponse) String() string            { return proto.CompactTextString(m) }
-func (*CreateIndexResponse) ProtoMessage()               {}
-func (*CreateIndexResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{14} }
-
-type StatusRequest struct {
-}
-
-func (m *StatusRequest) Reset()                    { *m = StatusRequest{} }
-func (m *StatusRequest) String() string            { return proto.CompactTextString(m) }
-func (*StatusRequest) ProtoMessage()               {}
-func (*StatusRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{15} }
-
-type StatusResponse struct {
-	Status string `protobuf:"bytes,1,opt,name=status" json:"status,omitempty"`
-}
-
-func (m *StatusResponse) Reset()                    { *m = StatusResponse{} }
-func (m *StatusResponse) String() string            { return proto.CompactTextString(m) }
-func (*StatusResponse) ProtoMessage()               {}
-func (*StatusResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{16} }
+func (*DeleteByQueryResponse) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{9} }
 
 type SearchRequest struct {
 	Index                string `protobuf:"bytes,1,opt,name=index" json:"index,omitempty"`
@@ -248,7 +140,7 @@ type SearchRequest struct {
 func (m *SearchRequest) Reset()                    { *m = SearchRequest{} }
 func (m *SearchRequest) String() string            { return proto.CompactTextString(m) }
 func (*SearchRequest) ProtoMessage()               {}
-func (*SearchRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{17} }
+func (*SearchRequest) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{10} }
 
 type SearchResponse struct {
 	Result string `protobuf:"bytes,1,opt,name=result" json:"result,omitempty"`
@@ -258,7 +150,7 @@ type SearchResponse struct {
 func (m *SearchResponse) Reset()                    { *m = SearchResponse{} }
 func (m *SearchResponse) String() string            { return proto.CompactTextString(m) }
 func (*SearchResponse) ProtoMessage()               {}
-func (*SearchResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{18} }
+func (*SearchResponse) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{11} }
 
 type SearchByIdRequest struct {
 	Index string `protobuf:"bytes,1,opt,name=index" json:"index,omitempty"`
@@ -269,7 +161,7 @@ type SearchByIdRequest struct {
 func (m *SearchByIdRequest) Reset()                    { *m = SearchByIdRequest{} }
 func (m *SearchByIdRequest) String() string            { return proto.CompactTextString(m) }
 func (*SearchByIdRequest) ProtoMessage()               {}
-func (*SearchByIdRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{19} }
+func (*SearchByIdRequest) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{12} }
 
 type SearchByIdResponse struct {
 	Result string `protobuf:"bytes,1,opt,name=result" json:"result,omitempty"`
@@ -278,86 +170,11 @@ type SearchByIdResponse struct {
 func (m *SearchByIdResponse) Reset()                    { *m = SearchByIdResponse{} }
 func (m *SearchByIdResponse) String() string            { return proto.CompactTextString(m) }
 func (*SearchByIdResponse) ProtoMessage()               {}
-func (*SearchByIdResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{20} }
-
-type AddAliasRequest struct {
-	Index string `protobuf:"bytes,1,opt,name=index" json:"index,omitempty"`
-	Alias string `protobuf:"bytes,2,opt,name=alias" json:"alias,omitempty"`
-}
-
-func (m *AddAliasRequest) Reset()                    { *m = AddAliasRequest{} }
-func (m *AddAliasRequest) String() string            { return proto.CompactTextString(m) }
-func (*AddAliasRequest) ProtoMessage()               {}
-func (*AddAliasRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{21} }
-
-type AddAliasResponse struct {
-}
-
-func (m *AddAliasResponse) Reset()                    { *m = AddAliasResponse{} }
-func (m *AddAliasResponse) String() string            { return proto.CompactTextString(m) }
-func (*AddAliasResponse) ProtoMessage()               {}
-func (*AddAliasResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{22} }
-
-type DeleteIndexRequest struct {
-	Index string `protobuf:"bytes,1,opt,name=index" json:"index,omitempty"`
-}
-
-func (m *DeleteIndexRequest) Reset()                    { *m = DeleteIndexRequest{} }
-func (m *DeleteIndexRequest) String() string            { return proto.CompactTextString(m) }
-func (*DeleteIndexRequest) ProtoMessage()               {}
-func (*DeleteIndexRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{23} }
-
-type DeleteIndexResponse struct {
-}
-
-func (m *DeleteIndexResponse) Reset()                    { *m = DeleteIndexResponse{} }
-func (m *DeleteIndexResponse) String() string            { return proto.CompactTextString(m) }
-func (*DeleteIndexResponse) ProtoMessage()               {}
-func (*DeleteIndexResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{24} }
-
-type DeleteAliasRequest struct {
-	Index string `protobuf:"bytes,1,opt,name=index" json:"index,omitempty"`
-	Alias string `protobuf:"bytes,2,opt,name=alias" json:"alias,omitempty"`
-}
-
-func (m *DeleteAliasRequest) Reset()                    { *m = DeleteAliasRequest{} }
-func (m *DeleteAliasRequest) String() string            { return proto.CompactTextString(m) }
-func (*DeleteAliasRequest) ProtoMessage()               {}
-func (*DeleteAliasRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{25} }
-
-type DeleteAliasResponse struct {
-}
-
-func (m *DeleteAliasResponse) Reset()                    { *m = DeleteAliasResponse{} }
-func (m *DeleteAliasResponse) String() string            { return proto.CompactTextString(m) }
-func (*DeleteAliasResponse) ProtoMessage()               {}
-func (*DeleteAliasResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{26} }
-
-type RenameAliasRequest struct {
-	Index    string `protobuf:"bytes,1,opt,name=index" json:"index,omitempty"`
-	OldAlias string `protobuf:"bytes,2,opt,name=old_alias,json=oldAlias" json:"old_alias,omitempty"`
-	NewAlias string `protobuf:"bytes,3,opt,name=new_alias,json=newAlias" json:"new_alias,omitempty"`
-}
-
-func (m *RenameAliasRequest) Reset()                    { *m = RenameAliasRequest{} }
-func (m *RenameAliasRequest) String() string            { return proto.CompactTextString(m) }
-func (*RenameAliasRequest) ProtoMessage()               {}
-func (*RenameAliasRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{27} }
-
-type RenameAliasResponse struct {
-}
-
-func (m *RenameAliasResponse) Reset()                    { *m = RenameAliasResponse{} }
-func (m *RenameAliasResponse) String() string            { return proto.CompactTextString(m) }
-func (*RenameAliasResponse) ProtoMessage()               {}
-func (*RenameAliasResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{28} }
+func (*SearchByIdResponse) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{13} }
 
 func init() {
-	proto.RegisterType((*DocRef)(nil), "go.micro.srv.db.DocRef")
 	proto.RegisterType((*CreateRequest)(nil), "go.micro.srv.db.CreateRequest")
 	proto.RegisterType((*CreateResponse)(nil), "go.micro.srv.db.CreateResponse")
-	proto.RegisterType((*BulkCreateRequest)(nil), "go.micro.srv.db.BulkCreateRequest")
-	proto.RegisterType((*BulkCreateResponse)(nil), "go.micro.srv.db.BulkCreateResponse")
 	proto.RegisterType((*ReadRequest)(nil), "go.micro.srv.db.ReadRequest")
 	proto.RegisterType((*ReadResponse)(nil), "go.micro.srv.db.ReadResponse")
 	proto.RegisterType((*UpdateRequest)(nil), "go.micro.srv.db.UpdateRequest")
@@ -366,22 +183,10 @@ func init() {
 	proto.RegisterType((*DeleteResponse)(nil), "go.micro.srv.db.DeleteResponse")
 	proto.RegisterType((*DeleteByQueryRequest)(nil), "go.micro.srv.db.DeleteByQueryRequest")
 	proto.RegisterType((*DeleteByQueryResponse)(nil), "go.micro.srv.db.DeleteByQueryResponse")
-	proto.RegisterType((*CreateIndexRequest)(nil), "go.micro.srv.db.CreateIndexRequest")
-	proto.RegisterType((*CreateIndexResponse)(nil), "go.micro.srv.db.CreateIndexResponse")
-	proto.RegisterType((*StatusRequest)(nil), "go.micro.srv.db.StatusRequest")
-	proto.RegisterType((*StatusResponse)(nil), "go.micro.srv.db.StatusResponse")
 	proto.RegisterType((*SearchRequest)(nil), "go.micro.srv.db.SearchRequest")
 	proto.RegisterType((*SearchResponse)(nil), "go.micro.srv.db.SearchResponse")
 	proto.RegisterType((*SearchByIdRequest)(nil), "go.micro.srv.db.SearchByIdRequest")
 	proto.RegisterType((*SearchByIdResponse)(nil), "go.micro.srv.db.SearchByIdResponse")
-	proto.RegisterType((*AddAliasRequest)(nil), "go.micro.srv.db.AddAliasRequest")
-	proto.RegisterType((*AddAliasResponse)(nil), "go.micro.srv.db.AddAliasResponse")
-	proto.RegisterType((*DeleteIndexRequest)(nil), "go.micro.srv.db.DeleteIndexRequest")
-	proto.RegisterType((*DeleteIndexResponse)(nil), "go.micro.srv.db.DeleteIndexResponse")
-	proto.RegisterType((*DeleteAliasRequest)(nil), "go.micro.srv.db.DeleteAliasRequest")
-	proto.RegisterType((*DeleteAliasResponse)(nil), "go.micro.srv.db.DeleteAliasResponse")
-	proto.RegisterType((*RenameAliasRequest)(nil), "go.micro.srv.db.RenameAliasRequest")
-	proto.RegisterType((*RenameAliasResponse)(nil), "go.micro.srv.db.RenameAliasResponse")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -397,14 +202,8 @@ type DBClient interface {
 	Update(ctx context.Context, in *UpdateRequest, opts ...client.CallOption) (*UpdateResponse, error)
 	Delete(ctx context.Context, in *DeleteRequest, opts ...client.CallOption) (*DeleteResponse, error)
 	DeleteByQuery(ctx context.Context, in *DeleteByQueryRequest, opts ...client.CallOption) (*DeleteByQueryResponse, error)
-	CreateIndex(ctx context.Context, in *CreateIndexRequest, opts ...client.CallOption) (*CreateIndexResponse, error)
-	Status(ctx context.Context, in *StatusRequest, opts ...client.CallOption) (*StatusResponse, error)
 	Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error)
 	SearchById(ctx context.Context, in *SearchByIdRequest, opts ...client.CallOption) (*SearchByIdResponse, error)
-	AddAlias(ctx context.Context, in *AddAliasRequest, opts ...client.CallOption) (*AddAliasResponse, error)
-	DeleteIndex(ctx context.Context, in *DeleteIndexRequest, opts ...client.CallOption) (*DeleteIndexResponse, error)
-	DeleteAlias(ctx context.Context, in *DeleteAliasRequest, opts ...client.CallOption) (*DeleteAliasResponse, error)
-	RenameAlias(ctx context.Context, in *RenameAliasRequest, opts ...client.CallOption) (*RenameAliasResponse, error)
 }
 
 type dBClient struct {
@@ -475,26 +274,6 @@ func (c *dBClient) DeleteByQuery(ctx context.Context, in *DeleteByQueryRequest, 
 	return out, nil
 }
 
-func (c *dBClient) CreateIndex(ctx context.Context, in *CreateIndexRequest, opts ...client.CallOption) (*CreateIndexResponse, error) {
-	req := c.c.NewRequest(c.serviceName, "DB.CreateIndex", in)
-	out := new(CreateIndexResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *dBClient) Status(ctx context.Context, in *StatusRequest, opts ...client.CallOption) (*StatusResponse, error) {
-	req := c.c.NewRequest(c.serviceName, "DB.Status", in)
-	out := new(StatusResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *dBClient) Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error) {
 	req := c.c.NewRequest(c.serviceName, "DB.Search", in)
 	out := new(SearchResponse)
@@ -515,46 +294,6 @@ func (c *dBClient) SearchById(ctx context.Context, in *SearchByIdRequest, opts .
 	return out, nil
 }
 
-func (c *dBClient) AddAlias(ctx context.Context, in *AddAliasRequest, opts ...client.CallOption) (*AddAliasResponse, error) {
-	req := c.c.NewRequest(c.serviceName, "DB.AddAlias", in)
-	out := new(AddAliasResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *dBClient) DeleteIndex(ctx context.Context, in *DeleteIndexRequest, opts ...client.CallOption) (*DeleteIndexResponse, error) {
-	req := c.c.NewRequest(c.serviceName, "DB.DeleteIndex", in)
-	out := new(DeleteIndexResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *dBClient) DeleteAlias(ctx context.Context, in *DeleteAliasRequest, opts ...client.CallOption) (*DeleteAliasResponse, error) {
-	req := c.c.NewRequest(c.serviceName, "DB.DeleteAlias", in)
-	out := new(DeleteAliasResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *dBClient) RenameAlias(ctx context.Context, in *RenameAliasRequest, opts ...client.CallOption) (*RenameAliasResponse, error) {
-	req := c.c.NewRequest(c.serviceName, "DB.RenameAlias", in)
-	out := new(RenameAliasResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // Server API for DB service
 
 type DBHandler interface {
@@ -563,14 +302,8 @@ type DBHandler interface {
 	Update(context.Context, *UpdateRequest, *UpdateResponse) error
 	Delete(context.Context, *DeleteRequest, *DeleteResponse) error
 	DeleteByQuery(context.Context, *DeleteByQueryRequest, *DeleteByQueryResponse) error
-	CreateIndex(context.Context, *CreateIndexRequest, *CreateIndexResponse) error
-	Status(context.Context, *StatusRequest, *StatusResponse) error
 	Search(context.Context, *SearchRequest, *SearchResponse) error
 	SearchById(context.Context, *SearchByIdRequest, *SearchByIdResponse) error
-	AddAlias(context.Context, *AddAliasRequest, *AddAliasResponse) error
-	DeleteIndex(context.Context, *DeleteIndexRequest, *DeleteIndexResponse) error
-	DeleteAlias(context.Context, *DeleteAliasRequest, *DeleteAliasResponse) error
-	RenameAlias(context.Context, *RenameAliasRequest, *RenameAliasResponse) error
 }
 
 func RegisterDBHandler(s server.Server, hdlr DBHandler, opts ...server.HandlerOption) {
@@ -601,14 +334,6 @@ func (h *DB) DeleteByQuery(ctx context.Context, in *DeleteByQueryRequest, out *D
 	return h.DBHandler.DeleteByQuery(ctx, in, out)
 }
 
-func (h *DB) CreateIndex(ctx context.Context, in *CreateIndexRequest, out *CreateIndexResponse) error {
-	return h.DBHandler.CreateIndex(ctx, in, out)
-}
-
-func (h *DB) Status(ctx context.Context, in *StatusRequest, out *StatusResponse) error {
-	return h.DBHandler.Status(ctx, in, out)
-}
-
 func (h *DB) Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error {
 	return h.DBHandler.Search(ctx, in, out)
 }
@@ -617,81 +342,50 @@ func (h *DB) SearchById(ctx context.Context, in *SearchByIdRequest, out *SearchB
 	return h.DBHandler.SearchById(ctx, in, out)
 }
 
-func (h *DB) AddAlias(ctx context.Context, in *AddAliasRequest, out *AddAliasResponse) error {
-	return h.DBHandler.AddAlias(ctx, in, out)
-}
-
-func (h *DB) DeleteIndex(ctx context.Context, in *DeleteIndexRequest, out *DeleteIndexResponse) error {
-	return h.DBHandler.DeleteIndex(ctx, in, out)
-}
-
-func (h *DB) DeleteAlias(ctx context.Context, in *DeleteAliasRequest, out *DeleteAliasResponse) error {
-	return h.DBHandler.DeleteAlias(ctx, in, out)
-}
-
-func (h *DB) RenameAlias(ctx context.Context, in *RenameAliasRequest, out *RenameAliasResponse) error {
-	return h.DBHandler.RenameAlias(ctx, in, out)
-}
-
 func init() {
-	proto.RegisterFile("github.com/kazoup/platform/db/srv/proto/db/db.proto", fileDescriptor0)
+	proto.RegisterFile("github.com/kazoup/platform/db/srv/proto/db/db.proto", fileDescriptor1)
 }
 
-var fileDescriptor0 = []byte{
-	// 872 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xb4, 0x56, 0x6d, 0x4f, 0xdb, 0x48,
-	0x10, 0x86, 0x04, 0x12, 0x33, 0xbc, 0xef, 0x85, 0xc3, 0xca, 0xbd, 0x71, 0x86, 0x43, 0xe8, 0x74,
-	0x4a, 0xa4, 0x43, 0xf7, 0xed, 0x2a, 0x95, 0x94, 0xb6, 0x8a, 0x50, 0x55, 0x61, 0x5a, 0x55, 0xaa,
-	0x54, 0xa5, 0x4e, 0xbc, 0x09, 0x16, 0x8e, 0x37, 0xf5, 0x4b, 0xdb, 0xf0, 0xf7, 0xfa, 0xad, 0xbf,
-	0xa0, 0x3f, 0xa7, 0xfb, 0xe6, 0x64, 0x37, 0xd9, 0x04, 0x44, 0xe1, 0xdb, 0xce, 0xec, 0xec, 0x33,
-	0x3b, 0xcf, 0x8e, 0x9f, 0x31, 0x1c, 0xf7, 0x82, 0xf4, 0x32, 0x6b, 0xd7, 0x3a, 0xa4, 0x5f, 0xbf,
-	0xf2, 0xae, 0x49, 0x36, 0xa8, 0x0f, 0x42, 0x2f, 0xed, 0x92, 0xb8, 0x5f, 0xf7, 0xdb, 0xf5, 0x24,
-	0xfe, 0x58, 0x1f, 0xc4, 0x24, 0x25, 0xcc, 0xf0, 0xdb, 0x35, 0xbe, 0x46, 0x9b, 0x3d, 0x52, 0xeb,
-	0x07, 0x9d, 0x98, 0xd4, 0xe8, 0x7e, 0xcd, 0x6f, 0x3b, 0x0d, 0x28, 0x9d, 0x92, 0x8e, 0x8b, 0xbb,
-	0xa8, 0x02, 0xcb, 0x41, 0xe4, 0xe3, 0xcf, 0xf6, 0xe2, 0xde, 0xe2, 0xd1, 0x8a, 0x2b, 0x0c, 0x84,
-	0x60, 0x29, 0x1d, 0x0e, 0xb0, 0x5d, 0xe0, 0x4e, 0xbe, 0x46, 0x1b, 0x50, 0x08, 0x7c, 0xbb, 0xc8,
-	0x3d, 0x74, 0xe5, 0xbc, 0x83, 0xf5, 0x27, 0x31, 0xf6, 0x52, 0xec, 0xe2, 0x0f, 0x19, 0x4e, 0xd2,
-	0xbb, 0x43, 0xb1, 0x18, 0xdf, 0x4b, 0x3d, 0x7b, 0x49, 0xc4, 0xb0, 0xb5, 0xb3, 0x05, 0x1b, 0x39,
-	0x7c, 0x32, 0x20, 0x51, 0x82, 0x1d, 0x0f, 0xb6, 0x1b, 0x59, 0x78, 0xf5, 0x90, 0x49, 0x2b, 0x80,
-	0xd4, 0x14, 0x32, 0xf1, 0x73, 0x58, 0x75, 0xb1, 0xe7, 0xff, 0x70, 0x4a, 0xe7, 0x10, 0xd6, 0x04,
-	0x90, 0x00, 0x46, 0x3f, 0x43, 0x29, 0xc6, 0x49, 0x16, 0xa6, 0x12, 0x4a, 0x5a, 0x8c, 0xda, 0xd7,
-	0x03, 0xff, 0x21, 0xa9, 0xcd, 0xe1, 0x65, 0x85, 0x4d, 0x58, 0x3f, 0xc5, 0x21, 0xbe, 0x87, 0x84,
-	0x0c, 0x3c, 0x87, 0x92, 0xe0, 0xdf, 0x16, 0xa1, 0x22, 0x5c, 0x8d, 0xe1, 0x79, 0x86, 0xe3, 0x61,
-	0x9e, 0xc4, 0x86, 0x32, 0xc7, 0xc5, 0x09, 0x4d, 0x53, 0xa4, 0xe7, 0x73, 0x93, 0xa5, 0x67, 0xe0,
-	0x09, 0xcd, 0xc4, 0xfc, 0xc2, 0xe0, 0xe9, 0x71, 0xdc, 0x97, 0xc9, 0xf8, 0x1a, 0x55, 0xc1, 0xea,
-	0xd0, 0x4a, 0x7a, 0x24, 0x1e, 0xca, 0x1a, 0x47, 0x36, 0xda, 0x82, 0x62, 0x16, 0x87, 0xf6, 0x32,
-	0x77, 0xb3, 0x25, 0xc3, 0xf5, 0xf1, 0x20, 0xbd, 0xb4, 0x4b, 0xd4, 0x57, 0x74, 0x85, 0x81, 0x7e,
-	0x81, 0x95, 0x6e, 0x10, 0xe2, 0x16, 0xaf, 0xad, 0x2c, 0x40, 0x98, 0xe3, 0x15, 0xab, 0x8f, 0x6e,
-	0x86, 0x5e, 0x92, 0xb6, 0x12, 0x8c, 0x23, 0xdb, 0xe2, 0xc7, 0x2c, 0xe6, 0xb8, 0xa0, 0xb6, 0xb3,
-	0x0b, 0x3b, 0x13, 0x95, 0xc9, 0x9a, 0xff, 0x06, 0x24, 0x9a, 0xa8, 0xc9, 0x2a, 0x9a, 0xcb, 0xaa,
-	0xb3, 0x03, 0x3f, 0x69, 0xb1, 0x12, 0x62, 0x13, 0xd6, 0x2f, 0x52, 0x2f, 0xcd, 0x12, 0x79, 0xda,
-	0x39, 0x82, 0x8d, 0xdc, 0x31, 0xee, 0x9f, 0x84, 0x7b, 0xf2, 0xfe, 0x11, 0x96, 0xf3, 0xa5, 0x40,
-	0xcf, 0x62, 0x2f, 0xee, 0x5c, 0xde, 0xfc, 0x9e, 0x8c, 0xd0, 0x82, 0x42, 0x28, 0xf5, 0x75, 0x63,
-	0x22, 0x48, 0x2e, 0xba, 0x7c, 0xcd, 0x7c, 0x49, 0x70, 0x8d, 0x39, 0xc1, 0xd4, 0xc7, 0xd6, 0x1a,
-	0xf1, 0xcb, 0x66, 0xe2, 0x4b, 0x06, 0xe2, 0xcb, 0x2a, 0xf1, 0x79, 0x3f, 0x59, 0x4a, 0x3f, 0x69,
-	0x8f, 0xb1, 0x32, 0xf1, 0x18, 0xbb, 0x50, 0xce, 0x12, 0x1c, 0xb7, 0x68, 0xc7, 0x81, 0xa8, 0x98,
-	0x99, 0x4d, 0x5f, 0x7f, 0xa5, 0x55, 0xfd, 0x95, 0xd0, 0x7f, 0xb0, 0x1b, 0x91, 0x96, 0x50, 0xcb,
-	0x16, 0x07, 0x27, 0x71, 0xd0, 0x0b, 0x22, 0x2f, 0xb4, 0xd7, 0x68, 0xa8, 0xe5, 0x56, 0x22, 0x72,
-	0xc6, 0x77, 0x9f, 0xd1, 0xcd, 0x97, 0x72, 0xcf, 0xf9, 0x9f, 0xf2, 0x2d, 0x49, 0x9c, 0xff, 0xbd,
-	0xb2, 0x3a, 0x82, 0xa8, 0x4b, 0x72, 0x1e, 0xd9, 0xda, 0x79, 0x01, 0xdb, 0xe2, 0x74, 0x63, 0xd8,
-	0xbc, 0x07, 0xe9, 0xf8, 0x07, 0x90, 0x0a, 0x77, 0x83, 0x80, 0x3c, 0x82, 0xcd, 0x13, 0xdf, 0x3f,
-	0x09, 0x03, 0x2f, 0x99, 0x9f, 0x9a, 0x7a, 0x3d, 0x16, 0x25, 0x73, 0x0b, 0xc3, 0x41, 0xb0, 0x35,
-	0x3e, 0x3e, 0xee, 0x68, 0xd1, 0xea, 0xb7, 0xeb, 0x68, 0x2d, 0x56, 0x42, 0x3c, 0xce, 0x21, 0xee,
-	0x7c, 0xb1, 0x11, 0xb0, 0x7e, 0x37, 0x1f, 0x90, 0x8b, 0x23, 0xaf, 0x7f, 0x1b, 0x60, 0xda, 0x29,
-	0x24, 0xf4, 0x5b, 0x2a, 0xb8, 0x45, 0x1d, 0xfc, 0x24, 0xdb, 0x8c, 0xf0, 0x27, 0xb9, 0x29, 0xc8,
-	0xb7, 0xa8, 0xe3, 0x24, 0x4f, 0xae, 0x65, 0x11, 0xc9, 0xff, 0xfd, 0x6a, 0x41, 0xe1, 0xb4, 0x81,
-	0xce, 0xa0, 0x24, 0xbe, 0x62, 0xf4, 0x7b, 0x6d, 0x62, 0xdc, 0xd6, 0xb4, 0x91, 0x55, 0xfd, 0x63,
-	0xe6, 0xbe, 0x2c, 0x67, 0x01, 0x3d, 0x85, 0x25, 0x36, 0x28, 0xd0, 0xaf, 0x53, 0xa1, 0xca, 0x20,
-	0xaa, 0xfe, 0x36, 0x63, 0x77, 0x04, 0x43, 0xef, 0x24, 0x84, 0xde, 0x70, 0x27, 0x6d, 0xc0, 0x18,
-	0xee, 0x34, 0x31, 0x21, 0x38, 0x98, 0xe0, 0xde, 0x00, 0xa6, 0x0d, 0x0f, 0x03, 0xd8, 0xc4, 0x44,
-	0x58, 0x40, 0xef, 0xf3, 0x81, 0x23, 0x85, 0x13, 0xfd, 0x35, 0xe3, 0x8c, 0x3e, 0x32, 0xaa, 0x87,
-	0x37, 0x85, 0x8d, 0x32, 0xbc, 0x85, 0x55, 0x45, 0x55, 0xd1, 0xfe, 0x0c, 0xd2, 0xd5, 0x6e, 0xae,
-	0x1e, 0xcc, 0x0f, 0x52, 0xa9, 0x10, 0x4a, 0x6c, 0xa0, 0x42, 0xd3, 0x6c, 0x03, 0x15, 0xba, 0x84,
-	0x4b, 0x30, 0xfe, 0x65, 0x9b, 0xc0, 0x54, 0x11, 0x37, 0x81, 0x69, 0xfa, 0x44, 0xc1, 0xde, 0x00,
-	0x8c, 0x65, 0x02, 0x39, 0x33, 0x0e, 0x28, 0x92, 0x54, 0xdd, 0x9f, 0x1b, 0x33, 0x02, 0x3e, 0x07,
-	0x2b, 0x97, 0x04, 0xb4, 0x37, 0x75, 0x64, 0x42, 0x6c, 0xaa, 0x7f, 0xce, 0x89, 0x50, 0x5f, 0x48,
-	0x51, 0x09, 0xc3, 0x0b, 0x4d, 0xeb, 0x8d, 0xe1, 0x85, 0x4c, 0x42, 0xa3, 0x60, 0x8b, 0x1b, 0xcf,
-	0xc2, 0xd6, 0x2e, 0x7d, 0x30, 0x3f, 0x48, 0xc5, 0x56, 0x74, 0xc0, 0x80, 0x3d, 0xad, 0x45, 0x06,
-	0x6c, 0x83, 0x94, 0x38, 0x0b, 0xed, 0x12, 0xff, 0x61, 0x3f, 0xfe, 0x1e, 0x00, 0x00, 0xff, 0xff,
-	0x84, 0xad, 0x03, 0xcb, 0xe7, 0x0b, 0x00, 0x00,
+var fileDescriptor1 = []byte{
+	// 629 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xb4, 0x55, 0x4b, 0x6f, 0xd3, 0x40,
+	0x10, 0x6e, 0xde, 0xc9, 0xb4, 0x09, 0x65, 0x15, 0x88, 0x15, 0x9e, 0x32, 0xa2, 0xe2, 0x80, 0x1c,
+	0x89, 0x8a, 0x1b, 0xa7, 0x50, 0x40, 0x51, 0x85, 0x10, 0x2e, 0x88, 0x13, 0x0a, 0x4e, 0x3c, 0x49,
+	0x2c, 0x1c, 0xaf, 0xd9, 0xb5, 0x11, 0xe9, 0x4f, 0xe3, 0xca, 0x9f, 0xe0, 0xe7, 0xb0, 0x0f, 0xbb,
+	0xd8, 0xc6, 0x49, 0x0f, 0xb4, 0xb7, 0x79, 0xec, 0x7e, 0x33, 0xdf, 0x78, 0xe7, 0x33, 0x1c, 0x2f,
+	0xbd, 0x68, 0x15, 0xcf, 0xac, 0x39, 0x5d, 0x8f, 0xbe, 0x3a, 0xe7, 0x34, 0x0e, 0x47, 0xa1, 0xef,
+	0x44, 0x0b, 0xca, 0xd6, 0x23, 0x77, 0x36, 0xe2, 0xec, 0xfb, 0x28, 0x64, 0x34, 0xa2, 0xd2, 0x71,
+	0x67, 0x96, 0xb2, 0xc9, 0x8d, 0x25, 0xb5, 0xd6, 0xde, 0x9c, 0x51, 0x4b, 0xe4, 0x2d, 0x77, 0x66,
+	0x7e, 0x86, 0xee, 0x4b, 0x86, 0x4e, 0x84, 0x36, 0x7e, 0x8b, 0x91, 0x47, 0xa4, 0x0f, 0x0d, 0x2f,
+	0x70, 0xf1, 0x87, 0x51, 0x79, 0x58, 0x79, 0xd2, 0xb1, 0xb5, 0x43, 0x08, 0xd4, 0xa3, 0x4d, 0x88,
+	0x46, 0x55, 0x05, 0x95, 0x4d, 0x7a, 0x50, 0xf5, 0x5c, 0xa3, 0xa6, 0x22, 0xc2, 0x92, 0x67, 0x5c,
+	0x27, 0x72, 0x8c, 0xba, 0x3e, 0x23, 0x6d, 0xf3, 0x10, 0x7a, 0x29, 0x3c, 0x0f, 0x69, 0xc0, 0xd1,
+	0x7c, 0x03, 0xfb, 0x36, 0x3a, 0xee, 0x7f, 0x97, 0x33, 0x8f, 0xe0, 0x40, 0x03, 0x69, 0x60, 0x72,
+	0x1b, 0x9a, 0x0c, 0x79, 0xec, 0x47, 0x09, 0x54, 0xe2, 0x49, 0x86, 0x1f, 0x43, 0xf7, 0x3a, 0x19,
+	0xa6, 0xf0, 0x09, 0xc3, 0x09, 0x74, 0x4f, 0xd0, 0xc7, 0x2b, 0x28, 0x28, 0xc1, 0x53, 0xa8, 0x04,
+	0xfc, 0x77, 0x05, 0xfa, 0x3a, 0x34, 0xde, 0xbc, 0x8f, 0x91, 0x6d, 0xd2, 0x22, 0x06, 0xb4, 0x14,
+	0x2e, 0x72, 0x51, 0xa6, 0x26, 0xee, 0xa7, 0xae, 0x2c, 0x2f, 0xc1, 0xb9, 0xa8, 0x24, 0xe3, 0xda,
+	0x51, 0xe5, 0x91, 0xad, 0x93, 0x62, 0xca, 0x26, 0x43, 0x68, 0xcf, 0x05, 0x93, 0x25, 0x65, 0x9b,
+	0x84, 0xe3, 0x85, 0x4f, 0x0e, 0xa1, 0x16, 0x33, 0xdf, 0x68, 0xa8, 0xb0, 0x34, 0x25, 0xae, 0x8b,
+	0x61, 0xb4, 0x32, 0x9a, 0x22, 0x56, 0xb3, 0xb5, 0x43, 0xee, 0x40, 0x67, 0xe1, 0xf9, 0x38, 0x55,
+	0xdc, 0x5a, 0x1a, 0x44, 0x06, 0x3e, 0x48, 0x7e, 0x22, 0xe9, 0x3b, 0x3c, 0x9a, 0x72, 0xc4, 0xc0,
+	0x68, 0xab, 0x6b, 0x6d, 0x19, 0x38, 0x13, 0xbe, 0x39, 0x80, 0x5b, 0x05, 0x66, 0x09, 0xe7, 0x5f,
+	0x55, 0xe8, 0x9e, 0xa1, 0xc3, 0xe6, 0xab, 0xcb, 0x27, 0x2a, 0x29, 0x55, 0x33, 0x94, 0x44, 0x6c,
+	0xc1, 0xa8, 0xa6, 0x59, 0xb3, 0x95, 0x2d, 0x63, 0xdc, 0x3b, 0x47, 0x45, 0x51, 0xc4, 0xa4, 0x9d,
+	0xa3, 0xde, 0x28, 0xa7, 0xde, 0x2c, 0xa1, 0xde, 0xca, 0x52, 0x4f, 0xbf, 0x68, 0x3b, 0xf3, 0x45,
+	0x73, 0xe3, 0xe8, 0x14, 0xc6, 0x31, 0x80, 0x56, 0xcc, 0x91, 0x4d, 0xc5, 0x37, 0x07, 0xfd, 0x66,
+	0xa5, 0x3b, 0x71, 0xf3, 0x73, 0xda, 0xcf, 0xcf, 0x89, 0x3c, 0x87, 0x41, 0x40, 0xa7, 0x7a, 0xe5,
+	0xa7, 0x0a, 0x9c, 0x32, 0x6f, 0xe9, 0x05, 0x8e, 0x6f, 0x1c, 0x88, 0xa3, 0x6d, 0xbb, 0x1f, 0xd0,
+	0x53, 0x95, 0x7d, 0x2d, 0x92, 0xef, 0x92, 0x9c, 0xf9, 0x02, 0x7a, 0xe9, 0x10, 0x77, 0x6f, 0x8c,
+	0xe4, 0xe1, 0x05, 0x0b, 0x9a, 0xce, 0x51, 0xda, 0xe6, 0x5b, 0xb8, 0xa9, 0x6f, 0x8f, 0x37, 0x93,
+	0x2b, 0x58, 0xde, 0xa7, 0x40, 0xb2, 0x70, 0xbb, 0x1b, 0x7a, 0xf6, 0xb3, 0x0e, 0xd5, 0x93, 0x31,
+	0x39, 0x85, 0xa6, 0x16, 0x13, 0x72, 0xdf, 0x2a, 0xe8, 0x98, 0x95, 0x13, 0xb1, 0xe1, 0x83, 0xad,
+	0xf9, 0xe4, 0x49, 0xed, 0x91, 0x57, 0x50, 0x97, 0xf2, 0x41, 0xee, 0xfe, 0x73, 0x34, 0x23, 0x4f,
+	0xc3, 0x7b, 0x5b, 0xb2, 0x17, 0x30, 0xa2, 0x27, 0xbd, 0xfe, 0x25, 0x3d, 0xe5, 0x64, 0xa7, 0xa4,
+	0xa7, 0x82, 0x6e, 0x28, 0x30, 0xbd, 0x01, 0x25, 0x60, 0x39, 0x49, 0x29, 0x01, 0x2b, 0xe8, 0xc4,
+	0x1e, 0xf9, 0x92, 0xca, 0x50, 0xb2, 0x4e, 0xe4, 0xf1, 0x96, 0x3b, 0x79, 0x21, 0x19, 0x1e, 0x5d,
+	0x76, 0x2c, 0xdb, 0xae, 0xfe, 0x88, 0x25, 0xed, 0xe6, 0xf6, 0xb5, 0xa4, 0xdd, 0xfc, 0x53, 0x14,
+	0x60, 0x9f, 0x00, 0xfe, 0xbe, 0x08, 0x62, 0x6e, 0xb9, 0x90, 0x79, 0x7d, 0xc3, 0x47, 0x3b, 0xcf,
+	0xa4, 0xc0, 0xb3, 0xa6, 0xfa, 0xf3, 0x1d, 0xff, 0x09, 0x00, 0x00, 0xff, 0xff, 0x35, 0xcc, 0xb2,
+	0x22, 0x30, 0x07, 0x00, 0x00,
 }
