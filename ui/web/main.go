@@ -13,8 +13,19 @@ func main() {
 	service := web.NewService(
 		web.Name(globals.NAMESPACE + ".web.ui"),
 	)
-	service.Handle("/", http.FileServer(http.Dir("/html")))
-
+	// Serve file system
+	service.Handle("/", http.FileServer(http.Dir("html")))
+	//SPA routes
+	service.HandleFunc("/login/", IndexHandler)
+	service.HandleFunc("/onboarding", IndexHandler)
+	service.HandleFunc("/u/", IndexHandler)
+	service.HandleFunc("/search", IndexHandler)
+	service.HandleFunc("/settings", IndexHandler)
 	service.Init()
 	service.Run()
+}
+
+//IndexHandler serves index.html file of SPA
+func IndexHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "html/index.html")
 }
