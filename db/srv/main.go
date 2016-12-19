@@ -1,23 +1,27 @@
 package main
 
 import (
-	"log"
-
 	"github.com/kazoup/platform/db/srv/engine"
 	_ "github.com/kazoup/platform/db/srv/engine/elastic"
 	"github.com/kazoup/platform/db/srv/handler"
 	"github.com/kazoup/platform/lib/globals"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
+	"log"
 )
 
 func main() {
 	// New Service
 	service := wrappers.NewKazoupService("db")
 
-	// Register Handler
+	// Register DB Handler
 	service.Server().Handle(
 		service.Server().NewHandler(new(handler.DB)),
+	)
+
+	// Register Config Handler
+	service.Server().Handle(
+		service.Server().NewHandler(new(handler.Config)),
 	)
 
 	// Attach indexer subscriber

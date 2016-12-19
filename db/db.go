@@ -21,6 +21,11 @@ func srv(ctx *cli.Context) {
 		service.Server().NewHandler(new(handler.DB)),
 	)
 
+	// Register Config Handler
+	service.Server().Handle(
+		service.Server().NewHandler(new(handler.Config)),
+	)
+
 	// Attach file indexer subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(globals.FilesTopic, &engine.Files{

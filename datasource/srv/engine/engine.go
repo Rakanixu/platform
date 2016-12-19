@@ -2,10 +2,8 @@ package engine
 
 import (
 	"encoding/json"
-	"strings"
-	"time"
-
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	db_config_proto "github.com/kazoup/platform/db/srv/proto/config"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/lib/globals"
 	scheduler_proto "github.com/kazoup/platform/scheduler/srv/proto/scheduler"
@@ -13,6 +11,8 @@ import (
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
 	"log"
+	"strings"
+	"time"
 )
 
 const (
@@ -174,8 +174,8 @@ func DeleteDataSource(ctx context.Context, c client.Client, endpoint *datasource
 		// Remove index for datasource associated with it
 		deleteIndexReq := c.NewRequest(
 			globals.DB_SERVICE_NAME,
-			"DB.DeleteIndex",
-			&db_proto.DeleteIndexRequest{
+			"Config.DeleteIndex",
+			&db_config_proto.DeleteIndexRequest{
 				Index: endpoint.Index,
 			},
 		)
@@ -274,12 +274,12 @@ func CreateIndexWithAlias(ctx context.Context, c client.Client, endpoint *dataso
 	// Create index
 	createIndexSrvReq := c.NewRequest(
 		globals.DB_SERVICE_NAME,
-		"DB.CreateIndex",
-		&db_proto.CreateIndexRequest{
+		"Config.CreateIndex",
+		&db_config_proto.CreateIndexRequest{
 			Index: endpoint.Index,
 		},
 	)
-	createIndexSrvRes := &db_proto.CreateIndexResponse{}
+	createIndexSrvRes := &db_config_proto.CreateIndexResponse{}
 
 	if err := c.Call(ctx, createIndexSrvReq, createIndexSrvRes); err != nil {
 		return err
@@ -288,13 +288,13 @@ func CreateIndexWithAlias(ctx context.Context, c client.Client, endpoint *dataso
 	// Create DS alias
 	addAliasReq := c.NewRequest(
 		globals.DB_SERVICE_NAME,
-		"DB.AddAlias",
-		&db_proto.AddAliasRequest{
+		"Config.AddAlias",
+		&db_config_proto.AddAliasRequest{
 			Index: endpoint.Index,
 			Alias: endpoint.Id,
 		},
 	)
-	addAliasRes := &db_proto.AddAliasResponse{}
+	addAliasRes := &db_config_proto.AddAliasResponse{}
 
 	if err := c.Call(ctx, addAliasReq, addAliasRes); err != nil {
 		return err
@@ -303,8 +303,8 @@ func CreateIndexWithAlias(ctx context.Context, c client.Client, endpoint *dataso
 	// Create specific "files" alias
 	addAliasReq = c.NewRequest(
 		globals.DB_SERVICE_NAME,
-		"DB.AddAlias",
-		&db_proto.AddAliasRequest{
+		"Config.AddAlias",
+		&db_config_proto.AddAliasRequest{
 			Index: endpoint.Index,
 			Alias: globals.GetMD5Hash(endpoint.UserId),
 		},
