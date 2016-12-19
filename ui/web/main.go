@@ -4,6 +4,7 @@ package main
 import (
 	"net/http"
 
+	"github.com/NYTimes/gziphandler"
 	"github.com/kazoup/platform/lib/globals"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/micro/go-web"
@@ -14,7 +15,7 @@ func main() {
 		web.Name(globals.NAMESPACE + ".web.ui"),
 	)
 	// Serve file system
-	service.Handle("/", http.FileServer(http.Dir("html")))
+	service.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir("html"))))
 	//SPA routes
 	service.HandleFunc("/login/", IndexHandler)
 	service.HandleFunc("/onboarding", IndexHandler)
