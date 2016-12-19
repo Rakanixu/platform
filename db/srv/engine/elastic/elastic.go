@@ -5,7 +5,10 @@ import (
 	"github.com/kazoup/gabs"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/kazoup/platform/db/srv/engine"
+	model "github.com/kazoup/platform/db/srv/engine/elastic/model"
+	config "github.com/kazoup/platform/db/srv/proto/config"
 	db "github.com/kazoup/platform/db/srv/proto/db"
+	subscriber "github.com/kazoup/platform/db/srv/subscriber/elastic"
 	"github.com/kazoup/platform/lib/globals"
 	search_proto "github.com/kazoup/platform/search/srv/proto/search"
 	lib "github.com/mattbaird/elastigo/lib"
@@ -14,30 +17,23 @@ import (
 	"os"
 )
 
-type FilesChannel struct {
-	FileMessage *crawler.FileMessage
-	Client      client.Client
-}
-
 type elastic struct {
-	conn                 *lib.Conn
-	bulk                 *lib.BulkIndexer
-	filesChannel         chan *FilesChannel
-	slackUsersChannel    chan *crawler.SlackUserMessage
-	slackChannelsChannel chan *crawler.SlackChannelMessage
-	crawlerFinished      chan *crawler.CrawlerFinishedMessage
+	*model.Elastic
 }
 
 func init() {
 	engine.Register(&elastic{
-		filesChannel:         make(chan *FilesChannel),
-		slackUsersChannel:    make(chan *crawler.SlackUserMessage),
-		slackChannelsChannel: make(chan *crawler.SlackChannelMessage),
-		crawlerFinished:      make(chan *crawler.CrawlerFinishedMessage),
+		&model.Elastic{
+			FilesChannel:         make(chan *model.FilesChannel),
+			SlackUsersChannel:    make(chan *crawler.SlackUserMessage),
+			SlackChannelsChannel: make(chan *crawler.SlackChannelMessage),
+			CrawlerFinished:      make(chan *crawler.CrawlerFinishedMessage),
+		},
 	})
 }
 
-// Init elastic db
+// Init Elastic db (engine)
+// Common init for DB, Config and Subscriber interfaces
 func (e *elastic) Init() error {
 	// Set ES details from env variables
 	url := os.Getenv("ELASTICSEARCH_URL")
@@ -46,28 +42,26 @@ func (e *elastic) Init() error {
 	}
 	username := os.Getenv("ES_USERNAME")
 	password := os.Getenv("ES_PASSWORD")
+
 	//connect
-	e.conn = lib.NewConn()
-	err := e.conn.SetFromUrl(url)
-	//e.conn.SetHosts([]string{"elasticsearch:9200"}) //TODO: replace for enterprise version, get flag
+	e.Conn = lib.NewConn()
+	err := e.Conn.SetFromUrl(url)
+
 	if err != nil {
 		return err
 	}
 	if username != "" {
-		e.conn.Username = username
+		e.Conn.Username = username
 	}
 	if password != "" {
-		e.conn.Password = password
+		e.Conn.Password = password
 	}
-	e.bulk = e.conn.NewBulkIndexerErrors(100, 5)
-	e.bulk.BulkMaxDocs = 100000
-	e.bulk.Start()
+	e.Bulk = e.Conn.NewBulkIndexerErrors(100, 5)
+	e.Bulk.BulkMaxDocs = 100000
+	e.Bulk.Start()
 
-	if err := indexer(e); err != nil {
-		return err
-	}
-
-	if err := enricher(e); err != nil {
+	// Initialize subscribers
+	if err := subscriber.Subscribe(e.Elastic); err != nil {
 		return err
 	}
 
@@ -76,14 +70,14 @@ func (e *elastic) Init() error {
 
 // Create record
 func (e *elastic) Create(ctx context.Context, req *db.CreateRequest) (*db.CreateResponse, error) {
-	_, err := e.conn.Index(req.Index, req.Type, req.Id, nil, req.Data)
+	_, err := e.Conn.Index(req.Index, req.Type, req.Id, nil, req.Data)
 
 	return &db.CreateResponse{}, err
 }
 
 // Subscribe to crawler file messages
 func (e *elastic) SubscribeFiles(ctx context.Context, c client.Client, msg *crawler.FileMessage) error {
-	e.filesChannel <- &FilesChannel{
+	e.FilesChannel <- &model.FilesChannel{
 		FileMessage: msg,
 		Client:      c,
 	}
@@ -93,27 +87,27 @@ func (e *elastic) SubscribeFiles(ctx context.Context, c client.Client, msg *craw
 
 // Subscribe to crawler file messages
 func (e *elastic) SubscribeSlackUsers(ctx context.Context, msg *crawler.SlackUserMessage) error {
-	e.slackUsersChannel <- msg
+	e.SlackUsersChannel <- msg
 
 	return nil
 }
 
 // Subscribe to crawler file messages
 func (e *elastic) SubscribeSlackChannels(ctx context.Context, msg *crawler.SlackChannelMessage) error {
-	e.slackChannelsChannel <- msg
+	e.SlackChannelsChannel <- msg
 
 	return nil
 }
 
 // Subscribe to crawler finished message
 func (e *elastic) SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedMessage) error {
-	e.crawlerFinished <- msg
+	e.CrawlerFinished <- msg
 
 	return nil
 }
 
 func (e *elastic) Read(ctx context.Context, req *db.ReadRequest) (*db.ReadResponse, error) {
-	r, err := e.conn.Get(req.Index, req.Type, req.Id, nil)
+	r, err := e.Conn.Get(req.Index, req.Type, req.Id, nil)
 	if err != nil {
 		// elastigo returns error when does not exists
 		if err.Error() == "record not found" {
@@ -139,14 +133,14 @@ func (e *elastic) Read(ctx context.Context, req *db.ReadRequest) (*db.ReadRespon
 
 // Update record
 func (e *elastic) Update(ctx context.Context, req *db.UpdateRequest) (*db.UpdateResponse, error) {
-	_, err := e.conn.Index(req.Index, req.Type, req.Id, nil, req.Data)
+	_, err := e.Conn.Index(req.Index, req.Type, req.Id, nil, req.Data)
 
 	return &db.UpdateResponse{}, err
 }
 
 // Delete record
 func (e *elastic) Delete(ctx context.Context, req *db.DeleteRequest) (*db.DeleteResponse, error) {
-	_, err := e.conn.Delete(req.Index, req.Type, req.Id, nil)
+	_, err := e.Conn.Delete(req.Index, req.Type, req.Id, nil)
 
 	return &db.DeleteResponse{}, err
 }
@@ -167,7 +161,7 @@ func (e *elastic) DeleteByQuery(ctx context.Context, req *db.DeleteByQueryReques
 		return nil, err
 	}
 
-	_, err = e.conn.DeleteByQuery(req.Indexes, req.Types, nil, query)
+	_, err = e.Conn.DeleteByQuery(req.Indexes, req.Types, nil, query)
 	if err != nil {
 		return nil, err
 	}
@@ -212,7 +206,7 @@ func (e *elastic) Search(ctx context.Context, req *db.SearchRequest) (*db.Search
 		return &db.SearchResponse{}, err
 	}
 
-	out, err := e.conn.Search(req.Index, req.Type, nil, query)
+	out, err := e.Conn.Search(req.Index, req.Type, nil, query)
 	if err != nil {
 		return &db.SearchResponse{}, err
 	}
@@ -273,7 +267,7 @@ func (e *elastic) SearchById(ctx context.Context, req *db.SearchByIdRequest) (*d
 	}
 
 	//Search request
-	out, err := e.conn.Search(req.Index, req.Type, nil, query)
+	out, err := e.Conn.Search(req.Index, req.Type, nil, query)
 	if err != nil {
 		return &db.SearchByIdResponse{}, err
 	}
@@ -304,25 +298,25 @@ func (e *elastic) SearchById(ctx context.Context, req *db.SearchByIdRequest) (*d
 }
 
 // CreateIndexWithSettings creates an ES index with settings
-func (e *elastic) CreateIndex(ctx context.Context, req *db.CreateIndexRequest) (*db.CreateIndexResponse, error) {
-	exists, err := e.conn.IndicesExists(req.Index)
+func (e *elastic) CreateIndex(ctx context.Context, req *config.CreateIndexRequest) (*config.CreateIndexResponse, error) {
+	exists, err := e.Conn.IndicesExists(req.Index)
 	if err != nil {
-		return &db.CreateIndexResponse{}, err
+		return &config.CreateIndexResponse{}, err
 	}
 
 	if !exists {
-		_, err := e.conn.CreateIndex(req.Index)
+		_, err := e.Conn.CreateIndex(req.Index)
 		if err != nil {
-			return &db.CreateIndexResponse{}, err
+			return &config.CreateIndexResponse{}, err
 		}
 	}
 
-	return &db.CreateIndexResponse{}, nil
+	return &config.CreateIndexResponse{}, nil
 }
 
 // Status elasticsearch cluster
-func (e *elastic) Status(ctx context.Context, req *db.StatusRequest) (*db.StatusResponse, error) {
-	clusterState, err := e.conn.ClusterState(lib.ClusterStateFilter{
+func (e *elastic) Status(ctx context.Context, req *config.StatusRequest) (*config.StatusResponse, error) {
+	clusterState, err := e.Conn.ClusterState(lib.ClusterStateFilter{
 		FilterNodes:        true,
 		FilterRoutingTable: true,
 		FilterMetadata:     true,
@@ -331,10 +325,10 @@ func (e *elastic) Status(ctx context.Context, req *db.StatusRequest) (*db.Status
 
 	b, err := json.Marshal(clusterState)
 	if err != nil {
-		return &db.StatusResponse{}, err
+		return &config.StatusResponse{}, err
 	}
 
-	response := &db.StatusResponse{
+	response := &config.StatusResponse{
 		Status: string(b),
 	}
 
@@ -342,37 +336,37 @@ func (e *elastic) Status(ctx context.Context, req *db.StatusRequest) (*db.Status
 }
 
 // AddAlias to assign indexes (aliases) per datasource
-func (e *elastic) AddAlias(ctx context.Context, req *db.AddAliasRequest) (*db.AddAliasResponse, error) {
-	_, err := e.conn.AddAlias(req.Index, req.Alias)
+func (e *elastic) AddAlias(ctx context.Context, req *config.AddAliasRequest) (*config.AddAliasResponse, error) {
+	_, err := e.Conn.AddAlias(req.Index, req.Alias)
 	if err != nil {
 		return nil, err
 	}
 
-	return &db.AddAliasResponse{}, nil
+	return &config.AddAliasResponse{}, nil
 }
 
 // DeleteIndex from ES
-func (e *elastic) DeleteIndex(ctx context.Context, req *db.DeleteIndexRequest) (*db.DeleteIndexResponse, error) {
-	_, err := e.conn.DeleteIndex(req.Index)
+func (e *elastic) DeleteIndex(ctx context.Context, req *config.DeleteIndexRequest) (*config.DeleteIndexResponse, error) {
+	_, err := e.Conn.DeleteIndex(req.Index)
 	if err != nil {
 		return nil, err
 	}
 
-	return &db.DeleteIndexResponse{}, nil
+	return &config.DeleteIndexResponse{}, nil
 }
 
 // DeleteAlias from ES
-func (e *elastic) DeleteAlias(ctx context.Context, req *db.DeleteAliasRequest) (*db.DeleteAliasResponse, error) {
+func (e *elastic) DeleteAlias(ctx context.Context, req *config.DeleteAliasRequest) (*config.DeleteAliasResponse, error) {
 	_, err := e.RemoveAlias(req.Index, req.Alias)
 	if err != nil {
 		return nil, err
 	}
 
-	return &db.DeleteAliasResponse{}, nil
+	return &config.DeleteAliasResponse{}, nil
 }
 
 // RenameAlias from ES
-func (e *elastic) RenameAlias(ctx context.Context, req *db.RenameAliasRequest) (*db.RenameAliasResponse, error) {
+func (e *elastic) RenameAlias(ctx context.Context, req *config.RenameAliasRequest) (*config.RenameAliasResponse, error) {
 	var err error
 
 	_, err = e.RemoveAlias(req.Index, req.OldAlias)
@@ -380,7 +374,7 @@ func (e *elastic) RenameAlias(ctx context.Context, req *db.RenameAliasRequest) (
 		return nil, err
 	}
 
-	_, err = e.AddAlias(ctx, &db.AddAliasRequest{
+	_, err = e.AddAlias(ctx, &config.AddAliasRequest{
 		Index: req.Index,
 		Alias: req.NewAlias,
 	})
@@ -388,7 +382,7 @@ func (e *elastic) RenameAlias(ctx context.Context, req *db.RenameAliasRequest) (
 		return nil, err
 	}
 
-	return &db.RenameAliasResponse{}, nil
+	return &config.RenameAliasResponse{}, nil
 }
 
 // Aggregate allow us to query for aggs in ES
@@ -405,7 +399,7 @@ func (e *elastic) Aggregate(ctx context.Context, req *search_proto.AggregateRequ
 		return nil, err
 	}
 
-	out, err := e.conn.Search(req.Filters.Index, req.Filters.Type, nil, query)
+	out, err := e.Conn.Search(req.Filters.Index, req.Filters.Type, nil, query)
 	if err != nil {
 		return nil, err
 	}

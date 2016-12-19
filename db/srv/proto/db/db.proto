@@ -8,20 +8,8 @@ service DB {
   rpc Update(UpdateRequest) returns (UpdateResponse) {}
   rpc Delete(DeleteRequest) returns (DeleteResponse) {}
   rpc DeleteByQuery(DeleteByQueryRequest) returns (DeleteByQueryResponse) {}
-  rpc CreateIndex(CreateIndexRequest) returns (CreateIndexResponse) {}
-  rpc Status(StatusRequest) returns (StatusResponse) {}
   rpc Search(SearchRequest) returns (SearchResponse) {}
   rpc SearchById(SearchByIdRequest) returns (SearchByIdResponse) {}
-  rpc AddAlias(AddAliasRequest) returns (AddAliasResponse) {}
-  rpc DeleteIndex(DeleteIndexRequest) returns (DeleteIndexResponse) {}
-  rpc DeleteAlias(DeleteAliasRequest) returns (DeleteAliasResponse) {}
-  rpc RenameAlias(RenameAliasRequest) returns (RenameAliasResponse) {}
-}
-
-message DocRef {
-  string index = 1;
-  string type = 2;
-  string id = 3;
 }
 
 message CreateRequest {
@@ -32,17 +20,6 @@ message CreateRequest {
 }
 
 message CreateResponse {
-
-}
-
-message BulkCreateRequest {
-  string index = 1;
-  string type = 2;
-  string id = 3;
-  string data = 4;
-}
-
-message BulkCreateResponse {
 
 }
 
@@ -92,22 +69,6 @@ message DeleteByQueryResponse {
 
 }
 
-message CreateIndexRequest {
-  string index = 1;
-}
-
-message CreateIndexResponse {
-
-}
-
-message StatusRequest {
-
-}
-
-message StatusResponse {
-  string status = 1;
-}
-
 message SearchRequest {
   string index = 1;
   string term = 2;
@@ -136,40 +97,4 @@ message SearchByIdRequest {
 
 message SearchByIdResponse {
   string result = 1;
-}
-
-message AddAliasRequest {
-  string index = 1;
-  string alias = 2;
-}
-
-message AddAliasResponse {
-
-}
-
-message DeleteIndexRequest {
-  string index = 1;
-}
-
-message DeleteIndexResponse {
-
-}
-
-message DeleteAliasRequest {
-  string index = 1;
-  string alias = 2;
-}
-
-message DeleteAliasResponse {
-
-}
-
-message RenameAliasRequest {
-  string index = 1;
-  string old_alias = 2;
-  string new_alias = 3;
-}
-
-message RenameAliasResponse {
-
 }
