@@ -8,6 +8,8 @@ import (
 )
 
 func main() {
+	go http.ListenAndServe(":9091", http.HandlerFunc(redirect))
+
 	// Serve file system
 	http.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir("html"))))
 	//SPA routes
@@ -26,4 +28,9 @@ func main() {
 //IndexHandler serves index.html file of SPA
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "html/index.html")
+}
+
+// redirect redirects request over http to https
+func redirect(w http.ResponseWriter, req *http.Request) {
+	http.Redirect(w, req, "https://"+req.Host+req.URL.String(), http.StatusMovedPermanently)
 }
