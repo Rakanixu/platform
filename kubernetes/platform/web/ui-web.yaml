@@ -15,22 +15,17 @@ spec:
       containers:
       - name: ui-web
         command: [
-                  "/web",
-                  "-registry=consul",
-                  "--registry_address=$(REGISTRY_SERVICE_HOST)",    
-                  "--server_address=0.0.0.0:9090",
-                  "--register_ttl=60",
-                  "--register_interval=30",
-                  "--broker=nats",
-                  "--broker_address=nats:4222",
-                  "--transport=tcp",
+                  "/web"
                   ]
         image: eu.gcr.io/desktop-1470249894548/ui-web:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 9090
           name: ui-port
-        volumeMounts: 
+        volumeMounts:
+        - name: secrets
+          mountPath: "/secrets"
+          readOnly: true
         - name: google-cloud-service-account
           mountPath: "/google-cloud-service-account"
           readOnly: true
@@ -38,6 +33,9 @@ spec:
           mountPath: "/root/.aws"
           readOnly: true
       volumes:
+      - name: secrets
+        secret:
+          secretName: "ssl"
       - name: google-cloud-service-account
         secret: 
           secretName: "google-cloud-service-account"
