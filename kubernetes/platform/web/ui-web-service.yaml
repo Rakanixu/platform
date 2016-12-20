@@ -14,7 +14,7 @@ spec:
       targetPort: 9090
     - name: http
       port: 80
-      targetPort: 9090
+      targetPort: 9091
   # label keys and values that must match in order to receive traffic for this service
   selector:
     name: ui-web
