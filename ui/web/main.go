@@ -2,28 +2,25 @@
 package main
 
 import (
-	"net/http"
-
 	"github.com/NYTimes/gziphandler"
-	"github.com/kazoup/platform/lib/globals"
-	_ "github.com/kazoup/platform/lib/plugins"
-	"github.com/micro/go-web"
+	"log"
+	"net/http"
 )
 
 func main() {
-	service := web.NewService(
-		web.Name(globals.NAMESPACE + ".web.ui"),
-	)
 	// Serve file system
-	service.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir("html"))))
+	http.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir("html"))))
 	//SPA routes
-	service.HandleFunc("/login/", IndexHandler)
-	service.HandleFunc("/onboarding", IndexHandler)
-	service.HandleFunc("/u/", IndexHandler)
-	service.HandleFunc("/search", IndexHandler)
-	service.HandleFunc("/settings", IndexHandler)
-	service.Init()
-	service.Run()
+	http.HandleFunc("/login/", IndexHandler)
+	http.HandleFunc("/onboarding", IndexHandler)
+	http.HandleFunc("/u/", IndexHandler)
+	http.HandleFunc("/search", IndexHandler)
+	http.HandleFunc("/settings", IndexHandler)
+
+	err := http.ListenAndServeTLS(":9090", "/secrets/tls.crt", "/secrets/tls.key", nil)
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
+	}
 }
 
 //IndexHandler serves index.html file of SPA
