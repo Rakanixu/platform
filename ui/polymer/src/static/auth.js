@@ -16,7 +16,7 @@ window.Auth = (function() {
       signUpTerms: "I agree to the <a href='http://www.kazoup.com/legal/kazoup-term-of-service/' target='_new'>terms of service</a> and <a href='http://www.kazoup.com/legal/privacy-policy/' target='_new'>privacy policy</a>."
     },
     theme: {
-      logo: 'http://www.kazoup.com/img/kazoup-logo-small.png',
+      logo: 'https://app.kazoup.io/src/static/kazoup-logo-small.png',
       primaryColor: '#2CB4D9',
   	},  
     closable : false
