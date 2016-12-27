@@ -270,6 +270,7 @@
                     <div class="flex"></div>
 
                     <!-- Share functionality specific for every integration, this way any of the elements becomes unnecessary complex -->
+                    <!--
                     <template is="dom-if" if="[[isSlack(item.file_type)]]">
                         <share-slack-file item="{{item}}"></share-slack-file>
                     </template>
@@ -289,6 +290,7 @@
                     <template is="dom-if" if="[[isBox(item.file_type)]]">
                         <share-box-file item="{{item}}"></share-box-file>
                     </template>
+                    -->
 
                     <template is="dom-if" if="[[isDeleteFileAvailable(item.file_type)]]">
                         <delete-file item="{{item}}"></delete-file>
