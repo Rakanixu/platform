@@ -27,9 +27,15 @@
         display: block;
       }
 
-      app-header {
+      app-header,
+      app-header-layout,
+      app-drawer-layout {
         color: #fff;
         background-color: var(--app-primary-color);
+      }
+
+      app-drawer-layout::shadow app-header-layout::shadow #contentContainer {
+        background-color: #2B2B32;
       }
 
       app-header paper-icon-button {
