@@ -53,7 +53,8 @@
                hidden$="[[!addDatasourceIconVisible]]"></paper-fab>
 
     <template id="datasources" is="dom-repeat" items="[[datasourcesResults]]" hidden$="[[emptyState.visible]]">
-      <mat-item label="[[getDatasourcePrettyType(item.url)]]"
+      <mat-item class="no-ui-action"
+                label="[[getDatasourcePrettyType(item.url)]]"
                 description="[[getDatasourceUrl(item.url)]]">
         <paper-spinner id$="spinner[[item.id]]" compute$="[[isSpinnerActive(item)]]"></paper-spinner>
         <mat-avatar class="primary"

@@ -65,6 +65,23 @@
         position: absolute;
         left: 0;
         width: 256px;
+        cursor: default;
+      }
+
+      mat-item.no-ui-action {
+        cursor: default;
+      }
+
+      mat-item.username::shadow div.ripple-ground,
+      mat-item.username::shadow div.ripple-waves,
+      mat-item.no-ui-action::shadow div.ripple-ground,
+      mat-item.no-ui-action::shadow div.ripple-waves {
+        display: none !important;
+      }
+
+      mat-item.username::shadow div.ripple-ground,
+      mat-item.username::shadow div.ripple-waves {
+        display: none !important;
       }
 
       mat-item.username::shadow mat-ink {

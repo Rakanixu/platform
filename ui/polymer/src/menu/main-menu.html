@@ -117,7 +117,8 @@
               </paper-icon-item>
 
               <template is="dom-repeat" items="[[datasourceResults]]">
-                <paper-icon-item on-tap="setPathWithParams"
+                <paper-icon-item id="datasource[[item.id]]"
+                                 on-tap="setPathWithParams"
                                  data-path="/u/search"
                                  data-params$='{"index":"[[item.index]]","term":""}'>
                   <iron-icon icon="[[getDatasourceIcon(item.url)]]" item-icon></iron-icon>[[getDatasourcePrettyType(item.url)]]
