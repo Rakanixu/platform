@@ -3,3 +3,4 @@ file-srv:
   image: kazoup/file-srv
   external_links:
   - consul:registry
+
