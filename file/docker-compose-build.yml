@@ -3,3 +3,5 @@ file-srv:
   image: kazoup/file-srv
   external_links:
   - consul:registry
+  volumes:
+  - "./cmd/kazoup/doc_templates:/doc_templates"
