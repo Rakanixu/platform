@@ -54,7 +54,7 @@ func (lfs *LocalFs) List(c client.Client) (chan file.File, chan bool, error) {
 }
 
 // Token belongs to Fs interface
-func (lfs *LocalFs) Token() string {
+func (lfs *LocalFs) Token(c client.Client) string {
 	// LocalFs cannot have Token, cause represents a Local datasource which does not required oauth
 	return ""
 }
@@ -65,7 +65,7 @@ func (lfs *LocalFs) GetDatasourceId() string {
 }
 
 // GetThumbnail belongs to Fs interface
-func (lfs *LocalFs) GetThumbnail(id string) (string, error) {
+func (lfs *LocalFs) GetThumbnail(id string, c client.Client) (string, error) {
 	return "", nil
 }
 
@@ -85,7 +85,7 @@ func (lfs *LocalFs) ShareFile(ctx context.Context, c client.Client, req file_pro
 }
 
 // DownloadFile retrieves a file
-func (lfs *LocalFs) DownloadFile(id string, opts ...string) (io.ReadCloser, error) {
+func (lfs *LocalFs) DownloadFile(id string, c client.Client, opts ...string) (io.ReadCloser, error) {
 	return nil, nil
 }
 

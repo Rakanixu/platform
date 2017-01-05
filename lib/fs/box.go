@@ -56,7 +56,7 @@ func NewBoxFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 
 // List returns 2 channels, one for files , other for the state. Goes over a datasource and discover files
 func (bfs *BoxFs) List(c client.Client) (chan file.File, chan bool, error) {
-	bfs.refreshToken()
+	bfs.refreshToken(c)
 
 	go func() {
 		bfs.LastDirTime = time.Now().Unix()
@@ -65,7 +65,7 @@ func (bfs *BoxFs) List(c client.Client) (chan file.File, chan bool, error) {
 			case v := <-bfs.Directories:
 				bfs.LastDirTime = time.Now().Unix()
 
-				err := bfs.getDirChildren(v, bfs.DefaultOffset, bfs.DefaultLimit)
+				err := bfs.getDirChildren(v, bfs.DefaultOffset, bfs.DefaultLimit, c)
 				if err != nil {
 					log.Println(err)
 				}
@@ -82,7 +82,7 @@ func (bfs *BoxFs) List(c client.Client) (chan file.File, chan bool, error) {
 	}()
 
 	go func() {
-		if err := bfs.getDirChildren("0", bfs.DefaultOffset, bfs.DefaultLimit); err != nil {
+		if err := bfs.getDirChildren("0", bfs.DefaultOffset, bfs.DefaultLimit, c); err != nil {
 			log.Println(err)
 		}
 	}()
@@ -91,8 +91,8 @@ func (bfs *BoxFs) List(c client.Client) (chan file.File, chan bool, error) {
 }
 
 // Token returns user token for box datasource
-func (bfs *BoxFs) Token() string {
-	bfs.refreshToken()
+func (bfs *BoxFs) Token(c client.Client) string {
+	bfs.refreshToken(c)
 
 	return "Bearer " + bfs.Endpoint.Token.AccessToken
 }
@@ -103,13 +103,13 @@ func (bfs *BoxFs) GetDatasourceId() string {
 }
 
 // GetThumbnail returns a URI pointing to an image
-func (bfs *BoxFs) GetThumbnail(id string) (string, error) {
+func (bfs *BoxFs) GetThumbnail(id string, c client.Client) (string, error) {
 	url := fmt.Sprintf(
 		"%s%s&Authorization=%s",
 		globals.BoxFileMetadataEndpoint,
 		id,
 		"/thumbnail.png?min_height=256&min_width=256",
-		bfs.Token(),
+		bfs.Token(c),
 	)
 
 	return url, nil
@@ -158,7 +158,7 @@ func (bfs *BoxFs) CreateFile(ctx context.Context, c client.Client, rq file_proto
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", bfs.Token())
+	req.Header.Set("Authorization", bfs.Token(c))
 	req.Header.Set("Content-Type", mw.FormDataContentType())
 
 	rsp, err := hc.Do(req)
@@ -207,7 +207,7 @@ func (bfs *BoxFs) DeleteFile(ctx context.Context, c client.Client, rq file_proto
 	if err != nil {
 		return nil, err
 	}
-	r.Header.Set("Authorization", bfs.Token())
+	r.Header.Set("Authorization", bfs.Token(c))
 	rsp, err := bc.Do(r)
 	if err != nil {
 		return nil, err
@@ -257,7 +257,7 @@ func (bfs *BoxFs) ShareFile(ctx context.Context, c client.Client, req file_proto
 	if err != nil {
 		return "", err
 	}
-	r.Header.Set("Authorization", bfs.Token())
+	r.Header.Set("Authorization", bfs.Token(c))
 	rsp, err := bc.Do(r)
 	if err != nil {
 		return "", err
@@ -283,14 +283,14 @@ func (bfs *BoxFs) ShareFile(ctx context.Context, c client.Client, req file_proto
 }
 
 // DownloadFile retrieves a file
-func (bfs *BoxFs) DownloadFile(id string, opts ...string) (io.ReadCloser, error) {
+func (bfs *BoxFs) DownloadFile(id string, cl client.Client, opts ...string) (io.ReadCloser, error) {
 	c := &http.Client{}
 	url := fmt.Sprintf("%s%s/content", globals.BoxFileMetadataEndpoint, id)
 	r, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
-	r.Header.Set("Authorization", bfs.Token())
+	r.Header.Set("Authorization", bfs.Token(cl))
 	rsp, err := c.Do(r)
 	if err != nil {
 		return nil, err
@@ -315,14 +315,14 @@ func (bfs *BoxFs) DeleteIndexBucketFromGCS() error {
 }
 
 // getDirChildren get children from directory
-func (bfs *BoxFs) getDirChildren(id string, offset, limit int) error {
+func (bfs *BoxFs) getDirChildren(id string, offset, limit int, cl client.Client) error {
 	c := &http.Client{}
 	url := fmt.Sprintf("%s%s/?offset=%d&limit=%d", globals.BoxFoldersEndpoint, id, offset, limit)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Authorization", bfs.Token())
+	req.Header.Set("Authorization", bfs.Token(cl))
 	rsp, err := c.Do(req)
 	if err != nil {
 		return err
@@ -340,7 +340,7 @@ func (bfs *BoxFs) getDirChildren(id string, offset, limit int) error {
 			bfs.Directories <- v.ID
 		} else {
 			// File discovered, but need to retrieve more info about the file
-			if err := bfs.getMetadataFromFile(v.ID); err != nil {
+			if err := bfs.getMetadataFromFile(v.ID, cl); err != nil {
 				return err
 			}
 		}
@@ -351,6 +351,7 @@ func (bfs *BoxFs) getDirChildren(id string, offset, limit int) error {
 			id,
 			bdc.ItemCollection.Offset+bdc.ItemCollection.Limit,
 			bdc.ItemCollection.Limit,
+			cl,
 		)
 	}
 
@@ -358,13 +359,13 @@ func (bfs *BoxFs) getDirChildren(id string, offset, limit int) error {
 }
 
 // getMetadataFromFile retrieves more info about discovered files in box
-func (bfs *BoxFs) getMetadataFromFile(id string) error {
+func (bfs *BoxFs) getMetadataFromFile(id string, cl client.Client) error {
 	c := &http.Client{}
 	req, err := http.NewRequest("GET", globals.BoxFileMetadataEndpoint+id, nil)
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Authorization", bfs.Token())
+	req.Header.Set("Authorization", bfs.Token(cl))
 	rsp, err := c.Do(req)
 	if err != nil {
 		return err
@@ -378,7 +379,7 @@ func (bfs *BoxFs) getMetadataFromFile(id string) error {
 
 	f := file.NewKazoupFileFromBoxFile(*fm, bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
 
-	if err := bfs.generateThumbnail(fm, f.ID); err != nil {
+	if err := bfs.generateThumbnail(fm, f.ID, cl); err != nil {
 		log.Println(err)
 	}
 
@@ -388,11 +389,11 @@ func (bfs *BoxFs) getMetadataFromFile(id string) error {
 }
 
 // generateThumbnail downloads original picture, resize and uploads to Google storage with kazoup id
-func (bfs *BoxFs) generateThumbnail(fm *box.BoxFileMeta, id string) error {
+func (bfs *BoxFs) generateThumbnail(fm *box.BoxFileMeta, id string, c client.Client) error {
 	name := strings.Split(fm.Name, ".")
 
 	if categories.GetDocType("."+name[len(name)-1]) == globals.CATEGORY_PICTURE {
-		rc, err := bfs.DownloadFile(fm.ID)
+		rc, err := bfs.DownloadFile(fm.ID, c)
 		if err != nil {
 			return errors.New("ERROR downloading box file")
 		}
@@ -411,7 +412,7 @@ func (bfs *BoxFs) generateThumbnail(fm *box.BoxFileMeta, id string) error {
 }
 
 // refreshToken gets a new token (refreshed if expired) from custom one and saves it
-func (bfs *BoxFs) refreshToken() error {
+func (bfs *BoxFs) refreshToken(cl client.Client) error {
 	tokenSource := globals.NewBoxOauthConfig().TokenSource(oauth2.NoContext, &oauth2.Token{
 		AccessToken:  bfs.Endpoint.Token.AccessToken,
 		TokenType:    bfs.Endpoint.Token.TokenType,
@@ -433,7 +434,7 @@ func (bfs *BoxFs) refreshToken() error {
 		return err
 	}
 
-	c := db_proto.NewDBClient(globals.DB_SERVICE_NAME, nil)
+	c := db_proto.NewDBClient(globals.DB_SERVICE_NAME, cl)
 	_, err = c.Update(globals.NewSystemContext(), &db_proto.UpdateRequest{
 		Index: "datasources",
 		Type:  "datasource",

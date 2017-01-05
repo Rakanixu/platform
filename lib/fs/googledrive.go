@@ -40,7 +40,7 @@ func NewGoogleDriveFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 // List returns 2 channels, for files and state. Discover files in google drive datasource
 func (gfs *GoogleDriveFs) List(c client.Client) (chan file.File, chan bool, error) {
 	go func() {
-		if err := gfs.getFiles(); err != nil {
+		if err := gfs.getFiles(c); err != nil {
 			log.Println(err)
 		}
 
@@ -51,7 +51,7 @@ func (gfs *GoogleDriveFs) List(c client.Client) (chan file.File, chan bool, erro
 }
 
 // Token returns google drive user token
-func (gfs *GoogleDriveFs) Token() string {
+func (gfs *GoogleDriveFs) Token(c client.Client) string {
 	return gfs.Endpoint.Token.AccessToken
 }
 
@@ -61,7 +61,7 @@ func (gfs *GoogleDriveFs) GetDatasourceId() string {
 }
 
 // GetThumbnail returns a URI pointing to a thumbnail
-func (gfs *GoogleDriveFs) GetThumbnail(id string) (string, error) {
+func (gfs *GoogleDriveFs) GetThumbnail(id string, c client.Client) (string, error) {
 	srv, err := gfs.getDriveService()
 	if err != nil {
 		return "", err
@@ -183,7 +183,7 @@ func (gfs *GoogleDriveFs) ShareFile(ctx context.Context, c client.Client, req fi
 }
 
 // DownloadFile retrieves a file from google drive
-func (gfs *GoogleDriveFs) DownloadFile(id string, opts ...string) (io.ReadCloser, error) {
+func (gfs *GoogleDriveFs) DownloadFile(id string, c client.Client, opts ...string) (io.ReadCloser, error) {
 	srv, err := gfs.getDriveService()
 	if err != nil {
 		return nil, err
@@ -213,7 +213,7 @@ func (gfs *GoogleDriveFs) DeleteIndexBucketFromGCS() error {
 }
 
 // getFiles discover all files in google drive account
-func (gfs *GoogleDriveFs) getFiles() error {
+func (gfs *GoogleDriveFs) getFiles(c client.Client) error {
 	srv, err := gfs.getDriveService()
 	if err != nil {
 		return err
@@ -225,13 +225,13 @@ func (gfs *GoogleDriveFs) getFiles() error {
 	}
 
 	if len(r.Files) > 0 {
-		if err := gfs.pushFilesToChanForPage(r.Files); err != nil {
+		if err := gfs.pushFilesToChanForPage(c, r.Files); err != nil {
 			return err
 		}
 	}
 
 	if len(r.NextPageToken) > 0 {
-		if err := gfs.getNextPage(srv, r.NextPageToken); err != nil {
+		if err := gfs.getNextPage(c, srv, r.NextPageToken); err != nil {
 			return err
 		}
 	}
@@ -240,20 +240,20 @@ func (gfs *GoogleDriveFs) getFiles() error {
 }
 
 // getNextPage allows pagination while discovering files
-func (gfs *GoogleDriveFs) getNextPage(srv *drive.Service, nextPageToken string) error {
+func (gfs *GoogleDriveFs) getNextPage(c client.Client, srv *drive.Service, nextPageToken string) error {
 	r, err := srv.Files.List().PageToken(nextPageToken).Fields("files,kind,nextPageToken").Do()
 	if err != nil {
 		return err
 	}
 
 	if len(r.Files) > 0 {
-		if err := gfs.pushFilesToChanForPage(r.Files); err != nil {
+		if err := gfs.pushFilesToChanForPage(c, r.Files); err != nil {
 			return err
 		}
 	}
 
 	if len(r.NextPageToken) > 0 {
-		if err := gfs.getNextPage(srv, r.NextPageToken); err != nil {
+		if err := gfs.getNextPage(c, srv, r.NextPageToken); err != nil {
 			return err
 		}
 	}
@@ -262,11 +262,11 @@ func (gfs *GoogleDriveFs) getNextPage(srv *drive.Service, nextPageToken string) 
 }
 
 // pushFilesToChanForPage sends discovered files to the file system channel
-func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
+func (gfs *GoogleDriveFs) pushFilesToChanForPage(c client.Client, files []*drive.File) error {
 	for _, v := range files {
 		f := file.NewKazoupFileFromGoogleDriveFile(*v, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
 		if f != nil {
-			if err := gfs.generateThumbnail(v, f.ID); err != nil {
+			if err := gfs.generateThumbnail(c, v, f.ID); err != nil {
 				log.Println(err)
 			}
 
@@ -277,14 +277,14 @@ func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
 	return nil
 }
 
-func (gfs *GoogleDriveFs) generateThumbnail(f *drive.File, id string) error {
+func (gfs *GoogleDriveFs) generateThumbnail(cl client.Client, f *drive.File, id string) error {
 	c := categories.GetDocType("." + f.FullFileExtension)
 	if len(f.FullFileExtension) == 0 {
 		c = categories.GetDocType(f.MimeType)
 	}
 
 	if c == globals.CATEGORY_PICTURE {
-		rc, err := gfs.DownloadFile(f.Id)
+		rc, err := gfs.DownloadFile(f.Id, cl)
 		if err != nil {
 			return errors.New("ERROR downloading googledrive file")
 		}

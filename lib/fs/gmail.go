@@ -41,7 +41,7 @@ func NewGmailFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 // List returns 2 channels, for files and state. Discover attached files in google mail
 func (gfs *GmailFs) List(c client.Client) (chan file.File, chan bool, error) {
 	go func() {
-		if err := gfs.getMessages(); err != nil {
+		if err := gfs.getMessages(c); err != nil {
 			log.Println(err)
 		}
 
@@ -52,7 +52,7 @@ func (gfs *GmailFs) List(c client.Client) (chan file.File, chan bool, error) {
 }
 
 // Token returns gmail user token
-func (gfs *GmailFs) Token() string {
+func (gfs *GmailFs) Token(c client.Client) string {
 	return gfs.Endpoint.Token.AccessToken
 }
 
@@ -62,7 +62,7 @@ func (gfs *GmailFs) GetDatasourceId() string {
 }
 
 // GetThumbnail belongs to Fs interface
-func (gfs *GmailFs) GetThumbnail(id string) (string, error) {
+func (gfs *GmailFs) GetThumbnail(id string, c client.Client) (string, error) {
 	return "", nil
 }
 
@@ -82,7 +82,7 @@ func (gfs *GmailFs) ShareFile(ctx context.Context, c client.Client, req file_pro
 }
 
 // DownloadFile retrieves a file
-func (gfs *GmailFs) DownloadFile(id string, opts ...string) (io.ReadCloser, error) {
+func (gfs *GmailFs) DownloadFile(id string, cl client.Client, opts ...string) (io.ReadCloser, error) {
 	cfg := globals.NewGmailOauthConfig()
 	c := cfg.Client(context.Background(), &oauth2.Token{
 		AccessToken:  gfs.Endpoint.Token.AccessToken,
@@ -131,7 +131,7 @@ func (gfs *GmailFs) DeleteIndexBucketFromGCS() error {
 }
 
 // getMessages discover files (attachments)
-func (gfs *GmailFs) getMessages() error {
+func (gfs *GmailFs) getMessages(cl client.Client) error {
 	cfg := globals.NewGmailOauthConfig()
 	c := cfg.Client(context.Background(), &oauth2.Token{
 		AccessToken:  gfs.Endpoint.Token.AccessToken,
@@ -153,13 +153,13 @@ func (gfs *GmailFs) getMessages() error {
 	}
 
 	if len(msgBdy.Messages) > 0 {
-		if err := gfs.pushMessagesToChanForPage(s, msgBdy.Messages); err != nil {
+		if err := gfs.pushMessagesToChanForPage(cl, s, msgBdy.Messages); err != nil {
 			return err
 		}
 	}
 
 	if len(msgBdy.NextPageToken) > 0 {
-		if err := gfs.getNextPage(s, msgBdy.NextPageToken); err != nil {
+		if err := gfs.getNextPage(cl, s, msgBdy.NextPageToken); err != nil {
 			return err
 		}
 	}
@@ -168,7 +168,7 @@ func (gfs *GmailFs) getMessages() error {
 }
 
 // getNextPage allows pagination for discovering files
-func (gfs *GmailFs) getNextPage(s *gmail.Service, nextPageToken string) error {
+func (gfs *GmailFs) getNextPage(c client.Client, s *gmail.Service, nextPageToken string) error {
 	srv := gmail.NewUsersMessagesService(s)
 	r, err := srv.List("me").PageToken(nextPageToken).Fields("messages,nextPageToken,resultSizeEstimate").Do()
 	if err != nil {
@@ -176,13 +176,13 @@ func (gfs *GmailFs) getNextPage(s *gmail.Service, nextPageToken string) error {
 	}
 
 	if len(r.Messages) > 0 {
-		if err := gfs.pushMessagesToChanForPage(s, r.Messages); err != nil {
+		if err := gfs.pushMessagesToChanForPage(c, s, r.Messages); err != nil {
 			return err
 		}
 	}
 
 	if len(r.NextPageToken) > 0 {
-		if err := gfs.getNextPage(s, r.NextPageToken); err != nil {
+		if err := gfs.getNextPage(c, s, r.NextPageToken); err != nil {
 			return err
 		}
 	}
@@ -191,7 +191,7 @@ func (gfs *GmailFs) getNextPage(s *gmail.Service, nextPageToken string) error {
 }
 
 // pushMessagesToChanForPage push discovered files to broker
-func (gfs *GmailFs) pushMessagesToChanForPage(s *gmail.Service, msgs []*gmail.Message) error {
+func (gfs *GmailFs) pushMessagesToChanForPage(c client.Client, s *gmail.Service, msgs []*gmail.Message) error {
 	srv := gmail.NewUsersMessagesService(s)
 
 	for _, v := range msgs {
@@ -221,7 +221,7 @@ func (gfs *GmailFs) pushMessagesToChanForPage(s *gmail.Service, msgs []*gmail.Me
 			// Constructor will return nil when the attachment has no name
 			// When an attachment has no name, attachment use to be a marketing image
 			if f != nil {
-				if err := gfs.generateThumbnail(gf, v, vl, f.ID); err != nil {
+				if err := gfs.generateThumbnail(c, gf, v, vl, f.ID); err != nil {
 					log.Println(err)
 				}
 
@@ -234,9 +234,9 @@ func (gfs *GmailFs) pushMessagesToChanForPage(s *gmail.Service, msgs []*gmail.Me
 }
 
 // generateThumbnail downloads original picture, resize and uploads to Google storage
-func (gfs *GmailFs) generateThumbnail(gf *gmailhelper.GmailFile, msg *gmail.Message, msgp *gmail.MessagePart, id string) error {
+func (gfs *GmailFs) generateThumbnail(c client.Client, gf *gmailhelper.GmailFile, msg *gmail.Message, msgp *gmail.MessagePart, id string) error {
 	if msgp.MimeType == globals.MIME_PNG || msgp.MimeType == globals.MIME_JPG || msgp.MimeType == globals.MIME_JPEG {
-		pr, err := gfs.DownloadFile(msg.Id, msgp.Body.AttachmentId)
+		pr, err := gfs.DownloadFile(msg.Id, c, msgp.Body.AttachmentId)
 		if err != nil {
 			return errors.New("ERROR downloading gmail file")
 		}

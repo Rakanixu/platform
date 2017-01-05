@@ -7,6 +7,7 @@ import (
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/metadata"
 	"golang.org/x/net/context"
@@ -91,7 +92,7 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			log.Println("ERROR", err.Error())
 		}
 
-		req.Header.Set("Authorization", fSys.Token())
+		req.Header.Set("Authorization", fSys.Token(wrappers.NewKazoupClient()))
 		rsp, err := c.Do(req)
 		if err != nil {
 			log.Println("ERROR", err.Error())
@@ -117,13 +118,13 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	case globals.GoogleDrive, globals.OneDrive:
-		url, err = fSys.GetThumbnail(f.GetIDFromOriginal())
+		url, err = fSys.GetThumbnail(f.GetIDFromOriginal(), wrappers.NewKazoupClient())
 		if err != nil {
 			log.Println("ERROR", err.Error())
 		}
 		http.Redirect(w, r, url, http.StatusSeeOther)
 	case globals.Dropbox:
-		url, err = fSys.GetThumbnail(f.GetPathDisplay())
+		url, err = fSys.GetThumbnail(f.GetPathDisplay(), wrappers.NewKazoupClient())
 		if err != nil {
 			log.Println("ERROR", err.Error())
 		}
