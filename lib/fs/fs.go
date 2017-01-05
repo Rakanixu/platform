@@ -26,13 +26,13 @@ type Fs interface {
 	CreateFile(context.Context, client.Client, file_proto.CreateRequest) (*file_proto.CreateResponse, error)
 	DeleteFile(context.Context, client.Client, file_proto.DeleteRequest) (*file_proto.DeleteResponse, error)
 	ShareFile(context.Context, client.Client, file_proto.ShareRequest) (string, error)
-	DownloadFile(string, ...string) (io.ReadCloser, error)
+	DownloadFile(string, client.Client, ...string) (io.ReadCloser, error)
 	UploadFile(io.Reader, string) error
 	SignedObjectStorageURL(string) (string, error)
 	DeleteIndexBucketFromGCS() error
 	GetDatasourceId() string
-	Token() string
-	GetThumbnail(id string) (string, error)
+	Token(client.Client) string
+	GetThumbnail(string, client.Client) (string, error)
 }
 
 var (

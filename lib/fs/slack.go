@@ -48,7 +48,7 @@ func (sfs *SlackFs) List(c client.Client) (chan file.File, chan bool, error) {
 			log.Println(err)
 		}
 
-		if err := sfs.getFiles(1); err != nil {
+		if err := sfs.getFiles(c, 1); err != nil {
 			log.Println(err)
 		}
 		// Slack scan finished
@@ -59,7 +59,7 @@ func (sfs *SlackFs) List(c client.Client) (chan file.File, chan bool, error) {
 }
 
 // Token returns slack user token
-func (sfs *SlackFs) Token() string {
+func (sfs *SlackFs) Token(c client.Client) string {
 	return "Bearer " + sfs.Endpoint.Token.AccessToken
 }
 
@@ -69,7 +69,7 @@ func (sfs *SlackFs) GetDatasourceId() string {
 }
 
 // GetThumbnail belongs to Fs interface
-func (sfs *SlackFs) GetThumbnail(id string) (string, error) {
+func (sfs *SlackFs) GetThumbnail(id string, c client.Client) (string, error) {
 	return "", nil
 }
 
@@ -112,13 +112,13 @@ func (sfs *SlackFs) ShareFile(ctx context.Context, c client.Client, req file_pro
 }
 
 // DownloadFile retrieves a file
-func (sfs *SlackFs) DownloadFile(url string, opts ...string) (io.ReadCloser, error) {
+func (sfs *SlackFs) DownloadFile(url string, cl client.Client, opts ...string) (io.ReadCloser, error) {
 	c := &http.Client{}
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("Authorization", sfs.Token())
+	req.Header.Add("Authorization", sfs.Token(cl))
 	res, err := c.Do(req)
 	if err != nil {
 		return nil, err
@@ -220,7 +220,7 @@ func (sfs *SlackFs) getChannels(cl client.Client) error {
 }
 
 // getFiles discover slack files for user and push them to broker
-func (sfs *SlackFs) getFiles(page int) error {
+func (sfs *SlackFs) getFiles(cl client.Client, page int) error {
 	data := make(url.Values)
 	data.Add("token", sfs.Endpoint.Token.AccessToken)
 	data.Add("page", strconv.Itoa(page))
@@ -242,7 +242,7 @@ func (sfs *SlackFs) getFiles(page int) error {
 	for _, v := range filesRsp.Files {
 		f := file.NewKazoupFileFromSlackFile(v, sfs.Endpoint.Id, sfs.Endpoint.UserId, sfs.Endpoint.Index)
 
-		if err := sfs.generateThumbnail(v, f.ID); err != nil {
+		if err := sfs.generateThumbnail(cl, v, f.ID); err != nil {
 			log.Println(err)
 		}
 
@@ -250,16 +250,16 @@ func (sfs *SlackFs) getFiles(page int) error {
 	}
 
 	if filesRsp.Paging.Pages >= page {
-		sfs.getFiles(page + 1)
+		sfs.getFiles(cl, page+1)
 	}
 
 	return nil
 }
 
 // generateThumbnail downloads original picture, resize and uploads to Google storage
-func (sfs *SlackFs) generateThumbnail(sf slack.SlackFile, id string) error {
+func (sfs *SlackFs) generateThumbnail(c client.Client, sf slack.SlackFile, id string) error {
 	if categories.GetDocType("."+sf.Filetype) == globals.CATEGORY_PICTURE {
-		pr, err := sfs.DownloadFile(sf.URLPrivateDownload)
+		pr, err := sfs.DownloadFile(sf.URLPrivateDownload, c)
 		if err != nil {
 			return errors.New("ERROR downloading slack file")
 		}
