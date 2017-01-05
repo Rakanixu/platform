@@ -7,5 +7,6 @@ RUN	apk update && \
     update-ca-certificates && \
     rm -rf /var/cache/apk/*
 
+ADD doc_templates /doc_templates
 ADD srv /
 ENTRYPOINT [ "/srv" ]
