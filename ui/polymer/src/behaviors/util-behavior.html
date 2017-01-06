@@ -236,31 +236,31 @@
         switch (extension) {
           case 'doc':
           case 'docx':
-            result = 'blue';
+            result = '#2196f3';
             break;
           case 'xls':
           case 'xlsx':
-            result = 'green';
+            result = '#4caf50';
             break;
           case 'pdf':
-            result = 'red';
+            result = '#f44336';
             break;
           case 'ppt':
           case 'pptx':
-            result = 'amber-900';
+            result = '#ff6f00';
             break;
         }
 
         if (result.length === 0) {
           switch (item.mime_type) {
             case 'application/vnd.google-apps.document':
-              result = 'blue';
+              result = '#2196f3';
               break;
             case 'application/vnd.google-apps.spreadsheet':
-              result = 'green';
+              result = '#4caf50';
               break;
             case 'application/vnd.google-apps.presentation':
-              result = 'amber-900';
+              result = '#ff6f00';
               break;
           }
         }

@@ -201,9 +201,9 @@
                                                             fade></iron-image>
                                             </template>
                                             <template is="dom-if" if="[[!isVideoPreview(item.category, bigVideoClass)]]">
-                                                <mat-avatar background$="[[documentType(item)]]"
-                                                            class="primary"
-                                                            icon="[[getIcon(item.is_dir, item.category, item.file_type)]]"></mat-avatar>
+                                                <file-icon class="primary"
+                                                           background$="[[documentType(item)]]"
+                                                           name$="[[getIcon(item.is_dir, item.category, item.file_type)]]"></file-icon>
                                             </template>
 
                                             <iron-icon class="secondary info info-icon"
@@ -215,9 +215,10 @@
                                         <mat-item on-tap="mainAction"
                                                   label="[[item.name]]"
                                                   description="[[timestampToHumanTime(item.modified)]][[bytesToSize(item.file_size, 'with_comma')]]">
-                                            <mat-avatar background$="[[documentType(item)]]"
-                                                        class="primary"
-                                                        icon="[[getIcon(item.is_dir, item.category, item.file_type)]]"></mat-avatar>
+                                            <file-icon class="primary"
+                                                       background$="[[documentType(item)]]"
+                                                       name$="[[getIcon(item.is_dir, item.category, item.file_type)]]"></file-icon>
+
                                             <iron-icon class="secondary info info-icon"
                                                        icon="icons:info"></iron-icon>
                                             <template is="dom-if" if="[[item.is_dir]]">
