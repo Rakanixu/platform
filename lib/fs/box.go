@@ -434,14 +434,18 @@ func (bfs *BoxFs) refreshToken(cl client.Client) error {
 		return err
 	}
 
-	c := db_proto.NewDBClient(globals.DB_SERVICE_NAME, cl)
-	_, err = c.Update(globals.NewSystemContext(), &db_proto.UpdateRequest{
-		Index: "datasources",
-		Type:  "datasource",
-		Id:    bfs.Endpoint.Id,
-		Data:  string(b),
-	})
-	if err != nil {
+	req := cl.NewRequest(
+		globals.DB_SERVICE_NAME,
+		"DB.Update",
+		&db_proto.UpdateRequest{
+			Index: "datasources",
+			Type:  "datasource",
+			Id:    bfs.Endpoint.Id,
+			Data:  string(b),
+		},
+	)
+	rsp := db_proto.UpdateResponse{}
+	if err := cl.Call(globals.NewSystemContext(), req, rsp); err != nil {
 		return err
 	}
 
