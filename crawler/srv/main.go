@@ -29,6 +29,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Init service
+	service.Init()
+
 	// Run server
 	if err := service.Run(); err != nil {
 		log.Fatal(err)

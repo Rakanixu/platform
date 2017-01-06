@@ -1,0 +1,66 @@
+<dom-module id="file-icon">
+  <style is="custom-style" include="iron-flex iron-positioning iron-flex-alignment"></style>
+  <template>
+    <style>
+      :host {
+        display: block;
+        margin: 0 !important;
+      }
+
+      mat-icon {
+        width: 20px;
+        height: 36px;
+        position: relative;
+        left: -35px;
+      }
+
+      .container {
+        margin: 8px -28px 0 18px;
+      }
+    </style>
+
+    <div class="container">
+      <svg width="42px" height="40px" viewBox="0 0 37 46" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="style-scope kazoup-checksum-icon">
+        <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" class="style-scope kazoup-checksum-icon">
+          <g id="file-icon" class="style-scope kazoup-checksum-icon">
+            <path d="M3.00458071e-14,0 L0,46 L37,46 L37,11.5 L26.4285714,0 L3.00458071e-14,0 Z M3.00458071e-14,0" id="Path-3" stroke="#020000 " stroke-opacity="0.1" stroke-linecap="round" stroke-linejoin="round" class="style-scope kazoup-checksum-icon" fill$="[[background]]"></path>
+            <path d="M26.4285714,0 L26.4285714,11.4049587 L37,11.4049588" stroke="#F9F9F9 " stroke-opacity="0.2" fill-opacity="0.5" fill="#D8D8D8 " class="style-scope kazoup-checksum-icon"></path>
+          </g>
+        </g>
+      </svg>
+      <mat-icon name$="[[name]]"
+                color="white"></mat-icon>
+    </div>
+  </template>
+
+  <script>
+    (function() {
+      'use strict';
+
+      Polymer({
+        is: 'file-icon',
+        behaviors: [
+          UtilBehaviorImp
+        ],
+        properties: {
+          background: {
+            type: String,
+            notify: true,
+            observer: '_backgroundChanged'
+          },
+          name: {
+            type: String,
+            notify: true
+          }
+        },
+        _backgroundChanged: function(oldVal, newVal) {
+          console.log(this.background)
+
+          if (this.background === '') {
+            this.set('background', 'hsla(0, 0%, 46%, 1)');
+          }
+        }
+      })
+    }());
+  </script>
+</dom-module>
