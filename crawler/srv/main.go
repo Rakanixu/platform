@@ -18,8 +18,7 @@ func main() {
 	}
 
 	service := wrappers.NewKazoupService("crawler")
-	//Attach handler
-	proto.RegisterCrawlHandler(service.Server(), &handler.Crawler{Client: service.Client()})
+
 	// Attach subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
@@ -31,8 +30,6 @@ func main() {
 	); err != nil {
 		log.Fatal(err)
 	}
-	// Init srv
-	service.Init()
 
 	// Run server
 	if err := service.Run(); err != nil {

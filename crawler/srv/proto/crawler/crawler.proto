@@ -1,58 +1,5 @@
 syntax = "proto3";
 
-
-service Crawl {
-	rpc Start(StartRequest) returns (StartResponse) {}
-	rpc Stop(StopRequest) returns (StopResponse) {}
-	rpc Search(SearchRequest) returns (SearchResponse) {}
-	rpc Status(StatusRequest) returns (stream StatusResponse) {}
-}
-
-message Status {
-  int64 id = 1;
-  string type = 2;
-  string description = 3;
-  bool running = 4;
-  map<string,string> config = 5;
-}
-
-message StartRequest {
-	string url = 1;
-	map<string,string> config = 2;
-}
-
-message StartResponse {
-
-}
-
-message StopRequest {
-  int64 id = 1;
-}
-
-message StopResponse {
-
-}
-
-message SearchRequest {
-
-}
-
-message SearchResponse {
-  map<string,Status> crawls = 1;
-}
-
-message StatusRequest {
-	
-}
-
-message StatusResponse {
-  int64 counter= 1;
-}
-
-message Metric {
-  int64 count = 1;
-}
-
 message FileMessage {
   string id = 1;
   string user_id = 2;
