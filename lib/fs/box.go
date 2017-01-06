@@ -446,7 +446,7 @@ func (bfs *BoxFs) refreshToken(cl client.Client) error {
 			Data:  string(b),
 		},
 	)
-	rsp := db_proto.UpdateResponse{}
+	rsp := &db_proto.UpdateResponse{}
 	if err := cl.Call(globals.NewSystemContext(), req, rsp); err != nil {
 		return err
 	}
