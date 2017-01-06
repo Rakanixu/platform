@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/wrappers"
@@ -9,6 +10,7 @@ import (
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
+	"net/http"
 )
 
 //SaveDatasource call datasource-srv and save new data source
@@ -57,4 +59,17 @@ func PublishNotification(uID string) error {
 		globals.NewSystemContext(),
 		client.DefaultClient.NewPublication(globals.NotificationTopic, n),
 	)
+}
+
+// NoAuthenticatedRedirect loads app in settings page, and the close that window
+func NoAuthenticatedRedirect(w http.ResponseWriter, r *http.Request) {
+	// Close window
+	fmt.Fprintf(w, "%s", `
+		<script>
+		'use stric';
+			(function() {
+				window.close();
+			}());
+		</script>
+	`)
 }
