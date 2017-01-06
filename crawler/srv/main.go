@@ -3,8 +3,6 @@ package main
 import (
 	"log"
 
-	"github.com/kazoup/platform/crawler/srv/handler"
-	proto "github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/kazoup/platform/crawler/srv/subscriber"
 	"github.com/kazoup/platform/lib/categories"
 	"github.com/kazoup/platform/lib/globals"
@@ -18,8 +16,7 @@ func main() {
 	}
 
 	service := wrappers.NewKazoupService("crawler")
-	//Attach handler
-	proto.RegisterCrawlHandler(service.Server(), &handler.Crawler{Client: service.Client()})
+
 	// Attach subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
@@ -31,8 +28,6 @@ func main() {
 	); err != nil {
 		log.Fatal(err)
 	}
-	// Init srv
-	service.Init()
 
 	// Run server
 	if err := service.Run(); err != nil {

@@ -144,7 +144,6 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ih *ImageHandler) loadDatasources(ctx context.Context) {
-
 	//FIXME: mazimun of 9999 datasources. paginate
 	req := client.DefaultClient.NewRequest(
 		globals.DATASOURCE_SERVICE_NAME,

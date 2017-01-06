@@ -9,16 +9,6 @@ It is generated from these files:
 	github.com/kazoup/platform/crawler/srv/proto/crawler/crawler.proto
 
 It has these top-level messages:
-	Status
-	StartRequest
-	StartResponse
-	StopRequest
-	StopResponse
-	SearchRequest
-	SearchResponse
-	StatusRequest
-	StatusResponse
-	Metric
 	FileMessage
 	SlackUserMessage
 	SlackChannelMessage
@@ -31,12 +21,6 @@ import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
 
-import (
-	client "github.com/micro/go-micro/client"
-	server "github.com/micro/go-micro/server"
-	context "golang.org/x/net/context"
-)
-
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
 var _ = fmt.Errorf
@@ -47,118 +31,6 @@ var _ = math.Inf
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
-
-type Status struct {
-	Id          int64             `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
-	Type        string            `protobuf:"bytes,2,opt,name=type" json:"type,omitempty"`
-	Description string            `protobuf:"bytes,3,opt,name=description" json:"description,omitempty"`
-	Running     bool              `protobuf:"varint,4,opt,name=running" json:"running,omitempty"`
-	Config      map[string]string `protobuf:"bytes,5,rep,name=config" json:"config,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-}
-
-func (m *Status) Reset()                    { *m = Status{} }
-func (m *Status) String() string            { return proto.CompactTextString(m) }
-func (*Status) ProtoMessage()               {}
-func (*Status) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
-
-func (m *Status) GetConfig() map[string]string {
-	if m != nil {
-		return m.Config
-	}
-	return nil
-}
-
-type StartRequest struct {
-	Url    string            `protobuf:"bytes,1,opt,name=url" json:"url,omitempty"`
-	Config map[string]string `protobuf:"bytes,2,rep,name=config" json:"config,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-}
-
-func (m *StartRequest) Reset()                    { *m = StartRequest{} }
-func (m *StartRequest) String() string            { return proto.CompactTextString(m) }
-func (*StartRequest) ProtoMessage()               {}
-func (*StartRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
-
-func (m *StartRequest) GetConfig() map[string]string {
-	if m != nil {
-		return m.Config
-	}
-	return nil
-}
-
-type StartResponse struct {
-}
-
-func (m *StartResponse) Reset()                    { *m = StartResponse{} }
-func (m *StartResponse) String() string            { return proto.CompactTextString(m) }
-func (*StartResponse) ProtoMessage()               {}
-func (*StartResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
-
-type StopRequest struct {
-	Id int64 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
-}
-
-func (m *StopRequest) Reset()                    { *m = StopRequest{} }
-func (m *StopRequest) String() string            { return proto.CompactTextString(m) }
-func (*StopRequest) ProtoMessage()               {}
-func (*StopRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
-
-type StopResponse struct {
-}
-
-func (m *StopResponse) Reset()                    { *m = StopResponse{} }
-func (m *StopResponse) String() string            { return proto.CompactTextString(m) }
-func (*StopResponse) ProtoMessage()               {}
-func (*StopResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{4} }
-
-type SearchRequest struct {
-}
-
-func (m *SearchRequest) Reset()                    { *m = SearchRequest{} }
-func (m *SearchRequest) String() string            { return proto.CompactTextString(m) }
-func (*SearchRequest) ProtoMessage()               {}
-func (*SearchRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{5} }
-
-type SearchResponse struct {
-	Crawls map[string]*Status `protobuf:"bytes,1,rep,name=crawls" json:"crawls,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-}
-
-func (m *SearchResponse) Reset()                    { *m = SearchResponse{} }
-func (m *SearchResponse) String() string            { return proto.CompactTextString(m) }
-func (*SearchResponse) ProtoMessage()               {}
-func (*SearchResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{6} }
-
-func (m *SearchResponse) GetCrawls() map[string]*Status {
-	if m != nil {
-		return m.Crawls
-	}
-	return nil
-}
-
-type StatusRequest struct {
-}
-
-func (m *StatusRequest) Reset()                    { *m = StatusRequest{} }
-func (m *StatusRequest) String() string            { return proto.CompactTextString(m) }
-func (*StatusRequest) ProtoMessage()               {}
-func (*StatusRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{7} }
-
-type StatusResponse struct {
-	Counter int64 `protobuf:"varint,1,opt,name=counter" json:"counter,omitempty"`
-}
-
-func (m *StatusResponse) Reset()                    { *m = StatusResponse{} }
-func (m *StatusResponse) String() string            { return proto.CompactTextString(m) }
-func (*StatusResponse) ProtoMessage()               {}
-func (*StatusResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{8} }
-
-type Metric struct {
-	Count int64 `protobuf:"varint,1,opt,name=count" json:"count,omitempty"`
-}
-
-func (m *Metric) Reset()                    { *m = Metric{} }
-func (m *Metric) String() string            { return proto.CompactTextString(m) }
-func (*Metric) ProtoMessage()               {}
-func (*Metric) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{9} }
 
 type FileMessage struct {
 	Id     string `protobuf:"bytes,1,opt,name=id" json:"id,omitempty"`
@@ -171,7 +43,7 @@ type FileMessage struct {
 func (m *FileMessage) Reset()                    { *m = FileMessage{} }
 func (m *FileMessage) String() string            { return proto.CompactTextString(m) }
 func (*FileMessage) ProtoMessage()               {}
-func (*FileMessage) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{10} }
+func (*FileMessage) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
 
 type SlackUserMessage struct {
 	Id    string `protobuf:"bytes,1,opt,name=id" json:"id,omitempty"`
@@ -182,7 +54,7 @@ type SlackUserMessage struct {
 func (m *SlackUserMessage) Reset()                    { *m = SlackUserMessage{} }
 func (m *SlackUserMessage) String() string            { return proto.CompactTextString(m) }
 func (*SlackUserMessage) ProtoMessage()               {}
-func (*SlackUserMessage) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{11} }
+func (*SlackUserMessage) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
 
 type SlackChannelMessage struct {
 	Id    string `protobuf:"bytes,1,opt,name=id" json:"id,omitempty"`
@@ -193,7 +65,7 @@ type SlackChannelMessage struct {
 func (m *SlackChannelMessage) Reset()                    { *m = SlackChannelMessage{} }
 func (m *SlackChannelMessage) String() string            { return proto.CompactTextString(m) }
 func (*SlackChannelMessage) ProtoMessage()               {}
-func (*SlackChannelMessage) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{12} }
+func (*SlackChannelMessage) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
 
 type CrawlerStartedMessage struct {
 	DatasourceId string `protobuf:"bytes,1,opt,name=datasource_id,json=datasourceId" json:"datasource_id,omitempty"`
@@ -203,7 +75,7 @@ type CrawlerStartedMessage struct {
 func (m *CrawlerStartedMessage) Reset()                    { *m = CrawlerStartedMessage{} }
 func (m *CrawlerStartedMessage) String() string            { return proto.CompactTextString(m) }
 func (*CrawlerStartedMessage) ProtoMessage()               {}
-func (*CrawlerStartedMessage) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{13} }
+func (*CrawlerStartedMessage) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
 
 type CrawlerFinishedMessage struct {
 	DatasourceId string `protobuf:"bytes,1,opt,name=datasource_id,json=datasourceId" json:"datasource_id,omitempty"`
@@ -212,19 +84,9 @@ type CrawlerFinishedMessage struct {
 func (m *CrawlerFinishedMessage) Reset()                    { *m = CrawlerFinishedMessage{} }
 func (m *CrawlerFinishedMessage) String() string            { return proto.CompactTextString(m) }
 func (*CrawlerFinishedMessage) ProtoMessage()               {}
-func (*CrawlerFinishedMessage) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{14} }
+func (*CrawlerFinishedMessage) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{4} }
 
 func init() {
-	proto.RegisterType((*Status)(nil), "Status")
-	proto.RegisterType((*StartRequest)(nil), "StartRequest")
-	proto.RegisterType((*StartResponse)(nil), "StartResponse")
-	proto.RegisterType((*StopRequest)(nil), "StopRequest")
-	proto.RegisterType((*StopResponse)(nil), "StopResponse")
-	proto.RegisterType((*SearchRequest)(nil), "SearchRequest")
-	proto.RegisterType((*SearchResponse)(nil), "SearchResponse")
-	proto.RegisterType((*StatusRequest)(nil), "StatusRequest")
-	proto.RegisterType((*StatusResponse)(nil), "StatusResponse")
-	proto.RegisterType((*Metric)(nil), "Metric")
 	proto.RegisterType((*FileMessage)(nil), "FileMessage")
 	proto.RegisterType((*SlackUserMessage)(nil), "SlackUserMessage")
 	proto.RegisterType((*SlackChannelMessage)(nil), "SlackChannelMessage")
@@ -232,218 +94,27 @@ func init() {
 	proto.RegisterType((*CrawlerFinishedMessage)(nil), "CrawlerFinishedMessage")
 }
 
-// Reference imports to suppress errors if they are not otherwise used.
-var _ context.Context
-var _ client.Option
-var _ server.Option
-
-// Client API for Crawl service
-
-type CrawlClient interface {
-	Start(ctx context.Context, in *StartRequest, opts ...client.CallOption) (*StartResponse, error)
-	Stop(ctx context.Context, in *StopRequest, opts ...client.CallOption) (*StopResponse, error)
-	Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error)
-	Status(ctx context.Context, in *StatusRequest, opts ...client.CallOption) (Crawl_StatusClient, error)
-}
-
-type crawlClient struct {
-	c           client.Client
-	serviceName string
-}
-
-func NewCrawlClient(serviceName string, c client.Client) CrawlClient {
-	if c == nil {
-		c = client.NewClient()
-	}
-	if len(serviceName) == 0 {
-		serviceName = "crawl"
-	}
-	return &crawlClient{
-		c:           c,
-		serviceName: serviceName,
-	}
-}
-
-func (c *crawlClient) Start(ctx context.Context, in *StartRequest, opts ...client.CallOption) (*StartResponse, error) {
-	req := c.c.NewRequest(c.serviceName, "Crawl.Start", in)
-	out := new(StartResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *crawlClient) Stop(ctx context.Context, in *StopRequest, opts ...client.CallOption) (*StopResponse, error) {
-	req := c.c.NewRequest(c.serviceName, "Crawl.Stop", in)
-	out := new(StopResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *crawlClient) Search(ctx context.Context, in *SearchRequest, opts ...client.CallOption) (*SearchResponse, error) {
-	req := c.c.NewRequest(c.serviceName, "Crawl.Search", in)
-	out := new(SearchResponse)
-	err := c.c.Call(ctx, req, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *crawlClient) Status(ctx context.Context, in *StatusRequest, opts ...client.CallOption) (Crawl_StatusClient, error) {
-	req := c.c.NewRequest(c.serviceName, "Crawl.Status", &StatusRequest{})
-	stream, err := c.c.Stream(ctx, req, opts...)
-	if err != nil {
-		return nil, err
-	}
-	if err := stream.Send(in); err != nil {
-		return nil, err
-	}
-	return &crawlStatusClient{stream}, nil
-}
-
-type Crawl_StatusClient interface {
-	SendMsg(interface{}) error
-	RecvMsg(interface{}) error
-	Close() error
-	Recv() (*StatusResponse, error)
-}
-
-type crawlStatusClient struct {
-	stream client.Streamer
-}
-
-func (x *crawlStatusClient) Close() error {
-	return x.stream.Close()
-}
-
-func (x *crawlStatusClient) SendMsg(m interface{}) error {
-	return x.stream.Send(m)
-}
-
-func (x *crawlStatusClient) RecvMsg(m interface{}) error {
-	return x.stream.Recv(m)
-}
-
-func (x *crawlStatusClient) Recv() (*StatusResponse, error) {
-	m := new(StatusResponse)
-	err := x.stream.Recv(m)
-	if err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-// Server API for Crawl service
-
-type CrawlHandler interface {
-	Start(context.Context, *StartRequest, *StartResponse) error
-	Stop(context.Context, *StopRequest, *StopResponse) error
-	Search(context.Context, *SearchRequest, *SearchResponse) error
-	Status(context.Context, *StatusRequest, Crawl_StatusStream) error
-}
-
-func RegisterCrawlHandler(s server.Server, hdlr CrawlHandler, opts ...server.HandlerOption) {
-	s.Handle(s.NewHandler(&Crawl{hdlr}, opts...))
-}
-
-type Crawl struct {
-	CrawlHandler
-}
-
-func (h *Crawl) Start(ctx context.Context, in *StartRequest, out *StartResponse) error {
-	return h.CrawlHandler.Start(ctx, in, out)
-}
-
-func (h *Crawl) Stop(ctx context.Context, in *StopRequest, out *StopResponse) error {
-	return h.CrawlHandler.Stop(ctx, in, out)
-}
-
-func (h *Crawl) Search(ctx context.Context, in *SearchRequest, out *SearchResponse) error {
-	return h.CrawlHandler.Search(ctx, in, out)
-}
-
-func (h *Crawl) Status(ctx context.Context, stream server.Streamer) error {
-	m := new(StatusRequest)
-	if err := stream.Recv(m); err != nil {
-		return err
-	}
-	return h.CrawlHandler.Status(ctx, m, &crawlStatusStream{stream})
-}
-
-type Crawl_StatusStream interface {
-	SendMsg(interface{}) error
-	RecvMsg(interface{}) error
-	Close() error
-	Send(*StatusResponse) error
-}
-
-type crawlStatusStream struct {
-	stream server.Streamer
-}
-
-func (x *crawlStatusStream) Close() error {
-	return x.stream.Close()
-}
-
-func (x *crawlStatusStream) SendMsg(m interface{}) error {
-	return x.stream.Send(m)
-}
-
-func (x *crawlStatusStream) RecvMsg(m interface{}) error {
-	return x.stream.Recv(m)
-}
-
-func (x *crawlStatusStream) Send(m *StatusResponse) error {
-	return x.stream.Send(m)
-}
-
 func init() {
 	proto.RegisterFile("github.com/kazoup/platform/crawler/srv/proto/crawler/crawler.proto", fileDescriptor0)
 }
 
 var fileDescriptor0 = []byte{
-	// 600 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xac, 0x54, 0xd1, 0x6e, 0xd3, 0x30,
-	0x14, 0x5d, 0xda, 0x35, 0x63, 0x37, 0x6b, 0x37, 0x79, 0x30, 0x42, 0xd1, 0xd0, 0x14, 0x84, 0x34,
-	0x81, 0x70, 0x61, 0x7b, 0x01, 0x24, 0x5e, 0x56, 0x31, 0x69, 0x12, 0x13, 0x52, 0xa6, 0x3d, 0x4f,
-	0x59, 0xe2, 0xb5, 0xd6, 0x32, 0x3b, 0xd8, 0xce, 0x58, 0xf9, 0x03, 0x5e, 0xf8, 0x1a, 0x3e, 0x84,
-	0x4f, 0xc2, 0x76, 0x9c, 0x36, 0x19, 0xec, 0x01, 0xc1, 0x53, 0x7c, 0x8f, 0xef, 0x3d, 0x3e, 0xd7,
-	0x39, 0xd7, 0x70, 0x30, 0xa1, 0x6a, 0x5a, 0x9e, 0xe3, 0x94, 0x5f, 0x8d, 0x2e, 0x93, 0xaf, 0xbc,
-	0x2c, 0x46, 0x45, 0x9e, 0xa8, 0x0b, 0x2e, 0xae, 0x46, 0xa9, 0x48, 0xbe, 0xe4, 0x44, 0x8c, 0xa4,
-	0xb8, 0x1e, 0x15, 0x82, 0x2b, 0x3e, 0x47, 0xdc, 0x17, 0x5b, 0x34, 0xfa, 0xe9, 0x81, 0x7f, 0xa2,
-	0x12, 0x55, 0x4a, 0x34, 0x80, 0x0e, 0xcd, 0x42, 0x6f, 0xc7, 0xdb, 0xed, 0xc6, 0x7a, 0x85, 0x10,
-	0x2c, 0xab, 0x59, 0x41, 0xc2, 0x8e, 0x46, 0x56, 0x63, 0xbb, 0x46, 0x3b, 0x10, 0x64, 0x44, 0xa6,
-	0x82, 0x16, 0x8a, 0x72, 0x16, 0x76, 0xed, 0x56, 0x13, 0x42, 0x21, 0xac, 0x88, 0x92, 0x31, 0xca,
-	0x26, 0xe1, 0xb2, 0xde, 0xbd, 0x17, 0xd7, 0x21, 0x7a, 0x01, 0x7e, 0xca, 0xd9, 0x05, 0x9d, 0x84,
-	0xbd, 0x9d, 0xee, 0x6e, 0xb0, 0xb7, 0x89, 0xab, 0x83, 0xf1, 0xd8, 0xa2, 0x1f, 0x98, 0x12, 0xb3,
-	0xd8, 0xa5, 0x0c, 0xdf, 0x42, 0xd0, 0x80, 0xd1, 0x06, 0x74, 0x2f, 0xc9, 0xcc, 0x8a, 0x5b, 0x8d,
-	0xcd, 0x12, 0xdd, 0x87, 0xde, 0x75, 0x92, 0x97, 0xb5, 0xbc, 0x2a, 0x78, 0xd7, 0x79, 0xe3, 0x45,
-	0xdf, 0x3d, 0x58, 0xd3, 0xcc, 0x42, 0xc5, 0xe4, 0x73, 0x49, 0xa4, 0x32, 0xc5, 0xa5, 0xc8, 0xeb,
-	0x62, 0xbd, 0x44, 0xaf, 0xe7, 0x52, 0x3a, 0x56, 0xca, 0x23, 0xdc, 0x2c, 0xf8, 0xdf, 0x82, 0xd6,
-	0xa1, 0xef, 0xe8, 0x65, 0xc1, 0x99, 0x24, 0xd1, 0x36, 0x04, 0x27, 0x8a, 0x17, 0xb5, 0xbe, 0x5b,
-	0x17, 0x1f, 0x0d, 0x8c, 0x7e, 0xb3, 0xed, 0xd2, 0x4d, 0x3d, 0x49, 0x44, 0x3a, 0x75, 0x05, 0xd1,
-	0x37, 0x0f, 0x06, 0x35, 0x52, 0xe5, 0xa0, 0x7d, 0xdd, 0x91, 0xf9, 0xb1, 0x52, 0xf3, 0x98, 0x8e,
-	0x1e, 0xe3, 0x76, 0x02, 0x1e, 0xdb, 0xdd, 0xba, 0x27, 0x1b, 0x0c, 0x0f, 0x74, 0x4f, 0x0b, 0xf8,
-	0x0f, 0x3d, 0x6d, 0x37, 0x7b, 0x0a, 0xf6, 0x56, 0xdc, 0x1f, 0xfb, 0xbd, 0x39, 0x03, 0x3a, 0x71,
-	0xcf, 0xb5, 0x36, 0x07, 0x38, 0x6d, 0xda, 0x12, 0x29, 0x2f, 0x99, 0x22, 0xc2, 0x35, 0x59, 0x87,
-	0xd1, 0x13, 0xf0, 0x8f, 0x89, 0x12, 0x34, 0x35, 0xb7, 0x67, 0x41, 0x97, 0x51, 0x05, 0xd1, 0x0d,
-	0x04, 0x87, 0x34, 0x27, 0xc7, 0x44, 0xca, 0x64, 0x42, 0x1a, 0x17, 0xb5, 0x6a, 0x1d, 0xfa, 0x10,
-	0x56, 0x4a, 0x49, 0xc4, 0x99, 0x06, 0xab, 0x4b, 0xf7, 0x4d, 0x78, 0x94, 0x19, 0x36, 0xca, 0x32,
-	0x72, 0xe3, 0x0c, 0x5a, 0x05, 0x68, 0x0b, 0x7c, 0xc6, 0x15, 0xbd, 0x98, 0x39, 0x67, 0xba, 0xc8,
-	0x18, 0x3d, 0x4b, 0x54, 0xa2, 0x6d, 0x69, 0x8d, 0x6e, 0xd6, 0xd1, 0x47, 0xd8, 0x38, 0xc9, 0x93,
-	0xf4, 0xf2, 0x54, 0x13, 0xde, 0x75, 0xfc, 0xfc, 0x94, 0x4e, 0xf3, 0x94, 0x9a, 0xad, 0xdb, 0x60,
-	0xfb, 0x04, 0x9b, 0x96, 0x6d, 0x3c, 0x4d, 0x18, 0x23, 0xf9, 0xbf, 0x13, 0x9e, 0xc2, 0x83, 0x71,
-	0x35, 0xc7, 0xd6, 0x59, 0x24, 0xab, 0x29, 0x9f, 0x42, 0xdf, 0x24, 0x48, 0x5e, 0x8a, 0x94, 0x9c,
-	0xcd, 0xd9, 0xd7, 0x16, 0xe0, 0xd1, 0xdd, 0xf7, 0x16, 0xbd, 0x87, 0x2d, 0x47, 0x7b, 0x48, 0x19,
-	0x95, 0xd3, 0xbf, 0xe3, 0xdd, 0xfb, 0xe1, 0x41, 0xcf, 0xd6, 0xa3, 0x5d, 0xe8, 0x59, 0x61, 0xa8,
-	0xdf, 0x9a, 0xac, 0xe1, 0x00, 0xb7, 0x27, 0x61, 0x09, 0x3d, 0x83, 0x65, 0x63, 0x76, 0xb4, 0x86,
-	0x1b, 0x23, 0x31, 0xec, 0xe3, 0xd6, 0x04, 0x2c, 0x99, 0xc7, 0xa3, 0x32, 0x34, 0x1a, 0xe0, 0xd6,
-	0x30, 0x0c, 0xd7, 0x6f, 0x39, 0x5d, 0x27, 0xbf, 0x5c, 0xbc, 0x69, 0xb8, 0x65, 0x4e, 0x93, 0xdc,
-	0xf2, 0x66, 0xb4, 0xf4, 0xca, 0x3b, 0xf7, 0xed, 0x53, 0xb8, 0xff, 0x2b, 0x00, 0x00, 0xff, 0xff,
-	0x75, 0x2c, 0x57, 0xb9, 0x50, 0x05, 0x00, 0x00,
+	// 264 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xa4, 0x91, 0xcf, 0x4f, 0x32, 0x31,
+	0x10, 0x86, 0xc3, 0x02, 0xfb, 0x7d, 0x8e, 0x3f, 0x62, 0xaa, 0xe2, 0x1e, 0xcd, 0x7a, 0xf1, 0x44,
+	0x0f, 0x9e, 0xbd, 0x48, 0x42, 0x42, 0xa2, 0x31, 0x81, 0x70, 0x26, 0xc3, 0x76, 0x60, 0x1b, 0x4a,
+	0xbb, 0x69, 0xbb, 0x8a, 0xfe, 0xf5, 0x2e, 0x65, 0x59, 0xb9, 0x70, 0x30, 0x9e, 0x3a, 0xef, 0x93,
+	0xc9, 0xf3, 0x26, 0x53, 0x78, 0x5e, 0x4a, 0x9f, 0x97, 0xf3, 0x7e, 0x66, 0xd6, 0x7c, 0x85, 0x5f,
+	0xa6, 0x2c, 0x78, 0xa1, 0xd0, 0x2f, 0x8c, 0x5d, 0xf3, 0xcc, 0xe2, 0x87, 0x22, 0xcb, 0x9d, 0x7d,
+	0xe7, 0x85, 0x35, 0xde, 0x34, 0xa4, 0x7e, 0xfb, 0x81, 0xa6, 0x1b, 0x38, 0x1d, 0x4a, 0x45, 0xaf,
+	0xe4, 0x1c, 0x2e, 0x89, 0x5d, 0x40, 0x24, 0x45, 0xd2, 0xba, 0x6b, 0x3d, 0x9c, 0x8c, 0xab, 0x89,
+	0xdd, 0xc2, 0xbf, 0xd2, 0x91, 0x9d, 0x55, 0x30, 0x0a, 0x30, 0xde, 0xc6, 0x91, 0x60, 0xd7, 0xd0,
+	0x95, 0x5a, 0xd0, 0x26, 0x69, 0x07, 0xbc, 0x0b, 0xac, 0x07, 0xb1, 0x36, 0x5e, 0x2e, 0x3e, 0x93,
+	0x4e, 0x85, 0xff, 0x8f, 0xeb, 0xc4, 0x18, 0x74, 0x04, 0x7a, 0x4c, 0xba, 0x61, 0x39, 0xcc, 0xe9,
+	0x0b, 0x5c, 0x4e, 0x14, 0x66, 0xab, 0x69, 0x25, 0x3c, 0x56, 0xdf, 0xb4, 0x44, 0x87, 0x2d, 0x7b,
+	0x5b, 0xfb, 0xc0, 0xf6, 0x06, 0x57, 0xc1, 0x36, 0xc8, 0x51, 0x6b, 0x52, 0x7f, 0x17, 0x4e, 0xe1,
+	0x66, 0xb0, 0xbb, 0xd4, 0xc4, 0xa3, 0xf5, 0x24, 0xf6, 0xca, 0x7b, 0x38, 0xdf, 0x2e, 0x38, 0x53,
+	0xda, 0x8c, 0x66, 0x8d, 0xfd, 0xec, 0x07, 0x8e, 0x8e, 0xdf, 0x2d, 0x7d, 0x82, 0x5e, 0xad, 0x1d,
+	0x4a, 0x2d, 0x5d, 0xfe, 0x3b, 0xef, 0x3c, 0x0e, 0xbf, 0xf6, 0xf8, 0x1d, 0x00, 0x00, 0xff, 0xff,
+	0xff, 0xc8, 0x15, 0xf2, 0xfb, 0x01, 0x00, 0x00,
 }

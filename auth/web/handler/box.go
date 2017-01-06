@@ -37,7 +37,7 @@ func HandleBoxLogin(w http.ResponseWriter, r *http.Request) {
 	nt, err := globals.Encrypt([]byte(globals.ENCRYTION_KEY_32), t) // Encryption
 	if err != nil {
 		log.Printf("Encryption failed with '%s'\n", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 
@@ -54,13 +54,13 @@ func HandleBoxCallback(w http.ResponseWriter, r *http.Request) {
 	uID, err := globals.Decrypt([]byte(globals.ENCRYTION_KEY_32), euID) // Decrypt the bytes into bytes --> string(bytes) was the encrypted string
 	if err != nil {
 		log.Printf("Decryption failed with '%s'\n", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 
 	if len(uID) == 0 {
 		fmt.Printf("invalid oauth state, got '%s'\n", uID)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 
@@ -68,21 +68,21 @@ func HandleBoxCallback(w http.ResponseWriter, r *http.Request) {
 	token, err := globals.NewBoxOauthConfig().Exchange(oauth2.NoContext, code)
 	if err != nil {
 		log.Printf("Code exchange failed with '%s'\n", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 
 	c := &http.Client{}
 	req, err := http.NewRequest("GET", globals.BoxAccountEndpoint, nil)
 	if err != nil {
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 	req.Header.Set("Authorization", "Bearer "+token.AccessToken)
 	rsp, err := c.Do(req)
 	if err != nil {
 		log.Printf("Getting user account failed with '%s'\n", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 	defer rsp.Body.Close()

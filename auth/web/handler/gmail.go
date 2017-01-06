@@ -18,7 +18,7 @@ func HandleGmailLogin(w http.ResponseWriter, r *http.Request) {
 	nt, err := globals.Encrypt([]byte(globals.ENCRYTION_KEY_32), t) // Encryption
 	if err != nil {
 		log.Printf("Encryption failed with '%s'\n", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 
@@ -35,13 +35,13 @@ func HandleGmailCallback(w http.ResponseWriter, r *http.Request) {
 	uID, err := globals.Decrypt([]byte(globals.ENCRYTION_KEY_32), euID) // Decrypt the bytes into bytes --> string(bytes) was the encrypted string
 	if err != nil {
 		log.Printf("Decryption failed with '%s'\n", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 
 	if len(uID) == 0 {
 		fmt.Printf("invalid oauth state, got '%s'\n", uID)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 
@@ -49,7 +49,7 @@ func HandleGmailCallback(w http.ResponseWriter, r *http.Request) {
 	token, err := globals.NewGmailOauthConfig().Exchange(oauth2.NoContext, code)
 	if err != nil {
 		log.Printf("Code exchange failed with '%s'\n", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 

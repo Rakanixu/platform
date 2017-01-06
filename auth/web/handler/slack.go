@@ -31,7 +31,7 @@ func HandleSlackLogin(w http.ResponseWriter, r *http.Request) {
 	nt, err := globals.Encrypt([]byte(globals.ENCRYTION_KEY_32), t) // Encryption
 	if err != nil {
 		fmt.Printf("Encryption failed with '%s'\n", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 
@@ -46,42 +46,51 @@ func HandleSlackCallback(w http.ResponseWriter, r *http.Request) {
 	uID, err := globals.Decrypt([]byte(globals.ENCRYTION_KEY_32), euID) // Decrypt the bytes into bytes --> string(bytes) was the encrypted string
 	if err != nil {
 		fmt.Printf("Decryption failed with '%s'\n", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 
 	if len(uID) == 0 {
 		fmt.Printf("invalid oauth state, got '%s'\n", uID)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 	code := r.FormValue("code")
 	token, err := globals.NewSlackOauthConfig().Exchange(oauth2.NoContext, code)
 	if err != nil {
 		fmt.Printf("Code exchange failed with '%s'\n", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 	response, err := http.Get("https://slack.com/api/team.info?token=" + token.AccessToken)
 	defer response.Body.Close()
 	if err != nil {
-		fmt.Fprintf(w, err.Error())
+		fmt.Printf(err.Error())
+		NoAuthenticatedRedirect(w, r)
+		return
 	}
 	contents, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-
-		fmt.Fprintf(w, err.Error())
+		fmt.Printf(err.Error())
+		NoAuthenticatedRedirect(w, r)
+		return
 	}
 	sr := new(SlackTeamInfoResponse)
 	if err := json.Unmarshal(contents, &sr); err != nil {
-		fmt.Fprintf(w, err.Error())
+		fmt.Printf(err.Error())
+		NoAuthenticatedRedirect(w, r)
+		return
 	}
 	if !sr.OK {
-		fmt.Fprintf(w, "Error %v", sr)
+		fmt.Printf("Error %v", sr)
+		NoAuthenticatedRedirect(w, r)
+		return
 	}
 	url := fmt.Sprintf("slack://%s", sr.Team.Name)
 	if err := SaveDatasource(globals.NewSystemContext(), string(uID), url, token); err != nil {
 		fmt.Fprintf(w, err.Error())
+		NoAuthenticatedRedirect(w, r)
+		return
 	}
 
 	// Close window, not reacheable by electron any more

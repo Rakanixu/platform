@@ -57,7 +57,7 @@ func HandleDropboxLogin(w http.ResponseWriter, r *http.Request) {
 	nt, err := globals.Encrypt([]byte(globals.ENCRYTION_KEY_32), t) // Encryption
 	if err != nil {
 		log.Printf("Encryption failed with '%s'\n", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 
@@ -75,13 +75,13 @@ func HandleDropboxCallback(w http.ResponseWriter, r *http.Request) {
 	uID, err := globals.Decrypt([]byte(globals.ENCRYTION_KEY_32), euID) // Decrypt the bytes into bytes --> string(bytes) was the encrypted string
 	if err != nil {
 		log.Printf("Decryption failed with '%s'\n", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 
 	if len(uID) == 0 {
 		fmt.Printf("invalid oauth state, got '%s'\n", uID)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 
@@ -89,7 +89,7 @@ func HandleDropboxCallback(w http.ResponseWriter, r *http.Request) {
 	token, err := globals.NewDropboxOauthConfig().Exchange(oauth2.NoContext, code)
 	if err != nil {
 		log.Printf("Code exchange failed with '%s'\n", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 
@@ -98,7 +98,7 @@ func HandleDropboxCallback(w http.ResponseWriter, r *http.Request) {
 
 	req, err := http.NewRequest("POST", globals.DropboxAccountEndpoint, bytes.NewBuffer(b))
 	if err != nil {
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 	req.Header.Set("Authorization", "Bearer "+token.AccessToken)
@@ -106,7 +106,7 @@ func HandleDropboxCallback(w http.ResponseWriter, r *http.Request) {
 	rsp, err := c.Do(req)
 	if err != nil {
 		log.Printf("Getting user account failed with '%s'\n", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 	defer rsp.Body.Close()

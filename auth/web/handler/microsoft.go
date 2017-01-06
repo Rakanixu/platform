@@ -18,7 +18,7 @@ func HandleMicrosoftLogin(w http.ResponseWriter, r *http.Request) {
 	nt, err := globals.Encrypt([]byte(globals.ENCRYTION_KEY_32), t) // Encryption
 	if err != nil {
 		log.Printf("Encryption failed with '%s'\n", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 
@@ -33,13 +33,13 @@ func HandleMicrosoftCallback(w http.ResponseWriter, r *http.Request) {
 	uID, err := globals.Decrypt([]byte(globals.ENCRYTION_KEY_32), euID) // Decrypt the bytes into bytes --> string(bytes) was the encrypted string
 	if err != nil {
 		log.Printf("Decryption failed with '%s'\n", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 
 	if len(uID) == 0 {
 		fmt.Printf("invalid oauth state, got '%s'\n", uID)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 
@@ -47,7 +47,7 @@ func HandleMicrosoftCallback(w http.ResponseWriter, r *http.Request) {
 	token, err := globals.NewMicrosoftOauthConfig().Exchange(oauth2.NoContext, code)
 	if err != nil {
 		log.Printf("Code exchange failed with '%s'\n", err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 
@@ -59,13 +59,13 @@ func HandleMicrosoftCallback(w http.ResponseWriter, r *http.Request) {
 	req.Header.Set("Authorization", token.TokenType+" "+token.AccessToken)
 	if err != nil {
 		log.Println(err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 	res, err := c.Do(req)
 	if err != nil {
 		log.Println(err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 	defer res.Body.Close()
@@ -73,7 +73,7 @@ func HandleMicrosoftCallback(w http.ResponseWriter, r *http.Request) {
 	var drivesRsp *onedrive.DrivesListResponse
 	if err := json.NewDecoder(res.Body).Decode(&drivesRsp); err != nil {
 		log.Println(err)
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		NoAuthenticatedRedirect(w, r)
 		return
 	}
 
