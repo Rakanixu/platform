@@ -77,8 +77,8 @@ func (lfs *LocalFs) Create(rq file_proto.CreateRequest) chan FileMeta {
 }
 
 // DeleteFile deletes a local file
-func (lfs *LocalFs) DeleteFile(ctx context.Context, c client.Client, rq file_proto.DeleteRequest) (*file_proto.DeleteResponse, error) {
-	return &file_proto.DeleteResponse{}, nil
+func (lfs *LocalFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
+	return lfs.FileMetaChan
 }
 
 // ShareFile

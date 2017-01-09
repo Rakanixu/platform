@@ -7,14 +7,12 @@ import (
 	"fmt"
 	"github.com/kardianos/osext"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/categories"
 	"github.com/kazoup/platform/lib/dropbox"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/image"
-	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"io"
@@ -132,57 +130,50 @@ func (dfs *DropboxFs) Create(rq file_proto.CreateRequest) chan FileMeta {
 }
 
 // DeleteFile deletes a dropbox file
-func (dfs *DropboxFs) DeleteFile(ctx context.Context, c client.Client, rq file_proto.DeleteRequest) (*file_proto.DeleteResponse, error) {
-	// https://www.dropbox.com/developers/documentation/http/documentation#files-delete
-	b := []byte(`{
-		"path": "` + rq.OriginalFilePath + `"
-	}`)
+func (dfs *DropboxFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
+	go func() {
+		// https://www.dropbox.com/developers/documentation/http/documentation#files-delete
+		b := []byte(`{
+			"path": "` + rq.OriginalFilePath + `"
+		}`)
 
-	// Move file to trash in dropbox
-	dc := &http.Client{}
-	r, err := http.NewRequest("POST", globals.DropboxFileDelete, bytes.NewBuffer(b))
-	if err != nil {
-		return nil, err
-	}
-	r.Header.Set("Authorization", dfs.Token(c))
-	r.Header.Set("Content-Type", "application/json")
-	rsp, err := dc.Do(r)
-	if err != nil {
-		return nil, err
-	}
+		// Move file to trash in dropbox
+		dc := &http.Client{}
+		r, err := http.NewRequest("POST", globals.DropboxFileDelete, bytes.NewBuffer(b))
+		if err != nil {
+			dfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
+		r.Header.Set("Authorization", dfs.token())
+		r.Header.Set("Content-Type", "application/json")
+		rsp, err := dc.Do(r)
+		if err != nil {
+			dfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
 
-	defer rsp.Body.Close()
+		defer rsp.Body.Close()
 
-	// Check is successfully deleted
-	if rsp.StatusCode != http.StatusOK {
-		return nil, errors.New(fmt.Sprintf("Deleting Dropbox file failed with status code %d", rsp.StatusCode))
-	}
+		// Check is successfully deleted
+		if rsp.StatusCode != http.StatusOK {
+			dfs.FileMetaChan <- NewFileMeta(nil, errors.New(fmt.Sprintf("Deleting Dropbox file failed with status code %d", rsp.StatusCode)))
+			return
+		}
 
-	// Delete from index
-	req := c.NewRequest(
-		globals.DB_SERVICE_NAME,
-		"DB.Delete",
-		&db_proto.DeleteRequest{
-			Index: dfs.Endpoint.Index,
-			Type:  globals.FileType,
-			Id:    rq.FileId,
-		},
-	)
-	res := &db_proto.DeleteResponse{}
+		// Return deleted file. This file only stores the id
+		// Avoid read from DB
+		dfs.FileMetaChan <- NewFileMeta(
+			&file.KazoupDropboxFile{
+				file.KazoupFile{
+					ID: rq.FileId,
+				},
+				nil,
+			},
+			nil,
+		)
+	}()
 
-	if err := c.Call(ctx, req, res); err != nil {
-		return nil, err
-	}
-
-	// Publish notification topic, let client know when to refresh itself
-	if err := c.Publish(globals.NewSystemContext(), c.NewPublication(globals.NotificationTopic, &notification_proto.NotificationMessage{
-		Method: globals.NOTIFY_REFRESH_SEARCH,
-		UserId: dfs.Endpoint.UserId,
-	})); err != nil {
-		log.Print("Publishing (notify file) error %s", err)
-	}
-
-	return &file_proto.DeleteResponse{}, nil
+	return dfs.FileMetaChan
 }
 
 // ShareFile

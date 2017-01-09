@@ -73,9 +73,9 @@ func (gfs *GmailFs) Create(rq file_proto.CreateRequest) chan FileMeta {
 	return gfs.FileMetaChan
 }
 
-// DeleteFile deletes a email and therefore its attachments. Be careful.
-func (gfs *GmailFs) DeleteFile(ctx context.Context, c client.Client, rq file_proto.DeleteRequest) (*file_proto.DeleteResponse, error) {
-	return &file_proto.DeleteResponse{}, nil
+// Delete (not implemented)
+func (gfs *GmailFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
+	return gfs.FileMetaChan
 }
 
 // ShareFile

@@ -81,8 +81,8 @@ func (sfs *SlackFs) Create(rq file_proto.CreateRequest) chan FileMeta {
 }
 
 // DeleteFile deletes a slack file
-func (sfs *SlackFs) DeleteFile(ctx context.Context, c client.Client, rq file_proto.DeleteRequest) (*file_proto.DeleteResponse, error) {
-	return &file_proto.DeleteResponse{}, nil
+func (sfs *SlackFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
+	return sfs.FileMetaChan
 }
 
 // ShareFile sets a PermalinkPublic available, so everyone with URL has access to the slack file

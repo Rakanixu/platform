@@ -4,13 +4,11 @@ import (
 	"errors"
 	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/categories"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/image"
-	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -106,45 +104,37 @@ func (gfs *GoogleDriveFs) Create(rq file_proto.CreateRequest) chan FileMeta {
 }
 
 // DeleteFile moves a google drive file to trash
-func (gfs *GoogleDriveFs) DeleteFile(ctx context.Context, c client.Client, rq file_proto.DeleteRequest) (*file_proto.DeleteResponse, error) {
-	srv, err := gfs.getDriveService()
-	if err != nil {
-		return nil, err
-	}
+func (gfs *GoogleDriveFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
+	go func() {
+		srv, err := gfs.getDriveService()
+		if err != nil {
+			gfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
 
-	// Trash file
-	_, err = srv.Files.Update(rq.OriginalId, &drive.File{
-		Trashed: true,
-	}).Do()
-	if err != nil {
-		return nil, err
-	}
+		// Trash file
+		_, err = srv.Files.Update(rq.OriginalId, &drive.File{
+			Trashed: true,
+		}).Do()
+		if err != nil {
+			gfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
 
-	// Delete file from index
-	req := c.NewRequest(
-		globals.DB_SERVICE_NAME,
-		"DB.Delete",
-		&db_proto.DeleteRequest{
-			Index: gfs.Endpoint.Index,
-			Type:  globals.FileType,
-			Id:    rq.FileId,
-		},
-	)
-	rsp := &db_proto.DeleteResponse{}
+		// Return deleted file. This file only stores the id
+		// Avoid read from DB
+		gfs.FileMetaChan <- NewFileMeta(
+			&file.KazoupGoogleFile{
+				file.KazoupFile{
+					ID: rq.FileId,
+				},
+				nil,
+			},
+			nil,
+		)
+	}()
 
-	if err := c.Call(ctx, req, rsp); err != nil {
-		return nil, err
-	}
-
-	// Publish notification topic, let client know when to refresh itself
-	if err := c.Publish(globals.NewSystemContext(), c.NewPublication(globals.NotificationTopic, &notification_proto.NotificationMessage{
-		Method: globals.NOTIFY_REFRESH_SEARCH,
-		UserId: gfs.Endpoint.UserId,
-	})); err != nil {
-		log.Print("Publishing (notify file) error %s", err)
-	}
-
-	return &file_proto.DeleteResponse{}, nil
+	return gfs.FileMetaChan
 }
 
 // ShareFile

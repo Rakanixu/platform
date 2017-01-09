@@ -14,7 +14,6 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/image"
 	"github.com/kazoup/platform/lib/onedrive"
-	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -178,54 +177,44 @@ func (ofs *OneDriveFs) Create(rq file_proto.CreateRequest) chan FileMeta {
 	return ofs.FileMetaChan
 }
 
-// DeleteFile deletes an onedrive file
-func (ofs *OneDriveFs) DeleteFile(ctx context.Context, c client.Client, rq file_proto.DeleteRequest) (*file_proto.DeleteResponse, error) {
-	if err := ofs.refreshToken(); err != nil {
-		log.Println(err)
-	}
+// Delete deletes an onedrive file
+func (ofs *OneDriveFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
+	go func() {
+		oc := &http.Client{}
+		// https://dev.onedrive.com/items/delete.htm
+		url := globals.OneDriveEndpoint + Drive + "items/" + rq.OriginalId
+		oreq, err := http.NewRequest("DELETE", url, nil)
+		oreq.Header.Set("Authorization", ofs.token())
+		if err != nil {
+			ofs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
+		res, err := oc.Do(oreq)
+		if err != nil {
+			ofs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
+		defer res.Body.Close()
 
-	oc := &http.Client{}
-	// https://dev.onedrive.com/items/delete.htm
-	url := globals.OneDriveEndpoint + Drive + "items/" + rq.OriginalId
-	oreq, err := http.NewRequest("DELETE", url, nil)
-	oreq.Header.Set("Authorization", ofs.Endpoint.Token.TokenType+" "+ofs.Endpoint.Token.AccessToken)
-	if err != nil {
-		return nil, err
-	}
-	res, err := oc.Do(oreq)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
+		if res.StatusCode != http.StatusNoContent {
+			ofs.FileMetaChan <- NewFileMeta(nil, errors.New(fmt.Sprintf("Deleting Onedrive file failed with status code %d", res.StatusCode)))
+			return
+		}
 
-	if res.StatusCode != http.StatusNoContent {
-		return nil, errors.New(fmt.Sprintf("Deleting Onedrive file failed with status code %d", res.StatusCode))
-	}
+		// Return deleted file. This file only stores the id
+		// Avoid read from DB
+		ofs.FileMetaChan <- NewFileMeta(
+			&file.KazoupOneDriveFile{
+				file.KazoupFile{
+					ID: rq.FileId,
+				},
+				nil,
+			},
+			nil,
+		)
+	}()
 
-	// Remove file from index
-	req := c.NewRequest(
-		globals.DB_SERVICE_NAME,
-		"DB.Delete",
-		&db_proto.DeleteRequest{
-			Index: rq.Index,
-			Type:  globals.FileType,
-			Id:    rq.FileId,
-		},
-	)
-	rsp := &db_proto.DeleteResponse{}
-	if err := c.Call(ctx, req, rsp); err != nil {
-		return nil, err
-	}
-
-	// Publish notification topic, let client know when to refresh itself
-	if err := c.Publish(globals.NewSystemContext(), c.NewPublication(globals.NotificationTopic, &notification_proto.NotificationMessage{
-		Method: globals.NOTIFY_REFRESH_SEARCH,
-		UserId: ofs.Endpoint.UserId,
-	})); err != nil {
-		log.Print("Publishing (notify file) error %s", err)
-	}
-
-	return &file_proto.DeleteResponse{}, nil
+	return ofs.FileMetaChan
 }
 
 // ShareFile

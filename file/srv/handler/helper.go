@@ -74,3 +74,17 @@ func UpdateFileSystemAuth(fc client.Client, ctx context.Context, id string, toke
 
 	return nil
 }
+
+func DeleteFromDB(c client.Client, ctx context.Context, req *db_proto.DeleteRequest) (*db_proto.DeleteResponse, error) {
+	dreq := c.NewRequest(
+		globals.DB_SERVICE_NAME,
+		"DB.Delete",
+		req,
+	)
+	drsp := &db_proto.DeleteResponse{}
+	if err := c.Call(ctx, dreq, drsp); err != nil {
+		return nil, err
+	}
+
+	return drsp, nil
+}

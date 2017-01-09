@@ -14,7 +14,6 @@ import (
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/image"
-	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -205,49 +204,44 @@ func (bfs *BoxFs) Create(rq file_proto.CreateRequest) chan FileMeta {
 }
 
 // DeleteFile deletes a box file
-func (bfs *BoxFs) DeleteFile(ctx context.Context, c client.Client, rq file_proto.DeleteRequest) (*file_proto.DeleteResponse, error) {
-	// https://docs.box.com/reference#delete-a-file
-	// Depending on the enterprise settings for this user, the item will either be actually deleted from Box or moved to the trash.
-	bc := &http.Client{}
-	url := fmt.Sprintf("%s%s", globals.BoxFileMetadataEndpoint, rq.OriginalId)
-	r, err := http.NewRequest("DELETE", url, nil)
-	if err != nil {
-		return nil, err
-	}
-	r.Header.Set("Authorization", bfs.Token(c))
-	rsp, err := bc.Do(r)
-	if err != nil {
-		return nil, err
-	}
-	defer rsp.Body.Close()
+func (bfs *BoxFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
+	go func() {
+		// https://docs.box.com/reference#delete-a-file
+		// Depending on the enterprise settings for this user, the item will either be actually deleted from Box or moved to the trash.
+		bc := &http.Client{}
+		url := fmt.Sprintf("%s%s", globals.BoxFileMetadataEndpoint, rq.OriginalId)
+		r, err := http.NewRequest("DELETE", url, nil)
+		if err != nil {
+			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
+		r.Header.Set("Authorization", bfs.token())
+		rsp, err := bc.Do(r)
+		if err != nil {
+			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
+		defer rsp.Body.Close()
 
-	if rsp.StatusCode != http.StatusNoContent {
-		return nil, errors.New(fmt.Sprintf("Deleting Box file failed with status code %d", rsp.StatusCode))
-	}
+		if rsp.StatusCode != http.StatusNoContent {
+			bfs.FileMetaChan <- NewFileMeta(nil, errors.New(fmt.Sprintf("Deleting Box file failed with status code %d", rsp.StatusCode)))
+			return
+		}
 
-	dreq := c.NewRequest(
-		globals.DB_SERVICE_NAME,
-		"DB.Delete",
-		&db_proto.DeleteRequest{
-			Index: rq.Index,
-			Type:  globals.FileType,
-			Id:    rq.FileId,
-		},
-	)
-	drsp := &db_proto.DeleteResponse{}
-	if err := c.Call(ctx, dreq, drsp); err != nil {
-		return nil, err
-	}
+		// Return deleted file. This file only stores the id
+		// Avoid read from DB
+		bfs.FileMetaChan <- NewFileMeta(
+			&file.KazoupBoxFile{
+				file.KazoupFile{
+					ID: rq.FileId,
+				},
+				nil,
+			},
+			nil,
+		)
+	}()
 
-	// Publish notification topic, let client know when to refresh itself
-	if err := c.Publish(globals.NewSystemContext(), c.NewPublication(globals.NotificationTopic, &notification_proto.NotificationMessage{
-		Method: globals.NOTIFY_REFRESH_SEARCH,
-		UserId: bfs.Endpoint.UserId,
-	})); err != nil {
-		log.Print("Publishing (notify file) error %s", err)
-	}
-
-	return &file_proto.DeleteResponse{}, nil
+	return bfs.FileMetaChan
 }
 
 // ShareFile

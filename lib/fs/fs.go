@@ -24,7 +24,7 @@ import (
 type Fs interface {
 	List(client.Client) (chan file.File, chan bool, error)
 	Create(file_proto.CreateRequest) chan FileMeta
-	DeleteFile(context.Context, client.Client, file_proto.DeleteRequest) (*file_proto.DeleteResponse, error)
+	Delete(file_proto.DeleteRequest) chan FileMeta
 	ShareFile(context.Context, client.Client, file_proto.ShareRequest) (string, error)
 	DownloadFile(string, client.Client, ...string) (io.ReadCloser, error)
 	UploadFile(io.Reader, string) error
