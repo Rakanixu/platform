@@ -24,17 +24,19 @@ import (
 
 // GmailFs Gmail fyle system
 type GmailFs struct {
-	Endpoint  *datasource_proto.Endpoint
-	Running   chan bool
-	FilesChan chan file.File
+	Endpoint     *datasource_proto.Endpoint
+	Running      chan bool
+	FilesChan    chan file.File
+	FileMetaChan chan FileMeta
 }
 
 // NewGmailFsFromEndpoint constructor
 func NewGmailFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	return &GmailFs{
-		Endpoint:  e,
-		Running:   make(chan bool, 1),
-		FilesChan: make(chan file.File),
+		Endpoint:     e,
+		Running:      make(chan bool, 1),
+		FilesChan:    make(chan file.File),
+		FileMetaChan: make(chan FileMeta),
 	}
 }
 
@@ -66,9 +68,9 @@ func (gfs *GmailFs) GetThumbnail(id string, c client.Client) (string, error) {
 	return "", nil
 }
 
-// CreateFile belongs to Fs interface
-func (gfs *GmailFs) CreateFile(ctx context.Context, c client.Client, rq file_proto.CreateRequest) (*file_proto.CreateResponse, error) {
-	return &file_proto.CreateResponse{}, nil
+// Create file in gmail (not implemented)
+func (gfs *GmailFs) Create(rq file_proto.CreateRequest) chan FileMeta {
+	return gfs.FileMetaChan
 }
 
 // DeleteFile deletes a email and therefore its attachments. Be careful.

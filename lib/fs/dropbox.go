@@ -27,17 +27,19 @@ import (
 
 // DropboxFs dropbox file system
 type DropboxFs struct {
-	Endpoint  *datasource_proto.Endpoint
-	Running   chan bool
-	FilesChan chan file.File
+	Endpoint     *datasource_proto.Endpoint
+	Running      chan bool
+	FilesChan    chan file.File
+	FileMetaChan chan FileMeta
 }
 
 // NewDropboxFsFromEndpoint constructor
 func NewDropboxFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	return &DropboxFs{
-		Endpoint:  e,
-		Running:   make(chan bool, 1),
-		FilesChan: make(chan file.File),
+		Endpoint:     e,
+		Running:      make(chan bool, 1),
+		FilesChan:    make(chan file.File),
+		FileMetaChan: make(chan FileMeta),
 	}
 }
 
@@ -72,63 +74,61 @@ func (dfs *DropboxFs) GetThumbnail(id string, c client.Client) (string, error) {
 	return url, nil
 }
 
-// CreateFile creates a file in dropbox and index it on Elastic Search
-func (dfs *DropboxFs) CreateFile(ctx context.Context, c client.Client, rq file_proto.CreateRequest) (*file_proto.CreateResponse, error) {
-	// https://www.dropbox.com/developers/documentation/http/documentation#files-upload
-	folderPath, err := osext.ExecutableFolder()
-	if err != nil {
-		return nil, err
-	}
+// Create a file in dropbox
+func (dfs *DropboxFs) Create(rq file_proto.CreateRequest) chan FileMeta {
+	go func() {
+		// https://www.dropbox.com/developers/documentation/http/documentation#files-upload
+		folderPath, err := osext.ExecutableFolder()
+		if err != nil {
+			dfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
 
-	p := fmt.Sprintf("%s%s%s", folderPath, "/doc_templates/", globals.GetDocumentTemplate(rq.MimeType, true))
-	t, err := os.Open(p)
-	if err != nil {
-		return nil, err
-	}
-	defer t.Close()
+		p := fmt.Sprintf("%s%s%s", folderPath, "/doc_templates/", globals.GetDocumentTemplate(rq.MimeType, true))
+		t, err := os.Open(p)
+		if err != nil {
+			dfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
+		defer t.Close()
 
-	hc := &http.Client{}
-	req, err := http.NewRequest("POST", globals.DropboxFileUpload, t)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Authorization", dfs.Token(c))
-	req.Header.Set("Dropbox-API-Arg", `{
-		"path": "/`+rq.FileName+`.`+globals.GetDocumentTemplate(rq.MimeType, false)+`",
-		"mode": "add",
-		"autorename": true,
-		"mute": false
-	}`)
-	req.Header.Set("Content-Type", "application/octet-stream")
-	rsp, err := hc.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer rsp.Body.Close()
+		hc := &http.Client{}
+		req, err := http.NewRequest("POST", globals.DropboxFileUpload, t)
+		if err != nil {
+			dfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
+		req.Header.Set("Authorization", dfs.token())
+		req.Header.Set("Dropbox-API-Arg", `{
+			"path": "/`+rq.FileName+`.`+globals.GetDocumentTemplate(rq.MimeType, false)+`",
+			"mode": "add",
+			"autorename": true,
+			"mute": false
+		}`)
+		req.Header.Set("Content-Type", "application/octet-stream")
+		rsp, err := hc.Do(req)
+		if err != nil {
+			dfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
+		defer rsp.Body.Close()
 
-	var df *dropbox.DropboxFile
-	if err := json.NewDecoder(rsp.Body).Decode(&df); err != nil {
-		return nil, err
-	}
+		var df *dropbox.DropboxFile
+		if err := json.NewDecoder(rsp.Body).Decode(&df); err != nil {
+			dfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
 
-	kfd := file.NewKazoupFileFromDropboxFile(*df, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
-	if kfd == nil {
-		return nil, errors.New("ERROR dropbox file is nil")
-	}
+		kfd := file.NewKazoupFileFromDropboxFile(*df, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
+		if kfd == nil {
+			dfs.FileMetaChan <- NewFileMeta(nil, errors.New("ERROR dropbox file is nil"))
+			return
+		}
 
-	if err := file.IndexAsync(c, kfd, globals.FilesTopic, dfs.Endpoint.Index, true); err != nil {
-		return nil, err
-	}
+		dfs.FileMetaChan <- NewFileMeta(kfd, nil)
+	}()
 
-	b, err := json.Marshal(kfd)
-	if err != nil {
-		return nil, err
-	}
-
-	return &file_proto.CreateResponse{
-		DocUrl: kfd.GetURL(),
-		Data:   string(b),
-	}, nil
+	return dfs.FileMetaChan
 }
 
 // DeleteFile deletes a dropbox file
@@ -494,4 +494,9 @@ func (dfs *DropboxFs) getAccount(aId string, cl client.Client) (*dropbox.Dropbox
 	}
 
 	return account, nil
+}
+
+// token returns auth header token
+func (dfs *DropboxFs) token() string {
+	return "Bearer " + dfs.Endpoint.Token.AccessToken
 }

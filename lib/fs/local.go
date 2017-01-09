@@ -19,10 +19,11 @@ import (
 
 // LocalFs struct
 type LocalFs struct {
-	Endpoint  *datasource_proto.Endpoint
-	Running   chan bool
-	RootPath  string
-	FilesChan chan file.File
+	Endpoint     *datasource_proto.Endpoint
+	Running      chan bool
+	RootPath     string
+	FilesChan    chan file.File
+	FileMetaChan chan FileMeta
 }
 
 // NewLocalFsFromEndpoint constructor
@@ -30,10 +31,11 @@ func NewLocalFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	url := strings.Split(e.Url, "://")
 
 	return &LocalFs{
-		Endpoint:  e,
-		Running:   make(chan bool, 1),
-		RootPath:  url[1],
-		FilesChan: make(chan file.File),
+		Endpoint:     e,
+		Running:      make(chan bool, 1),
+		RootPath:     url[1],
+		FilesChan:    make(chan file.File),
+		FileMetaChan: make(chan FileMeta),
 	}
 }
 
@@ -69,9 +71,9 @@ func (lfs *LocalFs) GetThumbnail(id string, c client.Client) (string, error) {
 	return "", nil
 }
 
-// CreateFile belongs to Fs interface
-func (lfs *LocalFs) CreateFile(ctx context.Context, c client.Client, rq file_proto.CreateRequest) (*file_proto.CreateResponse, error) {
-	return &file_proto.CreateResponse{}, nil
+// Create file (not implemented)
+func (lfs *LocalFs) Create(rq file_proto.CreateRequest) chan FileMeta {
+	return lfs.FileMetaChan
 }
 
 // DeleteFile deletes a local file

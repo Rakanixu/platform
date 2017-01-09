@@ -23,17 +23,19 @@ import (
 
 // SlackFs slack file system
 type SlackFs struct {
-	Endpoint  *datasource_proto.Endpoint
-	Running   chan bool
-	FilesChan chan file.File
+	Endpoint     *datasource_proto.Endpoint
+	Running      chan bool
+	FilesChan    chan file.File
+	FileMetaChan chan FileMeta
 }
 
 // NewSlackFsFromEndpoint constructor
 func NewSlackFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	return &SlackFs{
-		Endpoint:  e,
-		Running:   make(chan bool, 1),
-		FilesChan: make(chan file.File),
+		Endpoint:     e,
+		Running:      make(chan bool, 1),
+		FilesChan:    make(chan file.File),
+		FileMetaChan: make(chan FileMeta),
 	}
 }
 
@@ -74,8 +76,8 @@ func (sfs *SlackFs) GetThumbnail(id string, c client.Client) (string, error) {
 }
 
 // CreateFile belongs to Fs interface
-func (sfs *SlackFs) CreateFile(ctx context.Context, c client.Client, rq file_proto.CreateRequest) (*file_proto.CreateResponse, error) {
-	return &file_proto.CreateResponse{}, nil
+func (sfs *SlackFs) Create(rq file_proto.CreateRequest) chan FileMeta {
+	return sfs.FileMetaChan
 }
 
 // DeleteFile deletes a slack file

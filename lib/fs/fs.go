@@ -23,7 +23,7 @@ import (
 // Fs File System interface. Fyle system is responsible to manage its own files
 type Fs interface {
 	List(client.Client) (chan file.File, chan bool, error)
-	CreateFile(context.Context, client.Client, file_proto.CreateRequest) (*file_proto.CreateResponse, error)
+	Create(file_proto.CreateRequest) chan FileMeta
 	DeleteFile(context.Context, client.Client, file_proto.DeleteRequest) (*file_proto.DeleteResponse, error)
 	ShareFile(context.Context, client.Client, file_proto.ShareRequest) (string, error)
 	DownloadFile(string, client.Client, ...string) (io.ReadCloser, error)
@@ -33,6 +33,11 @@ type Fs interface {
 	GetDatasourceId() string
 	Token(client.Client) string
 	GetThumbnail(string, client.Client) (string, error)
+	FsUtils
+}
+
+type FsUtils interface {
+	Authorize() (*datasource_proto.Token, error)
 }
 
 var (

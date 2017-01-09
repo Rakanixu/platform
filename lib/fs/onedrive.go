@@ -33,21 +33,23 @@ const (
 
 // OneDriveFs one drive file system
 type OneDriveFs struct {
-	Endpoint    *datasource_proto.Endpoint
-	Running     chan bool
-	FilesChan   chan file.File
-	DrivesId    []string
-	Directories chan string
-	LastDirTime int64
+	Endpoint     *datasource_proto.Endpoint
+	Running      chan bool
+	FilesChan    chan file.File
+	FileMetaChan chan FileMeta
+	DrivesId     []string
+	Directories  chan string
+	LastDirTime  int64
 }
 
 // NewOneDriveFsFromEndpoint constructor
 func NewOneDriveFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	return &OneDriveFs{
-		Endpoint:  e,
-		Running:   make(chan bool, 1),
-		FilesChan: make(chan file.File),
-		DrivesId:  []string{},
+		Endpoint:     e,
+		Running:      make(chan bool, 1),
+		FilesChan:    make(chan file.File),
+		FileMetaChan: make(chan FileMeta),
+		DrivesId:     []string{},
 		// This is important to have a size bigger than one, the bigger, less likely to block
 		// If not, program execution will block, due to recursivity,
 		// We are pushing more elements before finish execution.
@@ -128,58 +130,52 @@ func (ofs *OneDriveFs) GetThumbnail(id string, cl client.Client) (string, error)
 	return thumbRsp.URL, nil
 }
 
-// CreateFile creates a one drive document and index it on Elastic Search
-func (ofs *OneDriveFs) CreateFile(ctx context.Context, c client.Client, rq file_proto.CreateRequest) (*file_proto.CreateResponse, error) {
-	if err := ofs.refreshToken(); err != nil {
-		log.Println(err)
-	}
+// Create a one drive file
+func (ofs *OneDriveFs) Create(rq file_proto.CreateRequest) chan FileMeta {
+	go func() {
+		folderPath, err := osext.ExecutableFolder()
+		if err != nil {
+			ofs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
 
-	folderPath, err := osext.ExecutableFolder()
-	if err != nil {
-		return nil, err
-	}
+		p := fmt.Sprintf("%s%s%s", folderPath, "/doc_templates/", globals.GetDocumentTemplate(rq.MimeType, true))
+		t, err := os.Open(p)
+		if err != nil {
+			ofs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
+		defer t.Close()
 
-	p := fmt.Sprintf("%s%s%s", folderPath, "/doc_templates/", globals.GetDocumentTemplate(rq.MimeType, true))
-	t, err := os.Open(p)
-	if err != nil {
-		return nil, err
-	}
-	defer t.Close()
+		hc := &http.Client{}
+		// https://dev.onedrive.com/items/upload_put.htm
+		url := fmt.Sprintf("%sroot:/%s.%s:/content", globals.OneDriveEndpoint+Drive, rq.FileName, globals.GetDocumentTemplate(rq.MimeType, false))
+		req, err := http.NewRequest("PUT", url, t) // We require a template to be able to open / edit this files online
+		req.Header.Set("Authorization", ofs.token())
+		req.Header.Set("Content-Type", globals.ONEDRIVE_TEXT)
+		if err != nil {
+			ofs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
+		res, err := hc.Do(req)
+		if err != nil {
+			ofs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
+		defer res.Body.Close()
 
-	hc := &http.Client{}
-	// https://dev.onedrive.com/items/upload_put.htm
-	url := fmt.Sprintf("%sroot:/%s.%s:/content", globals.OneDriveEndpoint+Drive, rq.FileName, globals.GetDocumentTemplate(rq.MimeType, false))
-	req, err := http.NewRequest("PUT", url, t) // We require a template to be able to open / edit this files online
-	req.Header.Set("Authorization", ofs.Endpoint.Token.TokenType+" "+ofs.Endpoint.Token.AccessToken)
-	req.Header.Set("Content-Type", globals.ONEDRIVE_TEXT)
-	if err != nil {
-		return nil, err
-	}
-	res, err := hc.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
+		var f onedrive.OneDriveFile
+		if err := json.NewDecoder(res.Body).Decode(&f); err != nil {
+			ofs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
 
-	var f *onedrive.OneDriveFile
-	if err := json.NewDecoder(res.Body).Decode(&f); err != nil {
-		return nil, err
-	}
+		kfo := file.NewKazoupFileFromOneDriveFile(f, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)
 
-	kfo := file.NewKazoupFileFromOneDriveFile(*f, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)
-	if err := file.IndexAsync(c, kfo, globals.FilesTopic, ofs.Endpoint.Index, true); err != nil {
-		return nil, err
-	}
+		ofs.FileMetaChan <- NewFileMeta(kfo, nil)
+	}()
 
-	b, err := json.Marshal(kfo)
-	if err != nil {
-		return nil, err
-	}
-
-	return &file_proto.CreateResponse{
-		DocUrl: kfo.GetURL(),
-		Data:   string(b),
-	}, nil
+	return ofs.FileMetaChan
 }
 
 // DeleteFile deletes an onedrive file
@@ -356,6 +352,11 @@ func (ofs *OneDriveFs) refreshToken() error {
 	}
 
 	return nil
+}
+
+// token returns authorization header
+func (ofs *OneDriveFs) token() string {
+	return ofs.Endpoint.Token.TokenType + " " + ofs.Endpoint.Token.AccessToken
 }
 
 // getDrives retrieve user drives

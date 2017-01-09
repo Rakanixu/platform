@@ -1,7 +1,6 @@
 package fs
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
@@ -23,17 +22,19 @@ import (
 
 // GoogleDriveFs is the google drive file system struct
 type GoogleDriveFs struct {
-	Endpoint  *datasource_proto.Endpoint
-	Running   chan bool
-	FilesChan chan file.File
+	Endpoint     *datasource_proto.Endpoint
+	Running      chan bool
+	FilesChan    chan file.File
+	FileMetaChan chan FileMeta
 }
 
 //NewGoogleDriveFsFromEndpoint constructor
 func NewGoogleDriveFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	return &GoogleDriveFs{
-		Endpoint:  e,
-		Running:   make(chan bool, 1),
-		FilesChan: make(chan file.File),
+		Endpoint:     e,
+		Running:      make(chan bool, 1),
+		FilesChan:    make(chan file.File),
+		FileMetaChan: make(chan FileMeta),
 	}
 }
 
@@ -75,37 +76,33 @@ func (gfs *GoogleDriveFs) GetThumbnail(id string, c client.Client) (string, erro
 }
 
 // CreateFile creates a google file and index it on Elastic Search
-func (gfs *GoogleDriveFs) CreateFile(ctx context.Context, c client.Client, rq file_proto.CreateRequest) (*file_proto.CreateResponse, error) {
-	srv, err := gfs.getDriveService()
-	if err != nil {
-		return nil, err
-	}
+func (gfs *GoogleDriveFs) Create(rq file_proto.CreateRequest) chan FileMeta {
+	go func() {
+		srv, err := gfs.getDriveService()
+		if err != nil {
+			gfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
 
-	f, err := srv.Files.Create(&drive.File{
-		Name:     rq.FileName,
-		MimeType: globals.GetMimeType(globals.GoogleDrive, rq.MimeType),
-	}).Fields("*").Do()
-	if err != nil {
-		return nil, err
-	}
+		f, err := srv.Files.Create(&drive.File{
+			Name:     rq.FileName,
+			MimeType: globals.GetMimeType(globals.GoogleDrive, rq.MimeType),
+		}).Fields("*").Do()
+		if err != nil {
+			gfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
 
-	kfg := file.NewKazoupFileFromGoogleDriveFile(*f, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
-	if kfg == nil {
-		return nil, errors.New("ERROR CreateFile gdrive is nil")
-	}
-	if err := file.IndexAsync(c, kfg, globals.FilesTopic, gfs.Endpoint.Index, true); err != nil {
-		return nil, err
-	}
+		kfg := file.NewKazoupFileFromGoogleDriveFile(*f, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
+		if kfg == nil {
+			gfs.FileMetaChan <- NewFileMeta(nil, errors.New("ERROR CreateFile gdrive is nil"))
+			return
+		}
 
-	b, err := json.Marshal(kfg)
-	if err != nil {
-		return nil, err
-	}
+		gfs.FileMetaChan <- NewFileMeta(kfg, nil)
+	}()
 
-	return &file_proto.CreateResponse{
-		DocUrl: kfg.GetURL(),
-		Data:   string(b),
-	}, nil
+	return gfs.FileMetaChan
 }
 
 // DeleteFile moves a google drive file to trash

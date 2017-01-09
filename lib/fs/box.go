@@ -32,6 +32,7 @@ type BoxFs struct {
 	Endpoint      *datasource_proto.Endpoint
 	Running       chan bool
 	FilesChan     chan file.File
+	FileMetaChan  chan FileMeta
 	Directories   chan string
 	LastDirTime   int64
 	DefaultOffset int
@@ -41,9 +42,10 @@ type BoxFs struct {
 // NewBoxFsFromEndpoint constructor
 func NewBoxFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	return &BoxFs{
-		Endpoint:  e,
-		Running:   make(chan bool, 1),
-		FilesChan: make(chan file.File),
+		Endpoint:     e,
+		Running:      make(chan bool, 1),
+		FilesChan:    make(chan file.File),
+		FileMetaChan: make(chan FileMeta),
 		// This is important to have a size bigger than one, the bigger, less likely to block
 		// If not, program execution will block, due to recursivity,
 		// We are pushing more elements before finish execution.
@@ -117,86 +119,89 @@ func (bfs *BoxFs) GetThumbnail(id string, c client.Client) (string, error) {
 	return url, nil
 }
 
-// CreateFile in box
-func (bfs *BoxFs) CreateFile(ctx context.Context, c client.Client, rq file_proto.CreateRequest) (*file_proto.CreateResponse, error) {
-	// Box supports multi part form upload
-	folderPath, err := osext.ExecutableFolder()
-	if err != nil {
-		return nil, err
-	}
+// Create file in box
+func (bfs *BoxFs) Create(rq file_proto.CreateRequest) chan FileMeta {
+	go func() {
+		// Box supports multi part form upload
+		folderPath, err := osext.ExecutableFolder()
+		if err != nil {
+			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
 
-	// File template path
-	t := fmt.Sprintf("%s%s%s", folderPath, "/doc_templates/", globals.GetDocumentTemplate(rq.MimeType, true))
-	buf := &bytes.Buffer{}
-	mw := multipart.NewWriter(buf)
-	defer mw.Close()
+		// File template path
+		t := fmt.Sprintf("%s%s%s", folderPath, "/doc_templates/", globals.GetDocumentTemplate(rq.MimeType, true))
+		buf := &bytes.Buffer{}
+		mw := multipart.NewWriter(buf)
+		defer mw.Close()
 
-	f, err := os.Open(t)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
+		f, err := os.Open(t)
+		if err != nil {
+			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
+		defer f.Close()
 
-	// This is how you upload a file as multipart form
-	ff, err := mw.CreateFormFile("file", t)
-	if err != nil {
-		return nil, err
-	}
-	if _, err = io.Copy(ff, f); err != nil {
-		return nil, err
-	}
+		// This is how you upload a file as multipart form
+		ff, err := mw.CreateFormFile("file", t)
+		if err != nil {
+			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
+		if _, err = io.Copy(ff, f); err != nil {
+			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
 
-	// Add extra fields required by API
-	mw.WriteField(
-		"attributes",
-		`{"name":"`+rq.FileName+`.`+globals.GetDocumentTemplate(rq.MimeType, false)+`", "parent":{"id":"0"}}`,
-	)
-	if err := mw.Close(); err != nil {
-		return nil, err
-	}
+		// Add extra fields required by API
+		mw.WriteField(
+			"attributes",
+			`{"name":"`+rq.FileName+`.`+globals.GetDocumentTemplate(rq.MimeType, false)+`", "parent":{"id":"0"}}`,
+		)
+		if err := mw.Close(); err != nil {
+			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
 
-	hc := &http.Client{}
-	req, err := http.NewRequest("POST", globals.BoxUploadEndpoint, buf)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Authorization", bfs.Token(c))
-	req.Header.Set("Content-Type", mw.FormDataContentType())
+		hc := &http.Client{}
+		req, err := http.NewRequest("POST", globals.BoxUploadEndpoint, buf)
+		if err != nil {
+			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
+		req.Header.Set("Authorization", bfs.token())
+		req.Header.Set("Content-Type", mw.FormDataContentType())
 
-	rsp, err := hc.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer rsp.Body.Close()
+		rsp, err := hc.Do(req)
+		if err != nil {
+			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
+		defer rsp.Body.Close()
 
-	var bf *box.BoxUpload
-	if err := json.NewDecoder(rsp.Body).Decode(&bf); err != nil {
-		return nil, err
-	}
+		var bf *box.BoxUpload
+		if err := json.NewDecoder(rsp.Body).Decode(&bf); err != nil {
+			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
 
-	if rsp.StatusCode == http.StatusConflict {
-		return nil, errors.New("Conflict creating file in Box, file with same name already exists")
-	}
+		if rsp.StatusCode == http.StatusConflict {
+			bfs.FileMetaChan <- NewFileMeta(nil, errors.New("Conflict creating file in Box, file with same name already exists"))
+			return
+		}
 
-	if rsp.StatusCode != http.StatusCreated && bf.TotalCount != 1 {
-		return nil, errors.New("Failed creating file in Box")
-	}
+		if rsp.StatusCode != http.StatusCreated && bf.TotalCount != 1 {
+			bfs.FileMetaChan <- NewFileMeta(nil, errors.New("Failed creating file in Box"))
+			return
+		}
 
-	// Construct Kazoup file from box created file and index it
-	kfb := file.NewKazoupFileFromBoxFile(bf.Entries[0], bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
-	if err := file.IndexAsync(c, kfb, globals.FilesTopic, bfs.Endpoint.Index, true); err != nil {
-		return nil, err
-	}
+		// Construct Kazoup file from box created file and index it
+		kfb := file.NewKazoupFileFromBoxFile(bf.Entries[0], bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
 
-	b, err := json.Marshal(kfb)
-	if err != nil {
-		return nil, err
-	}
+		bfs.FileMetaChan <- NewFileMeta(kfb, nil)
+	}()
 
-	return &file_proto.CreateResponse{
-		DocUrl: kfb.GetURL(),
-		Data:   string(b),
-	}, nil
+	return bfs.FileMetaChan
 }
 
 // DeleteFile deletes a box file
@@ -452,4 +457,9 @@ func (bfs *BoxFs) refreshToken(cl client.Client) error {
 	}
 
 	return nil
+}
+
+// token returns authorization header token as string
+func (bfs *BoxFs) token() string {
+	return "Bearer " + bfs.Endpoint.Token.AccessToken
 }
