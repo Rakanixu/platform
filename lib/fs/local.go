@@ -81,13 +81,13 @@ func (lfs *LocalFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
 	return lfs.FileMetaChan
 }
 
-// ShareFile
-func (lfs *LocalFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
-	return "", nil
+// Update file
+func (lfs *LocalFs) Update(req file_proto.ShareRequest) chan FileMeta {
+	return lfs.FileMetaChan
 }
 
 // DownloadFile retrieves a file
-func (lfs *LocalFs) DownloadFile(id string, c client.Client, opts ...string) (io.ReadCloser, error) {
+func (lfs *LocalFs) DownloadFile(id string, opts ...string) (io.ReadCloser, error) {
 	return nil, nil
 }
 

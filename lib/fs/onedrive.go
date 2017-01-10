@@ -1,7 +1,6 @@
 package fs
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -217,42 +216,54 @@ func (ofs *OneDriveFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
 	return ofs.FileMetaChan
 }
 
-// ShareFile
-func (ofs *OneDriveFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
-	//POST /drive/items/{item-id}/action.invite
-	if err := ofs.refreshToken(); err != nil {
-		log.Println(err)
-	}
+// Update file
+func (ofs *OneDriveFs) Update(req file_proto.ShareRequest) chan FileMeta {
+	/*	go func() {
+		//POST /drive/items/{item-id}/action.invite
+		oc := &http.Client{}
+		body := []byte(`{
+			"requireSignIn": true,
+			"sendInvitation": true,
+			"roles": ["write"],
+			"recipients": [
+				{ "email": "` + req.DestinationId + `" }
+			]
+		}`)
 
-	oc := &http.Client{}
-	body := []byte(`{
-		"requireSignIn": true,
-		"sendInvitation": true,
-		"roles": ["write"],
-		"recipients": [
-			{ "email": "` + req.DestinationId + `" }
-		]
-	}`)
+		// https://dev.onedrive.com/items/invite.htm
+		url := globals.OneDriveEndpoint + Drive + "items/" + req.OriginalId + "/action.invite"
+		oreq, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
+		oreq.Header.Set("Authorization", ofs.token())
+		oreq.Header.Set("Content-Type", "application/json")
+		if err != nil {
+			ofs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
+		res, err := oc.Do(oreq)
+		if err != nil {
+			ofs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
+		defer res.Body.Close()
 
-	// https://dev.onedrive.com/items/invite.htm
-	url := globals.OneDriveEndpoint + Drive + "items/" + req.OriginalId + "/action.invite"
-	oreq, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
-	oreq.Header.Set("Authorization", ofs.Endpoint.Token.TokenType+" "+ofs.Endpoint.Token.AccessToken)
-	oreq.Header.Set("Content-Type", "application/json")
-	if err != nil {
-		return "", err
-	}
-	res, err := oc.Do(oreq)
-	if err != nil {
-		return "", err
-	}
-	defer res.Body.Close()
+		ofs.FileMetaChan <- NewFileMeta(
+			&file.KazoupOneDriveFile{
+				file.KazoupFile{
+					ID: req.FileId,
+				},
+				nil,
+			},
+			nil,
+		)
 
-	return "", nil
+		// TODO: request for file to Onedrive and retur whole file
+	}()*/
+
+	return ofs.FileMetaChan
 }
 
 // DownloadFile retrieves a file
-func (ofs *OneDriveFs) DownloadFile(id string, c client.Client, opts ...string) (io.ReadCloser, error) {
+func (ofs *OneDriveFs) DownloadFile(id string, opts ...string) (io.ReadCloser, error) {
 	//POST /drive/items/{item-id}/action.invite
 	if err := ofs.refreshToken(); err != nil {
 		log.Println(err)
@@ -266,7 +277,7 @@ func (ofs *OneDriveFs) DownloadFile(id string, c client.Client, opts ...string) 
 	if err != nil {
 		return nil, err
 	}
-	oreq.Header.Set("Authorization", ofs.Endpoint.Token.TokenType+" "+ofs.Endpoint.Token.AccessToken)
+	oreq.Header.Set("Authorization", ofs.token())
 	res, err := oc.Do(oreq)
 	if err != nil {
 		return nil, err
@@ -469,7 +480,7 @@ func (ofs *OneDriveFs) generateThumbnail(c client.Client, f onedrive.OneDriveFil
 	n := strings.Split(f.Name, ".")
 
 	if categories.GetDocType("."+n[len(n)-1]) == globals.CATEGORY_PICTURE {
-		pr, err := ofs.DownloadFile(f.ID, c)
+		pr, err := ofs.DownloadFile(f.ID)
 		if err != nil {
 			return errors.New("ERROR downloading onedrive file")
 		}

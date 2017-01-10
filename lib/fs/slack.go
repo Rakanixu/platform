@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/categories"
 	"github.com/kazoup/platform/lib/file"
@@ -86,41 +85,42 @@ func (sfs *SlackFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
 }
 
 // ShareFile sets a PermalinkPublic available, so everyone with URL has access to the slack file
-func (sfs *SlackFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
-	if req.SharePublicly {
-		return sfs.shareFilePublicly(c, req.OriginalId)
-	} else {
-		r := c.NewRequest(
-			globals.DB_SERVICE_NAME,
-			"DB.Read",
-			&db_proto.ReadRequest{
-				Index: req.Index,
-				Type:  "file",
-				Id:    req.FileId,
-			},
-		)
-		rsp := &db_proto.ReadResponse{}
-		if err := c.Call(ctx, r, rsp); err != nil {
-			return "", err
-		}
+func (sfs *SlackFs) Update(req file_proto.ShareRequest) chan FileMeta {
+	/*	if req.SharePublicly {
+			return sfs.shareFilePublicly(req.OriginalId)
+		} else {
+			r := c.NewRequest(
+				globals.DB_SERVICE_NAME,
+				"DB.Read",
+				&db_proto.ReadRequest{
+					Index: req.Index,
+					Type:  "file",
+					Id:    req.FileId,
+				},
+			)
+			rsp := &db_proto.ReadResponse{}
+			if err := c.Call(ctx, r, rsp); err != nil {
+				return "", err
+			}
 
-		var f *file.KazoupSlackFile
-		if err := json.Unmarshal([]byte(rsp.Result), &f); err != nil {
-			return "", err
-		}
+			var f *file.KazoupSlackFile
+			if err := json.Unmarshal([]byte(rsp.Result), &f); err != nil {
+				return "", err
+			}
 
-		return sfs.shareFileInsideTeam(f, req.DestinationId)
-	}
+			return sfs.shareFileInsideTeam(f, req.DestinationId)
+		}*/
+	return sfs.FileMetaChan
 }
 
 // DownloadFile retrieves a file
-func (sfs *SlackFs) DownloadFile(url string, cl client.Client, opts ...string) (io.ReadCloser, error) {
+func (sfs *SlackFs) DownloadFile(url string, opts ...string) (io.ReadCloser, error) {
 	c := &http.Client{}
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Add("Authorization", sfs.Token(cl))
+	req.Header.Add("Authorization", sfs.token())
 	res, err := c.Do(req)
 	if err != nil {
 		return nil, err
@@ -261,7 +261,7 @@ func (sfs *SlackFs) getFiles(cl client.Client, page int) error {
 // generateThumbnail downloads original picture, resize and uploads to Google storage
 func (sfs *SlackFs) generateThumbnail(c client.Client, sf slack.SlackFile, id string) error {
 	if categories.GetDocType("."+sf.Filetype) == globals.CATEGORY_PICTURE {
-		pr, err := sfs.DownloadFile(sf.URLPrivateDownload, c)
+		pr, err := sfs.DownloadFile(sf.URLPrivateDownload)
 		if err != nil {
 			return errors.New("ERROR downloading slack file")
 		}
@@ -330,4 +330,8 @@ func (sfs *SlackFs) shareFileInsideTeam(f *file.KazoupSlackFile, destId string) 
 	defer rsp.Body.Close()
 
 	return "", nil
+}
+
+func (sfs *SlackFs) token() string {
+	return "Bearer " + sfs.Endpoint.Token.AccessToken
 }

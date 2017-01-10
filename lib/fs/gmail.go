@@ -78,13 +78,13 @@ func (gfs *GmailFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
 	return gfs.FileMetaChan
 }
 
-// ShareFile
-func (gfs *GmailFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
-	return "", nil
+// Update file
+func (gfs *GmailFs) Update(req file_proto.ShareRequest) chan FileMeta {
+	return gfs.FileMetaChan
 }
 
 // DownloadFile retrieves a file
-func (gfs *GmailFs) DownloadFile(id string, cl client.Client, opts ...string) (io.ReadCloser, error) {
+func (gfs *GmailFs) DownloadFile(id string, opts ...string) (io.ReadCloser, error) {
 	cfg := globals.NewGmailOauthConfig()
 	c := cfg.Client(context.Background(), &oauth2.Token{
 		AccessToken:  gfs.Endpoint.Token.AccessToken,
@@ -238,7 +238,7 @@ func (gfs *GmailFs) pushMessagesToChanForPage(c client.Client, s *gmail.Service,
 // generateThumbnail downloads original picture, resize and uploads to Google storage
 func (gfs *GmailFs) generateThumbnail(c client.Client, gf *gmailhelper.GmailFile, msg *gmail.Message, msgp *gmail.MessagePart, id string) error {
 	if msgp.MimeType == globals.MIME_PNG || msgp.MimeType == globals.MIME_JPG || msgp.MimeType == globals.MIME_JPEG {
-		pr, err := gfs.DownloadFile(msg.Id, c, msgp.Body.AttachmentId)
+		pr, err := gfs.DownloadFile(msg.Id, msgp.Body.AttachmentId)
 		if err != nil {
 			return errors.New("ERROR downloading gmail file")
 		}

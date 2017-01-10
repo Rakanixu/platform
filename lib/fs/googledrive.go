@@ -137,40 +137,44 @@ func (gfs *GoogleDriveFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
 	return gfs.FileMetaChan
 }
 
-// ShareFile
-func (gfs *GoogleDriveFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
-	srv, err := gfs.getDriveService()
-	if err != nil {
-		return "", err
-	}
+// Update file
+func (gfs *GoogleDriveFs) Update(req file_proto.ShareRequest) chan FileMeta {
+	go func() {
+		srv, err := gfs.getDriveService()
+		if err != nil {
+			gfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
 
-	if _, err := srv.Permissions.Create(req.OriginalId, &drive.Permission{
-		Role:         "writer",
-		Type:         "user",
-		EmailAddress: req.DestinationId,
-	}).Do(); err != nil {
-		return "", err
-	}
+		if _, err := srv.Permissions.Create(req.OriginalId, &drive.Permission{
+			Role:         "writer",
+			Type:         "user",
+			EmailAddress: req.DestinationId,
+		}).Do(); err != nil {
+			gfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
 
-	gf, err := srv.Files.Get(req.OriginalId).Fields("*").Do()
-	if err != nil {
-		return "", err
-	}
+		gf, err := srv.Files.Get(req.OriginalId).Fields("*").Do()
+		if err != nil {
+			gfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
 
-	kfg := file.NewKazoupFileFromGoogleDriveFile(*gf, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
-	if kfg == nil {
-		return "", errors.New("ERROR ShareFile gdrive is nil")
-	}
+		kfg := file.NewKazoupFileFromGoogleDriveFile(*gf, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
+		if kfg == nil {
+			gfs.FileMetaChan <- NewFileMeta(nil, errors.New("ERROR ShareFile gdrive is nil"))
+			return
+		}
 
-	if err := file.IndexAsync(c, kfg, globals.FilesTopic, gfs.Endpoint.Index, true); err != nil {
-		return "", err
-	}
+		gfs.FileMetaChan <- NewFileMeta(kfg, nil)
+	}()
 
-	return "", nil
+	return gfs.FileMetaChan
 }
 
 // DownloadFile retrieves a file from google drive
-func (gfs *GoogleDriveFs) DownloadFile(id string, c client.Client, opts ...string) (io.ReadCloser, error) {
+func (gfs *GoogleDriveFs) DownloadFile(id string, opts ...string) (io.ReadCloser, error) {
 	srv, err := gfs.getDriveService()
 	if err != nil {
 		return nil, err
@@ -271,7 +275,7 @@ func (gfs *GoogleDriveFs) generateThumbnail(cl client.Client, f *drive.File, id 
 	}
 
 	if c == globals.CATEGORY_PICTURE {
-		rc, err := gfs.DownloadFile(f.Id, cl)
+		rc, err := gfs.DownloadFile(f.Id)
 		if err != nil {
 			return errors.New("ERROR downloading googledrive file")
 		}

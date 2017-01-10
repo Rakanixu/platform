@@ -22,18 +22,23 @@ import (
 
 // Fs File System interface. Fyle system is responsible to manage its own files
 type Fs interface {
-	List(client.Client) (chan file.File, chan bool, error)
-	Create(file_proto.CreateRequest) chan FileMeta
-	Delete(file_proto.DeleteRequest) chan FileMeta
-	ShareFile(context.Context, client.Client, file_proto.ShareRequest) (string, error)
-	DownloadFile(string, client.Client, ...string) (io.ReadCloser, error)
 	UploadFile(io.Reader, string) error
 	SignedObjectStorageURL(string) (string, error)
 	DeleteIndexBucketFromGCS() error
 	GetDatasourceId() string
 	Token(client.Client) string
 	GetThumbnail(string, client.Client) (string, error)
+
+	FsOperations
 	FsUtils
+}
+
+type FsOperations interface {
+	List(client.Client) (chan file.File, chan bool, error)
+	Create(file_proto.CreateRequest) chan FileMeta
+	Delete(file_proto.DeleteRequest) chan FileMeta
+	Update(file_proto.ShareRequest) chan FileMeta
+	DownloadFile(string, ...string) (io.ReadCloser, error)
 }
 
 type FsUtils interface {

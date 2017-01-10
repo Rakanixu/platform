@@ -14,7 +14,6 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/image"
 	"github.com/micro/go-micro/client"
-	"golang.org/x/net/context"
 	"io"
 	"log"
 	"net/http"
@@ -176,60 +175,64 @@ func (dfs *DropboxFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
 	return dfs.FileMetaChan
 }
 
-// ShareFile
-func (dfs *DropboxFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
-	// https://www.dropbox.com/developers/documentation/http/documentation#sharing-add_file_member
-	// access_level cannot be editor, Dropbox API fails. Role should be selected on frontend
-	b := []byte(`{
-		"file": "` + req.OriginalId + `",
-		"members": [
-			{
-				".tag": "email",
-				"email": "` + req.DestinationId + `"
-			}
-		],
-		"quiet": false,
-		"access_level": "viewer",
-		"add_message_as_comment": false
-	}`)
-	dc := &http.Client{}
-	r, err := http.NewRequest("POST", globals.DropboxFileShare, bytes.NewBuffer(b))
-	if err != nil {
-		return "", err
-	}
-	r.Header.Set("Authorization", dfs.Token(c))
-	r.Header.Set("Content-Type", "application/json")
-	rsp, err := dc.Do(r)
-	if err != nil {
-		return "", err
-	}
-	defer rsp.Body.Close()
+// Update file
+func (dfs *DropboxFs) Update(req file_proto.ShareRequest) chan FileMeta {
+	go func() {
+		// https://www.dropbox.com/developers/documentation/http/documentation#sharing-add_file_member
+		// access_level cannot be editor, Dropbox API fails. Role should be selected on frontend
+		b := []byte(`{
+			"file": "` + req.OriginalId + `",
+			"members": [
+				{
+					".tag": "email",
+					"email": "` + req.DestinationId + `"
+				}
+			],
+			"quiet": false,
+			"access_level": "viewer",
+			"add_message_as_comment": false
+		}`)
+		dc := &http.Client{}
+		r, err := http.NewRequest("POST", globals.DropboxFileShare, bytes.NewBuffer(b))
+		if err != nil {
+			dfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
+		r.Header.Set("Authorization", dfs.token())
+		r.Header.Set("Content-Type", "application/json")
+		rsp, err := dc.Do(r)
+		if err != nil {
+			dfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
+		defer rsp.Body.Close()
 
-	if rsp.StatusCode != http.StatusOK {
-		return "", errors.New(fmt.Sprintf("Sharing Dropbox file failed with status code %d", rsp.StatusCode))
-	}
+		if rsp.StatusCode != http.StatusOK {
+			dfs.FileMetaChan <- NewFileMeta(nil, errors.New(fmt.Sprintf("Sharing Dropbox file failed with status code %d", rsp.StatusCode)))
+			return
+		}
 
-	// Get the modified file to reindex
-	f, err := dfs.getFile(req.OriginalId, c)
-	if err != nil {
-		return "", err
-	}
+		// Get the modified file to reindex
+		f, err := dfs.getFile(req.OriginalId)
+		if err != nil {
+			dfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
 
-	if err := file.IndexAsync(c, f, globals.FilesTopic, dfs.Endpoint.Index, true); err != nil {
-		return "", err
-	}
+		dfs.FileMetaChan <- NewFileMeta(f, nil)
+	}()
 
-	return "", nil
+	return dfs.FileMetaChan
 }
 
 // DownloadFile retrieves a file
-func (dfs *DropboxFs) DownloadFile(id string, cl client.Client, opts ...string) (io.ReadCloser, error) {
+func (dfs *DropboxFs) DownloadFile(id string, opts ...string) (io.ReadCloser, error) {
 	c := &http.Client{}
 	req, err := http.NewRequest(http.MethodPost, globals.DropboxFileDownload, nil)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", dfs.Token(cl))
+	req.Header.Set("Authorization", dfs.token())
 	req.Header.Set("Dropbox-API-Arg", `{
 			"path": "`+id+`"
 		}`)
@@ -257,7 +260,7 @@ func (dfs *DropboxFs) DeleteIndexBucketFromGCS() error {
 }
 
 // getFile retrieves a single file from dorpbox
-func (dfs *DropboxFs) getFile(id string, c client.Client) (*file.KazoupDropboxFile, error) {
+func (dfs *DropboxFs) getFile(id string) (*file.KazoupDropboxFile, error) {
 	b := []byte(`{
 		"path": "` + id + `",
 		"include_media_info": true,
@@ -270,7 +273,7 @@ func (dfs *DropboxFs) getFile(id string, c client.Client) (*file.KazoupDropboxFi
 	if err != nil {
 		return nil, err
 	}
-	r.Header.Set("Authorization", dfs.Token(c))
+	r.Header.Set("Authorization", dfs.token())
 	r.Header.Set("Content-Type", "application/json")
 	rsp, err := dc.Do(r)
 	if err != nil {
@@ -288,7 +291,7 @@ func (dfs *DropboxFs) getFile(id string, c client.Client) (*file.KazoupDropboxFi
 		return nil, errors.New("ERROR dropbox file is nil")
 	}
 
-	return dfs.getFileMembers(kfd, c)
+	return dfs.getFileMembers(kfd)
 }
 
 // getFiles discovers files in dropbox account
@@ -321,7 +324,7 @@ func (dfs *DropboxFs) getFiles(cl client.Client) error {
 		return err
 	}
 
-	dfs.pushFilesToChannel(filesRsp, cl)
+	dfs.pushFilesToChannel(filesRsp)
 
 	if filesRsp.HasMore {
 		dfs.getNextPage(filesRsp.Cursor, cl)
@@ -331,11 +334,11 @@ func (dfs *DropboxFs) getFiles(cl client.Client) error {
 }
 
 // generateThumbnail downloads original picture, resize and uploads to Google storage
-func (dfs *DropboxFs) generateThumbnail(f dropbox.DropboxFile, id string, c client.Client) error {
+func (dfs *DropboxFs) generateThumbnail(f dropbox.DropboxFile, id string) error {
 	name := strings.Split(f.Name, ".")
 
 	if categories.GetDocType("."+name[len(name)-1]) == globals.CATEGORY_PICTURE {
-		pr, err := dfs.DownloadFile(f.ID, c)
+		pr, err := dfs.DownloadFile(f.ID)
 		if err != nil {
 			return errors.New("ERROR downloading dropbox file")
 		}
@@ -378,7 +381,7 @@ func (dfs *DropboxFs) getNextPage(cursor string, cl client.Client) error {
 		return err
 	}
 
-	dfs.pushFilesToChannel(filesRsp, cl)
+	dfs.pushFilesToChannel(filesRsp)
 
 	if filesRsp.HasMore {
 		dfs.getNextPage(filesRsp.Cursor, cl)
@@ -388,7 +391,7 @@ func (dfs *DropboxFs) getNextPage(cursor string, cl client.Client) error {
 }
 
 // getFileMembers retrieves users with acces to a given file
-func (dfs *DropboxFs) getFileMembers(f *file.KazoupDropboxFile, cl client.Client) (*file.KazoupDropboxFile, error) {
+func (dfs *DropboxFs) getFileMembers(f *file.KazoupDropboxFile) (*file.KazoupDropboxFile, error) {
 	// https://www.dropbox.com/developers/documentation/http/documentation#sharing-list_file_members
 	b := []byte(`{
 		"file":"` + f.Original.ID + `",
@@ -401,7 +404,7 @@ func (dfs *DropboxFs) getFileMembers(f *file.KazoupDropboxFile, cl client.Client
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", dfs.Token(cl))
+	req.Header.Set("Authorization", dfs.token())
 	req.Header.Set("Content-Type", "application/json")
 	rsp, err := c.Do(req)
 	if err != nil {
@@ -418,7 +421,7 @@ func (dfs *DropboxFs) getFileMembers(f *file.KazoupDropboxFile, cl client.Client
 		f.Original.DropboxUsers = make([]dropbox.DropboxUser, 0)
 
 		for _, v := range membersRsp.Users {
-			a, err := dfs.getAccount(v.User.AccountID, cl)
+			a, err := dfs.getAccount(v.User.AccountID)
 			if err != nil {
 				return nil, err
 			}
@@ -436,7 +439,7 @@ func (dfs *DropboxFs) getFileMembers(f *file.KazoupDropboxFile, cl client.Client
 	return f, nil
 }
 
-func (dfs *DropboxFs) pushFilesToChannel(list *dropbox.FilesListResponse, c client.Client) {
+func (dfs *DropboxFs) pushFilesToChannel(list *dropbox.FilesListResponse) {
 	var err error
 
 	for _, v := range list.Entries {
@@ -444,13 +447,13 @@ func (dfs *DropboxFs) pushFilesToChannel(list *dropbox.FilesListResponse, c clie
 		if f != nil {
 			// File is shared, lets get Users and Invitees to this file
 			if f.Original.HasExplicitSharedMembers {
-				f, err = dfs.getFileMembers(f, c)
+				f, err = dfs.getFileMembers(f)
 				if err != nil {
 					log.Println("ERROR getFileMembers dropbox", err)
 				}
 			}
 
-			if err := dfs.generateThumbnail(v, f.ID, c); err != nil {
+			if err := dfs.generateThumbnail(v, f.ID); err != nil {
 				log.Println(err)
 			}
 
@@ -460,7 +463,7 @@ func (dfs *DropboxFs) pushFilesToChannel(list *dropbox.FilesListResponse, c clie
 }
 
 // getAccount retrieves dropbox user accounts
-func (dfs *DropboxFs) getAccount(aId string, cl client.Client) (*dropbox.DropboxUser, error) {
+func (dfs *DropboxFs) getAccount(aId string) (*dropbox.DropboxUser, error) {
 	// https://www.dropbox.com/developers/documentation/http/documentation#users-get_account
 	b := []byte(`{
 		"account_id":"` + aId + `"
@@ -471,7 +474,7 @@ func (dfs *DropboxFs) getAccount(aId string, cl client.Client) (*dropbox.Dropbox
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", dfs.Token(cl))
+	req.Header.Set("Authorization", dfs.token())
 	req.Header.Set("Content-Type", "application/json")
 	rsp, err := c.Do(req)
 	if err != nil {

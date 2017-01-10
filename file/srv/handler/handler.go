@@ -144,12 +144,31 @@ func (f *File) Share(ctx context.Context, req *proto.ShareRequest, rsp *proto.Sh
 		return err
 	}
 
-	url, err := fsys.ShareFile(ctx, f.Client, *req)
+	ch := fsys.Update(*req)
+	// Block while updating
+	fmc := <-ch
+	close(ch)
+
+	// Check for errors that happened in the goroutine
+	if fmc.Error != nil {
+		return fmc.Error
+	}
+
+	b, err := json.Marshal(fmc.File)
 	if err != nil {
 		return err
 	}
 
-	rsp.PublicUrl = url
+	if _, err := UpdateFromDB(f.Client, ctx, &db_proto.UpdateRequest{
+		Index: req.Index,
+		Type:  globals.FileType,
+		Id:    req.FileId,
+		Data:  string(b),
+	}); err != nil {
+		return err
+	}
+
+	rsp.PublicUrl = ""                    // This will change: kbf.Original.SharedLink.URL
 	rsp.SharePublicly = req.SharePublicly // Return it back for frontend callback handler
 
 	return nil

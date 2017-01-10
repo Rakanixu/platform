@@ -15,7 +15,6 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/image"
 	"github.com/micro/go-micro/client"
-	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"io"
 	"log"
@@ -244,54 +243,58 @@ func (bfs *BoxFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
 	return bfs.FileMetaChan
 }
 
-// ShareFile
-func (bfs *BoxFs) ShareFile(ctx context.Context, c client.Client, req file_proto.ShareRequest) (string, error) {
-	b := []byte(`{
-		"shared_link": {
-			"access": "open"
+// Update file
+func (bfs *BoxFs) Update(req file_proto.ShareRequest) chan FileMeta {
+	go func() {
+		b := []byte(`{
+			"shared_link": {
+				"access": "open"
+			}
+		}`)
+
+		bc := &http.Client{}
+		url := fmt.Sprintf("%s%s", globals.BoxFileMetadataEndpoint, req.OriginalId)
+		r, err := http.NewRequest("PUT", url, bytes.NewBuffer(b))
+		if err != nil {
+			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
 		}
-	}`)
+		r.Header.Set("Authorization", bfs.token())
+		rsp, err := bc.Do(r)
+		if err != nil {
+			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
+		defer rsp.Body.Close()
 
-	bc := &http.Client{}
-	url := fmt.Sprintf("%s%s", globals.BoxFileMetadataEndpoint, req.OriginalId)
-	r, err := http.NewRequest("PUT", url, bytes.NewBuffer(b))
-	if err != nil {
-		return "", err
-	}
-	r.Header.Set("Authorization", bfs.Token(c))
-	rsp, err := bc.Do(r)
-	if err != nil {
-		return "", err
-	}
-	defer rsp.Body.Close()
+		if rsp.StatusCode != http.StatusOK {
+			bfs.FileMetaChan <- NewFileMeta(nil, errors.New(fmt.Sprintf("Sharing Box file failed with status code %d", rsp.StatusCode)))
+			return
+		}
 
-	if rsp.StatusCode != http.StatusOK {
-		return "", errors.New(fmt.Sprintf("Sharing Box file failed with status code %d", rsp.StatusCode))
-	}
+		var f *box.BoxFileMeta
+		if err := json.NewDecoder(rsp.Body).Decode(&f); err != nil {
+			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			return
+		}
 
-	var f *box.BoxFileMeta
-	if err := json.NewDecoder(rsp.Body).Decode(&f); err != nil {
-		return "", err
-	}
+		kbf := file.NewKazoupFileFromBoxFile(*f, bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
 
-	// Reindex modified file
-	kbf := file.NewKazoupFileFromBoxFile(*f, bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
-	if err := file.IndexAsync(c, kbf, globals.FilesTopic, bfs.Endpoint.Index, true); err != nil {
-		return "", err
-	}
+		bfs.FileMetaChan <- NewFileMeta(kbf, nil)
+	}()
 
-	return kbf.Original.SharedLink.URL, nil
+	return bfs.FileMetaChan
 }
 
 // DownloadFile retrieves a file
-func (bfs *BoxFs) DownloadFile(id string, cl client.Client, opts ...string) (io.ReadCloser, error) {
+func (bfs *BoxFs) DownloadFile(id string, opts ...string) (io.ReadCloser, error) {
 	c := &http.Client{}
 	url := fmt.Sprintf("%s%s/content", globals.BoxFileMetadataEndpoint, id)
 	r, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
-	r.Header.Set("Authorization", bfs.Token(cl))
+	r.Header.Set("Authorization", bfs.token())
 	rsp, err := c.Do(r)
 	if err != nil {
 		return nil, err
@@ -394,7 +397,7 @@ func (bfs *BoxFs) generateThumbnail(fm *box.BoxFileMeta, id string, c client.Cli
 	name := strings.Split(fm.Name, ".")
 
 	if categories.GetDocType("."+name[len(name)-1]) == globals.CATEGORY_PICTURE {
-		rc, err := bfs.DownloadFile(fm.ID, c)
+		rc, err := bfs.DownloadFile(fm.ID)
 		if err != nil {
 			return errors.New("ERROR downloading box file")
 		}
