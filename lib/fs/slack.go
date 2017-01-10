@@ -12,7 +12,6 @@ import (
 	"github.com/kazoup/platform/lib/image"
 	"github.com/kazoup/platform/lib/slack"
 	"github.com/micro/go-micro/client"
-	"golang.org/x/net/context"
 	"io"
 	"log"
 	"net/http"
@@ -22,41 +21,65 @@ import (
 
 // SlackFs slack file system
 type SlackFs struct {
-	Endpoint     *datasource_proto.Endpoint
-	Running      chan bool
-	FilesChan    chan file.File
-	FileMetaChan chan FileMeta
+	Endpoint            *datasource_proto.Endpoint
+	WalkRunning         chan bool
+	WalkUsersRunning    chan bool
+	WalkChannelsRunning chan bool
+	FilesChan           chan file.File
+	FileMetaChan        chan FileMeta
+	UsersChan           chan UserMsg
+	ChannelsChan        chan ChannelMsg
 }
 
 // NewSlackFsFromEndpoint constructor
 func NewSlackFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	return &SlackFs{
-		Endpoint:     e,
-		Running:      make(chan bool, 1),
-		FilesChan:    make(chan file.File),
-		FileMetaChan: make(chan FileMeta),
+		Endpoint:            e,
+		WalkRunning:         make(chan bool, 1),
+		WalkUsersRunning:    make(chan bool, 1),
+		WalkChannelsRunning: make(chan bool, 1),
+		FilesChan:           make(chan file.File),
+		FileMetaChan:        make(chan FileMeta),
+		UsersChan:           make(chan UserMsg),
+		ChannelsChan:        make(chan ChannelMsg),
 	}
 }
 
-// List returns 2 channels, for files and state. Discover files in slack datasource
-func (sfs *SlackFs) List(c client.Client) (chan file.File, chan bool, error) {
+// Walk returns 2 channels, for files and state. Discover files in slack datasource
+func (sfs *SlackFs) Walk() (chan file.File, chan bool, error) {
 	go func() {
-		if err := sfs.getUsers(c); err != nil {
-			log.Println(err)
-		}
-
-		if err := sfs.getChannels(c); err != nil {
-			log.Println(err)
-		}
-
-		if err := sfs.getFiles(c, 1); err != nil {
+		if err := sfs.getFiles(1); err != nil {
 			log.Println(err)
 		}
 		// Slack scan finished
-		sfs.Running <- false
+		sfs.WalkRunning <- false
 	}()
 
-	return sfs.FilesChan, sfs.Running, nil
+	return sfs.FilesChan, sfs.WalkRunning, nil
+}
+
+// WalUsers discover users in slack
+func (sfs *SlackFs) WalkUsers() (chan UserMsg, chan bool) {
+	go func() {
+		sfs.getUsers()
+
+		// Slack user scan finished
+		sfs.WalkUsersRunning <- false
+	}()
+
+	return sfs.UsersChan, sfs.WalkUsersRunning
+}
+
+// WalChannels discover channels in slack
+func (sfs *SlackFs) WalkChannels() (chan ChannelMsg, chan bool) {
+	go func() {
+		sfs.getChannels()
+
+		// Slack channels scan finished
+		sfs.WalkChannelsRunning <- false
+	}()
+
+	return sfs.ChannelsChan, sfs.WalkChannelsRunning
 }
 
 // Token returns slack user token
@@ -145,7 +168,7 @@ func (sfs *SlackFs) DeleteIndexBucketFromGCS() error {
 }
 
 // getUsers retrieves users from slack team
-func (sfs *SlackFs) getUsers(cl client.Client) error {
+func (sfs *SlackFs) getUsers() {
 	data := make(url.Values)
 	data.Add("token", sfs.Endpoint.Token.AccessToken)
 
@@ -154,19 +177,19 @@ func (sfs *SlackFs) getUsers(cl client.Client) error {
 	rsp, err := c.PostForm(globals.SlackUsersEndpoint, data)
 
 	if err != nil {
-		return err
+		sfs.UsersChan <- NewUserMsg(nil, err)
 	}
 	defer rsp.Body.Close()
 
 	var usersRsp *slack.UserListResponse
 	if err := json.NewDecoder(rsp.Body).Decode(&usersRsp); err != nil {
-		return err
+		sfs.UsersChan <- NewUserMsg(nil, err)
 	}
 
 	for _, v := range usersRsp.Members {
 		b, err := json.Marshal(v)
 		if err != nil {
-			return nil
+			sfs.UsersChan <- NewUserMsg(nil, err)
 		}
 
 		msg := &crawler.SlackUserMessage{
@@ -175,16 +198,12 @@ func (sfs *SlackFs) getUsers(cl client.Client) error {
 			Data:  string(b),
 		}
 
-		if err := cl.Publish(context.Background(), cl.NewPublication(globals.SlackUsersTopic, msg)); err != nil {
-			return err
-		}
+		sfs.UsersChan <- NewUserMsg(msg, nil)
 	}
-
-	return nil
 }
 
 // getChannels retrieves channels from slack team
-func (sfs *SlackFs) getChannels(cl client.Client) error {
+func (sfs *SlackFs) getChannels() {
 	data := make(url.Values)
 	data.Add("token", sfs.Endpoint.Token.AccessToken)
 
@@ -192,19 +211,19 @@ func (sfs *SlackFs) getChannels(cl client.Client) error {
 
 	rsp, err := c.PostForm(globals.SlackChannelsEndpoint, data)
 	if err != nil {
-		return err
+		sfs.ChannelsChan <- NewChannelMsg(nil, err)
 	}
 	defer rsp.Body.Close()
 
 	var channelsRsp *slack.ChannelListResponse
 	if err := json.NewDecoder(rsp.Body).Decode(&channelsRsp); err != nil {
-		return err
+		sfs.ChannelsChan <- NewChannelMsg(nil, err)
 	}
 
 	for _, v := range channelsRsp.Channels {
 		b, err := json.Marshal(v)
 		if err != nil {
-			return nil
+			sfs.ChannelsChan <- NewChannelMsg(nil, err)
 		}
 
 		msg := &crawler.SlackChannelMessage{
@@ -213,16 +232,12 @@ func (sfs *SlackFs) getChannels(cl client.Client) error {
 			Data:  string(b),
 		}
 
-		if err := cl.Publish(context.Background(), cl.NewPublication(globals.SlackChannelsTopic, msg)); err != nil {
-			return err
-		}
+		sfs.ChannelsChan <- NewChannelMsg(msg, nil)
 	}
-
-	return nil
 }
 
 // getFiles discover slack files for user and push them to broker
-func (sfs *SlackFs) getFiles(cl client.Client, page int) error {
+func (sfs *SlackFs) getFiles(page int) error {
 	data := make(url.Values)
 	data.Add("token", sfs.Endpoint.Token.AccessToken)
 	data.Add("page", strconv.Itoa(page))
@@ -244,7 +259,7 @@ func (sfs *SlackFs) getFiles(cl client.Client, page int) error {
 	for _, v := range filesRsp.Files {
 		f := file.NewKazoupFileFromSlackFile(v, sfs.Endpoint.Id, sfs.Endpoint.UserId, sfs.Endpoint.Index)
 
-		if err := sfs.generateThumbnail(cl, v, f.ID); err != nil {
+		if err := sfs.generateThumbnail(v, f.ID); err != nil {
 			log.Println(err)
 		}
 
@@ -252,14 +267,14 @@ func (sfs *SlackFs) getFiles(cl client.Client, page int) error {
 	}
 
 	if filesRsp.Paging.Pages >= page {
-		sfs.getFiles(cl, page+1)
+		sfs.getFiles(page + 1)
 	}
 
 	return nil
 }
 
 // generateThumbnail downloads original picture, resize and uploads to Google storage
-func (sfs *SlackFs) generateThumbnail(c client.Client, sf slack.SlackFile, id string) error {
+func (sfs *SlackFs) generateThumbnail(sf slack.SlackFile, id string) error {
 	if categories.GetDocType("."+sf.Filetype) == globals.CATEGORY_PICTURE {
 		pr, err := sfs.DownloadFile(sf.URLPrivateDownload)
 		if err != nil {

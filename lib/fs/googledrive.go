@@ -20,33 +20,59 @@ import (
 
 // GoogleDriveFs is the google drive file system struct
 type GoogleDriveFs struct {
-	Endpoint     *datasource_proto.Endpoint
-	Running      chan bool
-	FilesChan    chan file.File
-	FileMetaChan chan FileMeta
+	Endpoint            *datasource_proto.Endpoint
+	WalkRunning         chan bool
+	WalkUsersRunning    chan bool
+	WalkChannelsRunning chan bool
+	FilesChan           chan file.File
+	FileMetaChan        chan FileMeta
+	UsersChan           chan UserMsg
+	ChannelsChan        chan ChannelMsg
 }
 
 //NewGoogleDriveFsFromEndpoint constructor
 func NewGoogleDriveFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	return &GoogleDriveFs{
-		Endpoint:     e,
-		Running:      make(chan bool, 1),
-		FilesChan:    make(chan file.File),
-		FileMetaChan: make(chan FileMeta),
+		Endpoint:            e,
+		WalkRunning:         make(chan bool, 1),
+		WalkUsersRunning:    make(chan bool, 1),
+		WalkChannelsRunning: make(chan bool, 1),
+		FilesChan:           make(chan file.File),
+		FileMetaChan:        make(chan FileMeta),
+		UsersChan:           make(chan UserMsg),
+		ChannelsChan:        make(chan ChannelMsg),
 	}
 }
 
-// List returns 2 channels, for files and state. Discover files in google drive datasource
-func (gfs *GoogleDriveFs) List(c client.Client) (chan file.File, chan bool, error) {
+// Walk returns 2 channels, for files and state. Discover files in google drive datasource
+func (gfs *GoogleDriveFs) Walk() (chan file.File, chan bool, error) {
 	go func() {
-		if err := gfs.getFiles(c); err != nil {
+		if err := gfs.getFiles(); err != nil {
 			log.Println(err)
 		}
 
-		gfs.Running <- false
+		gfs.WalkRunning <- false
 	}()
 
-	return gfs.FilesChan, gfs.Running, nil
+	return gfs.FilesChan, gfs.WalkRunning, nil
+}
+
+// WalkUsers
+func (gfs *GoogleDriveFs) WalkUsers() (chan UserMsg, chan bool) {
+	go func() {
+		gfs.WalkUsersRunning <- false
+	}()
+
+	return gfs.UsersChan, gfs.WalkUsersRunning
+}
+
+// WalkChannels
+func (gfs *GoogleDriveFs) WalkChannels() (chan ChannelMsg, chan bool) {
+	go func() {
+		gfs.WalkChannelsRunning <- false
+	}()
+
+	return gfs.ChannelsChan, gfs.WalkChannelsRunning
 }
 
 // Token returns google drive user token
@@ -204,7 +230,7 @@ func (gfs *GoogleDriveFs) DeleteIndexBucketFromGCS() error {
 }
 
 // getFiles discover all files in google drive account
-func (gfs *GoogleDriveFs) getFiles(c client.Client) error {
+func (gfs *GoogleDriveFs) getFiles() error {
 	srv, err := gfs.getDriveService()
 	if err != nil {
 		return err
@@ -216,13 +242,13 @@ func (gfs *GoogleDriveFs) getFiles(c client.Client) error {
 	}
 
 	if len(r.Files) > 0 {
-		if err := gfs.pushFilesToChanForPage(c, r.Files); err != nil {
+		if err := gfs.pushFilesToChanForPage(r.Files); err != nil {
 			return err
 		}
 	}
 
 	if len(r.NextPageToken) > 0 {
-		if err := gfs.getNextPage(c, srv, r.NextPageToken); err != nil {
+		if err := gfs.getNextPage(srv, r.NextPageToken); err != nil {
 			return err
 		}
 	}
@@ -231,20 +257,20 @@ func (gfs *GoogleDriveFs) getFiles(c client.Client) error {
 }
 
 // getNextPage allows pagination while discovering files
-func (gfs *GoogleDriveFs) getNextPage(c client.Client, srv *drive.Service, nextPageToken string) error {
+func (gfs *GoogleDriveFs) getNextPage(srv *drive.Service, nextPageToken string) error {
 	r, err := srv.Files.List().PageToken(nextPageToken).Fields("files,kind,nextPageToken").Do()
 	if err != nil {
 		return err
 	}
 
 	if len(r.Files) > 0 {
-		if err := gfs.pushFilesToChanForPage(c, r.Files); err != nil {
+		if err := gfs.pushFilesToChanForPage(r.Files); err != nil {
 			return err
 		}
 	}
 
 	if len(r.NextPageToken) > 0 {
-		if err := gfs.getNextPage(c, srv, r.NextPageToken); err != nil {
+		if err := gfs.getNextPage(srv, r.NextPageToken); err != nil {
 			return err
 		}
 	}
@@ -253,11 +279,11 @@ func (gfs *GoogleDriveFs) getNextPage(c client.Client, srv *drive.Service, nextP
 }
 
 // pushFilesToChanForPage sends discovered files to the file system channel
-func (gfs *GoogleDriveFs) pushFilesToChanForPage(c client.Client, files []*drive.File) error {
+func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
 	for _, v := range files {
 		f := file.NewKazoupFileFromGoogleDriveFile(*v, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
 		if f != nil {
-			if err := gfs.generateThumbnail(c, v, f.ID); err != nil {
+			if err := gfs.generateThumbnail(v, f.ID); err != nil {
 				log.Println(err)
 			}
 
@@ -268,7 +294,7 @@ func (gfs *GoogleDriveFs) pushFilesToChanForPage(c client.Client, files []*drive
 	return nil
 }
 
-func (gfs *GoogleDriveFs) generateThumbnail(cl client.Client, f *drive.File, id string) error {
+func (gfs *GoogleDriveFs) generateThumbnail(f *drive.File, id string) error {
 	c := categories.GetDocType("." + f.FullFileExtension)
 	if len(f.FullFileExtension) == 0 {
 		c = categories.GetDocType(f.MimeType)

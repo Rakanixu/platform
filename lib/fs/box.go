@@ -27,23 +27,31 @@ import (
 
 // BoxFs Box File System
 type BoxFs struct {
-	Endpoint      *datasource_proto.Endpoint
-	Running       chan bool
-	FilesChan     chan file.File
-	FileMetaChan  chan FileMeta
-	Directories   chan string
-	LastDirTime   int64
-	DefaultOffset int
-	DefaultLimit  int
+	Endpoint            *datasource_proto.Endpoint
+	WalkRunning         chan bool
+	WalkUsersRunning    chan bool
+	WalkChannelsRunning chan bool
+	FilesChan           chan file.File
+	FileMetaChan        chan FileMeta
+	UsersChan           chan UserMsg
+	ChannelsChan        chan ChannelMsg
+	Directories         chan string
+	LastDirTime         int64
+	DefaultOffset       int
+	DefaultLimit        int
 }
 
 // NewBoxFsFromEndpoint constructor
 func NewBoxFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	return &BoxFs{
-		Endpoint:     e,
-		Running:      make(chan bool, 1),
-		FilesChan:    make(chan file.File),
-		FileMetaChan: make(chan FileMeta),
+		Endpoint:            e,
+		WalkRunning:         make(chan bool, 1),
+		WalkUsersRunning:    make(chan bool, 1),
+		WalkChannelsRunning: make(chan bool, 1),
+		FilesChan:           make(chan file.File),
+		FileMetaChan:        make(chan FileMeta),
+		UsersChan:           make(chan UserMsg),
+		ChannelsChan:        make(chan ChannelMsg),
 		// This is important to have a size bigger than one, the bigger, less likely to block
 		// If not, program execution will block, due to recursivity,
 		// We are pushing more elements before finish execution.
@@ -55,11 +63,7 @@ func NewBoxFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 }
 
 // List returns 2 channels, one for files , other for the state. Goes over a datasource and discover files
-func (bfs *BoxFs) List(c client.Client) (chan file.File, chan bool, error) {
-	if err := bfs.refreshToken(c); err != nil {
-		return bfs.FilesChan, bfs.Running, err
-	}
-
+func (bfs *BoxFs) Walk() (chan file.File, chan bool, error) {
 	go func() {
 		bfs.LastDirTime = time.Now().Unix()
 		for {
@@ -67,7 +71,7 @@ func (bfs *BoxFs) List(c client.Client) (chan file.File, chan bool, error) {
 			case v := <-bfs.Directories:
 				bfs.LastDirTime = time.Now().Unix()
 
-				err := bfs.getDirChildren(v, bfs.DefaultOffset, bfs.DefaultLimit, c)
+				err := bfs.getDirChildren(v, bfs.DefaultOffset, bfs.DefaultLimit)
 				if err != nil {
 					log.Println(err)
 				}
@@ -75,7 +79,7 @@ func (bfs *BoxFs) List(c client.Client) (chan file.File, chan bool, error) {
 				// Helper for close channel and set that scanner has finish
 				if bfs.LastDirTime+10 < time.Now().Unix() {
 					close(bfs.Directories)
-					bfs.Running <- false
+					bfs.WalkRunning <- false
 					return
 				}
 			}
@@ -84,12 +88,30 @@ func (bfs *BoxFs) List(c client.Client) (chan file.File, chan bool, error) {
 	}()
 
 	go func() {
-		if err := bfs.getDirChildren("0", bfs.DefaultOffset, bfs.DefaultLimit, c); err != nil {
+		if err := bfs.getDirChildren("0", bfs.DefaultOffset, bfs.DefaultLimit); err != nil {
 			log.Println(err)
 		}
 	}()
 
-	return bfs.FilesChan, bfs.Running, nil
+	return bfs.FilesChan, bfs.WalkRunning, nil
+}
+
+// WalkUsers
+func (bfs *BoxFs) WalkUsers() (chan UserMsg, chan bool) {
+	go func() {
+		bfs.WalkUsersRunning <- false
+	}()
+
+	return bfs.UsersChan, bfs.WalkUsersRunning
+}
+
+// WalkChannels
+func (bfs *BoxFs) WalkChannels() (chan ChannelMsg, chan bool) {
+	go func() {
+		bfs.WalkChannelsRunning <- false
+	}()
+
+	return bfs.ChannelsChan, bfs.WalkChannelsRunning
 }
 
 // Token returns user token for box datasource
@@ -319,14 +341,14 @@ func (bfs *BoxFs) DeleteIndexBucketFromGCS() error {
 }
 
 // getDirChildren get children from directory
-func (bfs *BoxFs) getDirChildren(id string, offset, limit int, cl client.Client) error {
+func (bfs *BoxFs) getDirChildren(id string, offset, limit int) error {
 	c := &http.Client{}
 	url := fmt.Sprintf("%s%s/?offset=%d&limit=%d", globals.BoxFoldersEndpoint, id, offset, limit)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Authorization", bfs.Token(cl))
+	req.Header.Set("Authorization", bfs.token())
 	rsp, err := c.Do(req)
 	if err != nil {
 		return err
@@ -344,7 +366,7 @@ func (bfs *BoxFs) getDirChildren(id string, offset, limit int, cl client.Client)
 			bfs.Directories <- v.ID
 		} else {
 			// File discovered, but need to retrieve more info about the file
-			if err := bfs.getMetadataFromFile(v.ID, cl); err != nil {
+			if err := bfs.getMetadataFromFile(v.ID); err != nil {
 				return err
 			}
 		}
@@ -355,7 +377,6 @@ func (bfs *BoxFs) getDirChildren(id string, offset, limit int, cl client.Client)
 			id,
 			bdc.ItemCollection.Offset+bdc.ItemCollection.Limit,
 			bdc.ItemCollection.Limit,
-			cl,
 		)
 	}
 
@@ -363,13 +384,13 @@ func (bfs *BoxFs) getDirChildren(id string, offset, limit int, cl client.Client)
 }
 
 // getMetadataFromFile retrieves more info about discovered files in box
-func (bfs *BoxFs) getMetadataFromFile(id string, cl client.Client) error {
+func (bfs *BoxFs) getMetadataFromFile(id string) error {
 	c := &http.Client{}
 	req, err := http.NewRequest("GET", globals.BoxFileMetadataEndpoint+id, nil)
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Authorization", bfs.Token(cl))
+	req.Header.Set("Authorization", bfs.token())
 	rsp, err := c.Do(req)
 	if err != nil {
 		return err
@@ -383,7 +404,7 @@ func (bfs *BoxFs) getMetadataFromFile(id string, cl client.Client) error {
 
 	f := file.NewKazoupFileFromBoxFile(*fm, bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
 
-	if err := bfs.generateThumbnail(fm, f.ID, cl); err != nil {
+	if err := bfs.generateThumbnail(fm, f.ID); err != nil {
 		log.Println(err)
 	}
 
@@ -393,7 +414,7 @@ func (bfs *BoxFs) getMetadataFromFile(id string, cl client.Client) error {
 }
 
 // generateThumbnail downloads original picture, resize and uploads to Google storage with kazoup id
-func (bfs *BoxFs) generateThumbnail(fm *box.BoxFileMeta, id string, c client.Client) error {
+func (bfs *BoxFs) generateThumbnail(fm *box.BoxFileMeta, id string) error {
 	name := strings.Split(fm.Name, ".")
 
 	if categories.GetDocType("."+name[len(name)-1]) == globals.CATEGORY_PICTURE {

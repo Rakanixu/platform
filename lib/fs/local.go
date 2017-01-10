@@ -19,11 +19,15 @@ import (
 
 // LocalFs struct
 type LocalFs struct {
-	Endpoint     *datasource_proto.Endpoint
-	Running      chan bool
-	RootPath     string
-	FilesChan    chan file.File
-	FileMetaChan chan FileMeta
+	Endpoint            *datasource_proto.Endpoint
+	RootPath            string
+	WalkRunning         chan bool
+	WalkUsersRunning    chan bool
+	WalkChannelsRunning chan bool
+	FilesChan           chan file.File
+	FileMetaChan        chan FileMeta
+	UsersChan           chan UserMsg
+	ChannelsChan        chan ChannelMsg
 }
 
 // NewLocalFsFromEndpoint constructor
@@ -31,16 +35,20 @@ func NewLocalFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	url := strings.Split(e.Url, "://")
 
 	return &LocalFs{
-		Endpoint:     e,
-		Running:      make(chan bool, 1),
-		RootPath:     url[1],
-		FilesChan:    make(chan file.File),
-		FileMetaChan: make(chan FileMeta),
+		Endpoint:            e,
+		RootPath:            url[1],
+		WalkRunning:         make(chan bool, 1),
+		WalkUsersRunning:    make(chan bool, 1),
+		WalkChannelsRunning: make(chan bool, 1),
+		FilesChan:           make(chan file.File),
+		FileMetaChan:        make(chan FileMeta),
+		UsersChan:           make(chan UserMsg),
+		ChannelsChan:        make(chan ChannelMsg),
 	}
 }
 
-// List returns 2 channels, for files and state. Discover local files
-func (lfs *LocalFs) List(c client.Client) (chan file.File, chan bool, error) {
+// Walk returns 2 channels, for files and state. Discover local files
+func (lfs *LocalFs) Walk() (chan file.File, chan bool, error) {
 	go func() {
 		if err := lfs.walkDatasourceParents(); err != nil {
 			log.Println("ERROR", err)
@@ -49,10 +57,29 @@ func (lfs *LocalFs) List(c client.Client) (chan file.File, chan bool, error) {
 		if err := filepath.Walk(lfs.RootPath, lfs.walkHandler()); err != nil {
 			log.Println("ERROR", err)
 		}
-		lfs.Running <- false
+		lfs.WalkRunning <- false
 	}()
 
-	return lfs.FilesChan, lfs.Running, nil
+	return lfs.FilesChan, lfs.WalkRunning, nil
+}
+
+// WalUsers
+func (lfs *LocalFs) WalkUsers() (chan UserMsg, chan bool) {
+	go func() {
+		// We can discover FS users, like root in Unix like
+		lfs.WalkUsersRunning <- false
+	}()
+
+	return lfs.UsersChan, lfs.WalkUsersRunning
+}
+
+// WalkChannels
+func (lfs *LocalFs) WalkChannels() (chan ChannelMsg, chan bool) {
+	go func() {
+		lfs.WalkChannelsRunning <- false
+	}()
+
+	return lfs.ChannelsChan, lfs.WalkChannelsRunning
 }
 
 // Token belongs to Fs interface
@@ -161,7 +188,7 @@ func (lfs *LocalFs) walkHandler() filepath.WalkFunc {
 			return nil
 		}
 		select {
-		case <-lfs.Running:
+		case <-lfs.WalkRunning:
 			log.Print("Scanner stopped")
 			return errors.New("Scanner stopped")
 		default:

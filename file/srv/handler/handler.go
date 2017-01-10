@@ -144,6 +144,17 @@ func (f *File) Share(ctx context.Context, req *proto.ShareRequest, rsp *proto.Sh
 		return err
 	}
 
+	// Authorize datasource / refresh token
+	auth, err := fsys.Authorize()
+	if err != nil {
+		return err
+	}
+
+	// Update token in DB
+	if err := UpdateFileSystemAuth(f.Client, ctx, req.DatasourceId, auth); err != nil {
+		return err
+	}
+
 	ch := fsys.Update(*req)
 	// Block while updating
 	fmc := <-ch

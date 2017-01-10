@@ -24,33 +24,59 @@ import (
 
 // DropboxFs dropbox file system
 type DropboxFs struct {
-	Endpoint     *datasource_proto.Endpoint
-	Running      chan bool
-	FilesChan    chan file.File
-	FileMetaChan chan FileMeta
+	Endpoint            *datasource_proto.Endpoint
+	WalkRunning         chan bool
+	WalkUsersRunning    chan bool
+	WalkChannelsRunning chan bool
+	FilesChan           chan file.File
+	FileMetaChan        chan FileMeta
+	UsersChan           chan UserMsg
+	ChannelsChan        chan ChannelMsg
 }
 
 // NewDropboxFsFromEndpoint constructor
 func NewDropboxFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	return &DropboxFs{
-		Endpoint:     e,
-		Running:      make(chan bool, 1),
-		FilesChan:    make(chan file.File),
-		FileMetaChan: make(chan FileMeta),
+		Endpoint:            e,
+		WalkRunning:         make(chan bool, 1),
+		WalkUsersRunning:    make(chan bool, 1),
+		WalkChannelsRunning: make(chan bool, 1),
+		FilesChan:           make(chan file.File),
+		FileMetaChan:        make(chan FileMeta),
+		UsersChan:           make(chan UserMsg),
+		ChannelsChan:        make(chan ChannelMsg),
 	}
 }
 
-// List returns 2 channels, for files and state. Discover files in dropbox datasource
-func (dfs *DropboxFs) List(c client.Client) (chan file.File, chan bool, error) {
+// Walk returns 2 channels, for files and state. Discover files in dropbox datasource
+func (dfs *DropboxFs) Walk() (chan file.File, chan bool, error) {
 	go func() {
-		if err := dfs.getFiles(c); err != nil {
+		if err := dfs.getFiles(); err != nil {
 			log.Println("ERROR geting files from dropbox ", err.Error())
 		}
 
-		dfs.Running <- false
+		dfs.WalkRunning <- false
 	}()
 
-	return dfs.FilesChan, dfs.Running, nil
+	return dfs.FilesChan, dfs.WalkRunning, nil
+}
+
+// WalkUsers
+func (dfs *DropboxFs) WalkUsers() (chan UserMsg, chan bool) {
+	go func() {
+		dfs.WalkUsersRunning <- false
+	}()
+
+	return dfs.UsersChan, dfs.WalkUsersRunning
+}
+
+// WalkChannels
+func (dfs *DropboxFs) WalkChannels() (chan ChannelMsg, chan bool) {
+	go func() {
+		dfs.WalkChannelsRunning <- false
+	}()
+
+	return dfs.ChannelsChan, dfs.WalkChannelsRunning
 }
 
 // Token returns dropbox user token
@@ -295,7 +321,7 @@ func (dfs *DropboxFs) getFile(id string) (*file.KazoupDropboxFile, error) {
 }
 
 // getFiles discovers files in dropbox account
-func (dfs *DropboxFs) getFiles(cl client.Client) error {
+func (dfs *DropboxFs) getFiles() error {
 	// We want all avilable info
 	// https://dropbox.github.io/dropbox-api-v2-explorer/#files_list_folder
 	b := []byte(`{
@@ -311,7 +337,7 @@ func (dfs *DropboxFs) getFiles(cl client.Client) error {
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Authorization", dfs.Token(cl))
+	req.Header.Set("Authorization", dfs.token())
 	req.Header.Set("Content-Type", "application/json")
 	rsp, err := c.Do(req)
 	if err != nil {
@@ -327,7 +353,7 @@ func (dfs *DropboxFs) getFiles(cl client.Client) error {
 	dfs.pushFilesToChannel(filesRsp)
 
 	if filesRsp.HasMore {
-		dfs.getNextPage(filesRsp.Cursor, cl)
+		dfs.getNextPage(filesRsp.Cursor)
 	}
 
 	return nil
@@ -357,7 +383,7 @@ func (dfs *DropboxFs) generateThumbnail(f dropbox.DropboxFile, id string) error 
 }
 
 // getNextPage allows pagination while discovering files
-func (dfs *DropboxFs) getNextPage(cursor string, cl client.Client) error {
+func (dfs *DropboxFs) getNextPage(cursor string) error {
 	// https://www.dropbox.com/developers/documentation/http/documentation#files-list_folder-continue
 	b := []byte(`{
 		"cursor":"` + cursor + `"
@@ -368,7 +394,7 @@ func (dfs *DropboxFs) getNextPage(cursor string, cl client.Client) error {
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Authorization", dfs.Token(cl))
+	req.Header.Set("Authorization", dfs.token())
 	req.Header.Set("Content-Type", "application/json")
 	rsp, err := c.Do(req)
 	if err != nil {
@@ -384,7 +410,7 @@ func (dfs *DropboxFs) getNextPage(cursor string, cl client.Client) error {
 	dfs.pushFilesToChannel(filesRsp)
 
 	if filesRsp.HasMore {
-		dfs.getNextPage(filesRsp.Cursor, cl)
+		dfs.getNextPage(filesRsp.Cursor)
 	}
 
 	return nil

@@ -31,23 +31,31 @@ const (
 
 // OneDriveFs one drive file system
 type OneDriveFs struct {
-	Endpoint     *datasource_proto.Endpoint
-	Running      chan bool
-	FilesChan    chan file.File
-	FileMetaChan chan FileMeta
-	DrivesId     []string
-	Directories  chan string
-	LastDirTime  int64
+	Endpoint            *datasource_proto.Endpoint
+	WalkRunning         chan bool
+	WalkUsersRunning    chan bool
+	WalkChannelsRunning chan bool
+	FilesChan           chan file.File
+	FileMetaChan        chan FileMeta
+	UsersChan           chan UserMsg
+	ChannelsChan        chan ChannelMsg
+	DrivesId            []string
+	LastDirTime         int64
+	Directories         chan string
 }
 
 // NewOneDriveFsFromEndpoint constructor
 func NewOneDriveFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	return &OneDriveFs{
-		Endpoint:     e,
-		Running:      make(chan bool, 1),
-		FilesChan:    make(chan file.File),
-		FileMetaChan: make(chan FileMeta),
-		DrivesId:     []string{},
+		Endpoint:            e,
+		WalkRunning:         make(chan bool, 1),
+		WalkUsersRunning:    make(chan bool, 1),
+		WalkChannelsRunning: make(chan bool, 1),
+		FilesChan:           make(chan file.File),
+		FileMetaChan:        make(chan FileMeta),
+		UsersChan:           make(chan UserMsg),
+		ChannelsChan:        make(chan ChannelMsg),
+		DrivesId:            []string{},
 		// This is important to have a size bigger than one, the bigger, less likely to block
 		// If not, program execution will block, due to recursivity,
 		// We are pushing more elements before finish execution.
@@ -56,8 +64,8 @@ func NewOneDriveFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	}
 }
 
-// List returns 2 channels, for files and state. Discover files in one drive datasources
-func (ofs *OneDriveFs) List(c client.Client) (chan file.File, chan bool, error) {
+// Walk returns 2 channels, for files and state. Discover files in one drive datasources
+func (ofs *OneDriveFs) Walk() (chan file.File, chan bool, error) {
 	go func() {
 		ofs.LastDirTime = time.Now().Unix()
 		for {
@@ -65,14 +73,14 @@ func (ofs *OneDriveFs) List(c client.Client) (chan file.File, chan bool, error) 
 			case v := <-ofs.Directories:
 				ofs.LastDirTime = time.Now().Unix()
 
-				err := ofs.getDirChildren(c, v)
+				err := ofs.getDirChildren(v)
 				if err != nil {
 					log.Println(err)
 				}
 			default:
 				// Helper for close channel and set that scanner has finish
 				if ofs.LastDirTime+15 < time.Now().Unix() {
-					ofs.Running <- false
+					ofs.WalkRunning <- false
 					close(ofs.Directories)
 					return
 				}
@@ -82,12 +90,33 @@ func (ofs *OneDriveFs) List(c client.Client) (chan file.File, chan bool, error) 
 	}()
 
 	go func() {
-		if err := ofs.getFiles(c); err != nil {
+		if err := ofs.getFiles(); err != nil {
 			log.Println(err)
 		}
 	}()
 
-	return ofs.FilesChan, ofs.Running, nil
+	return ofs.FilesChan, ofs.WalkRunning, nil
+}
+
+// WalkUsers
+func (ofs *OneDriveFs) WalkUsers() (chan UserMsg, chan bool) {
+	go func() {
+		log.Println("GO ROUTINE ")
+		time.Sleep(time.Second)
+
+		ofs.WalkUsersRunning <- false
+	}()
+
+	return ofs.UsersChan, ofs.WalkUsersRunning
+}
+
+// WalkChannels
+func (ofs *OneDriveFs) WalkChannels() (chan ChannelMsg, chan bool) {
+	go func() {
+		ofs.WalkChannelsRunning <- false
+	}()
+
+	return ofs.ChannelsChan, ofs.WalkChannelsRunning
 }
 
 // Token returns user token
@@ -302,15 +331,11 @@ func (ofs *OneDriveFs) DeleteIndexBucketFromGCS() error {
 }
 
 // getFiles retrieves drives, directories and files
-func (ofs *OneDriveFs) getFiles(c client.Client) error {
-	if err := ofs.refreshToken(); err != nil {
-		log.Println(err)
-	}
-
+func (ofs *OneDriveFs) getFiles() error {
 	if err := ofs.getDrives(); err != nil {
 		return err
 	}
-	if err := ofs.getDrivesChildren(c); err != nil {
+	if err := ofs.getDrivesChildren(); err != nil {
 		return err
 	}
 
@@ -388,7 +413,7 @@ func (ofs *OneDriveFs) getDrives() error {
 }
 
 // getDrivesChildren gets first level element from every found  drive
-func (ofs *OneDriveFs) getDrivesChildren(cl client.Client) error {
+func (ofs *OneDriveFs) getDrivesChildren() error {
 	var url string
 	c := &http.Client{}
 
@@ -418,7 +443,7 @@ func (ofs *OneDriveFs) getDrivesChildren(cl client.Client) error {
 				ofs.Directories <- v.ID
 				// Is file
 			} else {
-				if err := ofs.pushToFilesChannel(cl, v); err != nil {
+				if err := ofs.pushToFilesChannel(v); err != nil {
 					return err
 				}
 			}
@@ -429,12 +454,12 @@ func (ofs *OneDriveFs) getDrivesChildren(cl client.Client) error {
 }
 
 // getDirChildren get children from directory
-func (ofs *OneDriveFs) getDirChildren(cl client.Client, id string) error {
+func (ofs *OneDriveFs) getDirChildren(id string) error {
 	// https://api.onedrive.com/v1.0/drive/items/F5A34C5D0F17415A!114/children
 	c := &http.Client{}
 	url := globals.OneDriveEndpoint + Drive + "items/" + id + "/children"
 	req, err := http.NewRequest("GET", url, nil)
-	req.Header.Set("Authorization", ofs.Endpoint.Token.TokenType+" "+ofs.Endpoint.Token.AccessToken)
+	req.Header.Set("Authorization", ofs.token())
 	if err != nil {
 		return err
 	}
@@ -453,7 +478,7 @@ func (ofs *OneDriveFs) getDirChildren(cl client.Client, id string) error {
 		if len(v.File.MimeType) == 0 {
 			ofs.Directories <- v.ID
 		} else {
-			if err := ofs.pushToFilesChannel(cl, v); err != nil {
+			if err := ofs.pushToFilesChannel(v); err != nil {
 				return err
 			}
 		}
@@ -463,10 +488,10 @@ func (ofs *OneDriveFs) getDirChildren(cl client.Client, id string) error {
 }
 
 // pushToFilesChannel
-func (ofs *OneDriveFs) pushToFilesChannel(c client.Client, f onedrive.OneDriveFile) error {
+func (ofs *OneDriveFs) pushToFilesChannel(f onedrive.OneDriveFile) error {
 	kof := file.NewKazoupFileFromOneDriveFile(f, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)
 
-	if err := ofs.generateThumbnail(c, f, kof.ID); err != nil {
+	if err := ofs.generateThumbnail(f, kof.ID); err != nil {
 		log.Println(err)
 	}
 
@@ -476,7 +501,7 @@ func (ofs *OneDriveFs) pushToFilesChannel(c client.Client, f onedrive.OneDriveFi
 }
 
 // generateThumbnail downloads original picture, resize and uploads to Google storage
-func (ofs *OneDriveFs) generateThumbnail(c client.Client, f onedrive.OneDriveFile, id string) error {
+func (ofs *OneDriveFs) generateThumbnail(f onedrive.OneDriveFile, id string) error {
 	n := strings.Split(f.Name, ".")
 
 	if categories.GetDocType("."+n[len(n)-1]) == globals.CATEGORY_PICTURE {
