@@ -32,7 +32,7 @@ type BoxFs struct {
 	WalkUsersRunning    chan bool
 	WalkChannelsRunning chan bool
 	FilesChan           chan file.File
-	FileMetaChan        chan FileMeta
+	FileMetaChan        chan FileMsg
 	UsersChan           chan UserMsg
 	ChannelsChan        chan ChannelMsg
 	Directories         chan string
@@ -49,7 +49,7 @@ func NewBoxFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 		WalkUsersRunning:    make(chan bool, 1),
 		WalkChannelsRunning: make(chan bool, 1),
 		FilesChan:           make(chan file.File),
-		FileMetaChan:        make(chan FileMeta),
+		FileMetaChan:        make(chan FileMsg),
 		UsersChan:           make(chan UserMsg),
 		ChannelsChan:        make(chan ChannelMsg),
 		// This is important to have a size bigger than one, the bigger, less likely to block
@@ -140,12 +140,12 @@ func (bfs *BoxFs) GetThumbnail(id string, c client.Client) (string, error) {
 }
 
 // Create file in box
-func (bfs *BoxFs) Create(rq file_proto.CreateRequest) chan FileMeta {
+func (bfs *BoxFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 	go func() {
 		// Box supports multi part form upload
 		folderPath, err := osext.ExecutableFolder()
 		if err != nil {
-			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			bfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 
@@ -157,7 +157,7 @@ func (bfs *BoxFs) Create(rq file_proto.CreateRequest) chan FileMeta {
 
 		f, err := os.Open(t)
 		if err != nil {
-			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			bfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 		defer f.Close()
@@ -165,11 +165,11 @@ func (bfs *BoxFs) Create(rq file_proto.CreateRequest) chan FileMeta {
 		// This is how you upload a file as multipart form
 		ff, err := mw.CreateFormFile("file", t)
 		if err != nil {
-			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			bfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 		if _, err = io.Copy(ff, f); err != nil {
-			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			bfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 
@@ -179,14 +179,14 @@ func (bfs *BoxFs) Create(rq file_proto.CreateRequest) chan FileMeta {
 			`{"name":"`+rq.FileName+`.`+globals.GetDocumentTemplate(rq.MimeType, false)+`", "parent":{"id":"0"}}`,
 		)
 		if err := mw.Close(); err != nil {
-			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			bfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 
 		hc := &http.Client{}
 		req, err := http.NewRequest("POST", globals.BoxUploadEndpoint, buf)
 		if err != nil {
-			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			bfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 		req.Header.Set("Authorization", bfs.token())
@@ -194,38 +194,38 @@ func (bfs *BoxFs) Create(rq file_proto.CreateRequest) chan FileMeta {
 
 		rsp, err := hc.Do(req)
 		if err != nil {
-			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			bfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 		defer rsp.Body.Close()
 
 		var bf *box.BoxUpload
 		if err := json.NewDecoder(rsp.Body).Decode(&bf); err != nil {
-			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			bfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 
 		if rsp.StatusCode == http.StatusConflict {
-			bfs.FileMetaChan <- NewFileMeta(nil, errors.New("Conflict creating file in Box, file with same name already exists"))
+			bfs.FileMetaChan <- NewFileMsg(nil, errors.New("Conflict creating file in Box, file with same name already exists"))
 			return
 		}
 
 		if rsp.StatusCode != http.StatusCreated && bf.TotalCount != 1 {
-			bfs.FileMetaChan <- NewFileMeta(nil, errors.New("Failed creating file in Box"))
+			bfs.FileMetaChan <- NewFileMsg(nil, errors.New("Failed creating file in Box"))
 			return
 		}
 
 		// Construct Kazoup file from box created file and index it
 		kfb := file.NewKazoupFileFromBoxFile(bf.Entries[0], bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
 
-		bfs.FileMetaChan <- NewFileMeta(kfb, nil)
+		bfs.FileMetaChan <- NewFileMsg(kfb, nil)
 	}()
 
 	return bfs.FileMetaChan
 }
 
 // DeleteFile deletes a box file
-func (bfs *BoxFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
+func (bfs *BoxFs) Delete(rq file_proto.DeleteRequest) chan FileMsg {
 	go func() {
 		// https://docs.box.com/reference#delete-a-file
 		// Depending on the enterprise settings for this user, the item will either be actually deleted from Box or moved to the trash.
@@ -233,25 +233,25 @@ func (bfs *BoxFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
 		url := fmt.Sprintf("%s%s", globals.BoxFileMetadataEndpoint, rq.OriginalId)
 		r, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
-			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			bfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 		r.Header.Set("Authorization", bfs.token())
 		rsp, err := bc.Do(r)
 		if err != nil {
-			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			bfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 		defer rsp.Body.Close()
 
 		if rsp.StatusCode != http.StatusNoContent {
-			bfs.FileMetaChan <- NewFileMeta(nil, errors.New(fmt.Sprintf("Deleting Box file failed with status code %d", rsp.StatusCode)))
+			bfs.FileMetaChan <- NewFileMsg(nil, errors.New(fmt.Sprintf("Deleting Box file failed with status code %d", rsp.StatusCode)))
 			return
 		}
 
 		// Return deleted file. This file only stores the id
 		// Avoid read from DB
-		bfs.FileMetaChan <- NewFileMeta(
+		bfs.FileMetaChan <- NewFileMsg(
 			&file.KazoupBoxFile{
 				file.KazoupFile{
 					ID: rq.FileId,
@@ -266,7 +266,7 @@ func (bfs *BoxFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
 }
 
 // Update file
-func (bfs *BoxFs) Update(req file_proto.ShareRequest) chan FileMeta {
+func (bfs *BoxFs) Update(req file_proto.ShareRequest) chan FileMsg {
 	go func() {
 		b := []byte(`{
 			"shared_link": {
@@ -278,31 +278,31 @@ func (bfs *BoxFs) Update(req file_proto.ShareRequest) chan FileMeta {
 		url := fmt.Sprintf("%s%s", globals.BoxFileMetadataEndpoint, req.OriginalId)
 		r, err := http.NewRequest("PUT", url, bytes.NewBuffer(b))
 		if err != nil {
-			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			bfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 		r.Header.Set("Authorization", bfs.token())
 		rsp, err := bc.Do(r)
 		if err != nil {
-			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			bfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 		defer rsp.Body.Close()
 
 		if rsp.StatusCode != http.StatusOK {
-			bfs.FileMetaChan <- NewFileMeta(nil, errors.New(fmt.Sprintf("Sharing Box file failed with status code %d", rsp.StatusCode)))
+			bfs.FileMetaChan <- NewFileMsg(nil, errors.New(fmt.Sprintf("Sharing Box file failed with status code %d", rsp.StatusCode)))
 			return
 		}
 
 		var f *box.BoxFileMeta
 		if err := json.NewDecoder(rsp.Body).Decode(&f); err != nil {
-			bfs.FileMetaChan <- NewFileMeta(nil, err)
+			bfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 
 		kbf := file.NewKazoupFileFromBoxFile(*f, bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
 
-		bfs.FileMetaChan <- NewFileMeta(kbf, nil)
+		bfs.FileMetaChan <- NewFileMsg(kbf, nil)
 	}()
 
 	return bfs.FileMetaChan

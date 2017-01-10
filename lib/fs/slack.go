@@ -26,7 +26,7 @@ type SlackFs struct {
 	WalkUsersRunning    chan bool
 	WalkChannelsRunning chan bool
 	FilesChan           chan file.File
-	FileMetaChan        chan FileMeta
+	FileMetaChan        chan FileMsg
 	UsersChan           chan UserMsg
 	ChannelsChan        chan ChannelMsg
 }
@@ -39,7 +39,7 @@ func NewSlackFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 		WalkUsersRunning:    make(chan bool, 1),
 		WalkChannelsRunning: make(chan bool, 1),
 		FilesChan:           make(chan file.File),
-		FileMetaChan:        make(chan FileMeta),
+		FileMetaChan:        make(chan FileMsg),
 		UsersChan:           make(chan UserMsg),
 		ChannelsChan:        make(chan ChannelMsg),
 	}
@@ -98,17 +98,17 @@ func (sfs *SlackFs) GetThumbnail(id string, c client.Client) (string, error) {
 }
 
 // CreateFile belongs to Fs interface
-func (sfs *SlackFs) Create(rq file_proto.CreateRequest) chan FileMeta {
+func (sfs *SlackFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 	return sfs.FileMetaChan
 }
 
 // DeleteFile deletes a slack file
-func (sfs *SlackFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
+func (sfs *SlackFs) Delete(rq file_proto.DeleteRequest) chan FileMsg {
 	return sfs.FileMetaChan
 }
 
 // ShareFile sets a PermalinkPublic available, so everyone with URL has access to the slack file
-func (sfs *SlackFs) Update(req file_proto.ShareRequest) chan FileMeta {
+func (sfs *SlackFs) Update(req file_proto.ShareRequest) chan FileMsg {
 	/*	if req.SharePublicly {
 			return sfs.shareFilePublicly(req.OriginalId)
 		} else {

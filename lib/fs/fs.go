@@ -37,9 +37,9 @@ type FsOperations interface {
 	Walk() (chan file.File, chan bool, error)
 	WalkUsers() (chan UserMsg, chan bool)
 	WalkChannels() (chan ChannelMsg, chan bool)
-	Create(file_proto.CreateRequest) chan FileMeta
-	Delete(file_proto.DeleteRequest) chan FileMeta
-	Update(file_proto.ShareRequest) chan FileMeta
+	Create(file_proto.CreateRequest) chan FileMsg
+	Delete(file_proto.DeleteRequest) chan FileMsg
+	Update(file_proto.ShareRequest) chan FileMsg
 	DownloadFile(string, ...string) (io.ReadCloser, error)
 }
 

@@ -25,7 +25,7 @@ type GoogleDriveFs struct {
 	WalkUsersRunning    chan bool
 	WalkChannelsRunning chan bool
 	FilesChan           chan file.File
-	FileMetaChan        chan FileMeta
+	FileMetaChan        chan FileMsg
 	UsersChan           chan UserMsg
 	ChannelsChan        chan ChannelMsg
 }
@@ -38,7 +38,7 @@ func NewGoogleDriveFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 		WalkUsersRunning:    make(chan bool, 1),
 		WalkChannelsRunning: make(chan bool, 1),
 		FilesChan:           make(chan file.File),
-		FileMetaChan:        make(chan FileMeta),
+		FileMetaChan:        make(chan FileMsg),
 		UsersChan:           make(chan UserMsg),
 		ChannelsChan:        make(chan ChannelMsg),
 	}
@@ -100,11 +100,11 @@ func (gfs *GoogleDriveFs) GetThumbnail(id string, c client.Client) (string, erro
 }
 
 // CreateFile creates a google file and index it on Elastic Search
-func (gfs *GoogleDriveFs) Create(rq file_proto.CreateRequest) chan FileMeta {
+func (gfs *GoogleDriveFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 	go func() {
 		srv, err := gfs.getDriveService()
 		if err != nil {
-			gfs.FileMetaChan <- NewFileMeta(nil, err)
+			gfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 
@@ -113,28 +113,28 @@ func (gfs *GoogleDriveFs) Create(rq file_proto.CreateRequest) chan FileMeta {
 			MimeType: globals.GetMimeType(globals.GoogleDrive, rq.MimeType),
 		}).Fields("*").Do()
 		if err != nil {
-			gfs.FileMetaChan <- NewFileMeta(nil, err)
+			gfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 
 		kfg := file.NewKazoupFileFromGoogleDriveFile(*f, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
 		if kfg == nil {
-			gfs.FileMetaChan <- NewFileMeta(nil, errors.New("ERROR CreateFile gdrive is nil"))
+			gfs.FileMetaChan <- NewFileMsg(nil, errors.New("ERROR CreateFile gdrive is nil"))
 			return
 		}
 
-		gfs.FileMetaChan <- NewFileMeta(kfg, nil)
+		gfs.FileMetaChan <- NewFileMsg(kfg, nil)
 	}()
 
 	return gfs.FileMetaChan
 }
 
 // DeleteFile moves a google drive file to trash
-func (gfs *GoogleDriveFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
+func (gfs *GoogleDriveFs) Delete(rq file_proto.DeleteRequest) chan FileMsg {
 	go func() {
 		srv, err := gfs.getDriveService()
 		if err != nil {
-			gfs.FileMetaChan <- NewFileMeta(nil, err)
+			gfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 
@@ -143,13 +143,13 @@ func (gfs *GoogleDriveFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
 			Trashed: true,
 		}).Do()
 		if err != nil {
-			gfs.FileMetaChan <- NewFileMeta(nil, err)
+			gfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 
 		// Return deleted file. This file only stores the id
 		// Avoid read from DB
-		gfs.FileMetaChan <- NewFileMeta(
+		gfs.FileMetaChan <- NewFileMsg(
 			&file.KazoupGoogleFile{
 				file.KazoupFile{
 					ID: rq.FileId,
@@ -164,11 +164,11 @@ func (gfs *GoogleDriveFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
 }
 
 // Update file
-func (gfs *GoogleDriveFs) Update(req file_proto.ShareRequest) chan FileMeta {
+func (gfs *GoogleDriveFs) Update(req file_proto.ShareRequest) chan FileMsg {
 	go func() {
 		srv, err := gfs.getDriveService()
 		if err != nil {
-			gfs.FileMetaChan <- NewFileMeta(nil, err)
+			gfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 
@@ -177,23 +177,23 @@ func (gfs *GoogleDriveFs) Update(req file_proto.ShareRequest) chan FileMeta {
 			Type:         "user",
 			EmailAddress: req.DestinationId,
 		}).Do(); err != nil {
-			gfs.FileMetaChan <- NewFileMeta(nil, err)
+			gfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 
 		gf, err := srv.Files.Get(req.OriginalId).Fields("*").Do()
 		if err != nil {
-			gfs.FileMetaChan <- NewFileMeta(nil, err)
+			gfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 
 		kfg := file.NewKazoupFileFromGoogleDriveFile(*gf, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
 		if kfg == nil {
-			gfs.FileMetaChan <- NewFileMeta(nil, errors.New("ERROR ShareFile gdrive is nil"))
+			gfs.FileMetaChan <- NewFileMsg(nil, errors.New("ERROR ShareFile gdrive is nil"))
 			return
 		}
 
-		gfs.FileMetaChan <- NewFileMeta(kfg, nil)
+		gfs.FileMetaChan <- NewFileMsg(kfg, nil)
 	}()
 
 	return gfs.FileMetaChan

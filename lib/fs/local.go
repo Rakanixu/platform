@@ -25,7 +25,7 @@ type LocalFs struct {
 	WalkUsersRunning    chan bool
 	WalkChannelsRunning chan bool
 	FilesChan           chan file.File
-	FileMetaChan        chan FileMeta
+	FileMetaChan        chan FileMsg
 	UsersChan           chan UserMsg
 	ChannelsChan        chan ChannelMsg
 }
@@ -41,7 +41,7 @@ func NewLocalFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 		WalkUsersRunning:    make(chan bool, 1),
 		WalkChannelsRunning: make(chan bool, 1),
 		FilesChan:           make(chan file.File),
-		FileMetaChan:        make(chan FileMeta),
+		FileMetaChan:        make(chan FileMsg),
 		UsersChan:           make(chan UserMsg),
 		ChannelsChan:        make(chan ChannelMsg),
 	}
@@ -99,17 +99,17 @@ func (lfs *LocalFs) GetThumbnail(id string, c client.Client) (string, error) {
 }
 
 // Create file (not implemented)
-func (lfs *LocalFs) Create(rq file_proto.CreateRequest) chan FileMeta {
+func (lfs *LocalFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 	return lfs.FileMetaChan
 }
 
 // DeleteFile deletes a local file
-func (lfs *LocalFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
+func (lfs *LocalFs) Delete(rq file_proto.DeleteRequest) chan FileMsg {
 	return lfs.FileMetaChan
 }
 
 // Update file
-func (lfs *LocalFs) Update(req file_proto.ShareRequest) chan FileMeta {
+func (lfs *LocalFs) Update(req file_proto.ShareRequest) chan FileMsg {
 	return lfs.FileMetaChan
 }
 

@@ -29,7 +29,7 @@ type GmailFs struct {
 	WalkUsersRunning    chan bool
 	WalkChannelsRunning chan bool
 	FilesChan           chan file.File
-	FileMetaChan        chan FileMeta
+	FileMetaChan        chan FileMsg
 	UsersChan           chan UserMsg
 	ChannelsChan        chan ChannelMsg
 }
@@ -42,7 +42,7 @@ func NewGmailFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 		WalkUsersRunning:    make(chan bool, 1),
 		WalkChannelsRunning: make(chan bool, 1),
 		FilesChan:           make(chan file.File),
-		FileMetaChan:        make(chan FileMeta),
+		FileMetaChan:        make(chan FileMsg),
 		UsersChan:           make(chan UserMsg),
 		ChannelsChan:        make(chan ChannelMsg),
 	}
@@ -95,17 +95,17 @@ func (gfs *GmailFs) GetThumbnail(id string, c client.Client) (string, error) {
 }
 
 // Create file in gmail (not implemented)
-func (gfs *GmailFs) Create(rq file_proto.CreateRequest) chan FileMeta {
+func (gfs *GmailFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 	return gfs.FileMetaChan
 }
 
 // Delete (not implemented)
-func (gfs *GmailFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
+func (gfs *GmailFs) Delete(rq file_proto.DeleteRequest) chan FileMsg {
 	return gfs.FileMetaChan
 }
 
 // Update file
-func (gfs *GmailFs) Update(req file_proto.ShareRequest) chan FileMeta {
+func (gfs *GmailFs) Update(req file_proto.ShareRequest) chan FileMsg {
 	return gfs.FileMetaChan
 }
 

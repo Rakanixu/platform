@@ -29,7 +29,7 @@ type DropboxFs struct {
 	WalkUsersRunning    chan bool
 	WalkChannelsRunning chan bool
 	FilesChan           chan file.File
-	FileMetaChan        chan FileMeta
+	FileMetaChan        chan FileMsg
 	UsersChan           chan UserMsg
 	ChannelsChan        chan ChannelMsg
 }
@@ -42,7 +42,7 @@ func NewDropboxFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 		WalkUsersRunning:    make(chan bool, 1),
 		WalkChannelsRunning: make(chan bool, 1),
 		FilesChan:           make(chan file.File),
-		FileMetaChan:        make(chan FileMeta),
+		FileMetaChan:        make(chan FileMsg),
 		UsersChan:           make(chan UserMsg),
 		ChannelsChan:        make(chan ChannelMsg),
 	}
@@ -98,19 +98,19 @@ func (dfs *DropboxFs) GetThumbnail(id string, c client.Client) (string, error) {
 }
 
 // Create a file in dropbox
-func (dfs *DropboxFs) Create(rq file_proto.CreateRequest) chan FileMeta {
+func (dfs *DropboxFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 	go func() {
 		// https://www.dropbox.com/developers/documentation/http/documentation#files-upload
 		folderPath, err := osext.ExecutableFolder()
 		if err != nil {
-			dfs.FileMetaChan <- NewFileMeta(nil, err)
+			dfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 
 		p := fmt.Sprintf("%s%s%s", folderPath, "/doc_templates/", globals.GetDocumentTemplate(rq.MimeType, true))
 		t, err := os.Open(p)
 		if err != nil {
-			dfs.FileMetaChan <- NewFileMeta(nil, err)
+			dfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 		defer t.Close()
@@ -118,7 +118,7 @@ func (dfs *DropboxFs) Create(rq file_proto.CreateRequest) chan FileMeta {
 		hc := &http.Client{}
 		req, err := http.NewRequest("POST", globals.DropboxFileUpload, t)
 		if err != nil {
-			dfs.FileMetaChan <- NewFileMeta(nil, err)
+			dfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 		req.Header.Set("Authorization", dfs.token())
@@ -131,31 +131,31 @@ func (dfs *DropboxFs) Create(rq file_proto.CreateRequest) chan FileMeta {
 		req.Header.Set("Content-Type", "application/octet-stream")
 		rsp, err := hc.Do(req)
 		if err != nil {
-			dfs.FileMetaChan <- NewFileMeta(nil, err)
+			dfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 		defer rsp.Body.Close()
 
 		var df *dropbox.DropboxFile
 		if err := json.NewDecoder(rsp.Body).Decode(&df); err != nil {
-			dfs.FileMetaChan <- NewFileMeta(nil, err)
+			dfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 
 		kfd := file.NewKazoupFileFromDropboxFile(*df, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
 		if kfd == nil {
-			dfs.FileMetaChan <- NewFileMeta(nil, errors.New("ERROR dropbox file is nil"))
+			dfs.FileMetaChan <- NewFileMsg(nil, errors.New("ERROR dropbox file is nil"))
 			return
 		}
 
-		dfs.FileMetaChan <- NewFileMeta(kfd, nil)
+		dfs.FileMetaChan <- NewFileMsg(kfd, nil)
 	}()
 
 	return dfs.FileMetaChan
 }
 
 // DeleteFile deletes a dropbox file
-func (dfs *DropboxFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
+func (dfs *DropboxFs) Delete(rq file_proto.DeleteRequest) chan FileMsg {
 	go func() {
 		// https://www.dropbox.com/developers/documentation/http/documentation#files-delete
 		b := []byte(`{
@@ -166,14 +166,14 @@ func (dfs *DropboxFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
 		dc := &http.Client{}
 		r, err := http.NewRequest("POST", globals.DropboxFileDelete, bytes.NewBuffer(b))
 		if err != nil {
-			dfs.FileMetaChan <- NewFileMeta(nil, err)
+			dfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 		r.Header.Set("Authorization", dfs.token())
 		r.Header.Set("Content-Type", "application/json")
 		rsp, err := dc.Do(r)
 		if err != nil {
-			dfs.FileMetaChan <- NewFileMeta(nil, err)
+			dfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 
@@ -181,13 +181,13 @@ func (dfs *DropboxFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
 
 		// Check is successfully deleted
 		if rsp.StatusCode != http.StatusOK {
-			dfs.FileMetaChan <- NewFileMeta(nil, errors.New(fmt.Sprintf("Deleting Dropbox file failed with status code %d", rsp.StatusCode)))
+			dfs.FileMetaChan <- NewFileMsg(nil, errors.New(fmt.Sprintf("Deleting Dropbox file failed with status code %d", rsp.StatusCode)))
 			return
 		}
 
 		// Return deleted file. This file only stores the id
 		// Avoid read from DB
-		dfs.FileMetaChan <- NewFileMeta(
+		dfs.FileMetaChan <- NewFileMsg(
 			&file.KazoupDropboxFile{
 				file.KazoupFile{
 					ID: rq.FileId,
@@ -202,7 +202,7 @@ func (dfs *DropboxFs) Delete(rq file_proto.DeleteRequest) chan FileMeta {
 }
 
 // Update file
-func (dfs *DropboxFs) Update(req file_proto.ShareRequest) chan FileMeta {
+func (dfs *DropboxFs) Update(req file_proto.ShareRequest) chan FileMsg {
 	go func() {
 		// https://www.dropbox.com/developers/documentation/http/documentation#sharing-add_file_member
 		// access_level cannot be editor, Dropbox API fails. Role should be selected on frontend
@@ -221,31 +221,31 @@ func (dfs *DropboxFs) Update(req file_proto.ShareRequest) chan FileMeta {
 		dc := &http.Client{}
 		r, err := http.NewRequest("POST", globals.DropboxFileShare, bytes.NewBuffer(b))
 		if err != nil {
-			dfs.FileMetaChan <- NewFileMeta(nil, err)
+			dfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 		r.Header.Set("Authorization", dfs.token())
 		r.Header.Set("Content-Type", "application/json")
 		rsp, err := dc.Do(r)
 		if err != nil {
-			dfs.FileMetaChan <- NewFileMeta(nil, err)
+			dfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 		defer rsp.Body.Close()
 
 		if rsp.StatusCode != http.StatusOK {
-			dfs.FileMetaChan <- NewFileMeta(nil, errors.New(fmt.Sprintf("Sharing Dropbox file failed with status code %d", rsp.StatusCode)))
+			dfs.FileMetaChan <- NewFileMsg(nil, errors.New(fmt.Sprintf("Sharing Dropbox file failed with status code %d", rsp.StatusCode)))
 			return
 		}
 
 		// Get the modified file to reindex
 		f, err := dfs.getFile(req.OriginalId)
 		if err != nil {
-			dfs.FileMetaChan <- NewFileMeta(nil, err)
+			dfs.FileMetaChan <- NewFileMsg(nil, err)
 			return
 		}
 
-		dfs.FileMetaChan <- NewFileMeta(f, nil)
+		dfs.FileMetaChan <- NewFileMsg(f, nil)
 	}()
 
 	return dfs.FileMetaChan
