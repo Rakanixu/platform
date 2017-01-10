@@ -31,8 +31,7 @@ type BoxFs struct {
 	WalkRunning         chan bool
 	WalkUsersRunning    chan bool
 	WalkChannelsRunning chan bool
-	FilesChan           chan file.File
-	FileMetaChan        chan FileMsg
+	FilesChan           chan FileMsg
 	UsersChan           chan UserMsg
 	ChannelsChan        chan ChannelMsg
 	Directories         chan string
@@ -48,8 +47,7 @@ func NewBoxFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 		WalkRunning:         make(chan bool, 1),
 		WalkUsersRunning:    make(chan bool, 1),
 		WalkChannelsRunning: make(chan bool, 1),
-		FilesChan:           make(chan file.File),
-		FileMetaChan:        make(chan FileMsg),
+		FilesChan:           make(chan FileMsg),
 		UsersChan:           make(chan UserMsg),
 		ChannelsChan:        make(chan ChannelMsg),
 		// This is important to have a size bigger than one, the bigger, less likely to block
@@ -63,7 +61,7 @@ func NewBoxFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 }
 
 // List returns 2 channels, one for files , other for the state. Goes over a datasource and discover files
-func (bfs *BoxFs) Walk() (chan file.File, chan bool, error) {
+func (bfs *BoxFs) Walk() (chan FileMsg, chan bool) {
 	go func() {
 		bfs.LastDirTime = time.Now().Unix()
 		for {
@@ -93,7 +91,7 @@ func (bfs *BoxFs) Walk() (chan file.File, chan bool, error) {
 		}
 	}()
 
-	return bfs.FilesChan, bfs.WalkRunning, nil
+	return bfs.FilesChan, bfs.WalkRunning
 }
 
 // WalkUsers
@@ -145,7 +143,7 @@ func (bfs *BoxFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 		// Box supports multi part form upload
 		folderPath, err := osext.ExecutableFolder()
 		if err != nil {
-			bfs.FileMetaChan <- NewFileMsg(nil, err)
+			bfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 
@@ -157,7 +155,7 @@ func (bfs *BoxFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 
 		f, err := os.Open(t)
 		if err != nil {
-			bfs.FileMetaChan <- NewFileMsg(nil, err)
+			bfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 		defer f.Close()
@@ -165,11 +163,11 @@ func (bfs *BoxFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 		// This is how you upload a file as multipart form
 		ff, err := mw.CreateFormFile("file", t)
 		if err != nil {
-			bfs.FileMetaChan <- NewFileMsg(nil, err)
+			bfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 		if _, err = io.Copy(ff, f); err != nil {
-			bfs.FileMetaChan <- NewFileMsg(nil, err)
+			bfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 
@@ -179,14 +177,14 @@ func (bfs *BoxFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 			`{"name":"`+rq.FileName+`.`+globals.GetDocumentTemplate(rq.MimeType, false)+`", "parent":{"id":"0"}}`,
 		)
 		if err := mw.Close(); err != nil {
-			bfs.FileMetaChan <- NewFileMsg(nil, err)
+			bfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 
 		hc := &http.Client{}
 		req, err := http.NewRequest("POST", globals.BoxUploadEndpoint, buf)
 		if err != nil {
-			bfs.FileMetaChan <- NewFileMsg(nil, err)
+			bfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 		req.Header.Set("Authorization", bfs.token())
@@ -194,34 +192,34 @@ func (bfs *BoxFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 
 		rsp, err := hc.Do(req)
 		if err != nil {
-			bfs.FileMetaChan <- NewFileMsg(nil, err)
+			bfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 		defer rsp.Body.Close()
 
 		var bf *box.BoxUpload
 		if err := json.NewDecoder(rsp.Body).Decode(&bf); err != nil {
-			bfs.FileMetaChan <- NewFileMsg(nil, err)
+			bfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 
 		if rsp.StatusCode == http.StatusConflict {
-			bfs.FileMetaChan <- NewFileMsg(nil, errors.New("Conflict creating file in Box, file with same name already exists"))
+			bfs.FilesChan <- NewFileMsg(nil, errors.New("Conflict creating file in Box, file with same name already exists"))
 			return
 		}
 
 		if rsp.StatusCode != http.StatusCreated && bf.TotalCount != 1 {
-			bfs.FileMetaChan <- NewFileMsg(nil, errors.New("Failed creating file in Box"))
+			bfs.FilesChan <- NewFileMsg(nil, errors.New("Failed creating file in Box"))
 			return
 		}
 
 		// Construct Kazoup file from box created file and index it
 		kfb := file.NewKazoupFileFromBoxFile(bf.Entries[0], bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
 
-		bfs.FileMetaChan <- NewFileMsg(kfb, nil)
+		bfs.FilesChan <- NewFileMsg(kfb, nil)
 	}()
 
-	return bfs.FileMetaChan
+	return bfs.FilesChan
 }
 
 // DeleteFile deletes a box file
@@ -233,25 +231,25 @@ func (bfs *BoxFs) Delete(rq file_proto.DeleteRequest) chan FileMsg {
 		url := fmt.Sprintf("%s%s", globals.BoxFileMetadataEndpoint, rq.OriginalId)
 		r, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
-			bfs.FileMetaChan <- NewFileMsg(nil, err)
+			bfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 		r.Header.Set("Authorization", bfs.token())
 		rsp, err := bc.Do(r)
 		if err != nil {
-			bfs.FileMetaChan <- NewFileMsg(nil, err)
+			bfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 		defer rsp.Body.Close()
 
 		if rsp.StatusCode != http.StatusNoContent {
-			bfs.FileMetaChan <- NewFileMsg(nil, errors.New(fmt.Sprintf("Deleting Box file failed with status code %d", rsp.StatusCode)))
+			bfs.FilesChan <- NewFileMsg(nil, errors.New(fmt.Sprintf("Deleting Box file failed with status code %d", rsp.StatusCode)))
 			return
 		}
 
 		// Return deleted file. This file only stores the id
 		// Avoid read from DB
-		bfs.FileMetaChan <- NewFileMsg(
+		bfs.FilesChan <- NewFileMsg(
 			&file.KazoupBoxFile{
 				file.KazoupFile{
 					ID: rq.FileId,
@@ -262,7 +260,7 @@ func (bfs *BoxFs) Delete(rq file_proto.DeleteRequest) chan FileMsg {
 		)
 	}()
 
-	return bfs.FileMetaChan
+	return bfs.FilesChan
 }
 
 // Update file
@@ -278,34 +276,34 @@ func (bfs *BoxFs) Update(req file_proto.ShareRequest) chan FileMsg {
 		url := fmt.Sprintf("%s%s", globals.BoxFileMetadataEndpoint, req.OriginalId)
 		r, err := http.NewRequest("PUT", url, bytes.NewBuffer(b))
 		if err != nil {
-			bfs.FileMetaChan <- NewFileMsg(nil, err)
+			bfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 		r.Header.Set("Authorization", bfs.token())
 		rsp, err := bc.Do(r)
 		if err != nil {
-			bfs.FileMetaChan <- NewFileMsg(nil, err)
+			bfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 		defer rsp.Body.Close()
 
 		if rsp.StatusCode != http.StatusOK {
-			bfs.FileMetaChan <- NewFileMsg(nil, errors.New(fmt.Sprintf("Sharing Box file failed with status code %d", rsp.StatusCode)))
+			bfs.FilesChan <- NewFileMsg(nil, errors.New(fmt.Sprintf("Sharing Box file failed with status code %d", rsp.StatusCode)))
 			return
 		}
 
 		var f *box.BoxFileMeta
 		if err := json.NewDecoder(rsp.Body).Decode(&f); err != nil {
-			bfs.FileMetaChan <- NewFileMsg(nil, err)
+			bfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 
 		kbf := file.NewKazoupFileFromBoxFile(*f, bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
 
-		bfs.FileMetaChan <- NewFileMsg(kbf, nil)
+		bfs.FilesChan <- NewFileMsg(kbf, nil)
 	}()
 
-	return bfs.FileMetaChan
+	return bfs.FilesChan
 }
 
 // DownloadFile retrieves a file
@@ -408,7 +406,7 @@ func (bfs *BoxFs) getMetadataFromFile(id string) error {
 		log.Println(err)
 	}
 
-	bfs.FilesChan <- f
+	bfs.FilesChan <- NewFileMsg(f, nil)
 
 	return nil
 }

@@ -28,8 +28,7 @@ type GmailFs struct {
 	WalkRunning         chan bool
 	WalkUsersRunning    chan bool
 	WalkChannelsRunning chan bool
-	FilesChan           chan file.File
-	FileMetaChan        chan FileMsg
+	FilesChan           chan FileMsg
 	UsersChan           chan UserMsg
 	ChannelsChan        chan ChannelMsg
 }
@@ -41,15 +40,14 @@ func NewGmailFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 		WalkRunning:         make(chan bool, 1),
 		WalkUsersRunning:    make(chan bool, 1),
 		WalkChannelsRunning: make(chan bool, 1),
-		FilesChan:           make(chan file.File),
-		FileMetaChan:        make(chan FileMsg),
+		FilesChan:           make(chan FileMsg),
 		UsersChan:           make(chan UserMsg),
 		ChannelsChan:        make(chan ChannelMsg),
 	}
 }
 
 // Walk returns 2 channels, for files and state. Discover attached files in google mail
-func (gfs *GmailFs) Walk() (chan file.File, chan bool, error) {
+func (gfs *GmailFs) Walk() (chan FileMsg, chan bool) {
 	go func() {
 		if err := gfs.getMessages(); err != nil {
 			log.Println(err)
@@ -58,7 +56,7 @@ func (gfs *GmailFs) Walk() (chan file.File, chan bool, error) {
 		gfs.WalkRunning <- false
 	}()
 
-	return gfs.FilesChan, gfs.WalkRunning, nil
+	return gfs.FilesChan, gfs.WalkRunning
 }
 
 // WalkUsers
@@ -96,17 +94,17 @@ func (gfs *GmailFs) GetThumbnail(id string, c client.Client) (string, error) {
 
 // Create file in gmail (not implemented)
 func (gfs *GmailFs) Create(rq file_proto.CreateRequest) chan FileMsg {
-	return gfs.FileMetaChan
+	return gfs.FilesChan
 }
 
 // Delete (not implemented)
 func (gfs *GmailFs) Delete(rq file_proto.DeleteRequest) chan FileMsg {
-	return gfs.FileMetaChan
+	return gfs.FilesChan
 }
 
 // Update file
 func (gfs *GmailFs) Update(req file_proto.ShareRequest) chan FileMsg {
-	return gfs.FileMetaChan
+	return gfs.FilesChan
 }
 
 // DownloadFile retrieves a file
@@ -253,7 +251,7 @@ func (gfs *GmailFs) pushMessagesToChanForPage(s *gmail.Service, msgs []*gmail.Me
 					log.Println(err)
 				}
 
-				gfs.FilesChan <- f
+				gfs.FilesChan <- NewFileMsg(f, nil)
 			}
 		}
 	}

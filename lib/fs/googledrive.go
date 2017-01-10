@@ -24,8 +24,7 @@ type GoogleDriveFs struct {
 	WalkRunning         chan bool
 	WalkUsersRunning    chan bool
 	WalkChannelsRunning chan bool
-	FilesChan           chan file.File
-	FileMetaChan        chan FileMsg
+	FilesChan           chan FileMsg
 	UsersChan           chan UserMsg
 	ChannelsChan        chan ChannelMsg
 }
@@ -37,15 +36,14 @@ func NewGoogleDriveFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 		WalkRunning:         make(chan bool, 1),
 		WalkUsersRunning:    make(chan bool, 1),
 		WalkChannelsRunning: make(chan bool, 1),
-		FilesChan:           make(chan file.File),
-		FileMetaChan:        make(chan FileMsg),
+		FilesChan:           make(chan FileMsg),
 		UsersChan:           make(chan UserMsg),
 		ChannelsChan:        make(chan ChannelMsg),
 	}
 }
 
 // Walk returns 2 channels, for files and state. Discover files in google drive datasource
-func (gfs *GoogleDriveFs) Walk() (chan file.File, chan bool, error) {
+func (gfs *GoogleDriveFs) Walk() (chan FileMsg, chan bool) {
 	go func() {
 		if err := gfs.getFiles(); err != nil {
 			log.Println(err)
@@ -54,7 +52,7 @@ func (gfs *GoogleDriveFs) Walk() (chan file.File, chan bool, error) {
 		gfs.WalkRunning <- false
 	}()
 
-	return gfs.FilesChan, gfs.WalkRunning, nil
+	return gfs.FilesChan, gfs.WalkRunning
 }
 
 // WalkUsers
@@ -104,7 +102,7 @@ func (gfs *GoogleDriveFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 	go func() {
 		srv, err := gfs.getDriveService()
 		if err != nil {
-			gfs.FileMetaChan <- NewFileMsg(nil, err)
+			gfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 
@@ -113,20 +111,20 @@ func (gfs *GoogleDriveFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 			MimeType: globals.GetMimeType(globals.GoogleDrive, rq.MimeType),
 		}).Fields("*").Do()
 		if err != nil {
-			gfs.FileMetaChan <- NewFileMsg(nil, err)
+			gfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 
 		kfg := file.NewKazoupFileFromGoogleDriveFile(*f, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
 		if kfg == nil {
-			gfs.FileMetaChan <- NewFileMsg(nil, errors.New("ERROR CreateFile gdrive is nil"))
+			gfs.FilesChan <- NewFileMsg(nil, errors.New("ERROR CreateFile gdrive is nil"))
 			return
 		}
 
-		gfs.FileMetaChan <- NewFileMsg(kfg, nil)
+		gfs.FilesChan <- NewFileMsg(kfg, nil)
 	}()
 
-	return gfs.FileMetaChan
+	return gfs.FilesChan
 }
 
 // DeleteFile moves a google drive file to trash
@@ -134,7 +132,7 @@ func (gfs *GoogleDriveFs) Delete(rq file_proto.DeleteRequest) chan FileMsg {
 	go func() {
 		srv, err := gfs.getDriveService()
 		if err != nil {
-			gfs.FileMetaChan <- NewFileMsg(nil, err)
+			gfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 
@@ -143,13 +141,13 @@ func (gfs *GoogleDriveFs) Delete(rq file_proto.DeleteRequest) chan FileMsg {
 			Trashed: true,
 		}).Do()
 		if err != nil {
-			gfs.FileMetaChan <- NewFileMsg(nil, err)
+			gfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 
 		// Return deleted file. This file only stores the id
 		// Avoid read from DB
-		gfs.FileMetaChan <- NewFileMsg(
+		gfs.FilesChan <- NewFileMsg(
 			&file.KazoupGoogleFile{
 				file.KazoupFile{
 					ID: rq.FileId,
@@ -160,7 +158,7 @@ func (gfs *GoogleDriveFs) Delete(rq file_proto.DeleteRequest) chan FileMsg {
 		)
 	}()
 
-	return gfs.FileMetaChan
+	return gfs.FilesChan
 }
 
 // Update file
@@ -168,7 +166,7 @@ func (gfs *GoogleDriveFs) Update(req file_proto.ShareRequest) chan FileMsg {
 	go func() {
 		srv, err := gfs.getDriveService()
 		if err != nil {
-			gfs.FileMetaChan <- NewFileMsg(nil, err)
+			gfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 
@@ -177,26 +175,26 @@ func (gfs *GoogleDriveFs) Update(req file_proto.ShareRequest) chan FileMsg {
 			Type:         "user",
 			EmailAddress: req.DestinationId,
 		}).Do(); err != nil {
-			gfs.FileMetaChan <- NewFileMsg(nil, err)
+			gfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 
 		gf, err := srv.Files.Get(req.OriginalId).Fields("*").Do()
 		if err != nil {
-			gfs.FileMetaChan <- NewFileMsg(nil, err)
+			gfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 
 		kfg := file.NewKazoupFileFromGoogleDriveFile(*gf, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
 		if kfg == nil {
-			gfs.FileMetaChan <- NewFileMsg(nil, errors.New("ERROR ShareFile gdrive is nil"))
+			gfs.FilesChan <- NewFileMsg(nil, errors.New("ERROR ShareFile gdrive is nil"))
 			return
 		}
 
-		gfs.FileMetaChan <- NewFileMsg(kfg, nil)
+		gfs.FilesChan <- NewFileMsg(kfg, nil)
 	}()
 
-	return gfs.FileMetaChan
+	return gfs.FilesChan
 }
 
 // DownloadFile retrieves a file from google drive
@@ -287,7 +285,7 @@ func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
 				log.Println(err)
 			}
 
-			gfs.FilesChan <- f
+			gfs.FilesChan <- NewFileMsg(f, nil)
 		}
 	}
 

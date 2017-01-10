@@ -51,10 +51,7 @@ func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) erro
 	channelsChan, channelsRunning := cfs.WalkChannels()
 
 	// Receive files founded by FileSystem
-	fc, r, err := cfs.Walk()
-	if err != nil {
-		return err
-	}
+	filesChan, filesRunning := cfs.Walk()
 
 	var wg sync.WaitGroup
 	wg.Add(3) //Wait for our 3 goroutines (file system listeners)
@@ -64,7 +61,7 @@ func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) erro
 		for {
 			select {
 			// Channel receives signal cralwer has finished
-			case <-r:
+			case <-filesRunning:
 				time.Sleep(time.Second * 8)
 
 				// Clear index (files that no longer exists, rename, etc..)
@@ -80,13 +77,17 @@ func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) erro
 					//return err
 					log.Println("Error publishin crawler finished", err)
 				}
-				close(fc)
-				close(r)
+				close(filesChan)
+				close(filesRunning)
 				wg.Done()
 				return
 			// Channel receives File to be indexed by Elastic Search
-			case f := <-fc:
-				if err := file.IndexAsync(c.Client, f, globals.FilesTopic, f.GetIndex(), false); err != nil {
+			case fc := <-filesChan:
+				if fc.Error != nil {
+					log.Println("Error discovering file", fc.Error)
+				}
+
+				if err := file.IndexAsync(c.Client, fc.File, globals.FilesTopic, fc.File.GetIndex(), false); err != nil {
 					log.Println("Error indexing async file", err)
 				}
 			}

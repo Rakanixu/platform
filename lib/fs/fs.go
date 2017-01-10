@@ -5,7 +5,6 @@ import (
 	"errors"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
-	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
@@ -34,7 +33,7 @@ type Fs interface {
 }
 
 type FsOperations interface {
-	Walk() (chan file.File, chan bool, error)
+	Walk() (chan FileMsg, chan bool)
 	WalkUsers() (chan UserMsg, chan bool)
 	WalkChannels() (chan ChannelMsg, chan bool)
 	Create(file_proto.CreateRequest) chan FileMsg

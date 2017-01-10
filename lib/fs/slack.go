@@ -25,8 +25,7 @@ type SlackFs struct {
 	WalkRunning         chan bool
 	WalkUsersRunning    chan bool
 	WalkChannelsRunning chan bool
-	FilesChan           chan file.File
-	FileMetaChan        chan FileMsg
+	FilesChan           chan FileMsg
 	UsersChan           chan UserMsg
 	ChannelsChan        chan ChannelMsg
 }
@@ -38,15 +37,14 @@ func NewSlackFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 		WalkRunning:         make(chan bool, 1),
 		WalkUsersRunning:    make(chan bool, 1),
 		WalkChannelsRunning: make(chan bool, 1),
-		FilesChan:           make(chan file.File),
-		FileMetaChan:        make(chan FileMsg),
+		FilesChan:           make(chan FileMsg),
 		UsersChan:           make(chan UserMsg),
 		ChannelsChan:        make(chan ChannelMsg),
 	}
 }
 
 // Walk returns 2 channels, for files and state. Discover files in slack datasource
-func (sfs *SlackFs) Walk() (chan file.File, chan bool, error) {
+func (sfs *SlackFs) Walk() (chan FileMsg, chan bool) {
 	go func() {
 		if err := sfs.getFiles(1); err != nil {
 			log.Println(err)
@@ -55,7 +53,7 @@ func (sfs *SlackFs) Walk() (chan file.File, chan bool, error) {
 		sfs.WalkRunning <- false
 	}()
 
-	return sfs.FilesChan, sfs.WalkRunning, nil
+	return sfs.FilesChan, sfs.WalkRunning
 }
 
 // WalUsers discover users in slack
@@ -99,12 +97,12 @@ func (sfs *SlackFs) GetThumbnail(id string, c client.Client) (string, error) {
 
 // CreateFile belongs to Fs interface
 func (sfs *SlackFs) Create(rq file_proto.CreateRequest) chan FileMsg {
-	return sfs.FileMetaChan
+	return sfs.FilesChan
 }
 
 // DeleteFile deletes a slack file
 func (sfs *SlackFs) Delete(rq file_proto.DeleteRequest) chan FileMsg {
-	return sfs.FileMetaChan
+	return sfs.FilesChan
 }
 
 // ShareFile sets a PermalinkPublic available, so everyone with URL has access to the slack file
@@ -133,7 +131,7 @@ func (sfs *SlackFs) Update(req file_proto.ShareRequest) chan FileMsg {
 
 			return sfs.shareFileInsideTeam(f, req.DestinationId)
 		}*/
-	return sfs.FileMetaChan
+	return sfs.FilesChan
 }
 
 // DownloadFile retrieves a file
@@ -263,7 +261,7 @@ func (sfs *SlackFs) getFiles(page int) error {
 			log.Println(err)
 		}
 
-		sfs.FilesChan <- f
+		sfs.FilesChan <- NewFileMsg(f, nil)
 	}
 
 	if filesRsp.Paging.Pages >= page {

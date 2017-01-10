@@ -35,8 +35,7 @@ type OneDriveFs struct {
 	WalkRunning         chan bool
 	WalkUsersRunning    chan bool
 	WalkChannelsRunning chan bool
-	FilesChan           chan file.File
-	FileMetaChan        chan FileMsg
+	FilesChan           chan FileMsg
 	UsersChan           chan UserMsg
 	ChannelsChan        chan ChannelMsg
 	DrivesId            []string
@@ -51,8 +50,7 @@ func NewOneDriveFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 		WalkRunning:         make(chan bool, 1),
 		WalkUsersRunning:    make(chan bool, 1),
 		WalkChannelsRunning: make(chan bool, 1),
-		FilesChan:           make(chan file.File),
-		FileMetaChan:        make(chan FileMsg),
+		FilesChan:           make(chan FileMsg),
 		UsersChan:           make(chan UserMsg),
 		ChannelsChan:        make(chan ChannelMsg),
 		DrivesId:            []string{},
@@ -65,7 +63,7 @@ func NewOneDriveFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 }
 
 // Walk returns 2 channels, for files and state. Discover files in one drive datasources
-func (ofs *OneDriveFs) Walk() (chan file.File, chan bool, error) {
+func (ofs *OneDriveFs) Walk() (chan FileMsg, chan bool) {
 	go func() {
 		ofs.LastDirTime = time.Now().Unix()
 		for {
@@ -95,7 +93,7 @@ func (ofs *OneDriveFs) Walk() (chan file.File, chan bool, error) {
 		}
 	}()
 
-	return ofs.FilesChan, ofs.WalkRunning, nil
+	return ofs.FilesChan, ofs.WalkRunning
 }
 
 // WalkUsers
@@ -159,14 +157,14 @@ func (ofs *OneDriveFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 	go func() {
 		folderPath, err := osext.ExecutableFolder()
 		if err != nil {
-			ofs.FileMetaChan <- NewFileMsg(nil, err)
+			ofs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 
 		p := fmt.Sprintf("%s%s%s", folderPath, "/doc_templates/", globals.GetDocumentTemplate(rq.MimeType, true))
 		t, err := os.Open(p)
 		if err != nil {
-			ofs.FileMetaChan <- NewFileMsg(nil, err)
+			ofs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 		defer t.Close()
@@ -178,28 +176,28 @@ func (ofs *OneDriveFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 		req.Header.Set("Authorization", ofs.token())
 		req.Header.Set("Content-Type", globals.ONEDRIVE_TEXT)
 		if err != nil {
-			ofs.FileMetaChan <- NewFileMsg(nil, err)
+			ofs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 		res, err := hc.Do(req)
 		if err != nil {
-			ofs.FileMetaChan <- NewFileMsg(nil, err)
+			ofs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 		defer res.Body.Close()
 
 		var f onedrive.OneDriveFile
 		if err := json.NewDecoder(res.Body).Decode(&f); err != nil {
-			ofs.FileMetaChan <- NewFileMsg(nil, err)
+			ofs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 
 		kfo := file.NewKazoupFileFromOneDriveFile(f, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)
 
-		ofs.FileMetaChan <- NewFileMsg(kfo, nil)
+		ofs.FilesChan <- NewFileMsg(kfo, nil)
 	}()
 
-	return ofs.FileMetaChan
+	return ofs.FilesChan
 }
 
 // Delete deletes an onedrive file
@@ -211,24 +209,24 @@ func (ofs *OneDriveFs) Delete(rq file_proto.DeleteRequest) chan FileMsg {
 		oreq, err := http.NewRequest("DELETE", url, nil)
 		oreq.Header.Set("Authorization", ofs.token())
 		if err != nil {
-			ofs.FileMetaChan <- NewFileMsg(nil, err)
+			ofs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 		res, err := oc.Do(oreq)
 		if err != nil {
-			ofs.FileMetaChan <- NewFileMsg(nil, err)
+			ofs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 		defer res.Body.Close()
 
 		if res.StatusCode != http.StatusNoContent {
-			ofs.FileMetaChan <- NewFileMsg(nil, errors.New(fmt.Sprintf("Deleting Onedrive file failed with status code %d", res.StatusCode)))
+			ofs.FilesChan <- NewFileMsg(nil, errors.New(fmt.Sprintf("Deleting Onedrive file failed with status code %d", res.StatusCode)))
 			return
 		}
 
 		// Return deleted file. This file only stores the id
 		// Avoid read from DB
-		ofs.FileMetaChan <- NewFileMsg(
+		ofs.FilesChan <- NewFileMsg(
 			&file.KazoupOneDriveFile{
 				file.KazoupFile{
 					ID: rq.FileId,
@@ -239,7 +237,7 @@ func (ofs *OneDriveFs) Delete(rq file_proto.DeleteRequest) chan FileMsg {
 		)
 	}()
 
-	return ofs.FileMetaChan
+	return ofs.FilesChan
 }
 
 // Update file
@@ -262,17 +260,17 @@ func (ofs *OneDriveFs) Update(req file_proto.ShareRequest) chan FileMsg {
 		oreq.Header.Set("Authorization", ofs.token())
 		oreq.Header.Set("Content-Type", "application/json")
 		if err != nil {
-			ofs.FileMetaChan <- NewFileMsg(nil, err)
+			ofs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 		res, err := oc.Do(oreq)
 		if err != nil {
-			ofs.FileMetaChan <- NewFileMsg(nil, err)
+			ofs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 		defer res.Body.Close()
 
-		ofs.FileMetaChan <- NewFileMsg(
+		ofs.FilesChan <- NewFileMsg(
 			&file.KazoupOneDriveFile{
 				file.KazoupFile{
 					ID: req.FileId,
@@ -285,7 +283,7 @@ func (ofs *OneDriveFs) Update(req file_proto.ShareRequest) chan FileMsg {
 		// TODO: request for file to Onedrive and retur whole file
 	}()*/
 
-	return ofs.FileMetaChan
+	return ofs.FilesChan
 }
 
 // DownloadFile retrieves a file
@@ -492,7 +490,7 @@ func (ofs *OneDriveFs) pushToFilesChannel(f onedrive.OneDriveFile) error {
 		log.Println(err)
 	}
 
-	ofs.FilesChan <- kof
+	ofs.FilesChan <- NewFileMsg(kof, nil)
 
 	return nil
 }

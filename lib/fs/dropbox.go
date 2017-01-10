@@ -28,8 +28,7 @@ type DropboxFs struct {
 	WalkRunning         chan bool
 	WalkUsersRunning    chan bool
 	WalkChannelsRunning chan bool
-	FilesChan           chan file.File
-	FileMetaChan        chan FileMsg
+	FilesChan           chan FileMsg
 	UsersChan           chan UserMsg
 	ChannelsChan        chan ChannelMsg
 }
@@ -41,15 +40,14 @@ func NewDropboxFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 		WalkRunning:         make(chan bool, 1),
 		WalkUsersRunning:    make(chan bool, 1),
 		WalkChannelsRunning: make(chan bool, 1),
-		FilesChan:           make(chan file.File),
-		FileMetaChan:        make(chan FileMsg),
+		FilesChan:           make(chan FileMsg),
 		UsersChan:           make(chan UserMsg),
 		ChannelsChan:        make(chan ChannelMsg),
 	}
 }
 
 // Walk returns 2 channels, for files and state. Discover files in dropbox datasource
-func (dfs *DropboxFs) Walk() (chan file.File, chan bool, error) {
+func (dfs *DropboxFs) Walk() (chan FileMsg, chan bool) {
 	go func() {
 		if err := dfs.getFiles(); err != nil {
 			log.Println("ERROR geting files from dropbox ", err.Error())
@@ -58,7 +56,7 @@ func (dfs *DropboxFs) Walk() (chan file.File, chan bool, error) {
 		dfs.WalkRunning <- false
 	}()
 
-	return dfs.FilesChan, dfs.WalkRunning, nil
+	return dfs.FilesChan, dfs.WalkRunning
 }
 
 // WalkUsers
@@ -103,14 +101,14 @@ func (dfs *DropboxFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 		// https://www.dropbox.com/developers/documentation/http/documentation#files-upload
 		folderPath, err := osext.ExecutableFolder()
 		if err != nil {
-			dfs.FileMetaChan <- NewFileMsg(nil, err)
+			dfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 
 		p := fmt.Sprintf("%s%s%s", folderPath, "/doc_templates/", globals.GetDocumentTemplate(rq.MimeType, true))
 		t, err := os.Open(p)
 		if err != nil {
-			dfs.FileMetaChan <- NewFileMsg(nil, err)
+			dfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 		defer t.Close()
@@ -118,7 +116,7 @@ func (dfs *DropboxFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 		hc := &http.Client{}
 		req, err := http.NewRequest("POST", globals.DropboxFileUpload, t)
 		if err != nil {
-			dfs.FileMetaChan <- NewFileMsg(nil, err)
+			dfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 		req.Header.Set("Authorization", dfs.token())
@@ -131,27 +129,27 @@ func (dfs *DropboxFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 		req.Header.Set("Content-Type", "application/octet-stream")
 		rsp, err := hc.Do(req)
 		if err != nil {
-			dfs.FileMetaChan <- NewFileMsg(nil, err)
+			dfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 		defer rsp.Body.Close()
 
 		var df *dropbox.DropboxFile
 		if err := json.NewDecoder(rsp.Body).Decode(&df); err != nil {
-			dfs.FileMetaChan <- NewFileMsg(nil, err)
+			dfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 
 		kfd := file.NewKazoupFileFromDropboxFile(*df, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
 		if kfd == nil {
-			dfs.FileMetaChan <- NewFileMsg(nil, errors.New("ERROR dropbox file is nil"))
+			dfs.FilesChan <- NewFileMsg(nil, errors.New("ERROR dropbox file is nil"))
 			return
 		}
 
-		dfs.FileMetaChan <- NewFileMsg(kfd, nil)
+		dfs.FilesChan <- NewFileMsg(kfd, nil)
 	}()
 
-	return dfs.FileMetaChan
+	return dfs.FilesChan
 }
 
 // DeleteFile deletes a dropbox file
@@ -166,14 +164,14 @@ func (dfs *DropboxFs) Delete(rq file_proto.DeleteRequest) chan FileMsg {
 		dc := &http.Client{}
 		r, err := http.NewRequest("POST", globals.DropboxFileDelete, bytes.NewBuffer(b))
 		if err != nil {
-			dfs.FileMetaChan <- NewFileMsg(nil, err)
+			dfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 		r.Header.Set("Authorization", dfs.token())
 		r.Header.Set("Content-Type", "application/json")
 		rsp, err := dc.Do(r)
 		if err != nil {
-			dfs.FileMetaChan <- NewFileMsg(nil, err)
+			dfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 
@@ -181,13 +179,13 @@ func (dfs *DropboxFs) Delete(rq file_proto.DeleteRequest) chan FileMsg {
 
 		// Check is successfully deleted
 		if rsp.StatusCode != http.StatusOK {
-			dfs.FileMetaChan <- NewFileMsg(nil, errors.New(fmt.Sprintf("Deleting Dropbox file failed with status code %d", rsp.StatusCode)))
+			dfs.FilesChan <- NewFileMsg(nil, errors.New(fmt.Sprintf("Deleting Dropbox file failed with status code %d", rsp.StatusCode)))
 			return
 		}
 
 		// Return deleted file. This file only stores the id
 		// Avoid read from DB
-		dfs.FileMetaChan <- NewFileMsg(
+		dfs.FilesChan <- NewFileMsg(
 			&file.KazoupDropboxFile{
 				file.KazoupFile{
 					ID: rq.FileId,
@@ -198,7 +196,7 @@ func (dfs *DropboxFs) Delete(rq file_proto.DeleteRequest) chan FileMsg {
 		)
 	}()
 
-	return dfs.FileMetaChan
+	return dfs.FilesChan
 }
 
 // Update file
@@ -221,34 +219,34 @@ func (dfs *DropboxFs) Update(req file_proto.ShareRequest) chan FileMsg {
 		dc := &http.Client{}
 		r, err := http.NewRequest("POST", globals.DropboxFileShare, bytes.NewBuffer(b))
 		if err != nil {
-			dfs.FileMetaChan <- NewFileMsg(nil, err)
+			dfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 		r.Header.Set("Authorization", dfs.token())
 		r.Header.Set("Content-Type", "application/json")
 		rsp, err := dc.Do(r)
 		if err != nil {
-			dfs.FileMetaChan <- NewFileMsg(nil, err)
+			dfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 		defer rsp.Body.Close()
 
 		if rsp.StatusCode != http.StatusOK {
-			dfs.FileMetaChan <- NewFileMsg(nil, errors.New(fmt.Sprintf("Sharing Dropbox file failed with status code %d", rsp.StatusCode)))
+			dfs.FilesChan <- NewFileMsg(nil, errors.New(fmt.Sprintf("Sharing Dropbox file failed with status code %d", rsp.StatusCode)))
 			return
 		}
 
 		// Get the modified file to reindex
 		f, err := dfs.getFile(req.OriginalId)
 		if err != nil {
-			dfs.FileMetaChan <- NewFileMsg(nil, err)
+			dfs.FilesChan <- NewFileMsg(nil, err)
 			return
 		}
 
-		dfs.FileMetaChan <- NewFileMsg(f, nil)
+		dfs.FilesChan <- NewFileMsg(f, nil)
 	}()
 
-	return dfs.FileMetaChan
+	return dfs.FilesChan
 }
 
 // DownloadFile retrieves a file
@@ -483,7 +481,7 @@ func (dfs *DropboxFs) pushFilesToChannel(list *dropbox.FilesListResponse) {
 				log.Println(err)
 			}
 
-			dfs.FilesChan <- f
+			dfs.FilesChan <- NewFileMsg(f, nil)
 		}
 	}
 }

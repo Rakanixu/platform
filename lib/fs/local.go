@@ -24,8 +24,7 @@ type LocalFs struct {
 	WalkRunning         chan bool
 	WalkUsersRunning    chan bool
 	WalkChannelsRunning chan bool
-	FilesChan           chan file.File
-	FileMetaChan        chan FileMsg
+	FilesChan           chan FileMsg
 	UsersChan           chan UserMsg
 	ChannelsChan        chan ChannelMsg
 }
@@ -40,15 +39,14 @@ func NewLocalFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 		WalkRunning:         make(chan bool, 1),
 		WalkUsersRunning:    make(chan bool, 1),
 		WalkChannelsRunning: make(chan bool, 1),
-		FilesChan:           make(chan file.File),
-		FileMetaChan:        make(chan FileMsg),
+		FilesChan:           make(chan FileMsg),
 		UsersChan:           make(chan UserMsg),
 		ChannelsChan:        make(chan ChannelMsg),
 	}
 }
 
 // Walk returns 2 channels, for files and state. Discover local files
-func (lfs *LocalFs) Walk() (chan file.File, chan bool, error) {
+func (lfs *LocalFs) Walk() (chan FileMsg, chan bool) {
 	go func() {
 		if err := lfs.walkDatasourceParents(); err != nil {
 			log.Println("ERROR", err)
@@ -60,7 +58,7 @@ func (lfs *LocalFs) Walk() (chan file.File, chan bool, error) {
 		lfs.WalkRunning <- false
 	}()
 
-	return lfs.FilesChan, lfs.WalkRunning, nil
+	return lfs.FilesChan, lfs.WalkRunning
 }
 
 // WalUsers
@@ -100,17 +98,17 @@ func (lfs *LocalFs) GetThumbnail(id string, c client.Client) (string, error) {
 
 // Create file (not implemented)
 func (lfs *LocalFs) Create(rq file_proto.CreateRequest) chan FileMsg {
-	return lfs.FileMetaChan
+	return lfs.FilesChan
 }
 
 // DeleteFile deletes a local file
 func (lfs *LocalFs) Delete(rq file_proto.DeleteRequest) chan FileMsg {
-	return lfs.FileMetaChan
+	return lfs.FilesChan
 }
 
 // Update file
 func (lfs *LocalFs) Update(req file_proto.ShareRequest) chan FileMsg {
-	return lfs.FileMetaChan
+	return lfs.FilesChan
 }
 
 // DownloadFile retrieves a file
@@ -174,7 +172,7 @@ func (lfs *LocalFs) walkDatasourceParents() error {
 			Info: info,
 		}, lfs.Endpoint.Id, lfs.Endpoint.UserId, globals.IndexHelper)
 
-		lfs.FilesChan <- f
+		lfs.FilesChan <- NewFileMsg(f, nil)
 	}
 
 	return nil
@@ -197,7 +195,7 @@ func (lfs *LocalFs) walkHandler() filepath.WalkFunc {
 				Info: info,
 			}, lfs.Endpoint.Id, lfs.Endpoint.UserId, lfs.Endpoint.Index)
 
-			lfs.FilesChan <- f
+			lfs.FilesChan <- NewFileMsg(f, nil)
 		}
 
 		return nil
