@@ -11,7 +11,6 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/image"
 	"github.com/kazoup/platform/lib/slack"
-	"github.com/micro/go-micro/client"
 	"io"
 	"log"
 	"net/http"
@@ -78,21 +77,6 @@ func (sfs *SlackFs) WalkChannels() (chan ChannelMsg, chan bool) {
 	}()
 
 	return sfs.ChannelsChan, sfs.WalkChannelsRunning
-}
-
-// Token returns slack user token
-func (sfs *SlackFs) Token(c client.Client) string {
-	return "Bearer " + sfs.Endpoint.Token.AccessToken
-}
-
-// GetDatasourceId returns datasource ID
-func (sfs *SlackFs) GetDatasourceId() string {
-	return sfs.Endpoint.Id
-}
-
-// GetThumbnail belongs to Fs interface
-func (sfs *SlackFs) GetThumbnail(id string, c client.Client) (string, error) {
-	return "", nil
 }
 
 // CreateFile belongs to Fs interface
@@ -293,7 +277,7 @@ func (sfs *SlackFs) generateThumbnail(sf slack.SlackFile, id string) error {
 }
 
 // shareFilePublicly will set a PermalinkPublic available and reachable for a file arcived/ stored in slack
-func (sfs *SlackFs) shareFilePublicly(c client.Client, id string) (string, error) {
+func (sfs *SlackFs) shareFilePublicly(id string) (string, error) {
 	data := make(url.Values)
 	data.Add("token", sfs.Endpoint.Token.AccessToken)
 	data.Add("file", id)
@@ -313,10 +297,11 @@ func (sfs *SlackFs) shareFilePublicly(c client.Client, id string) (string, error
 
 	// Response contains object, permalink_public attr will be modified
 	// Reindex document
-	f := file.NewKazoupFileFromSlackFile(ssr.File, sfs.Endpoint.Id, sfs.Endpoint.UserId, sfs.Endpoint.Index)
+	//TODO: Commented out because client dependency. this method will return a FileMsg over a channel
+	/*f := file.NewKazoupFileFromSlackFile(ssr.File, sfs.Endpoint.Id, sfs.Endpoint.UserId, sfs.Endpoint.Index)
 	if err := file.IndexAsync(c, f, globals.FilesTopic, sfs.Endpoint.Index, true); err != nil {
 		return "", err
-	}
+	}*/
 
 	return ssr.File.PermalinkPublic, nil
 }

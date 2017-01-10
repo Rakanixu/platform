@@ -6,7 +6,6 @@ import (
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/globals"
-	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/storage/v1"
@@ -24,9 +23,6 @@ type Fs interface {
 	UploadFile(io.Reader, string) error
 	SignedObjectStorageURL(string) (string, error)
 	DeleteIndexBucketFromGCS() error
-	GetDatasourceId() string
-	Token(client.Client) string
-	GetThumbnail(string, client.Client) (string, error)
 
 	FsOperations
 	FsUtils
@@ -44,6 +40,8 @@ type FsOperations interface {
 
 type FsUtils interface {
 	Authorize() (*datasource_proto.Token, error)
+	GetDatasourceId() string
+	GetThumbnail(string) (string, error)
 }
 
 var (

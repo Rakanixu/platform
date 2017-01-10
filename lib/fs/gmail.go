@@ -11,7 +11,6 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	gmailhelper "github.com/kazoup/platform/lib/gmail"
 	"github.com/kazoup/platform/lib/image"
-	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	gmail "google.golang.org/api/gmail/v1"
@@ -75,21 +74,6 @@ func (gfs *GmailFs) WalkChannels() (chan ChannelMsg, chan bool) {
 	}()
 
 	return gfs.ChannelsChan, gfs.WalkChannelsRunning
-}
-
-// Token returns gmail user token
-func (gfs *GmailFs) Token(c client.Client) string {
-	return gfs.Endpoint.Token.AccessToken
-}
-
-// GetDatasourceId returns datasource ID
-func (gfs *GmailFs) GetDatasourceId() string {
-	return gfs.Endpoint.Id
-}
-
-// GetThumbnail belongs to Fs interface
-func (gfs *GmailFs) GetThumbnail(id string, c client.Client) (string, error) {
-	return "", nil
 }
 
 // Create file in gmail (not implemented)

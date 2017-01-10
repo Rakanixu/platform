@@ -13,11 +13,9 @@ import (
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/image"
-	"github.com/micro/go-micro/client"
 	"io"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"strings"
 )
@@ -75,24 +73,6 @@ func (dfs *DropboxFs) WalkChannels() (chan ChannelMsg, chan bool) {
 	}()
 
 	return dfs.ChannelsChan, dfs.WalkChannelsRunning
-}
-
-// Token returns dropbox user token
-func (dfs *DropboxFs) Token(c client.Client) string {
-	return "Bearer " + dfs.Endpoint.Token.AccessToken
-}
-
-// GetDatasourceId returns datasource ID
-func (dfs *DropboxFs) GetDatasourceId() string {
-	return dfs.Endpoint.Id
-}
-
-// GetThumbnail returns a URI pointing to a thumbnail
-func (dfs *DropboxFs) GetThumbnail(id string, c client.Client) (string, error) {
-	args := `{"path":"` + id + `","size":{".tag":"w640h480"}}`
-	url := fmt.Sprintf("%s?authorization=%s&arg=%s", globals.DropboxThumbnailEndpoint, dfs.Token(c), url.QueryEscape(args))
-
-	return url, nil
 }
 
 // Create a file in dropbox

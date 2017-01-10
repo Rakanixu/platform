@@ -8,7 +8,6 @@ import (
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/local"
-	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"io"
 	"log"
@@ -78,22 +77,6 @@ func (lfs *LocalFs) WalkChannels() (chan ChannelMsg, chan bool) {
 	}()
 
 	return lfs.ChannelsChan, lfs.WalkChannelsRunning
-}
-
-// Token belongs to Fs interface
-func (lfs *LocalFs) Token(c client.Client) string {
-	// LocalFs cannot have Token, cause represents a Local datasource which does not required oauth
-	return ""
-}
-
-// GetDatasourceId returns datasource ID
-func (lfs *LocalFs) GetDatasourceId() string {
-	return lfs.Endpoint.Id
-}
-
-// GetThumbnail belongs to Fs interface
-func (lfs *LocalFs) GetThumbnail(id string, c client.Client) (string, error) {
-	return "", nil
 }
 
 // Create file (not implemented)

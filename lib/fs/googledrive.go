@@ -2,14 +2,12 @@ package fs
 
 import (
 	"errors"
-	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/categories"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/image"
-	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"google.golang.org/api/drive/v3"
@@ -71,30 +69,6 @@ func (gfs *GoogleDriveFs) WalkChannels() (chan ChannelMsg, chan bool) {
 	}()
 
 	return gfs.ChannelsChan, gfs.WalkChannelsRunning
-}
-
-// Token returns google drive user token
-func (gfs *GoogleDriveFs) Token(c client.Client) string {
-	return gfs.Endpoint.Token.AccessToken
-}
-
-// GetDatasourceId returns datasource ID
-func (gfs *GoogleDriveFs) GetDatasourceId() string {
-	return gfs.Endpoint.Id
-}
-
-// GetThumbnail returns a URI pointing to a thumbnail
-func (gfs *GoogleDriveFs) GetThumbnail(id string, c client.Client) (string, error) {
-	srv, err := gfs.getDriveService()
-	if err != nil {
-		return "", err
-	}
-	r, err := srv.Files.Get(id).Fields("thumbnailLink").Do()
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf("%ss700", r.ThumbnailLink[:len(r.ThumbnailLink)-4]), nil
 }
 
 // CreateFile creates a google file and index it on Elastic Search

@@ -78,6 +78,18 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		fSys = ih.getFs(f)
 	}
 
+	// Authorize file system
+	auth, err := fSys.Authorize()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Update token in DB
+	if err := UpdateFileSystemAuth(wrappers.NewKazoupClient(), ctx, fSys.GetDatasourceId(), auth); err != nil {
+		log.Println("ERROR", err.Error())
+	}
+
 	url := fmt.Sprintf("%s", f.PreviewURL(width, height, mode, quality))
 
 	switch f.GetFileType() {
@@ -92,7 +104,7 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			log.Println("ERROR", err.Error())
 		}
 
-		req.Header.Set("Authorization", fSys.Token(wrappers.NewKazoupClient()))
+		req.Header.Set("Authorization", "Bearer "+auth.AccessToken)
 		rsp, err := c.Do(req)
 		if err != nil {
 			log.Println("ERROR", err.Error())
@@ -118,13 +130,13 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	case globals.GoogleDrive, globals.OneDrive:
-		url, err = fSys.GetThumbnail(f.GetIDFromOriginal(), wrappers.NewKazoupClient())
+		url, err = fSys.GetThumbnail(f.GetIDFromOriginal())
 		if err != nil {
 			log.Println("ERROR", err.Error())
 		}
 		http.Redirect(w, r, url, http.StatusSeeOther)
 	case globals.Dropbox:
-		url, err = fSys.GetThumbnail(f.GetPathDisplay(), wrappers.NewKazoupClient())
+		url, err = fSys.GetThumbnail(f.GetPathDisplay())
 		if err != nil {
 			log.Println("ERROR", err.Error())
 		}

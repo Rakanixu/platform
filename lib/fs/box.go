@@ -7,15 +7,12 @@ import (
 	"fmt"
 	"github.com/kardianos/osext"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/box"
 	"github.com/kazoup/platform/lib/categories"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/image"
-	"github.com/micro/go-micro/client"
-	"golang.org/x/oauth2"
 	"io"
 	"log"
 	"mime/multipart"
@@ -110,31 +107,6 @@ func (bfs *BoxFs) WalkChannels() (chan ChannelMsg, chan bool) {
 	}()
 
 	return bfs.ChannelsChan, bfs.WalkChannelsRunning
-}
-
-// Token returns user token for box datasource
-func (bfs *BoxFs) Token(c client.Client) string {
-	bfs.refreshToken(c)
-
-	return "Bearer " + bfs.Endpoint.Token.AccessToken
-}
-
-// GetDatasourceId returns datasource ID
-func (bfs *BoxFs) GetDatasourceId() string {
-	return bfs.Endpoint.Id
-}
-
-// GetThumbnail returns a URI pointing to an image
-func (bfs *BoxFs) GetThumbnail(id string, c client.Client) (string, error) {
-	url := fmt.Sprintf(
-		"%s%s&Authorization=%s",
-		globals.BoxFileMetadataEndpoint,
-		id,
-		"/thumbnail.png?min_height=256&min_width=256",
-		bfs.Token(c),
-	)
-
-	return url, nil
 }
 
 // Create file in box
@@ -429,47 +401,6 @@ func (bfs *BoxFs) generateThumbnail(fm *box.BoxFileMeta, id string) error {
 		if err := bfs.UploadFile(rd, id); err != nil {
 			return errors.New("ERROR uploading thumbnail for box file")
 		}
-	}
-
-	return nil
-}
-
-// refreshToken gets a new token (refreshed if expired) from custom one and saves it
-func (bfs *BoxFs) refreshToken(cl client.Client) error {
-	tokenSource := globals.NewBoxOauthConfig().TokenSource(oauth2.NoContext, &oauth2.Token{
-		AccessToken:  bfs.Endpoint.Token.AccessToken,
-		TokenType:    bfs.Endpoint.Token.TokenType,
-		RefreshToken: bfs.Endpoint.Token.RefreshToken,
-		Expiry:       time.Unix(bfs.Endpoint.Token.Expiry, 0),
-	})
-
-	t, err := tokenSource.Token()
-	if err != nil {
-		return err
-	}
-	bfs.Endpoint.Token.AccessToken = t.AccessToken
-	bfs.Endpoint.Token.TokenType = t.TokenType
-	bfs.Endpoint.Token.RefreshToken = t.RefreshToken
-	bfs.Endpoint.Token.Expiry = t.Expiry.Unix()
-
-	b, err := json.Marshal(bfs.Endpoint)
-	if err != nil {
-		return err
-	}
-
-	req := cl.NewRequest(
-		globals.DB_SERVICE_NAME,
-		"DB.Update",
-		&db_proto.UpdateRequest{
-			Index: "datasources",
-			Type:  "datasource",
-			Id:    bfs.Endpoint.Id,
-			Data:  string(b),
-		},
-	)
-	rsp := &db_proto.UpdateResponse{}
-	if err := cl.Call(globals.NewSystemContext(), req, rsp); err != nil {
-		return err
 	}
 
 	return nil

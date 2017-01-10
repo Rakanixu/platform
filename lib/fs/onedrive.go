@@ -13,7 +13,6 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/image"
 	"github.com/kazoup/platform/lib/onedrive"
-	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"io"
@@ -112,44 +111,6 @@ func (ofs *OneDriveFs) WalkChannels() (chan ChannelMsg, chan bool) {
 	}()
 
 	return ofs.ChannelsChan, ofs.WalkChannelsRunning
-}
-
-// Token returns user token
-func (ofs *OneDriveFs) Token(c client.Client) string {
-	return ofs.Endpoint.Token.AccessToken
-}
-
-// GetDatasourceId returns datasource ID
-func (ofs *OneDriveFs) GetDatasourceId() string {
-	return ofs.Endpoint.Id
-}
-
-// GetThumbnail returns a URI pointing to a thumbnail
-func (ofs *OneDriveFs) GetThumbnail(id string, cl client.Client) (string, error) {
-	if err := ofs.refreshToken(); err != nil {
-		log.Println(err)
-	}
-
-	c := &http.Client{}
-	//https://api.onedrive.com/v1.0/drives
-	url := fmt.Sprintf("%sitems/%s/thumbnails/0/medium", globals.OneDriveEndpoint+Drive, id)
-	req, err := http.NewRequest("GET", url, nil)
-	req.Header.Set("Authorization", ofs.Endpoint.Token.TokenType+" "+ofs.Endpoint.Token.AccessToken)
-	if err != nil {
-		return "", err
-	}
-	res, err := c.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer res.Body.Close()
-
-	var thumbRsp *onedrive.FileThumbnailResponse
-	if err := json.NewDecoder(res.Body).Decode(&thumbRsp); err != nil {
-		return "", err
-	}
-
-	return thumbRsp.URL, nil
 }
 
 // Create a one drive file
@@ -417,7 +378,7 @@ func (ofs *OneDriveFs) getDrivesChildren() error {
 		url = globals.OneDriveEndpoint + Drives + v + "/root/children"
 
 		req, err := http.NewRequest("GET", url, nil)
-		req.Header.Set("Authorization", ofs.Endpoint.Token.TokenType+" "+ofs.Endpoint.Token.AccessToken)
+		req.Header.Set("Authorization", ofs.token())
 		if err != nil {
 			return err
 		}

@@ -1,6 +1,7 @@
 package fs
 
 import (
+	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/lib/globals"
 	"golang.org/x/oauth2"
@@ -26,4 +27,22 @@ func (bfs *BoxFs) Authorize() (*datasource_proto.Token, error) {
 	bfs.Endpoint.Token.Expiry = t.Expiry.Unix()
 
 	return bfs.Endpoint.Token, nil
+}
+
+// GetDatasourceId returns datasource ID
+func (bfs *BoxFs) GetDatasourceId() string {
+	return bfs.Endpoint.Id
+}
+
+// GetThumbnail returns a URI pointing to an image
+func (bfs *BoxFs) GetThumbnail(id string) (string, error) {
+	url := fmt.Sprintf(
+		"%s%s&Authorization=%s",
+		globals.BoxFileMetadataEndpoint,
+		id,
+		"/thumbnail.png?min_height=256&min_width=256",
+		bfs.token(),
+	)
+
+	return url, nil
 }
