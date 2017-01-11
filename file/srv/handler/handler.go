@@ -1,7 +1,10 @@
 package handler
 
 import (
+	"fmt"
+	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	proto "github.com/kazoup/platform/file/srv/proto/file"
+	"github.com/kazoup/platform/lib/globals"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
@@ -51,6 +54,14 @@ func (f *File) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *proto.
 	_, err = fsys.DeleteFile(ctx, f.Client, *req)
 	if err != nil {
 		return err
+	}
+
+	// Delete file from GCS
+	if err := f.Client.Publish(globals.NewSystemContext(), f.Client.NewPublication(globals.DeleteFileInBucketTopic, &datasource_proto.DeleteFileInBucketMessage{
+		FileId: req.FileId,
+		Index:  req.Index,
+	})); err != nil {
+		fmt.Println("ERROR cleaning thumbnail", err)
 	}
 
 	return nil
