@@ -297,12 +297,6 @@ func NewUUID() (string, error) {
 // file does not exists any more on datasource
 // Also deletes thumbs that does not exists any more on index
 func ClearIndex(c client.Client, e *datasource_proto.Endpoint) error {
-	// Call the helper to publish messages of thumbnails that does not exists anymore
-	// Paginate in chuncks of 100 docs
-	if err := deleteFilesNoExistsFromGCS(c, e, 0, 100); err != nil {
-		return err
-	}
-
 	// Clean the index after all messages have been published
 	delReq := &db_proto.DeleteByQueryRequest{
 		Indexes:  []string{e.Index},
@@ -319,16 +313,6 @@ func ClearIndex(c client.Client, e *datasource_proto.Endpoint) error {
 		log.Printf("Error globals.ClearIndex -  %s", err)
 		return err
 	}
-
-	// dbc := db_proto.NewDBClient(DB_SERVICE_NAME, c)
-	// _, err := dbc.DeleteByQuery(NewSystemContext(), &db_proto.DeleteByQueryRequest{
-	// 	Indexes:  []string{e.Index},
-	// 	Types:    []string{"file"},
-	// 	LastSeen: e.LastScanStarted,
-	// })
-	// if err != nil {
-	// 	return err
-	// }
 
 	return nil
 }
