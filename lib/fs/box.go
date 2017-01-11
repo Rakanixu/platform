@@ -10,6 +10,7 @@ import (
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/box"
 	"github.com/kazoup/platform/lib/categories"
+	cs "github.com/kazoup/platform/lib/cloudstorage"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/image"
@@ -278,38 +279,6 @@ func (bfs *BoxFs) Update(req file_proto.ShareRequest) chan FileMsg {
 	return bfs.FilesChan
 }
 
-// DownloadFile retrieves a file
-func (bfs *BoxFs) DownloadFile(id string, opts ...string) (io.ReadCloser, error) {
-	c := &http.Client{}
-	url := fmt.Sprintf("%s%s/content", globals.BoxFileMetadataEndpoint, id)
-	r, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		return nil, err
-	}
-	r.Header.Set("Authorization", bfs.token())
-	rsp, err := c.Do(r)
-	if err != nil {
-		return nil, err
-	}
-
-	return rsp.Body, nil
-}
-
-// UploadFile uploads a file into google cloud storage
-func (bfs *BoxFs) UploadFile(file io.Reader, fId string) error {
-	return UploadFile(file, bfs.Endpoint.Index, fId)
-}
-
-// SignedObjectStorageURL returns a temporary link to a resource in GC storage
-func (bfs *BoxFs) SignedObjectStorageURL(objName string) (string, error) {
-	return SignedObjectStorageURL(bfs.Endpoint.Index, objName)
-}
-
-// DeleteFilesFromIndex removes files from GC storage
-func (bfs *BoxFs) DeleteIndexBucketFromGCS() error {
-	return DeleteBucket(bfs.Endpoint.Index, "")
-}
-
 // getDirChildren get children from directory
 func (bfs *BoxFs) getDirChildren(id string, offset, limit int) error {
 	c := &http.Client{}
@@ -388,7 +357,13 @@ func (bfs *BoxFs) generateThumbnail(fm *box.BoxFileMeta, id string) error {
 	name := strings.Split(fm.Name, ".")
 
 	if categories.GetDocType("."+name[len(name)-1]) == globals.CATEGORY_PICTURE {
-		rc, err := bfs.DownloadFile(fm.ID)
+		// Download file from Box, so connector is globals.Box
+		bcs, err := cs.NewCloudStorageFromEndpoint(bfs.Endpoint, globals.Box)
+		if err != nil {
+			return err
+		}
+
+		rc, err := bcs.Download(fm.ID)
 		if err != nil {
 			return errors.New("ERROR downloading box file")
 		}
@@ -398,8 +373,14 @@ func (bfs *BoxFs) generateThumbnail(fm *box.BoxFileMeta, id string) error {
 			return errors.New("ERROR generating thumbnail for box file")
 		}
 
-		if err := bfs.UploadFile(rd, id); err != nil {
-			return errors.New("ERROR uploading thumbnail for box file")
+		// Upload file to GoogleCloudStorage, so connector is globals.GoogleCloudStorage
+		ncs, err := cs.NewCloudStorageFromEndpoint(bfs.Endpoint, globals.GoogleCloudStorage)
+		if err != nil {
+			return err
+		}
+
+		if err := ncs.Upload(rd, id); err != nil {
+			return err
 		}
 	}
 

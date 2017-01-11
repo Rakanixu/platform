@@ -9,13 +9,13 @@ import (
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/categories"
+	cs "github.com/kazoup/platform/lib/cloudstorage"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/image"
 	"github.com/kazoup/platform/lib/onedrive"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -247,45 +247,6 @@ func (ofs *OneDriveFs) Update(req file_proto.ShareRequest) chan FileMsg {
 	return ofs.FilesChan
 }
 
-// DownloadFile retrieves a file
-func (ofs *OneDriveFs) DownloadFile(id string, opts ...string) (io.ReadCloser, error) {
-	//POST /drive/items/{item-id}/action.invite
-	if err := ofs.refreshToken(); err != nil {
-		log.Println(err)
-	}
-
-	oc := &http.Client{}
-
-	// https://dev.onedrive.com/items/download.htm
-	url := globals.OneDriveEndpoint + Drive + "items/" + id + "/content"
-	oreq, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		return nil, err
-	}
-	oreq.Header.Set("Authorization", ofs.token())
-	res, err := oc.Do(oreq)
-	if err != nil {
-		return nil, err
-	}
-
-	return res.Body, nil
-}
-
-// UploadFile uploads a file into google cloud storage
-func (ofs *OneDriveFs) UploadFile(file io.Reader, fId string) error {
-	return UploadFile(file, ofs.Endpoint.Index, fId)
-}
-
-// SignedObjectStorageURL returns a temporary link to a resource in GC storage
-func (ofs *OneDriveFs) SignedObjectStorageURL(objName string) (string, error) {
-	return SignedObjectStorageURL(ofs.Endpoint.Index, objName)
-}
-
-// DeleteFilesFromIndex removes files from GC storage
-func (ofs *OneDriveFs) DeleteIndexBucketFromGCS() error {
-	return DeleteBucket(ofs.Endpoint.Index, "")
-}
-
 // getFiles retrieves drives, directories and files
 func (ofs *OneDriveFs) getFiles() error {
 	if err := ofs.getDrives(); err != nil {
@@ -461,7 +422,13 @@ func (ofs *OneDriveFs) generateThumbnail(f onedrive.OneDriveFile, id string) err
 	n := strings.Split(f.Name, ".")
 
 	if categories.GetDocType("."+n[len(n)-1]) == globals.CATEGORY_PICTURE {
-		pr, err := ofs.DownloadFile(f.ID)
+		// Download file from OneDrive, so connector is globals.OneDrive
+		ocs, err := cs.NewCloudStorageFromEndpoint(ofs.Endpoint, globals.OneDrive)
+		if err != nil {
+			return err
+		}
+
+		pr, err := ocs.Download(f.ID)
 		if err != nil {
 			return errors.New("ERROR downloading onedrive file")
 		}
@@ -470,9 +437,14 @@ func (ofs *OneDriveFs) generateThumbnail(f onedrive.OneDriveFile, id string) err
 		if err != nil {
 			return errors.New("ERROR generating thumbnail for onedrive file")
 		}
+		// Upload file to GoogleCloudStorage, so connector is globals.GoogleCloudStorage
+		ncs, err := cs.NewCloudStorageFromEndpoint(ofs.Endpoint, globals.GoogleCloudStorage)
+		if err != nil {
+			return err
+		}
 
-		if err := ofs.UploadFile(b, id); err != nil {
-			return errors.New("ERROR uploading thumbnail for onedrive file")
+		if err := ncs.Upload(b, id); err != nil {
+			return err
 		}
 	}
 

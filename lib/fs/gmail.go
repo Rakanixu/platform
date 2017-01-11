@@ -1,12 +1,11 @@
 package fs
 
 import (
-	"bytes"
-	"encoding/base64"
 	"errors"
 	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
+	cs "github.com/kazoup/platform/lib/cloudstorage"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	gmailhelper "github.com/kazoup/platform/lib/gmail"
@@ -14,8 +13,6 @@ import (
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	gmail "google.golang.org/api/gmail/v1"
-	"io"
-	"io/ioutil"
 	"log"
 	"strings"
 	"time"
@@ -89,55 +86,6 @@ func (gfs *GmailFs) Delete(rq file_proto.DeleteRequest) chan FileMsg {
 // Update file
 func (gfs *GmailFs) Update(req file_proto.ShareRequest) chan FileMsg {
 	return gfs.FilesChan
-}
-
-// DownloadFile retrieves a file
-func (gfs *GmailFs) DownloadFile(id string, opts ...string) (io.ReadCloser, error) {
-	cfg := globals.NewGmailOauthConfig()
-	c := cfg.Client(context.Background(), &oauth2.Token{
-		AccessToken:  gfs.Endpoint.Token.AccessToken,
-		TokenType:    gfs.Endpoint.Token.TokenType,
-		RefreshToken: gfs.Endpoint.Token.RefreshToken,
-		Expiry:       time.Unix(gfs.Endpoint.Token.Expiry, 0),
-	})
-
-	s, err := gmail.New(c)
-	if err != nil {
-		return nil, err
-	}
-
-	srv := gmail.NewUsersMessagesService(s)
-
-	if len(opts) == 0 {
-		return nil, errors.New("ERROR opts reuired (attachmentID)")
-	}
-	mpb, err := srv.Attachments.Get("me", id, opts[0]).Fields("data").Do()
-	if err != nil {
-		return nil, err
-	}
-
-	b, err := base64.URLEncoding.DecodeString(mpb.Data)
-	if err != nil {
-		return nil, err
-	}
-
-	return ioutil.NopCloser(bytes.NewReader(b)), nil
-
-}
-
-// UploadFile uploads a file into google cloud storage
-func (gfs *GmailFs) UploadFile(file io.Reader, fId string) error {
-	return UploadFile(file, gfs.Endpoint.Index, fId)
-}
-
-// SignedObjectStorageURL returns a temporary link to a resource in GC storage
-func (gfs *GmailFs) SignedObjectStorageURL(objName string) (string, error) {
-	return SignedObjectStorageURL(gfs.Endpoint.Index, objName)
-}
-
-// DeleteFilesFromIndex removes files from GC storage
-func (gfs *GmailFs) DeleteIndexBucketFromGCS() error {
-	return DeleteBucket(gfs.Endpoint.Index, "")
 }
 
 // getMessages discover files (attachments)
@@ -246,7 +194,13 @@ func (gfs *GmailFs) pushMessagesToChanForPage(s *gmail.Service, msgs []*gmail.Me
 // generateThumbnail downloads original picture, resize and uploads to Google storage
 func (gfs *GmailFs) generateThumbnail(gf *gmailhelper.GmailFile, msg *gmail.Message, msgp *gmail.MessagePart, id string) error {
 	if msgp.MimeType == globals.MIME_PNG || msgp.MimeType == globals.MIME_JPG || msgp.MimeType == globals.MIME_JPEG {
-		pr, err := gfs.DownloadFile(msg.Id, msgp.Body.AttachmentId)
+		// Downloads from gmail, see connector
+		gcs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.Gmail)
+		if err != nil {
+			return err
+		}
+
+		pr, err := gcs.Download(msg.Id, msgp.Body.AttachmentId)
 		if err != nil {
 			return errors.New("ERROR downloading gmail file")
 		}
@@ -256,8 +210,14 @@ func (gfs *GmailFs) generateThumbnail(gf *gmailhelper.GmailFile, msg *gmail.Mess
 			return errors.New("ERROR generating thumbnail for gmail file")
 		}
 
-		if err := gfs.UploadFile(b, id); err != nil {
-			return errors.New("ERROR uploading thumbnail for gmail file: %s")
+		// Uploads to Google cloud storage, see connector
+		ncs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.GoogleCloudStorage)
+		if err != nil {
+			return err
+		}
+
+		if err := ncs.Upload(b, id); err != nil {
+			return err
 		}
 	}
 

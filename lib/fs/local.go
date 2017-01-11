@@ -9,7 +9,6 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/local"
 	"golang.org/x/net/context"
-	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -92,26 +91,6 @@ func (lfs *LocalFs) Delete(rq file_proto.DeleteRequest) chan FileMsg {
 // Update file
 func (lfs *LocalFs) Update(req file_proto.ShareRequest) chan FileMsg {
 	return lfs.FilesChan
-}
-
-// DownloadFile retrieves a file
-func (lfs *LocalFs) DownloadFile(id string, opts ...string) (io.ReadCloser, error) {
-	return nil, nil
-}
-
-// UploadFile uploads a file into google cloud storage
-func (lfs *LocalFs) UploadFile(file io.Reader, fId string) error {
-	return UploadFile(file, lfs.Endpoint.Index, fId)
-}
-
-// SignedObjectStorageURL returns a temporary link to a resource in GC storage
-func (lfs *LocalFs) SignedObjectStorageURL(objName string) (string, error) {
-	return SignedObjectStorageURL(lfs.Endpoint.Index, objName)
-}
-
-// DeleteFilesFromIndex removes files from GC storage
-func (lfs *LocalFs) DeleteIndexBucketFromGCS() error {
-	return DeleteBucket(lfs.Endpoint.Index, "")
 }
 
 // walkDatasourceParents creates helper index, aliases and push the dirs that makes the root path of the datasource

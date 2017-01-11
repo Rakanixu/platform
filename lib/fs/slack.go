@@ -7,11 +7,11 @@ import (
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/categories"
+	cs "github.com/kazoup/platform/lib/cloudstorage"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/image"
 	"github.com/kazoup/platform/lib/slack"
-	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -116,37 +116,6 @@ func (sfs *SlackFs) Update(req file_proto.ShareRequest) chan FileMsg {
 			return sfs.shareFileInsideTeam(f, req.DestinationId)
 		}*/
 	return sfs.FilesChan
-}
-
-// DownloadFile retrieves a file
-func (sfs *SlackFs) DownloadFile(url string, opts ...string) (io.ReadCloser, error) {
-	c := &http.Client{}
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Add("Authorization", sfs.token())
-	res, err := c.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	return res.Body, nil
-}
-
-// UploadFile uploads a file into google cloud storage
-func (sfs *SlackFs) UploadFile(file io.Reader, fId string) error {
-	return UploadFile(file, sfs.Endpoint.Index, fId)
-}
-
-// SignedObjectStorageURL returns a temporary link to a resource in GC storage
-func (sfs *SlackFs) SignedObjectStorageURL(objName string) (string, error) {
-	return SignedObjectStorageURL(sfs.Endpoint.Index, objName)
-}
-
-// DeleteFilesFromIndex removes files from GC storage
-func (sfs *SlackFs) DeleteIndexBucketFromGCS() error {
-	return DeleteBucket(sfs.Endpoint.Index, "")
 }
 
 // getUsers retrieves users from slack team
@@ -258,7 +227,12 @@ func (sfs *SlackFs) getFiles(page int) error {
 // generateThumbnail downloads original picture, resize and uploads to Google storage
 func (sfs *SlackFs) generateThumbnail(sf slack.SlackFile, id string) error {
 	if categories.GetDocType("."+sf.Filetype) == globals.CATEGORY_PICTURE {
-		pr, err := sfs.DownloadFile(sf.URLPrivateDownload)
+		// Download file from Slack, so connector is globals.Slack
+		scs, err := cs.NewCloudStorageFromEndpoint(sfs.Endpoint, globals.Slack)
+		if err != nil {
+			return err
+		}
+		pr, err := scs.Download(sf.URLPrivateDownload)
 		if err != nil {
 			return errors.New("ERROR downloading slack file")
 		}
@@ -268,8 +242,14 @@ func (sfs *SlackFs) generateThumbnail(sf slack.SlackFile, id string) error {
 			return errors.New("ERROR generating thumbnail for slack file")
 		}
 
-		if err := sfs.UploadFile(b, id); err != nil {
-			return errors.New("ERROR uploading thumbnail for slack file")
+		// Upload file to GoogleCloudStorage, so connector is globals.GoogleCloudStorage
+		ncs, err := cs.NewCloudStorageFromEndpoint(sfs.Endpoint, globals.GoogleCloudStorage)
+		if err != nil {
+			return err
+		}
+
+		if err := ncs.Upload(b, id); err != nil {
+			return err
 		}
 	}
 

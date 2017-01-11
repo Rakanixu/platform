@@ -5,13 +5,13 @@ import (
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/categories"
+	cs "github.com/kazoup/platform/lib/cloudstorage"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/image"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"google.golang.org/api/drive/v3"
-	"io"
 	"log"
 	"time"
 )
@@ -171,36 +171,6 @@ func (gfs *GoogleDriveFs) Update(req file_proto.ShareRequest) chan FileMsg {
 	return gfs.FilesChan
 }
 
-// DownloadFile retrieves a file from google drive
-func (gfs *GoogleDriveFs) DownloadFile(id string, opts ...string) (io.ReadCloser, error) {
-	srv, err := gfs.getDriveService()
-	if err != nil {
-		return nil, err
-	}
-
-	res, err := srv.Files.Get(id).Download()
-	if err != nil {
-		return nil, err
-	}
-
-	return res.Body, nil
-}
-
-// UploadFile uploads a file into google cloud storage
-func (gfs *GoogleDriveFs) UploadFile(file io.Reader, fId string) error {
-	return UploadFile(file, gfs.Endpoint.Index, fId)
-}
-
-// SignedObjectStorageURL returns a temporary link to a resource in GC storage
-func (gfs *GoogleDriveFs) SignedObjectStorageURL(objName string) (string, error) {
-	return SignedObjectStorageURL(gfs.Endpoint.Index, objName)
-}
-
-// DeleteFilesFromIndex removes files from GC storage
-func (gfs *GoogleDriveFs) DeleteIndexBucketFromGCS() error {
-	return DeleteBucket(gfs.Endpoint.Index, "")
-}
-
 // getFiles discover all files in google drive account
 func (gfs *GoogleDriveFs) getFiles() error {
 	srv, err := gfs.getDriveService()
@@ -273,7 +243,13 @@ func (gfs *GoogleDriveFs) generateThumbnail(f *drive.File, id string) error {
 	}
 
 	if c == globals.CATEGORY_PICTURE {
-		rc, err := gfs.DownloadFile(f.Id)
+		// Download file from GoogleDrive, so connector is globals.GoogleDrive
+		gcs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.GoogleDrive)
+		if err != nil {
+			return err
+		}
+
+		rc, err := gcs.Download(f.Id)
 		if err != nil {
 			return errors.New("ERROR downloading googledrive file")
 		}
@@ -283,8 +259,14 @@ func (gfs *GoogleDriveFs) generateThumbnail(f *drive.File, id string) error {
 			return errors.New("ERROR generating thumbnail for googledrive file")
 		}
 
-		if err := gfs.UploadFile(rd, id); err != nil {
-			return errors.New("ERROR uploading thumbnail for googledrive file")
+		// Upload file to GoogleCloudStorage, so connector is globals.GoogleCloudStorage
+		ncs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.GoogleCloudStorage)
+		if err != nil {
+			return err
+		}
+
+		if err := ncs.Upload(rd, id); err != nil {
+			return err
 		}
 	}
 

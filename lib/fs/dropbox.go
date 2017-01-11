@@ -9,11 +9,11 @@ import (
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/categories"
+	cs "github.com/kazoup/platform/lib/cloudstorage"
 	"github.com/kazoup/platform/lib/dropbox"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/image"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -229,40 +229,6 @@ func (dfs *DropboxFs) Update(req file_proto.ShareRequest) chan FileMsg {
 	return dfs.FilesChan
 }
 
-// DownloadFile retrieves a file
-func (dfs *DropboxFs) DownloadFile(id string, opts ...string) (io.ReadCloser, error) {
-	c := &http.Client{}
-	req, err := http.NewRequest(http.MethodPost, globals.DropboxFileDownload, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Authorization", dfs.token())
-	req.Header.Set("Dropbox-API-Arg", `{
-			"path": "`+id+`"
-		}`)
-	rsp, err := c.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	return rsp.Body, nil
-}
-
-// UploadFile uploads a file into google cloud storage
-func (dfs *DropboxFs) UploadFile(file io.Reader, fId string) error {
-	return UploadFile(file, dfs.Endpoint.Index, fId)
-}
-
-// SignedObjectStorageURL returns a temporary link to a resource in GC storage
-func (dfs *DropboxFs) SignedObjectStorageURL(objName string) (string, error) {
-	return SignedObjectStorageURL(dfs.Endpoint.Index, objName)
-}
-
-// DeleteFilesFromIndex removes files from GC storage
-func (dfs *DropboxFs) DeleteIndexBucketFromGCS() error {
-	return DeleteBucket(dfs.Endpoint.Index, "")
-}
-
 // getFile retrieves a single file from dorpbox
 func (dfs *DropboxFs) getFile(id string) (*file.KazoupDropboxFile, error) {
 	b := []byte(`{
@@ -342,7 +308,13 @@ func (dfs *DropboxFs) generateThumbnail(f dropbox.DropboxFile, id string) error 
 	name := strings.Split(f.Name, ".")
 
 	if categories.GetDocType("."+name[len(name)-1]) == globals.CATEGORY_PICTURE {
-		pr, err := dfs.DownloadFile(f.ID)
+		// Downloads from dropbox, see connector
+		dcs, err := cs.NewCloudStorageFromEndpoint(dfs.Endpoint, globals.Dropbox)
+		if err != nil {
+			return err
+		}
+
+		pr, err := dcs.Download(f.ID)
 		if err != nil {
 			return errors.New("ERROR downloading dropbox file")
 		}
@@ -352,8 +324,14 @@ func (dfs *DropboxFs) generateThumbnail(f dropbox.DropboxFile, id string) error 
 			return errors.New("ERROR generating thumbnail for dropbox file")
 		}
 
-		if err := dfs.UploadFile(b, id); err != nil {
-			return errors.New("ERROR uploading thumbnail for dropbox file")
+		// Uploads to Google cloud storage, see connector
+		ncs, err := cs.NewCloudStorageFromEndpoint(dfs.Endpoint, globals.GoogleCloudStorage)
+		if err != nil {
+			return err
+		}
+
+		if err := ncs.Upload(b, id); err != nil {
+			return err
 		}
 	}
 

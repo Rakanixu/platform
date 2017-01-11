@@ -5,6 +5,7 @@ import (
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
+	cs "github.com/kazoup/platform/lib/cloudstorage"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
@@ -116,12 +117,12 @@ type DeleteBucket struct {
 
 // SubscribeDeleteBucket subscribes to DeleteBucket Message to clean un a bicket in GC storage
 func (db *DeleteBucket) SubscribeDeleteBucket(ctx context.Context, msg *proto.DeleteBucketMessage) error {
-	cfs, err := fs.NewFsFromEndpoint(msg.Endpoint)
+	ncs, err := cs.NewCloudStorageFromEndpoint(msg.Endpoint, globals.GoogleCloudStorage)
 	if err != nil {
 		return err
 	}
 
-	return cfs.DeleteIndexBucketFromGCS()
+	return ncs.DeleteBucket()
 }
 
 type DeleteFileInBucket struct {
