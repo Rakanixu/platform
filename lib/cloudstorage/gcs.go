@@ -64,6 +64,7 @@ func init() {
 	}
 }
 
+// Upload resource
 func (gcs *GoogleCloudStorage) Upload(r io.Reader, fileID string) error {
 	c, err := google.DefaultClient(context.Background(), storage.DevstorageFullControlScope)
 	if err != nil {
@@ -95,13 +96,13 @@ func (gcs *GoogleCloudStorage) Upload(r io.Reader, fileID string) error {
 	return nil
 }
 
+// Download resource
 func (gcs *GoogleCloudStorage) Download(string, ...string) (io.ReadCloser, error) {
 	return nil, nil
 }
 
-// DeleteFile deletes a file from google cloud storage
-/*
-func DeleteFile(index, fID string) error {
+// Delete resource
+func (gcs *GoogleCloudStorage) Delete(bucketName, objName string) error {
 	c, err := google.DefaultClient(context.Background(), storage.DevstorageFullControlScope)
 	if err != nil {
 		return err
@@ -110,11 +111,11 @@ func DeleteFile(index, fID string) error {
 	if err != nil {
 		return err
 	}
-
-	if err := srv.Objects.Delete(index, fID).Do(); err != nil {
+	log.Println("!!!!!!!", bucketName, objName)
+	if err := srv.Objects.Delete(bucketName, objName).Do(); err != nil {
 		return err
 	}
+	log.Println("OK")
 
 	return nil
 }
-*/

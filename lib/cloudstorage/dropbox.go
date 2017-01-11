@@ -18,12 +18,12 @@ func NewDropboxCloudStorage(e *datasource_proto.Endpoint) CloudStorage {
 	}
 }
 
-// Upload
+// Upload resource
 func (dcs *DropboxCloudStorage) Upload(r io.Reader, fileID string) error {
 	return nil
 }
 
-// Download
+// Download resource
 func (dcs *DropboxCloudStorage) Download(fileID string, opts ...string) (io.ReadCloser, error) {
 	c := &http.Client{}
 	req, err := http.NewRequest(http.MethodPost, globals.DropboxFileDownload, nil)
@@ -40,6 +40,11 @@ func (dcs *DropboxCloudStorage) Download(fileID string, opts ...string) (io.Read
 	}
 
 	return rsp.Body, nil
+}
+
+// Delete resource
+func (dcs *DropboxCloudStorage) Delete(bucketName string, objName string) error {
+	return nil
 }
 
 func (dcs *DropboxCloudStorage) token() string {

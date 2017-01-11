@@ -41,6 +41,11 @@ func (gcs *GoogleDriveCloudStorage) Download(fileID string, opts ...string) (io.
 	return res.Body, nil
 }
 
+// Delete resource
+func (gcs *GoogleDriveCloudStorage) Delete(bucketName string, objName string) error {
+	return nil
+}
+
 // getDriveService return a google drive service instance
 func (gcs *GoogleDriveCloudStorage) getDriveService() (*drive.Service, error) {
 	cfg := globals.NewGoogleOautConfig()

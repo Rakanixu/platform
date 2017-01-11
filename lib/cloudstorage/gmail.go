@@ -25,12 +25,12 @@ func NewGmailCloudStorage(e *datasource_proto.Endpoint) CloudStorage {
 	}
 }
 
-// Upload
+// Upload resource
 func (gcs *GmailCloudStorage) Upload(r io.Reader, fileID string) error {
 	return nil
 }
 
-// Download
+// Download resource
 func (gcs *GmailCloudStorage) Download(fileID string, opts ...string) (io.ReadCloser, error) {
 	cfg := globals.NewGmailOauthConfig()
 	c := cfg.Client(context.Background(), &oauth2.Token{
@@ -61,4 +61,9 @@ func (gcs *GmailCloudStorage) Download(fileID string, opts ...string) (io.ReadCl
 	}
 
 	return ioutil.NopCloser(bytes.NewReader(b)), nil
+}
+
+// Delete resource
+func (gcs *GmailCloudStorage) Delete(bucketName string, objName string) error {
+	return nil
 }

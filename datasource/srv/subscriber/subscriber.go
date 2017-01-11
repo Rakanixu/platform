@@ -3,10 +3,10 @@ package subscriber
 import (
 	"encoding/json"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
+	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	cs "github.com/kazoup/platform/lib/cloudstorage"
-	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/broker"
@@ -132,5 +132,13 @@ type DeleteFileInBucket struct {
 
 // SubscribeCleanBucket subscribes to DCleanBucket Message to remove thumbs not longer related with document in index
 func (dfb *DeleteFileInBucket) SubscribeDeleteFileInBucket(ctx context.Context, msg *proto.DeleteFileInBucketMessage) error {
-	return fs.DeleteFile(msg.Index, msg.FileId)
+	log.Println("ON SUBSCRIBER")
+	ncs, err := cs.NewCloudStorageFromEndpoint(&datasource_proto.Endpoint{
+		Index: msg.Index,
+	}, globals.GoogleCloudStorage)
+	if err != nil {
+		return err
+	}
+	log.Println("CALLING")
+	return ncs.Delete(msg.Index, msg.FileId)
 }

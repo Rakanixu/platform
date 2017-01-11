@@ -17,6 +17,7 @@ type CloudStorage interface {
 type CloudStorageOperations interface {
 	Upload(io.Reader, string) error
 	Download(string, ...string) (io.ReadCloser, error)
+	Delete(string, string) error
 }
 
 // CloudStorageUtils interface

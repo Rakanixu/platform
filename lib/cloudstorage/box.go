@@ -19,12 +19,12 @@ func NewBoxCloudStorage(e *datasource_proto.Endpoint) CloudStorage {
 	}
 }
 
-// Upload
+// Upload resource
 func (bcs *BoxCloudStorage) Upload(r io.Reader, fileID string) error {
 	return nil
 }
 
-// Download
+// Download resource
 func (bcs *BoxCloudStorage) Download(fileID string, opts ...string) (io.ReadCloser, error) {
 	c := &http.Client{}
 	url := fmt.Sprintf("%s%s/content", globals.BoxFileMetadataEndpoint, fileID)
@@ -39,6 +39,11 @@ func (bcs *BoxCloudStorage) Download(fileID string, opts ...string) (io.ReadClos
 	}
 
 	return rsp.Body, nil
+}
+
+// Delete resource
+func (bcs *BoxCloudStorage) Delete(bucketName string, objName string) error {
+	return nil
 }
 
 func (bcs *BoxCloudStorage) token() string {
