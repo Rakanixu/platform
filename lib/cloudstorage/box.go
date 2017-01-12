@@ -45,7 +45,3 @@ func (bcs *BoxCloudStorage) Download(fileID string, opts ...string) (io.ReadClos
 func (bcs *BoxCloudStorage) Delete(bucketName string, objName string) error {
 	return nil
 }
-
-func (bcs *BoxCloudStorage) token() string {
-	return "Bearer " + bcs.Endpoint.Token.AccessToken
-}

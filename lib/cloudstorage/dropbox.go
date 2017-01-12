@@ -46,7 +46,3 @@ func (dcs *DropboxCloudStorage) Download(fileID string, opts ...string) (io.Read
 func (dcs *DropboxCloudStorage) Delete(bucketName string, objName string) error {
 	return nil
 }
-
-func (dcs *DropboxCloudStorage) token() string {
-	return "Bearer " + dcs.Endpoint.Token.AccessToken
-}

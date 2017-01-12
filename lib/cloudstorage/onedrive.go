@@ -45,7 +45,3 @@ func (ocs *OneDriveCloudStorage) Download(fileID string, opts ...string) (io.Rea
 func (ocs *OneDriveCloudStorage) Delete(bucketName string, objName string) error {
 	return nil
 }
-
-func (ocs *OneDriveCloudStorage) token() string {
-	return ocs.Endpoint.Token.TokenType + " " + ocs.Endpoint.Token.AccessToken
-}

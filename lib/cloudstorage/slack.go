@@ -42,7 +42,3 @@ func (scs *SlackCloudStorage) Download(url string, opts ...string) (io.ReadClose
 func (scs *SlackCloudStorage) Delete(bucketName string, objName string) error {
 	return nil
 }
-
-func (scs *SlackCloudStorage) token() string {
-	return "Bearer " + scs.Endpoint.Token.AccessToken
-}
