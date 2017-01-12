@@ -60,7 +60,7 @@
     </template>
 
     <template is="dom-if" if="[[isGoogleDrive(item.file_type)]]" restamp="true">
-      <mat-item label="People"
+      <mat-item label="Shared with"
                 class="no-ui-action overflow-visible"
                 tabindex="-1">
         <template is="dom-repeat" items="[[googleDriveInfo.people]]">
@@ -93,7 +93,7 @@
     </template>
 
     <template is="dom-if" if="[[isDropboxFileShared(item.file_type, dropboxInfo.sharedFile)]]" restamp="true">
-      <mat-item label="People"
+      <mat-item label="Shared with"
                 class="no-ui-action overflow-visible"
                 tabindex="-1">
         <template is="dom-repeat" items="[[dropboxInfo.people]]">
