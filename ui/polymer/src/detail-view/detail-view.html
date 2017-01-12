@@ -15,6 +15,10 @@
         };
       }
 
+      initials-placeholder {
+        margin: 0 4px 0;
+      }
+
       mat-item.overflow-visible::shadow a,
       mat-item.overflow-visible::shadow a div,
       mat-item.overflow-visible::shadow a div div {
@@ -60,14 +64,24 @@
     </template>
 
     <template is="dom-if" if="[[isGoogleDrive(item.file_type)]]" restamp="true">
-      <mat-item label="People"
+      <mat-item label="Shared with"
                 class="no-ui-action overflow-visible"
                 tabindex="-1">
         <template is="dom-repeat" items="[[googleDriveInfo.people]]">
           <mat-avatar id$="avatar_[[item.id]]"
+                      class="no-ui-action"
                       background="light"
-                      icon-src$="[[profilePicture(item.photoLink)]]"></mat-avatar>
+                      icon-src$="[[profilePicture(item.photoLink)]]"
+                      hidden$="[[item.showInitials]]"></mat-avatar>
           <paper-tooltip for$="avatar_[[item.id]]">[[item.displayName]]</paper-tooltip>
+
+          <initials-placeholder id$="initials_[[item.id]]"
+                                first-name="[[item.firstName]]"
+                                last-name="[[item.secondName]]"
+                                size="38"
+                                num-colors="1"
+                                hidden$="[[!item.showInitials]]"></initials-placeholder>
+          <paper-tooltip for$="initials_[[item.id]]">[[item.displayName]]</paper-tooltip>
         </template>
       </mat-item>
 
@@ -93,7 +107,7 @@
     </template>
 
     <template is="dom-if" if="[[isDropboxFileShared(item.file_type, dropboxInfo.sharedFile)]]" restamp="true">
-      <mat-item label="People"
+      <mat-item label="Shared with"
                 class="no-ui-action overflow-visible"
                 tabindex="-1">
         <template is="dom-repeat" items="[[dropboxInfo.people]]">
@@ -382,6 +396,17 @@
             this.item.original.permissions :
             this.item.original.owners;
 
+          _.forEach(people, function(val, key) {
+            var name = val.displayName.split(' ');
+
+            val.firstName = name[0];
+            val.secondName = name[1];
+
+            if (_.isEmpty(val.photoLink)) {
+              val.showInitials = true;
+            }
+          });
+
           this.set('googleDriveInfo', {
             people: people,
             createdDateTime: this.timestampToHumanTime(this.item.original.createdTime),
@@ -410,7 +435,7 @@
             });
 
             id++;
-          }, this);
+          }.bind(this));
 
           _.forEach(this.item.original.dropbox_invitee, function(el) {
             people.push({
@@ -420,7 +445,7 @@
             });
 
             id++;
-          }, this);
+          }.bind(this));
 
           this.set('dropboxInfo', {
             people: people,
