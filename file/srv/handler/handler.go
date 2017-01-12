@@ -5,6 +5,7 @@ import (
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	proto "github.com/kazoup/platform/file/srv/proto/file"
+	db_conn "github.com/kazoup/platform/lib/dbhelper"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
@@ -38,7 +39,7 @@ func (f *File) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.
 	}
 
 	// Update token in DB
-	if err := UpdateFileSystemAuth(f.Client, ctx, req.DatasourceId, auth); err != nil {
+	if err := db_conn.UpdateFileSystemAuth(f.Client, ctx, req.DatasourceId, auth); err != nil {
 		return err
 	}
 
@@ -94,7 +95,7 @@ func (f *File) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *proto.
 	}
 
 	// Update token in DB
-	if err := UpdateFileSystemAuth(f.Client, ctx, req.DatasourceId, auth); err != nil {
+	if err := db_conn.UpdateFileSystemAuth(f.Client, ctx, req.DatasourceId, auth); err != nil {
 		return err
 	}
 
@@ -109,7 +110,7 @@ func (f *File) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *proto.
 	}
 
 	// Delete from DB
-	_, err = DeleteFromDB(f.Client, ctx, &db_proto.DeleteRequest{
+	_, err = db_conn.DeleteFromDB(f.Client, ctx, &db_proto.DeleteRequest{
 		Index: req.Index,
 		Type:  globals.FileType,
 		Id:    req.FileId,
@@ -160,7 +161,7 @@ func (f *File) Share(ctx context.Context, req *proto.ShareRequest, rsp *proto.Sh
 	}
 
 	// Update token in DB
-	if err := UpdateFileSystemAuth(f.Client, ctx, req.DatasourceId, auth); err != nil {
+	if err := db_conn.UpdateFileSystemAuth(f.Client, ctx, req.DatasourceId, auth); err != nil {
 		return err
 	}
 
@@ -179,7 +180,7 @@ func (f *File) Share(ctx context.Context, req *proto.ShareRequest, rsp *proto.Sh
 		return err
 	}
 
-	if _, err := UpdateFromDB(f.Client, ctx, &db_proto.UpdateRequest{
+	if _, err := db_conn.UpdateFromDB(f.Client, ctx, &db_proto.UpdateRequest{
 		Index: req.Index,
 		Type:  globals.FileType,
 		Id:    req.FileId,

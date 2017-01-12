@@ -1,4 +1,4 @@
-package handler
+package dbhelper
 
 import (
 	"encoding/json"
@@ -8,6 +8,34 @@ import (
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 )
+
+func UpdateFromDB(c client.Client, ctx context.Context, req *db_proto.UpdateRequest) (*db_proto.UpdateResponse, error) {
+	dreq := c.NewRequest(
+		globals.DB_SERVICE_NAME,
+		"DB.Update",
+		req,
+	)
+	drsp := &db_proto.UpdateResponse{}
+	if err := c.Call(ctx, dreq, drsp); err != nil {
+		return nil, err
+	}
+
+	return drsp, nil
+}
+
+func DeleteFromDB(c client.Client, ctx context.Context, req *db_proto.DeleteRequest) (*db_proto.DeleteResponse, error) {
+	dreq := c.NewRequest(
+		globals.DB_SERVICE_NAME,
+		"DB.Delete",
+		req,
+	)
+	drsp := &db_proto.DeleteResponse{}
+	if err := c.Call(ctx, dreq, drsp); err != nil {
+		return nil, err
+	}
+
+	return drsp, nil
+}
 
 func UpdateFileSystemAuth(fc client.Client, ctx context.Context, id string, token *datasource_proto.Token) error {
 	var ds *datasource_proto.Endpoint

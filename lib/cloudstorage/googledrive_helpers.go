@@ -2,6 +2,9 @@ package cloudstorage
 
 import (
 	"github.com/kazoup/platform/lib/globals"
+	"golang.org/x/net/context"
+	"golang.org/x/oauth2"
+	"google.golang.org/api/drive/v3"
 	"time"
 )
 

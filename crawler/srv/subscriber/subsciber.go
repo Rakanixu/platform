@@ -4,6 +4,7 @@ import (
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	crawler_proto "github.com/kazoup/platform/crawler/srv/proto/crawler"
 	datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	db_conn "github.com/kazoup/platform/lib/dbhelper"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
@@ -32,7 +33,7 @@ func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) erro
 	}
 
 	// Update token in DB
-	if err := UpdateFileSystemAuth(c.Client, globals.NewSystemContext(), endpoint.Id, auth); err != nil {
+	if err := db_conn.UpdateFileSystemAuth(c.Client, globals.NewSystemContext(), endpoint.Id, auth); err != nil {
 		return err
 	}
 

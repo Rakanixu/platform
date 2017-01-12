@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	db_conn "github.com/kazoup/platform/lib/dbhelper"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
@@ -86,7 +87,7 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Update token in DB
-	if err := UpdateFileSystemAuth(wrappers.NewKazoupClient(), ctx, fSys.GetDatasourceId(), auth); err != nil {
+	if err := db_conn.UpdateFileSystemAuth(wrappers.NewKazoupClient(), ctx, fSys.GetDatasourceId(), auth); err != nil {
 		log.Println("ERROR", err.Error())
 	}
 
