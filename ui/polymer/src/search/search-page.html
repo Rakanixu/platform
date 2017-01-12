@@ -379,8 +379,7 @@
                     reflectToAttribute: true,
                     value: function() {
                         return {};
-                    },
-                    observer: '_itemChanged'
+                    }
                 },
                 itemSelected: {
                     type: Boolean,
@@ -528,14 +527,6 @@
             _breadcrumbsChanged: function(newVal, oldVal) {
                 this.set('lastBreadcrumb', this.breadcrumbs[this.breadcrumbs.length - 1]);
             },
-            _itemChanged: function() {
-                // Set file_id on app URL
-                // We are listening to changes so, we are firing search again..
-                // FIXME
-                /*if (!_.isEmpty(this.item)) {
-                    this.set('queryParams.file_id', this.item.id);
-                }*/
-            },
             ready: function() {
                 var resizeCallback;
 
@@ -552,6 +543,7 @@
 
                 window.addEventListener('refresh-search', function(e) {
                     this.refreshSearch(e.detail);
+                    this.closeDetails();
                 }.bind(this));
             },
             init: function(e) {
