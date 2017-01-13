@@ -441,7 +441,7 @@
         },
         getMoreInfoFromOneDrive: function() {
           this.set('oneDriveInfo', {
-            publicUrl: this.item.original.publicUrl,
+            publicUrl: this.item.original.publicUrl ? this.item.original.publicUrl : '',
             createdBy: this.item.original.createdBy.user.displayName,
             createdDateTime: this.timestampToHumanTime(this.item.original.createdDateTime),
             lastModifiedBy: this.item.original.lastModifiedBy.user.displayName,
@@ -475,7 +475,7 @@
           this.set('dropboxInfo', {
             people: people,
             sharedFile: people.length ? true : false,
-            publicUrl: this.item.original.public_url,
+            publicUrl: this.item.original.public_url ? this.item.original.public_url : '',
             dropboxTag: this.item.original.dropbox_tag
           });
         },
@@ -504,7 +504,7 @@
         },
         getMoreInfoFromBox: function() {
           this.set('boxInfo', {
-            shared_link: this.item.original.shared_link.url
+            shared_link: this.item.original.shared_link.url ? this.item.original.shared_link.url : ''
           });
         },
         openFileFromDetailView: function(e) {
