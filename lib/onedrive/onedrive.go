@@ -47,8 +47,6 @@ type OneDriveFile struct {
 		} `json:"user,omitempty"`
 	} `json:"createdBy,omitempty"`
 	CreatedDateTime time.Time `json:"createdDateTime,omitempty"`
-	CTag            string    `json:"cTag,omitempty"`
-	ETag            string    `json:"eTag,omitempty"`
 	ID              string    `json:"id,omitempty"`
 	LastModifiedBy  struct {
 		Application struct {
@@ -86,10 +84,50 @@ type OneDriveFile struct {
 		} `json:"hashes,omitempty"`
 		MimeType string `json:"mimeType,omitempty"`
 	} `json:"file,omitempty"`
+	Shared struct {
+		Owner struct {
+			User struct {
+				DisplayName string `json:"displayName,omitempty"`
+				ID          string `json:"id,omitempty"`
+			} `json:"user,omitempty"`
+		} `json:"owner,omitempty"`
+		Scope string `json:"scope,omitempty"`
+	} `json:"shared,omitempty"`
 }
 
 type FileThumbnailResponse struct {
 	Width  int    `json:"width"`
 	Height int    `json:"height"`
 	URL    string `json:"url"`
+}
+
+type Permissions struct {
+	GrantedTo *struct {
+		User struct {
+			DisplayName string `json:"displayName"`
+			ID          string `json:"id"`
+		} `json:"user"`
+	} `json:"grantedTo"`
+	ID         string `json:"id"`
+	Invitation struct {
+		Email     string `json:"email"`
+		InvitedBy struct {
+			User struct {
+				ID string `json:"id"`
+			} `json:"user"`
+		} `json:"invitedBy"`
+		SignInRequired       bool   `json:"signInRequired"`
+		SendInvitationStatus string `json:"sendInvitationStatus"`
+	} `json:"invitation"`
+	Link struct {
+		WebURL string `json:"webUrl"`
+	} `json:"link"`
+	Roles              []string  `json:"roles"`
+	ShareID            string    `json:"shareId"`
+	ExpirationDateTime time.Time `json:"expirationDateTime"`
+}
+
+type PermissionsResponse struct {
+	OdataContext string        `json:"@odata.context"`
+	Value        []Permissions `json:"value"`
 }

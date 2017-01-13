@@ -31,6 +31,19 @@ type DropboxFile struct {
 	DropboxInvitees          []DropboxInvitee `json:"dropbox_invitee"` // This field is calculated in different request, only if file is shared
 }
 
+type PublicFilesListResponse struct {
+	Links   []DropboxPublicFile `json:"links"`
+	Cursor  string              `json:"cursor"`
+	HasMore bool                `json:"has_more"`
+}
+
+type DropboxPublicFile struct {
+	URL       string `json:"url"`
+	Name      string `json:"name"`
+	PathLower string `json:"path_lower"`
+	ID        string `json:"id"`
+}
+
 type MediaInfo struct {
 	Metadata Metadata `json:"metadata"`
 }

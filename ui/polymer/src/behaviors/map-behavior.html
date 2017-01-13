@@ -4,6 +4,17 @@
   (function() {
     window.MapBehaviorImp = {
       properties: {
+        accessMap: {
+          type: Object,
+          notify: false,
+          value: function() {
+            return {
+              private: 'private',
+              shared: 'shared',
+              public: 'public'
+            };
+          }
+        },
         categoriesMap: {
           type: Object,
           notify: false,

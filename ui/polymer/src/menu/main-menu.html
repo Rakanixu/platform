@@ -154,6 +154,12 @@
                 <iron-icon icon="image:audiotrack" item-icon></iron-icon>Audio
               </paper-icon-item>
 
+              <paper-icon-item on-tap="setPathWithParams"
+                               data-path="/u/search"
+                               data-params$='{"access":"[[accessMap.public]]","index":"[[md5UserId]]","term":""}'>
+                <iron-icon icon="icons:cloud" item-icon></iron-icon>Public
+              </paper-icon-item>
+
               <mat-divider></mat-divider>
 
               <paper-icon-item on-tap="showSettingsPage">

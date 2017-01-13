@@ -81,7 +81,8 @@ message SearchRequest {
   string file_type = 9;
   string user_id = 10;
   int64 last_seen = 11;
-  bool no_kazoup_file_original = 12;
+  string access = 12;
+  bool no_kazoup_file_original = 13;
 }
 
 message SearchResponse {

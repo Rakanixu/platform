@@ -159,14 +159,14 @@
 
     <!-- Second parameter force expression to be reevaluated -->
     <template id="hasSlackPublicUrl" is="dom-if" if$="[[hasSlackPublicUrl(item.file_type, item.original, item.original.id)]]" restamp="true">
-      <mat-item label="Public Available Location"
+      <mat-item label="Public Location"
                 description="[[item.original.permalink_public]]"
                 on-xp-activate="openPublicFileFromDetailView"
                 tabindex="-1"></mat-item>
     </template>
 
     <template id="hasBoxPublicUrl" is="dom-if" if$="[[hasBoxPublicUrl(item.file_type, boxInfo.shared_link)]]" restamp="true">
-      <mat-item label="Public Available Location"
+      <mat-item label="Public Location"
                 description="[[boxInfo.shared_link]]"
                 on-xp-activate="openPublicFileFromDetailView"
                 tabindex="-1"></mat-item>

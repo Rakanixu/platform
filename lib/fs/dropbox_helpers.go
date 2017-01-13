@@ -52,6 +52,12 @@ func (dfs *DropboxFs) getFile(id string) (*file.KazoupDropboxFile, error) {
 
 // getFiles discovers files in dropbox account
 func (dfs *DropboxFs) getFiles() error {
+	// Retrieve all publicly available files
+	// We need to retrieve like that because dropbox API does not return that information in other way
+	if err := dfs.getSharedLinksForUser(""); err != nil {
+		return err
+	}
+
 	// We want all avilable info
 	// https://dropbox.github.io/dropbox-api-v2-explorer/#files_list_folder
 	b := []byte(`{
@@ -207,17 +213,73 @@ func (dfs *DropboxFs) getFileMembers(f *file.KazoupDropboxFile) (*file.KazoupDro
 	return f, nil
 }
 
+// getSharedLinksForUser retrieves all public files for a user
+func (dfs *DropboxFs) getSharedLinksForUser(cursor string) error {
+	b := []byte(`{}`)
+
+	if len(cursor) > 0 {
+		b = []byte(`{
+			"cursor": "` + cursor + `"
+		}`)
+	}
+
+	// https://www.dropbox.com/developers/documentation/http/documentation#sharing-list_shared_links
+	c := &http.Client{}
+	req, err := http.NewRequest("POST", globals.DropboxSharedLinks, bytes.NewBuffer(b))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Authorization", dfs.token())
+	req.Header.Set("Content-Type", "application/json")
+	rsp, err := c.Do(req)
+	if err != nil {
+		return err
+	}
+	defer rsp.Body.Close()
+
+	var filesRsp *dropbox.PublicFilesListResponse
+	if err := json.NewDecoder(rsp.Body).Decode(&filesRsp); err != nil {
+		return err
+	}
+
+	dfs.PublicFiles = append(dfs.PublicFiles, filesRsp.Links...)
+
+	if filesRsp.HasMore {
+		if err := dfs.getSharedLinksForUser(filesRsp.Cursor); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (dfs *DropboxFs) pushFilesToChannel(list *dropbox.FilesListResponse) {
 	var err error
 
 	for _, v := range list.Entries {
 		f := file.NewKazoupFileFromDropboxFile(v, dfs.Endpoint.Id, dfs.Endpoint.UserId, dfs.Endpoint.Index)
 		if f != nil {
+			f.Access = globals.ACCESS_PRIVATE
+
 			// File is shared, lets get Users and Invitees to this file
 			if f.Original.HasExplicitSharedMembers {
+				f.Access = globals.ACCESS_SHARED
+
 				f, err = dfs.getFileMembers(f)
 				if err != nil {
 					log.Println("ERROR getFileMembers dropbox", err)
+				}
+			} else {
+				// File is not share, but that means to dropbox that can be private, or public (everyone with link can access the file)
+				for k, v := range dfs.PublicFiles {
+					// Found
+					if f.Original.ID == v.ID {
+						f.Access = globals.ACCESS_PUBLIC
+
+						// Remove found for performance and break
+						dfs.PublicFiles = append(dfs.PublicFiles[:k], dfs.PublicFiles[k+1:]...)
+						break
+					}
 				}
 			}
 
