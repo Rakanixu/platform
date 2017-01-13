@@ -274,6 +274,7 @@ func (dfs *DropboxFs) pushFilesToChannel(list *dropbox.FilesListResponse) {
 				for k, v := range dfs.PublicFiles {
 					// Found
 					if f.Original.ID == v.ID {
+						f.Original.PublicURL = v.URL
 						f.Access = globals.ACCESS_PUBLIC
 
 						// Remove found for performance and break

@@ -26,6 +26,7 @@ type DropboxFile struct {
 	Size                     int              `json:"size"`
 	MediaInfo                MediaInfo        `json:"media_info"`
 	HasExplicitSharedMembers bool             `json:"has_explicit_shared_members"`
+	PublicURL                string           `json:"public_url"`      // This field is calculated in different request, only if file is public to evryone
 	DropboxTag               string           `json:"dropbox_tag"`     // This field does not exists on response, but we will fill constructing KazoupDropboxFile
 	DropboxUsers             []DropboxUser    `json:"dropbox_users"`   // This field is calculated in different request, only if file is shared
 	DropboxInvitees          []DropboxInvitee `json:"dropbox_invitee"` // This field is calculated in different request, only if file is shared
@@ -131,6 +132,7 @@ func (df DropboxFile) MarshalJSON() ([]byte, error) {
 		Size                     int              `json:"size"`
 		MediaInfo                MediaInfo        `json:"media_info"`
 		HasExplicitSharedMembers bool             `json:"has_explicit_shared_members"`
+		PublicURL                string           `json:"public_url"`      // This field is calculated in different request, only if file is public to evryone
 		DropboxTag               string           `json:"dropbox_tag"`     // This field does not exists on response, but we will fill constructing KazoupDropboxFile
 		DropboxUsers             []DropboxUser    `json:"dropbox_users"`   // This field is calculated in different request, only if file is shared
 		DropboxInvitees          []DropboxInvitee `json:"dropbox_invitee"` // This field is calculated in different request, only if file is shared
@@ -145,6 +147,7 @@ func (df DropboxFile) MarshalJSON() ([]byte, error) {
 		Size:                     df.Size,
 		MediaInfo:                df.MediaInfo,
 		HasExplicitSharedMembers: df.HasExplicitSharedMembers,
+		PublicURL:                df.PublicURL,
 		DropboxTag:               df.DropboxTag,
 		DropboxUsers:             df.DropboxUsers,
 		DropboxInvitees:          df.DropboxInvitees,
