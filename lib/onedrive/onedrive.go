@@ -93,6 +93,7 @@ type OneDriveFile struct {
 		} `json:"owner,omitempty"`
 		Scope string `json:"scope,omitempty"`
 	} `json:"shared,omitempty"`
+	PublicURL string `json:"publicUrl,omitempty"` // Calculated while scanning
 }
 
 type FileThumbnailResponse struct {

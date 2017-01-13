@@ -36,7 +36,7 @@ func (ofs *OneDriveFs) getDrives() error {
 	//https://api.onedrive.com/v1.0/drives
 	url := globals.OneDriveEndpoint + Drives
 	req, err := http.NewRequest("GET", url, nil)
-	req.Header.Set("Authorization", ofs.Endpoint.Token.TokenType+" "+ofs.Endpoint.Token.AccessToken)
+	req.Header.Set("Authorization", ofs.token())
 	if err != nil {
 		return err
 	}
@@ -134,7 +134,6 @@ func (ofs *OneDriveFs) getDirChildren(id string) error {
 }
 
 func (ofs *OneDriveFs) getPermisions(f *file.KazoupOneDriveFile) error {
-	// https://dev.onedrive.com/drives/shared_by_me.htm
 	c := &http.Client{}
 	url := globals.OneDriveEndpoint + Drive + "items/" + f.Original.ID + "/permissions"
 	req, err := http.NewRequest("GET", url, nil)
@@ -155,6 +154,7 @@ func (ofs *OneDriveFs) getPermisions(f *file.KazoupOneDriveFile) error {
 
 	for _, v := range pRsp.Value {
 		if v.GrantedTo == nil {
+			f.Original.PublicURL = v.Link.WebURL
 			f.Access = globals.ACCESS_PUBLIC
 			break
 		}

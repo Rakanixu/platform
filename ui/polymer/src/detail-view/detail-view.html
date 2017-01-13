@@ -179,6 +179,13 @@
                 tabindex="-1"></mat-item>
     </template>
 
+    <template id="hasOnedrivePublicUrl" is="dom-if" if$="[[hasOnedrivePublicUrl(item.file_type, oneDriveInfo.publicUrl)]]" restamp="true">
+      <mat-item label="Public Location"
+                description="[[oneDriveInfo.publicUrl]]"
+                on-xp-activate="openPublicFileFromDetailView"
+                tabindex="-1"></mat-item>
+    </template>
+
     <mat-item label="Last modified"
               description="[[timestampToHumanTime(item.modified)]]"
               class="no-ui-action"
@@ -434,6 +441,7 @@
         },
         getMoreInfoFromOneDrive: function() {
           this.set('oneDriveInfo', {
+            publicUrl: this.item.original.publicUrl,
             createdBy: this.item.original.createdBy.user.displayName,
             createdDateTime: this.timestampToHumanTime(this.item.original.createdDateTime),
             lastModifiedBy: this.item.original.lastModifiedBy.user.displayName,
@@ -513,6 +521,8 @@
             case 'dropbox':
               this.openFile(this.item.original.public_url);
               break;
+            case 'onedrive':
+              this.openFile(this.item.original.publicUrl);
           }
         },
         isDropboxFileShared: function(fileType, isShared) {

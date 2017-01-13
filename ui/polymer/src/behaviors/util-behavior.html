@@ -307,8 +307,10 @@
         return this.isBox(fileType) && !_.isEmpty(url);
       },
       hasDropboxPublicUrl: function(fileType, url) {
-        console.log(url)
         return this.isDropbox(fileType) && !_.isEmpty(url);
+      },
+      hasOnedrivePublicUrl: function(fileType, url) {
+        return this.isOneDrive(fileType) && !_.isEmpty(url);
       },
       isDeleteFileAvailable: function(fileType) {
         return this.isBox(fileType) || this.isDropbox(fileType) || this.isOneDrive(fileType) || this.isGoogleDrive(fileType);
