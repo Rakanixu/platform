@@ -404,10 +404,20 @@
             this.item.original.owners;
 
           _.forEach(people, function(val, key) {
-            var name = val.displayName.split(' ');
+            var name = [];
 
-            val.firstName = name[0];
-            val.secondName = name[1];
+            if (!_.isEmpty(val.displayName)) {
+              name = val.displayName.split(' ');
+              val.firstName = name[0];
+              val.secondName = name[1];
+            } else {
+              // When there is no displayname, usually is a "anyone" permission
+              if (val.type === "anyone") {
+                val.firstName = "A"
+                val.secondName = "N"
+                val.displayName = "Anyone with the link"
+              }
+            }
 
             if (_.isEmpty(val.photoLink)) {
               val.showInitials = true;
