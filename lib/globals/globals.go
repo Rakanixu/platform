@@ -84,6 +84,12 @@ const (
 
 	THUMBNAIL_WIDTH = 178
 
+	ACCESS_PUBLIC  = "public"
+	ACCESS_SHARED  = "shared"
+	ACCESS_PRIVATE = "private"
+
+	GOOGLE_DRIVE_PUBLIC_FILE = "anyone"
+
 	SlackFilesEndpoint       = "https://slack.com/api/files.list"
 	SlackUsersEndpoint       = "https://slack.com/api/users.list"
 	SlackChannelsEndpoint    = "https://slack.com/api/channels.list"
@@ -101,6 +107,7 @@ const (
 	DropboxFileShare         = "https://api.dropboxapi.com/2/sharing/add_file_member"
 	DropboxFileDelete        = "https://api.dropboxapi.com/2/files/delete"
 	DropboxFileDownload      = "https://content.dropboxapi.com/2/files/download"
+	DropboxSharedLinks       = "https://api.dropboxapi.com/2/sharing/list_shared_links"
 
 	BoxAccountEndpoint      = "https://api.box.com/2.0/users/me"
 	BoxFoldersEndpoint      = "https://api.box.com/2.0/folders/"

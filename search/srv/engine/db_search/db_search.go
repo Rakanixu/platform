@@ -33,6 +33,7 @@ func (d *dbSearch) Search(ctx context.Context, req *search.SearchRequest, client
 			Depth:                req.Depth,
 			Type:                 req.Type,
 			FileType:             req.FileType,
+			Access:               req.Access,
 			NoKazoupFileOriginal: req.NoKazoupFileOriginal,
 		},
 	)

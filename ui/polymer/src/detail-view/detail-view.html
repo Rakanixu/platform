@@ -159,15 +159,29 @@
 
     <!-- Second parameter force expression to be reevaluated -->
     <template id="hasSlackPublicUrl" is="dom-if" if$="[[hasSlackPublicUrl(item.file_type, item.original, item.original.id)]]" restamp="true">
-      <mat-item label="Public Available Location"
+      <mat-item label="Public Location"
                 description="[[item.original.permalink_public]]"
                 on-xp-activate="openPublicFileFromDetailView"
                 tabindex="-1"></mat-item>
     </template>
 
     <template id="hasBoxPublicUrl" is="dom-if" if$="[[hasBoxPublicUrl(item.file_type, boxInfo.shared_link)]]" restamp="true">
-      <mat-item label="Public Available Location"
+      <mat-item label="Public Location"
                 description="[[boxInfo.shared_link]]"
+                on-xp-activate="openPublicFileFromDetailView"
+                tabindex="-1"></mat-item>
+    </template>
+
+    <template id="hasDropboxPublicUrl" is="dom-if" if$="[[hasDropboxPublicUrl(item.file_type, dropboxInfo.publicUrl)]]" restamp="true">
+      <mat-item label="Public Location"
+                description="[[dropboxInfo.publicUrl]]"
+                on-xp-activate="openPublicFileFromDetailView"
+                tabindex="-1"></mat-item>
+    </template>
+
+    <template id="hasOnedrivePublicUrl" is="dom-if" if$="[[hasOnedrivePublicUrl(item.file_type, oneDriveInfo.publicUrl)]]" restamp="true">
+      <mat-item label="Public Location"
+                description="[[oneDriveInfo.publicUrl]]"
                 on-xp-activate="openPublicFileFromDetailView"
                 tabindex="-1"></mat-item>
     </template>
@@ -397,10 +411,20 @@
             this.item.original.owners;
 
           _.forEach(people, function(val, key) {
-            var name = val.displayName.split(' ');
+            var name = [];
 
-            val.firstName = name[0];
-            val.secondName = name[1];
+            if (!_.isEmpty(val.displayName)) {
+              name = val.displayName.split(' ');
+              val.firstName = name[0];
+              val.secondName = name[1];
+            } else {
+              // When there is no displayname, usually is a "anyone" permission
+              if (val.type === "anyone") {
+                val.firstName = "A"
+                val.secondName = "N"
+                val.displayName = "Anyone with the link"
+              }
+            }
 
             if (_.isEmpty(val.photoLink)) {
               val.showInitials = true;
@@ -417,6 +441,7 @@
         },
         getMoreInfoFromOneDrive: function() {
           this.set('oneDriveInfo', {
+            publicUrl: this.item.original.publicUrl ? this.item.original.publicUrl : '',
             createdBy: this.item.original.createdBy.user.displayName,
             createdDateTime: this.timestampToHumanTime(this.item.original.createdDateTime),
             lastModifiedBy: this.item.original.lastModifiedBy.user.displayName,
@@ -450,6 +475,7 @@
           this.set('dropboxInfo', {
             people: people,
             sharedFile: people.length ? true : false,
+            publicUrl: this.item.original.public_url ? this.item.original.public_url : '',
             dropboxTag: this.item.original.dropbox_tag
           });
         },
@@ -478,7 +504,7 @@
         },
         getMoreInfoFromBox: function() {
           this.set('boxInfo', {
-            shared_link: this.item.original.shared_link.url
+            shared_link: this.item.original.shared_link.url ? this.item.original.shared_link.url : ''
           });
         },
         openFileFromDetailView: function(e) {
@@ -492,6 +518,11 @@
             case 'box':
               this.openFile(this.item.original.shared_link.url);
               break;
+            case 'dropbox':
+              this.openFile(this.item.original.public_url);
+              break;
+            case 'onedrive':
+              this.openFile(this.item.original.publicUrl);
           }
         },
         isDropboxFileShared: function(fileType, isShared) {

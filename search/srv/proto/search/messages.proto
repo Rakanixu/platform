@@ -12,7 +12,8 @@ message SearchRequest {
   int64 depth = 7;
   string type = 8;
   string file_type = 9;
-  bool no_kazoup_file_original = 10;
+  string access = 10;
+  bool no_kazoup_file_original = 11;
 }
 
 message SearchResponse {
