@@ -132,13 +132,12 @@ type DeleteFileInBucket struct {
 
 // SubscribeCleanBucket subscribes to DCleanBucket Message to remove thumbs not longer related with document in index
 func (dfb *DeleteFileInBucket) SubscribeDeleteFileInBucket(ctx context.Context, msg *proto.DeleteFileInBucketMessage) error {
-	log.Println("ON SUBSCRIBER")
 	ncs, err := cs.NewCloudStorageFromEndpoint(&datasource_proto.Endpoint{
 		Index: msg.Index,
 	}, globals.GoogleCloudStorage)
 	if err != nil {
 		return err
 	}
-	log.Println("CALLING")
+
 	return ncs.Delete(msg.Index, msg.FileId)
 }

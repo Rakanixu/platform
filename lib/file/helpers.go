@@ -105,7 +105,7 @@ func NewFileFromString(s string) (File, error) {
 // opts first param is base64 emcoded file (itself)
 func NewKazoupFileFromGoogleDriveFile(g googledrive.File, dsId, uId, index string) *KazoupGoogleFile {
 	t, _ := time.Parse("2006-01-02T15:04:05.000Z", g.ModifiedTime)
-
+	access := globals.ACCESS_PRIVATE
 	d := false
 	if len(g.FolderColorRgb) > 0 {
 		d = true
@@ -123,6 +123,19 @@ func NewKazoupFileFromGoogleDriveFile(g googledrive.File, dsId, uId, index strin
 		g.MimeType == globals.MS_PRESENTATION ||
 		g.MimeType == globals.MS_SPREADSHEET {
 		url = g.WebContentLink
+	}
+
+	// More permissions than owner
+	if len(g.Permissions) > 1 {
+		access = globals.ACCESS_SHARED
+	}
+
+	// We will overwrite access if we find a type anyone as permission
+	for _, v := range g.Permissions {
+		if v.Type == globals.GOOGLE_DRIVE_PUBLIC_FILE {
+			access = globals.ACCESS_PUBLIC
+			break
+		}
 	}
 
 	// Do not index trashed files
@@ -143,6 +156,7 @@ func NewKazoupFileFromGoogleDriveFile(g googledrive.File, dsId, uId, index strin
 		Depth:        0,
 		FileType:     globals.GoogleDrive,
 		LastSeen:     time.Now().Unix(),
+		Access:       access,
 		DatasourceId: dsId,
 		Index:        index,
 	}
@@ -152,6 +166,15 @@ func NewKazoupFileFromGoogleDriveFile(g googledrive.File, dsId, uId, index strin
 // NewKazoupFileFromSlackFile constructor
 func NewKazoupFileFromSlackFile(s slack.SlackFile, dsId, uId, index string) *KazoupSlackFile {
 	t := time.Unix(s.Timestamp, 0)
+	access := globals.ACCESS_PRIVATE
+
+	if s.IsPublic { // Is public to the the team, not globally
+		access = globals.ACCESS_SHARED
+	}
+
+	if s.PublicURLShared && s.Mode == "hosted" {
+		access = globals.ACCESS_PUBLIC
+	}
 
 	kf := &KazoupFile{
 		ID:           globals.GetMD5Hash(s.URLPrivate),
@@ -166,6 +189,7 @@ func NewKazoupFileFromSlackFile(s slack.SlackFile, dsId, uId, index string) *Kaz
 		Depth:        0,
 		FileType:     globals.Slack,
 		LastSeen:     time.Now().Unix(),
+		Access:       access,
 		DatasourceId: dsId,
 		Index:        index,
 	}
@@ -186,6 +210,7 @@ func NewKazoupFileFromLocal(lf *local.LocalFile, dsId, uId, index string) *Kazou
 		Depth:        UrlDepth(lf.Path),
 		FileType:     globals.Local,
 		LastSeen:     time.Now().Unix(),
+		Access:       globals.ACCESS_PRIVATE,
 		DatasourceId: dsId,
 		Index:        index,
 	}
@@ -197,6 +222,7 @@ func NewKazoupFileFromLocal(lf *local.LocalFile, dsId, uId, index string) *Kazou
 func NewKazoupFileFromOneDriveFile(o onedrive.OneDriveFile, dsId, uId, index string) *KazoupOneDriveFile {
 	isDir := true
 	mimeType := ""
+	access := globals.ACCESS_PRIVATE
 	name := strings.Split(o.Name, ".")
 
 	if len(o.File.MimeType) > 0 {
@@ -217,6 +243,7 @@ func NewKazoupFileFromOneDriveFile(o onedrive.OneDriveFile, dsId, uId, index str
 		Depth:        0,
 		FileType:     globals.OneDrive,
 		LastSeen:     time.Now().Unix(),
+		Access:       access,
 		DatasourceId: dsId,
 		Index:        index,
 	}
@@ -257,6 +284,7 @@ func NewKazoupFileFromDropboxFile(d dropbox.DropboxFile, dsId, uId, index string
 		Depth:        0,
 		FileType:     globals.Dropbox,
 		LastSeen:     time.Now().Unix(),
+		Access:       "", // Filled after calling this constructor on the fs.Walk
 		DatasourceId: dsId,
 		Index:        index,
 	}
@@ -266,6 +294,7 @@ func NewKazoupFileFromDropboxFile(d dropbox.DropboxFile, dsId, uId, index string
 
 // NewKazoupFileFromDropboxFile constructor
 func NewKazoupFileFromBoxFile(d box.BoxFileMeta, dsId, uId, index string) *KazoupBoxFile {
+	access := globals.ACCESS_PRIVATE
 	isDir := false
 	name := strings.Split(d.Name, ".")
 	url := fmt.Sprintf("https://app.box.com/%s/%s", d.Type, d.ID)
@@ -276,6 +305,10 @@ func NewKazoupFileFromBoxFile(d box.BoxFileMeta, dsId, uId, index string) *Kazou
 
 	if d.Type == "folder" {
 		isDir = true
+	}
+
+	if len(d.SharedLink.URL) > 0 {
+		access = globals.ACCESS_PUBLIC
 	}
 
 	kf := &KazoupFile{
@@ -291,6 +324,7 @@ func NewKazoupFileFromBoxFile(d box.BoxFileMeta, dsId, uId, index string) *Kazou
 		Depth:        0,
 		FileType:     globals.Box,
 		LastSeen:     time.Now().Unix(),
+		Access:       access,
 		DatasourceId: dsId,
 		Index:        index,
 	}
@@ -320,6 +354,7 @@ func NewKazoupFileFromGmailFile(m gmailhelper.GmailFile, dsId, uId, dsURL, index
 		Depth:        0,
 		FileType:     globals.Gmail,
 		LastSeen:     time.Now().Unix(),
+		Access:       globals.ACCESS_PRIVATE, // Mail attachments are always private, once send, original owner cannot delete that file for other user
 		DatasourceId: dsId,
 		Index:        index,
 	}

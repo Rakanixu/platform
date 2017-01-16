@@ -19,6 +19,7 @@ import (
 // DropboxFs dropbox file system
 type DropboxFs struct {
 	Endpoint            *datasource_proto.Endpoint
+	PublicFiles         []dropbox.DropboxPublicFile
 	WalkRunning         chan bool
 	WalkUsersRunning    chan bool
 	WalkChannelsRunning chan bool
@@ -31,6 +32,7 @@ type DropboxFs struct {
 func NewDropboxFsFromEndpoint(e *datasource_proto.Endpoint) Fs {
 	return &DropboxFs{
 		Endpoint:            e,
+		PublicFiles:         make([]dropbox.DropboxPublicFile, 0),
 		WalkRunning:         make(chan bool, 1),
 		WalkUsersRunning:    make(chan bool, 1),
 		WalkChannelsRunning: make(chan bool, 1),

@@ -68,6 +68,7 @@ type ElasticQuery struct {
 	Type                 string
 	FileType             string
 	LastSeen             int64
+	Access               string
 	NoKazoupFileOriginal bool
 	Aggs                 []*search_proto.Aggregation
 }
@@ -88,7 +89,8 @@ func (e *ElasticQuery) Query() (string, error) {
 	buffer.WriteString(e.filterUrl() + ",")
 	buffer.WriteString(e.filterUser() + ",")
 	buffer.WriteString(e.filterLastSeen() + ",")
-	buffer.WriteString(e.filterType())
+	buffer.WriteString(e.filterType() + ",")
+	buffer.WriteString(e.filterAccess())
 	buffer.WriteString(`]}}, "sort":[`)
 	buffer.WriteString(e.defaultSorting())
 	buffer.WriteString(`]}`)
@@ -178,6 +180,18 @@ func (e *ElasticQuery) filterType() string {
 	case globals.FileTypeDirectory:
 		buffer.WriteString(`{"term": {"is_dir": true}}`)
 	default:
+		buffer.WriteString(`{}`)
+	}
+
+	return buffer.String()
+}
+
+func (e *ElasticQuery) filterAccess() string {
+	var buffer bytes.Buffer
+
+	if len(e.Access) > 0 {
+		buffer.WriteString(`{"term": {"access": "` + e.Access + `"}}`)
+	} else {
 		buffer.WriteString(`{}`)
 	}
 

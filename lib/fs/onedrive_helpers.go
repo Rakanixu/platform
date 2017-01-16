@@ -14,6 +14,10 @@ import (
 	"strings"
 )
 
+const (
+	FACETS = "shared,id,name,size,parentReference,createdBy,fileSystemInfo,lastModifiedDateTime,lastModifiedBy,webUrl,file,folder"
+)
+
 // getFiles retrieves drives, directories and files
 func (ofs *OneDriveFs) getFiles() error {
 	if err := ofs.getDrives(); err != nil {
@@ -32,7 +36,7 @@ func (ofs *OneDriveFs) getDrives() error {
 	//https://api.onedrive.com/v1.0/drives
 	url := globals.OneDriveEndpoint + Drives
 	req, err := http.NewRequest("GET", url, nil)
-	req.Header.Set("Authorization", ofs.Endpoint.Token.TokenType+" "+ofs.Endpoint.Token.AccessToken)
+	req.Header.Set("Authorization", ofs.token())
 	if err != nil {
 		return err
 	}
@@ -61,7 +65,7 @@ func (ofs *OneDriveFs) getDrivesChildren() error {
 
 	for _, v := range ofs.DrivesId {
 		//https://api.onedrive.com/v1.0/drives/f5a34c5d0f17415a/root/children
-		url = globals.OneDriveEndpoint + Drives + v + "/root/children"
+		url = globals.OneDriveEndpoint + Drives + v + "/root/children?select=" + FACETS
 
 		req, err := http.NewRequest("GET", url, nil)
 		req.Header.Set("Authorization", ofs.token())
@@ -99,7 +103,7 @@ func (ofs *OneDriveFs) getDrivesChildren() error {
 func (ofs *OneDriveFs) getDirChildren(id string) error {
 	// https://api.onedrive.com/v1.0/drive/items/F5A34C5D0F17415A!114/children
 	c := &http.Client{}
-	url := globals.OneDriveEndpoint + Drive + "items/" + id + "/children"
+	url := globals.OneDriveEndpoint + Drive + "items/" + id + "/children?select=" + FACETS
 	req, err := http.NewRequest("GET", url, nil)
 	req.Header.Set("Authorization", ofs.token())
 	if err != nil {
@@ -129,9 +133,43 @@ func (ofs *OneDriveFs) getDirChildren(id string) error {
 	return nil
 }
 
+func (ofs *OneDriveFs) getPermisions(f *file.KazoupOneDriveFile) error {
+	c := &http.Client{}
+	url := globals.OneDriveEndpoint + Drive + "items/" + f.Original.ID + "/permissions"
+	req, err := http.NewRequest("GET", url, nil)
+	req.Header.Set("Authorization", ofs.token())
+	if err != nil {
+		return err
+	}
+	res, err := c.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	var pRsp *onedrive.PermissionsResponse
+	if err := json.NewDecoder(res.Body).Decode(&pRsp); err != nil {
+		return err
+	}
+
+	for _, v := range pRsp.Value {
+		if v.GrantedTo == nil {
+			f.Original.PublicURL = v.Link.WebURL
+			f.Access = globals.ACCESS_PUBLIC
+			break
+		}
+	}
+
+	return nil
+}
+
 // pushToFilesChannel
 func (ofs *OneDriveFs) pushToFilesChannel(f onedrive.OneDriveFile) error {
 	kof := file.NewKazoupFileFromOneDriveFile(f, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)
+
+	if err := ofs.getPermisions(kof); err != nil {
+		log.Println(err)
+	}
 
 	if err := ofs.generateThumbnail(f, kof.ID); err != nil {
 		log.Println(err)

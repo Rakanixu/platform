@@ -503,6 +503,9 @@
                 this.set('itemSelected', false);
                 this.set('breadcrumbsVisible', (!filters.category) ? true : false);
                 this.set('title', (filters.category) ? filters.category : 'Search');
+                if (filters.access) {
+                    this.set('title', filters.access);
+                }
 
                 if (filters.category === this.categoriesMap.images) {
                     this.setGridView();
