@@ -30,15 +30,6 @@
         background-color: var(--accent);
       }
 
-      .big {
-        --iron-icon-height: 36px;
-        --iron-icon-width: 36px;
-  	  }
-
-      #addDatasourceDialog {
-	      width:320px;
-      }
-
       @media screen and (max-width: 601px) {
         paper-fab {
           top: 84px;
@@ -206,27 +197,6 @@
             this.$$('mat-item #spinner' + item.id).active = (item.crawler_running) ? true : false;
           })
         },
-        doAuth: function(e) {
-          if (window && window.process && window.process.type) {
-            if (e.currentTarget.getAttribute('data-url') == 'local://' ) {
-              ipcRenderer.send('open-folder');
-            } else {
-              ipcRenderer.send(
-                'auth-message',
-                {
-                  url: e.currentTarget.getAttribute('data-url') + '?user=' + Auth.getUserId(),
-                  token: localStorage.getItem('token'),
-                  id_token: localStorage.getItem('id_token'),
-                  show_onboarding: localStorage.getItem('show_onboarding')
-                }
-              );
-            }
-          } else {
-            window.open(e.currentTarget.getAttribute('data-url') + '?user=' + Auth.getUserId());
-          }
-
-          this.closeDatasourceDialog();
-        },
         startScan: function(e) {
           this.headers = Auth.getHeaders();
           this.set('loading', true);
@@ -260,13 +230,6 @@
           };
           this.$.rpcAddDatasource.generateRequest();
         },
-        _authSuccessful: function(e, detail) {
-          for (var attr in detail) {
-            if (detail.hasOwnProperty(attr)) {
-              localStorage.setItem(attr, detail[attr]);
-            }
-          }
-        },
         _handleStartScan: function(e) {
           this.set('loading', false);
           this.$.toast.text = 'Scan started succesfully';
@@ -280,14 +243,6 @@
           this.async(function() {
             window.dispatchEvent(new Event('refresh-datasources'));
           }, 1000);
-        },
-        _handleAddDatasource: function(e) {
-          if (e.detail.response) {
-            this.closeDatasourceDialog();
-            this.$.toast.text = 'New datasource created succesfully';
-            this.$.toast.show();
-            this.async(this.init, 1000);
-          }
         },
         _handleError: function(e) {
           this.set('loading', false);
