@@ -48,7 +48,7 @@
 
     <paper-fab id="addDatasourceIcon"
                icon="icons:add"
-               title="Add datasource"
+               title="Add files"
                on-tap="openDatasourceDialog"
                hidden$="[[!addDatasourceIconVisible]]"></paper-fab>
 
@@ -82,52 +82,7 @@
                  icon="[[emptyState.icon]]"
                  header="[[emptyState.header]]"></empty-state>
 
-    <mat-dialog id="addDatasourceDialog" label="">
-      <div>
-        <!--
-        <paper-button on-tap="doAuth" data-url="local://">
-          <iron-icon class="big" icon="kazoup:local"></iron-icon>
-          <mat-item label="Local"/>
-        </paper-button>
-        -->
-        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/slack/login">
-          <iron-icon class="big" icon="kazoup:slack"></iron-icon>
-          <mat-item label="Slack"/>
-        </paper-button>
-
-        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/google/login">
-          <iron-icon class="big" icon="kazoup:googledrive"></iron-icon>
-          <mat-item label="Google Drive"/>
-        </paper-button>
-
-        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/gmail/login">
-          <iron-icon class="big" icon="kazoup:gmail"></iron-icon>
-          <mat-item label="Gmail"/>
-        </paper-button>
-
-        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/microsoft/login">
-          <iron-icon class="big" icon="kazoup:onedrive"></iron-icon>
-          <mat-item label="One Drive"/>
-        </paper-button>
-
-        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/dropbox/login">
-          <iron-icon class="big" icon="kazoup:dropbox"></iron-icon>
-          <mat-item label="Dropbox"/>
-        </paper-button>
-
-        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/box/login">
-          <iron-icon class="big" icon="kazoup:box"></iron-icon>
-          <mat-item label="Box"/>
-        </paper-button>
-<!--
-        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/evernote/login">
-          <iron-icon class="big" icon="kazoup:evernote"></iron-icon>
-          <mat-item label="Evernote"/>
-        </paper-button>
-        -->
-      </div>
-      <mat-button class="action" label="Cancel" on-tap="closeDatasourceDialog"></mat-button>
-    </mat-dialog>
+    <add-datasources-dialog id="addDatasourceDialog"></add-datasources-dialog>
 
     <paper-toast id="toast" duration="6000" text=""></paper-toast>
 
@@ -241,10 +196,10 @@
           }
         },
         openDatasourceDialog: function() {
-          this.$.addDatasourceDialog.show();
+          this.$.addDatasourceDialog.openDatasourceDialog();
         },
         closeDatasourceDialog: function() {
-          this.$.addDatasourceDialog.hide();
+          this.$.addDatasourceDialog.closeDatasourceDialog();
         },
         isSpinnerActive: function(item, el) {
           this.async(function() {

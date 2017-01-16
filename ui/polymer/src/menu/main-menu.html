@@ -66,6 +66,7 @@
 <link rel="import" href="../../src/empty-state/empty-state.html">
 <link rel="import" href="../../src/filter-converter/filter-converter.html">
 <link rel="import" href="../../src/datasources/datasources-page.html">
+<link rel="import" href="../../src/datasources/add-datasources-dialog.html">
 <link rel="import" href="../../src/detail-view/detail-view.html">
 <!--
 <link rel="import" href="../../src/third-party-actions/share-slack-file.html">
@@ -165,6 +166,9 @@
               <paper-icon-item on-tap="showSettingsPage">
                 <iron-icon icon="icons:settings" item-icon></iron-icon>Settings
               </paper-icon-item>
+              <paper-icon-item on-tap="showDatasourcesDialog">
+                <iron-icon icon="icons:add-circle-outline" item-icon></iron-icon>Add Files
+              </paper-icon-item>
               <paper-icon-item on-tap="showIntercom">
                 <iron-icon icon="icons:feedback" item-icon></iron-icon>Feedback
               </paper-icon-item>
@@ -210,6 +214,7 @@
     <notify-messages></notify-messages>
 
     <scheduler-client datasource-results="{{datasourceResults}}"></scheduler-client>
+    <add-datasources-dialog id="addDatasources"></add-datasources-dialog>
   </template>
 
   <script>
@@ -305,6 +310,9 @@
           this.closeMenu();
           this.set('route.path', this.pagesMap.settings.path);
           this.set('route.__queryParams', {});
+        },
+        showDatasourcesDialog: function(e) {
+          this.$.addDatasources.openDatasourceDialog();
         },
         showIntercom: function(e) {
           this.closeMenu();

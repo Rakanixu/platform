@@ -1,0 +1,208 @@
+<dom-module id="add-datasources-dialog">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style is="custom-style" include="shared-styles">
+      :host {
+        display: block;
+      }
+
+      paper-spinner {
+        height: 44px;
+        width: 44px;
+        position: absolute;
+        top: 13px;
+        left: -58px;
+        --paper-spinner-layer-1-color: var(--accent);
+        --paper-spinner-layer-2-color: var(--accent);
+        --paper-spinner-layer-3-color: var(--accent);
+        --paper-spinner-layer-4-color: var(--accent);
+      }
+
+      mat-item::shadow .content {
+        overflow: visible;
+      }
+
+      paper-fab {
+        position: fixed;
+        right: 36px;
+        top: 99px;
+        z-index: 9999;
+        background-color: var(--accent);
+      }
+
+      .big {
+        --iron-icon-height: 36px;
+        --iron-icon-width: 36px;
+  	  }
+
+      #addDatasourceDialog {
+	      width:320px;
+      }
+
+      @media screen and (max-width: 601px) {
+        paper-fab {
+          top: 84px;
+        }
+      }
+    </style>
+
+    <mat-dialog id="addDatasourceDialog" label="">
+      <div>
+        <!--
+        <paper-button on-tap="doAuth" data-url="local://">
+          <iron-icon class="big" icon="kazoup:local"></iron-icon>
+          <mat-item label="Local"/>
+        </paper-button>
+        -->
+        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/slack/login">
+          <iron-icon class="big" icon="kazoup:slack"></iron-icon>
+          <mat-item label="Slack"/>
+        </paper-button>
+
+        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/google/login">
+          <iron-icon class="big" icon="kazoup:googledrive"></iron-icon>
+          <mat-item label="Google Drive"/>
+        </paper-button>
+
+        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/gmail/login">
+          <iron-icon class="big" icon="kazoup:gmail"></iron-icon>
+          <mat-item label="Gmail"/>
+        </paper-button>
+
+        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/microsoft/login">
+          <iron-icon class="big" icon="kazoup:onedrive"></iron-icon>
+          <mat-item label="One Drive"/>
+        </paper-button>
+
+        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/dropbox/login">
+          <iron-icon class="big" icon="kazoup:dropbox"></iron-icon>
+          <mat-item label="Dropbox"/>
+        </paper-button>
+
+        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/box/login">
+          <iron-icon class="big" icon="kazoup:box"></iron-icon>
+          <mat-item label="Box"/>
+        </paper-button>
+<!--
+        <paper-button on-tap="doAuth" data-url$="[[endpoints.web]]/auth/evernote/login">
+          <iron-icon class="big" icon="kazoup:evernote"></iron-icon>
+          <mat-item label="Evernote"/>
+        </paper-button>
+        -->
+      </div>
+      <mat-button class="action" label="Cancel" on-tap="closeDatasourceDialog"></mat-button>
+    </mat-dialog>
+
+    <paper-toast id="toast" duration="6000" text=""></paper-toast>
+
+    <iron-ajax id="rpcAddDatasource"
+               method="POST"
+               content-type="application/json"
+               url="[[endpoints.endpoint]]"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleAddDatasource"
+               params="{{rpcAddDatasourceParams}}"
+               headers="[[headers]]"></iron-ajax>
+  </template>
+
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'add-datasources-dialog',
+        behaviors: [
+          UtilBehaviorImp,
+          MapBehaviorImp,
+          EndpointsBehaviorImp
+        ],
+        properties: {
+          lastDatasourceCreated: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {};
+            }
+          }
+        },
+        ready: function() {
+          if (window && window.process && window.process.type) {
+            ipcRenderer.on('add-folder', this._addDatasource.bind(this));
+            ipcRenderer.on('auth-callback-message', this._authSuccessful.bind(this));
+          }
+        },
+        openDatasourceDialog: function() {
+          this.$.addDatasourceDialog.show();
+        },
+        closeDatasourceDialog: function() {
+          this.$.addDatasourceDialog.hide();
+        },
+        doAuth: function(e) {
+          if (window && window.process && window.process.type) {
+            if (e.currentTarget.getAttribute('data-url') == 'local://' ) {
+              ipcRenderer.send('open-folder');
+            } else {
+              ipcRenderer.send(
+                'auth-message',
+                {
+                  url: e.currentTarget.getAttribute('data-url') + '?user=' + Auth.getUserId(),
+                  token: localStorage.getItem('token'),
+                  id_token: localStorage.getItem('id_token'),
+                  show_onboarding: localStorage.getItem('show_onboarding')
+                }
+              );
+            }
+          } else {
+            window.open(e.currentTarget.getAttribute('data-url') + '?user=' + Auth.getUserId());
+          }
+
+          this.closeDatasourceDialog();
+        },
+        _addDatasource: function(e, folder) {
+          this.headers = Auth.getHeaders();
+          this.set('loading', true);
+
+          if (folder.length > 0) {
+            this.set('lastDatasourceCreated', {
+              endpoint: {
+                url: 'local://' + folder[0]
+              }
+            });
+          }
+
+          this.$.rpcAddDatasource.body = {
+            service: 'com.kazoup.srv.datasource',
+            method: 'DataSource.Create',
+            request: this.lastDatasourceCreated
+          };
+          this.$.rpcAddDatasource.generateRequest();
+        },
+        _authSuccessful: function(e, detail) {
+          for (var attr in detail) {
+            if (detail.hasOwnProperty(attr)) {
+              localStorage.setItem(attr, detail[attr]);
+            }
+          }
+        },
+        _handleAddDatasource: function(e) {
+          if (e.detail.response) {
+            this.closeDatasourceDialog();
+            this.$.toast.text = 'New datasource created succesfully';
+            this.$.toast.show();
+            this.async(this.init, 1000);
+          }
+        },
+        _handleError: function(e) {
+          this.set('loading', false);
+          this.checkUnauthorize(e);
+
+          if (e.detail.request && e.detail.request.response) {
+            this.$.toast.text = e.detail.request.response.detail;
+            this.$.toast.show();
+          }
+        }
+      });
+    }());
+  </script>
+</dom-module>
