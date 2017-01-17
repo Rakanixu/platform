@@ -2,7 +2,6 @@ package elastic
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/kazoup/gabs"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/kazoup/platform/db/srv/engine"
