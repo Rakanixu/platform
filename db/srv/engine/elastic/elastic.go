@@ -2,6 +2,7 @@ package elastic
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/kazoup/gabs"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/kazoup/platform/db/srv/engine"
@@ -208,7 +209,8 @@ func (e *elastic) Search(ctx context.Context, req *db.SearchRequest) (*db.Search
 	}
 
 	out, err := e.Conn.Search(req.Index, req.Type, nil, query)
-	if err != nil {
+	// Library returns an error when no matching documents, continue
+	if err != nil && err.Error() != globals.ES_NO_RESULTS {
 		return &db.SearchResponse{}, err
 	}
 

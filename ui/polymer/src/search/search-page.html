@@ -609,13 +609,8 @@
                 this.checkUnauthorize(e);
 
                 if (e.detail.request && e.detail.request.response) {
-                    if (e.detail.request.response.code === 500 && 
-                        e.detail.request.response.detail === 'record not found') {
-                        // Show image add files
-                    } else {
-                        this.$.toast.text = e.detail.request.response.detail;
-                        this.$.toast.show();
-                    }
+                    this.$.toast.text = e.detail.request.response.detail;
+                    this.$.toast.show();
                 }
             },
             clearIronList: function() {

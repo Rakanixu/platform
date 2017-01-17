@@ -27,7 +27,6 @@ import (
 
 const (
 	NAMESPACE                 string = "com.kazoup"
-	FLAG_SERVICE_NAME         string = NAMESPACE + ".srv.flag"
 	DB_SERVICE_NAME           string = NAMESPACE + ".srv.db"
 	DATASOURCE_SERVICE_NAME   string = NAMESPACE + ".srv.datasource"
 	NOTIFICATION_SERVICE_NAME string = NAMESPACE + ".srv.notification"
@@ -42,6 +41,8 @@ const (
 	NotificationProxyTopic    string = NAMESPACE + ".topic.notificationproxy"
 	DeleteBucketTopic         string = NAMESPACE + ".topic.deletebucket"
 	DeleteFileInBucketTopic   string = NAMESPACE + ".topic.deletefileinbucket"
+
+	ES_NO_RESULTS = "record not found"
 
 	IndexDatasources  = "datasources"
 	IndexHelper       = "files_helper"
