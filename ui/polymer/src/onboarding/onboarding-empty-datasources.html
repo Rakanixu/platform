@@ -1,0 +1,34 @@
+<dom-module id="onboarding-empty-datasources">
+  <style is="custom-style" include="iron-flex iron-positioning iron-flex-alignment"></style>
+  <template>
+    <style>
+      :host {
+        display: block;
+        font-family: 'Roboto', 'Noto', sans-serif;
+        color: rgba(0,0,0,0.5);
+      }
+
+      .container {
+        height: 100%;
+        padding-top: 340px;
+      }
+    </style>
+
+    <div class="container vertical layout">
+      <div>
+        <iron-icon icon="icons:chevron-left"></iron-icon>
+        <span>Lets get started add some files to index</span>
+      </div>
+    </div>
+
+  </template>
+  <script>
+    (function() {
+      'use strict';
+
+      Polymer({
+        is: 'onboarding-empty-datasources'
+      })
+    }());
+  </script>
+</dom-module>
