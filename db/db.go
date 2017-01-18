@@ -19,8 +19,9 @@ func srv(ctx *cli.Context) {
 	// New Service
 	service := wrappers.NewKazoupService("db", m)
 
+	// db-srv monitor
 	m = monitor.NewMonitor(
-		monitor.Interval(time.Second),
+		monitor.Interval(time.Minute),
 		monitor.Client(service.Client()),
 		monitor.Server(service.Server()),
 	)

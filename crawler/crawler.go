@@ -3,21 +3,31 @@ package crawler
 import (
 	"github.com/kazoup/platform/crawler/srv/subscriber"
 	"github.com/kazoup/platform/lib/categories"
-	//"github.com/kazoup/platform/lib/globals"
-	"log"
-
 	"github.com/kazoup/platform/lib/globals"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/cli"
+	"github.com/micro/go-os/monitor"
+	"log"
+	"time"
 )
 
 func srv(ctx *cli.Context) {
-	service := wrappers.NewKazoupService("crawler")
-
 	if err := categories.SetMap(); err != nil {
 		log.Fatal(err)
 	}
+
+	var m monitor.Monitor
+
+	service := wrappers.NewKazoupService("crawler", m)
+
+	// crawler-srv monitor
+	m = monitor.NewMonitor(
+		monitor.Interval(time.Minute),
+		monitor.Client(service.Client()),
+		monitor.Server(service.Server()),
+	)
+	defer m.Close()
 
 	// Attach subscriber
 	if err := service.Server().Subscribe(

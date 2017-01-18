@@ -12,19 +12,6 @@ import (
 	"time"
 )
 
-type request struct {
-	service string
-	method  string
-}
-
-func (r *request) Service() string {
-	return r.service
-}
-
-func (r *request) Method() string {
-	return r.method
-}
-
 func srv(ctx *cli.Context) {
 	var m monitor.Monitor
 
@@ -33,7 +20,7 @@ func srv(ctx *cli.Context) {
 
 	// Instantiate monitor for search-srv
 	m = monitor.NewMonitor(
-		monitor.Interval(time.Second),
+		monitor.Interval(time.Minute),
 		monitor.Client(service.Client()),
 		monitor.Server(service.Server()),
 	)
