@@ -1,0 +1,8 @@
+= content title
+  | Index
+= content main
+  h1 Services
+  hr
+
+  div.row
+  = include _services .

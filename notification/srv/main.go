@@ -6,11 +6,23 @@ import (
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/kazoup/platform/notification/srv/handler"
 	"github.com/kazoup/platform/notification/srv/subscriber"
+	"github.com/micro/go-os/monitor"
 	"log"
+	"time"
 )
 
 func main() {
-	service := wrappers.NewKazoupService("notification")
+	var m monitor.Monitor
+
+	service := wrappers.NewKazoupService("notification", m)
+
+	// Monitor for notification-srv
+	m = monitor.NewMonitor(
+		monitor.Interval(time.Minute),
+		monitor.Client(service.Client()),
+		monitor.Server(service.Server()),
+	)
+	defer m.Close()
 
 	// This subscriber receives notification messages and publish same message but over the broker directly
 	if err := service.Server().Subscribe(

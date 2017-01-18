@@ -1,0 +1,27 @@
+{{range .}}
+div.row
+  div.col-md-8
+    table.table.table-bordered
+      tbody
+        tr
+          th Id
+          td.h4 {{.Id}}
+        tr
+          th Last Update (interval {{.Interval}}s)
+          td {{TimeAgo .Timestamp}}
+        tr
+          th Cpu
+          td {{.Cpu}}
+        tr
+          th Ctx Switches
+          td {{.Ctx}}
+        tr
+          th Memory
+          td {{.Mem}}
+        tr
+          th Threads
+          td {{.Threads}}
+        tr
+          th Disk (blocks in/out)
+          td {{.InBlock}}/{{.OuBlock}}
+{{end}}

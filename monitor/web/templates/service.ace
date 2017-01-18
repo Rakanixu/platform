@@ -1,0 +1,49 @@
+= content title
+  | {{.Name}}
+= content main
+  h1 Service: {{.Name}}
+  hr
+
+  {{ $stats := .Stats}}
+
+  h3 Status
+  div.row
+  {{range .Status}}
+    div.col-md-4
+      ul.list-group
+        li.list-group-item.h4 {{.Service.Version}}
+        li.list-group-item Status: {{.Status}}
+        {{if .Info}}
+        li.list-group-item Info: {{.Info}}
+        {{end}}
+  {{end}}
+
+  {{range .Services}}
+  div.row
+    div.col-md-12
+      h3 Version: {{.Version}}
+
+  {{if .Nodes}}
+  h3 Nodes
+  {{end}}
+
+  = include _nodes (index $stats .Version)
+  {{end}}
+
+  {{if .Healthchecks}}
+  h3 Healthchecks
+  {{end}}
+
+  {{range .Healthchecks}}
+  div.row
+    div.col-md-8
+      ul.list-group
+        li.list-group-item.h4 <a href={{URL "healthchecks"}}/{{.Id}}>{{.Id}}</a>
+        li.list-group-item Description: {{.Description}}
+        li.list-group-item Timestamp: {{TimeAgo .Timestamp}}
+        li.list-group-item Node: {{index .Service.Nodes 0}}
+        {{if .Error}}
+        li.list-group-item Last Error: {{.Error}}
+        {{end}}
+  {{end}}
+

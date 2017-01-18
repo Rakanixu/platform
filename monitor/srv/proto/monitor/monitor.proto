@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package go.micro.srv.monitor.monitor;
+
+import "github.com/micro/go-os/monitor/proto/monitor.proto";
+
+service Monitor {
+	rpc HealthChecks(HealthChecksRequest) returns (HealthChecksResponse) {}
+	rpc Services(ServicesRequest) returns (ServicesResponse) {}
+	rpc Status(StatusRequest) returns (StatusResponse) {}
+	rpc Stats(StatsRequest) returns (StatsResponse) {}
+}
+
+message HealthChecksRequest {
+	// optional: service name
+	string service = 1;
+	// optional: healthcheck id
+	string id = 2;
+	go.micro.os.monitor.HealthCheck.Status status = 3;
+	uint64 limit = 4;
+	uint64 offset = 5;
+}
+
+message HealthChecksResponse {
+	repeated go.micro.os.monitor.HealthCheck healthchecks = 1;
+}
+
+message ServicesRequest {
+	string service = 1;
+}
+
+message ServicesResponse {
+	repeated go.micro.os.monitor.Service services = 1;
+}
+
+message StatusRequest {
+	string service = 1;
+	string id = 2;
+	int64 limit = 3;
+	int64 offset = 4;
+	// will break out status by node
+	bool verbose = 5;
+}
+
+message StatusResponse {
+	repeated go.micro.os.monitor.Status statuses = 1;
+}
+
+message StatsRequest {
+	string service = 1;
+	string id = 2;
+	int64 limit = 3;
+	int64 offset = 4;
+}
+
+message StatsResponse {
+	repeated go.micro.os.monitor.Stats stats = 1;
+}

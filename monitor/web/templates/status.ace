@@ -1,0 +1,25 @@
+= content title
+  | Status
+= content main
+  h1 Status
+  hr
+
+  div.row
+  {{range .Status}}
+  div.col-xs-6.col-sm-4.col-md-3
+    div.thumbnail
+      div.caption 
+        a href={{URL "status"}}/{{.Name}} {{.Name}}
+      table.table.table-bordered
+        tbody
+        {{range .Versions}}
+          tr
+            th {{.Service.Version}}
+            td {{.Status}}
+          {{if .Info}}
+          tr
+            th Info
+            td {{.Info}}
+          {{end}}
+        {{end}}
+  {{end}}

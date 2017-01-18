@@ -1,0 +1,16 @@
+{{range .Services}}
+  div.col-xs-6.col-sm-4.col-md-3
+    div.thumbnail
+      div.caption 
+        a href={{URL "services"}}/{{.Name}} {{.Name}}
+      div style="height: 100px;"
+        table.table.table-bordered
+          tbody
+            tr
+              th Nodes
+              td {{.Nodes}}
+            tr
+              th Versions
+              td {{.Versions}}
+{{end}}
+

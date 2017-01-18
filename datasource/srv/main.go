@@ -8,10 +8,22 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
+	"github.com/micro/go-os/monitor"
+	"time"
 )
 
 func main() {
-	service := wrappers.NewKazoupService("datasource")
+	var m monitor.Monitor
+
+	service := wrappers.NewKazoupService("datasource", m)
+
+	// datasource-srv monitor
+	m = monitor.NewMonitor(
+		monitor.Interval(time.Minute),
+		monitor.Client(service.Client()),
+		monitor.Server(service.Server()),
+	)
+	defer m.Close()
 
 	// Attach crawler started subscriber
 	if err := service.Server().Subscribe(
