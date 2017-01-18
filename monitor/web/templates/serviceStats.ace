@@ -1,0 +1,36 @@
+= content title
+  | Stats
+= content main
+  h1 Stats {{.Name}}
+  hr
+
+  {{range .Stats}}
+  div.row
+    div.col-md-8
+      table.table.table-bordered
+        tbody
+          tr
+            th Id
+            td {{.Id}}
+          tr
+            th Last Update (interval {{.Interval}}s)
+            td {{TimeAgo .Timestamp}}
+          tr
+            th Version
+            td {{.Version}}
+          tr
+            th Cpu
+            td {{.Cpu}}
+          tr
+            th Ctx Switches
+            td {{.Ctx}}
+          tr
+            th Memory
+            td {{.Mem}}
+          tr
+            th Threads
+            td {{.Threads}}
+          tr
+            th Disk (blocks in/out)
+            td {{.InBlock}}/{{.OuBlock}}
+  {{end}}

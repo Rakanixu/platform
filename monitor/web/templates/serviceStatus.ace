@@ -1,0 +1,22 @@
+= content title
+  | Status
+= content main
+  h1 Status {{.Name}}
+  hr
+
+  {{range $key, $value := .Status}}
+  h3 Version: {{$key}}
+  {{range $service := $value}}
+  {{range $node := .Service.Nodes}}
+  div.row
+    div.col-md-8
+      ul.list-group
+        li.list-group-item {{$node.Id}}
+        li.list-group-item {{$service.Status}}
+        li.list-group-item {{TimeAgo $service.Timestamp}}
+        {{if $service.Info}}
+        li.list-group-item {{$service.Info}}
+        {{end}}
+  {{end}}
+  {{end}}
+  {{end}}

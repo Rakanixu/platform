@@ -1,0 +1,7 @@
+= content title
+  | Healthchecks
+= content main
+  h1 Healthchecks
+  hr
+
+  = include _healthchecks .

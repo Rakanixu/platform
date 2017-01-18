@@ -8,13 +8,25 @@ import (
 	"github.com/kazoup/platform/notification/srv/subscriber"
 	"github.com/kazoup/platform/notification/web/sockets"
 	"github.com/micro/cli"
+	"github.com/micro/go-os/monitor"
 	microweb "github.com/micro/go-web"
 	"golang.org/x/net/websocket"
 	"log"
+	"time"
 )
 
 func srv(ctx *cli.Context) {
-	service := wrappers.NewKazoupService("notification")
+	var m monitor.Monitor
+
+	service := wrappers.NewKazoupService("notification", m)
+
+	// Monitor for notification-srv
+	m = monitor.NewMonitor(
+		monitor.Interval(time.Minute),
+		monitor.Client(service.Client()),
+		monitor.Server(service.Server()),
+	)
+	defer m.Close()
 
 	// This subscriber receives notification messages and publish same message but over the broker directly
 	if err := service.Server().Subscribe(
@@ -49,7 +61,9 @@ func srv(ctx *cli.Context) {
 }
 
 func web(ctx *cli.Context) {
-	web := microweb.NewService(microweb.Name("go.micro.web.notification"))
+	web := microweb.NewService(
+		microweb.Name("go.micro.web.notification"),
+	)
 
 	// Attach socket stream
 	web.Handle("/platform/notify", websocket.Handler(sockets.Stream))

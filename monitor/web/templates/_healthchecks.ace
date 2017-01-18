@@ -1,0 +1,12 @@
+{{range .Healthchecks}}
+div.row
+  div.col-md-8
+    ul.list-group
+      li.list-group-item.h4 <a href={{URL "healthchecks"}}/{{.Id}}>{{.Id}}</a>
+      li.list-group-item Description: {{.Description}}
+      {{if .Error}}
+      li.list-group-item Last Error: {{.Error}}
+      {{end}}
+      li.list-group-item Service: {{.Service.Name}}
+      li.list-group-item Timestamp: {{TimeAgo .Timestamp}}
+{{end}}

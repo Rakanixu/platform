@@ -20,6 +20,7 @@ import (
 	"github.com/micro/go-micro/registry"
 	"github.com/micro/go-micro/selector"
 	"github.com/micro/go-micro/server"
+	"github.com/micro/go-os/monitor"
 	"github.com/micro/go-plugins/wrapper/trace/awsxray"
 	"golang.org/x/net/context"
 )
@@ -180,7 +181,13 @@ func NewKazoupClientWithXrayTrace(sess *session.Session) client.Client {
 	)
 }
 
-func NewKazoupService(name string) micro.Service {
+func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
+	var m monitor.Monitor
+
+	// Check if monitor available
+	if len(mntr) > 0 && mntr[0] != nil {
+		m = mntr[0]
+	}
 
 	//Get AWS session credentials in ~/.aws/credentials
 	sess, err := session.NewSession()
@@ -208,8 +215,9 @@ func NewKazoupService(name string) micro.Service {
 		"hostname": hostname,
 	}
 
+	sn := fmt.Sprintf("%s.srv.%s", globals.NAMESPACE, name)
+
 	if name == "db" {
-		sn := fmt.Sprintf("%s.srv.%s", globals.NAMESPACE, name)
 		service := micro.NewService(
 			micro.Name(sn),
 			micro.Version("latest"),
@@ -235,17 +243,33 @@ func NewKazoupService(name string) micro.Service {
 		)
 		return service
 	}
-	sn := fmt.Sprintf("%s.srv.%s", globals.NAMESPACE, name)
-	service := micro.NewService(
-		micro.Name(sn),
-		micro.Version("latest"),
-		micro.Metadata(md),
-		micro.RegisterTTL(time.Minute),
-		micro.RegisterInterval(time.Second*30),
-		micro.Client(NewKazoupClientWithXrayTrace(sess)),
-		micro.WrapSubscriber(SubscriberWrapper),
-		micro.WrapClient(awsxray.NewClientWrapper(opts...)),
-		micro.WrapHandler(awsxray.NewHandlerWrapper(opts...), AuthWrapper),
-	)
+
+	var service micro.Service
+	if m == nil {
+		service = micro.NewService(
+			micro.Name(sn),
+			micro.Version("latest"),
+			micro.Metadata(md),
+			micro.RegisterTTL(time.Minute),
+			micro.RegisterInterval(time.Second*30),
+			micro.Client(NewKazoupClientWithXrayTrace(sess)),
+			micro.WrapSubscriber(SubscriberWrapper),
+			micro.WrapClient(awsxray.NewClientWrapper(opts...)),
+			micro.WrapHandler(awsxray.NewHandlerWrapper(opts...), AuthWrapper),
+		)
+	} else {
+		service = micro.NewService(
+			micro.Name(sn),
+			micro.Version("latest"),
+			micro.Metadata(md),
+			micro.RegisterTTL(time.Minute),
+			micro.RegisterInterval(time.Second*30),
+			micro.Client(NewKazoupClientWithXrayTrace(sess)),
+			micro.WrapSubscriber(SubscriberWrapper),
+			micro.WrapClient(awsxray.NewClientWrapper(opts...), monitor.ClientWrapper(m)),
+			micro.WrapHandler(awsxray.NewHandlerWrapper(opts...), monitor.HandlerWrapper(m), AuthWrapper),
+		)
+	}
+
 	return service
 }

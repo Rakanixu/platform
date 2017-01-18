@@ -1,0 +1,35 @@
+= doctype html
+html lang=en
+  head
+    meta charset=utf-8
+    meta http-equiv="X-UA-Compatible" content="IE=edge"
+    meta name="viewport" content="width=device-width, initial-scale=1"
+    title
+      | Micro Monitor - 
+      = yield title
+    link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous"
+    = css
+      html {word-wrap: break-word;}
+      .blue {background-color:#85C1E9;}
+      .green {background-color:#76D7C4;}
+      .yellow {background-color:#F7DC6F;}
+      .grey {background-color:#D7DBDD;}
+      .purple {background-color:#C39BD3;}
+      .orange {background-color:#F5B041;}
+  body
+    nav class="navbar navbar-default"
+      div.container-fluid
+        div.navbar-header
+          button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar"
+            span.sr-only Toggle navigation
+            span.icon-bar
+            span.icon-bar
+            span.icon-bar
+          a.navbar-brand href={{URL "/"}} <b>Micro Monitor</b>
+    div.container-fluid
+      div.row 
+        div.col-md-2
+          = include sidebar
+        div.col-md-10
+          = yield main
+

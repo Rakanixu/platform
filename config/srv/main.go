@@ -6,16 +6,23 @@ import (
 	"github.com/kazoup/platform/config/srv/handler"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
-	"github.com/micro/go-micro/cmd"
+	"github.com/micro/go-os/monitor"
+	"time"
 )
 
-//go-bindata -o data/bindata.go -pkg data data
 func main() {
-	cmd.Init()
+	var m monitor.Monitor
 
 	// New service
+	service := wrappers.NewKazoupService("config", m)
 
-	service := wrappers.NewKazoupService("config")
+	// config-srv monitor
+	m = monitor.NewMonitor(
+		monitor.Interval(time.Minute),
+		monitor.Client(service.Client()),
+		monitor.Server(service.Server()),
+	)
+	defer m.Close()
 
 	// Attach handler
 	service.Server().Handle(

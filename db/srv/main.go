@@ -7,12 +7,24 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
+	"github.com/micro/go-os/monitor"
 	"log"
+	"time"
 )
 
 func main() {
+	var m monitor.Monitor
+
 	// New Service
-	service := wrappers.NewKazoupService("db")
+	service := wrappers.NewKazoupService("db", m)
+
+	// db-srv monitor
+	m = monitor.NewMonitor(
+		monitor.Interval(time.Minute),
+		monitor.Client(service.Client()),
+		monitor.Server(service.Server()),
+	)
+	defer m.Close()
 
 	// Register DB Handler
 	service.Server().Handle(
