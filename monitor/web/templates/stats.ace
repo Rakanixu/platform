@@ -1,0 +1,24 @@
+= content title
+  | Stats
+= content main
+  h1 Stats
+  hr
+
+  div.row
+  {{range .Stats}}
+  div.col-xs-6.col-sm-4.col-md-3
+    div.thumbnail
+      div.caption 
+        a href={{URL "stats"}}/{{.Name}} {{.Name}}
+      table.table.table-bordered
+        tbody
+          tr
+            th Nodes
+            td {{.Nodes}}
+          tr
+            th Cpu Total
+            td {{.Cpu}}
+          tr
+            th Mem Total
+            td {{.Mem}}
+  {{end}}

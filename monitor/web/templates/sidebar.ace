@@ -1,0 +1,11 @@
+ul.nav.nav-sidebar
+  li.h4
+    a href={{URL "/"}} Home
+  li
+    a href={{URL "stats"}} Stats
+  li
+    a href={{URL "status"}} Status
+  li
+    a href={{URL "services"}} Services
+  li
+    a href={{URL "healthchecks"}} Healthchecks

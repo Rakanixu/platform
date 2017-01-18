@@ -1,14 +1,12 @@
 package main
 
 import (
-	"log"
-
-	"github.com/kazoup/platform/search/srv/engine"
-	//_ "github.com/kazoup/platform/search/srv/engine/bleve"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
+	"github.com/kazoup/platform/search/srv/engine"
 	_ "github.com/kazoup/platform/search/srv/engine/db_search"
 	"github.com/kazoup/platform/search/srv/handler"
+	"log"
 )
 
 func main() {

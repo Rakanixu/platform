@@ -1,8 +1,6 @@
 package db
 
 import (
-	"log"
-
 	"github.com/kazoup/platform/db/srv/engine"
 	_ "github.com/kazoup/platform/db/srv/engine/elastic"
 	"github.com/kazoup/platform/db/srv/handler"
@@ -10,11 +8,23 @@ import (
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/cli"
+	"github.com/micro/go-os/monitor"
+	"log"
+	"time"
 )
 
 func srv(ctx *cli.Context) {
+	var m monitor.Monitor
+
 	// New Service
-	service := wrappers.NewKazoupService("db")
+	service := wrappers.NewKazoupService("db", m)
+
+	m = monitor.NewMonitor(
+		monitor.Interval(time.Second),
+		monitor.Client(service.Client()),
+		monitor.Server(service.Server()),
+	)
+	defer m.Close()
 
 	// Register Handler
 	service.Server().Handle(

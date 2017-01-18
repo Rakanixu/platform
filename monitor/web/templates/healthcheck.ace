@@ -1,0 +1,7 @@
+= content title
+  | HealthChecks
+= content main
+  h1 Healthcheck {{.Id}}
+  hr
+
+  = include _healthchecks .

@@ -1,16 +1,14 @@
 package config
 
 import (
-	"log"
-
 	srv_handler "github.com/kazoup/platform/config/srv/handler"
 	"github.com/kazoup/platform/config/web/sockets"
+	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/cli"
 	microweb "github.com/micro/go-web"
 	"golang.org/x/net/websocket"
-
-	_ "github.com/kazoup/platform/lib/plugins"
+	"log"
 )
 
 func srv(ctx *cli.Context) {

@@ -32,6 +32,7 @@ const (
 	DATASOURCE_SERVICE_NAME   string = NAMESPACE + ".srv.datasource"
 	NOTIFICATION_SERVICE_NAME string = NAMESPACE + ".srv.notification"
 	SCHEDULER_SERVICE_NAME    string = NAMESPACE + ".srv.scheduler"
+	MONITOR_SERVICE_NAME      string = NAMESPACE + ".srv.monitor"
 	FilesTopic                string = NAMESPACE + ".topic.files"
 	SlackChannelsTopic        string = NAMESPACE + ".topic.slackchannels"
 	SlackUsersTopic           string = NAMESPACE + ".topic.slackusers"

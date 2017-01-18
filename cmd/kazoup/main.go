@@ -18,6 +18,7 @@ import (
 	file "github.com/kazoup/platform/file"
 	"github.com/kazoup/platform/lib/globals"
 	media "github.com/kazoup/platform/media"
+	monitor "github.com/kazoup/platform/monitor"
 	notification "github.com/kazoup/platform/notification"
 	scheduler "github.com/kazoup/platform/scheduler"
 	search "github.com/kazoup/platform/search"
@@ -40,6 +41,7 @@ func main() {
 	app.Commands = append(app.Commands, scheduler.Commands()...)
 	app.Commands = append(app.Commands, file.Commands()...)
 	app.Commands = append(app.Commands, notification.Commands()...)
+	app.Commands = append(app.Commands, monitor.Commands()...)
 	app.Commands = append(app.Commands, ui.Commands()...)
 	app.Commands = append(app.Commands, web.Commands()...)
 	app.Commands = append(app.Commands, desktopCommands()...)
@@ -128,7 +130,8 @@ func desktop(ctx *ccli.Context) {
 				wg.Add(1)
 				c := exec.Command(
 					binary,
-					"--registry=mdns",
+					"--registry=consul",
+					"--registry_address=127.0.0.1",
 					"--transport=tcp",
 					"--broker=nats",
 					"--broker_address=127.0.0.1:4222",
@@ -150,7 +153,8 @@ func desktop(ctx *ccli.Context) {
 			wg.Add(1)
 			c := exec.Command(
 				binary,
-				"--registry=mdns",
+				"--registry=consul",
+				"--registry_address=127.0.0.1",
 				"--broker=nats",
 				"--transport=tcp",
 				"--broker_address=127.0.0.1:4222",
