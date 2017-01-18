@@ -1,5 +1,11 @@
-FROM alpine:3.2
+FROM alpine:3.4
+# Let's roll
+RUN	apk update && \
+	apk upgrade && \
+	apk add --update tzdata && \
+    apk add curl ca-certificates && \
+    update-ca-certificates && \
+    rm -rf /var/cache/apk/*
 ADD templates /templates
-ADD monitor-web /monitor-web
-WORKDIR /
-ENTRYPOINT [ "/monitor-web" ]
+ADD web /
+ENTRYPOINT [ "/web" ]
