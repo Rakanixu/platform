@@ -1,0 +1,44 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: monitor-web
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  template:
+    metadata:
+      labels:
+        app: monitor-web
+    spec:
+      containers:
+      - name: monitor-web
+        command: [
+                  "/web",
+                  "-registry=consul",
+                  "--registry_address=$(REGISTRY_SERVICE_HOST)",    
+                  "--server_address=0.0.0.0:9090",
+                  "--register_ttl=60",
+                  "--register_interval=30",
+                  "--broker=nats",
+                  "--broker_address=nats:4222",
+                  "--transport=tcp",
+                  ]
+        image: eu.gcr.io/desktop-1470249894548/monitor-web:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9090
+          name: monitor-port
+        volumeMounts: 
+        - name: google-cloud-service-account
+          mountPath: "/google-cloud-service-account"
+          readOnly: true
+        - name: aws-credentials
+          mountPath: "/root/.aws"
+          readOnly: true
+      volumes:
+      - name: google-cloud-service-account
+        secret: 
+          secretName: "google-cloud-service-account"
+      - name: aws-credentials
+        secret: 
+          secretName: "aws-credentials"
