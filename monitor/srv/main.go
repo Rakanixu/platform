@@ -7,18 +7,28 @@ import (
 	"github.com/kazoup/platform/monitor/srv/monitor"
 	proto "github.com/kazoup/platform/monitor/srv/proto/monitor"
 	"github.com/micro/go-micro"
+	os_monitor "github.com/micro/go-os/monitor"
 	"log"
+	"time"
 )
 
 func main() {
+	var m os_monitor.Monitor
+
 	service := micro.NewService(
 		micro.Name(globals.MONITOR_SERVICE_NAME),
-		// before starting
 		micro.BeforeStart(func() error {
 			monitor.DefaultMonitor.Run()
 			return nil
 		}),
 	)
+
+	m = os_monitor.NewMonitor(
+		os_monitor.Interval(time.Minute),
+		os_monitor.Client(service.Client()),
+		os_monitor.Server(service.Server()),
+	)
+	defer m.Close()
 
 	service.Init()
 

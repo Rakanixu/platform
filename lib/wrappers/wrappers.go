@@ -266,10 +266,8 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			micro.RegisterInterval(time.Second*30),
 			micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapSubscriber(SubscriberWrapper),
-			micro.WrapClient(awsxray.NewClientWrapper(opts...)),
-			micro.WrapClient(monitor.ClientWrapper(m)),
-			micro.WrapHandler(awsxray.NewHandlerWrapper(opts...), AuthWrapper),
-			micro.WrapHandler(monitor.HandlerWrapper(m)),
+			micro.WrapClient(awsxray.NewClientWrapper(opts...), monitor.ClientWrapper(m)),
+			micro.WrapHandler(awsxray.NewHandlerWrapper(opts...), monitor.HandlerWrapper(m), AuthWrapper),
 		)
 	}
 

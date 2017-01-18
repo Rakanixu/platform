@@ -12,19 +12,29 @@ import (
 	"github.com/micro/cli"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/client"
+	os_monitor "github.com/micro/go-os/monitor"
 	microweb "github.com/micro/go-web"
 	"log"
+	"time"
 )
 
 func srv(ctx *cli.Context) {
+	var m os_monitor.Monitor
+
 	service := micro.NewService(
 		micro.Name(globals.MONITOR_SERVICE_NAME),
-		// before starting
 		micro.BeforeStart(func() error {
 			monitor.DefaultMonitor.Run()
 			return nil
 		}),
 	)
+
+	m = os_monitor.NewMonitor(
+		os_monitor.Interval(time.Minute),
+		os_monitor.Client(service.Client()),
+		os_monitor.Server(service.Server()),
+	)
+	defer m.Close()
 
 	// healthchecks
 	service.Server().Subscribe(
