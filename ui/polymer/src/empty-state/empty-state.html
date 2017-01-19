@@ -7,7 +7,7 @@
       }
 
       .container {
-        height: 100%;
+        
       }
 
       .container .inner-container {
@@ -18,25 +18,17 @@
 
       .container .inner-container h3 {
         text-transform: uppercase;
-        font-size: 1.6em;
-        text-stroke: 0;
-        -webkit-text-stroke: 0;
-        -ms-text-stroke: 0;
-        -moz-text-stroke: 0;
-        color: transparent;
-        background-color: rgba(0, 0, 0, 0.75);
-        background-clip: text;
-        -webkit-background-clip: text;
-        -ms-background-clip: text;
-        -moz-background-clip: text;
-        text-shadow: rgba(255,255,255,0.5) 0 2px 3px, rgba(255,255,255,0.2) 3px 3px 3px;
-        transition: text-shadow .1s ease-out, background-color .2s ease-out;
-        -webkit-transition: text-shadow .1s ease-out, background-color .2s ease-out;
-        -ms-transition: text-shadow .1s ease-out, background-color .2s ease-out;
-        -moz-transition: text-shadow .1s ease-out, background-color .2s ease-out;
-        opacity: 0.7;
+        font-size: 1.8em;
+        color: black;
+        opacity: 0.5;
+        margin-bottom: 0;
       }
+      .container .inner-container p {
+        font-size:1em;
+        color:black;
+        opacity: 0.4;
 
+      }
       .container .inner-container iron-icon {
         opacity: 0.7;
       }
@@ -53,6 +45,8 @@
         <iron-icon class="icon-size" icon="{{icon}}"></iron-icon>
 
         <h3 id="header"></h3>
+        <p id="message"></p>
+
 
       </div>
     </div>
@@ -69,6 +63,11 @@
             notify: true,
             observer: 'headerChanged'
           },
+          message: {
+            type: String,
+            notify: true,
+            observer: 'messageChanged'
+          },
           icon: {
             type: String,
             notify: true
@@ -76,6 +75,9 @@
         },
         headerChanged: function () {
           this.set('$.header.innerHTML', this.header);
+        },
+        messageChanged: function () {
+          this.set('$.message.innerHTML', this.message);
         }
       });
     }());
