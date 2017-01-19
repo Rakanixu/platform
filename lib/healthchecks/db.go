@@ -1,6 +1,7 @@
 package healthchecks
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/micro/go-micro"
@@ -31,6 +32,7 @@ type statusES struct {
 
 func RegisterDBHealthChecks(srv micro.Service, m monitor.Monitor) {
 	dbConnectionHealthCheck(srv, m)
+	dbSrvHealthCheck(srv, m)
 }
 
 func dbConnectionHealthCheck(srv micro.Service, m monitor.Monitor) {
@@ -99,6 +101,37 @@ func dbConnectionHealthCheck(srv micro.Service, m monitor.Monitor) {
 	)
 
 	if err := m.Register(chc); err != nil {
+		fmt.Println("ERROR registering HealthChecker %v", n, err)
+	}
+}
+
+func dbSrvHealthCheck(srv micro.Service, m monitor.Monitor) {
+	url := "https://web.kazoup.io:8082/rpc"
+	body := []byte(`{
+		"service":"c` + srv.Server().Options().Name + `",
+		"method":"DB.Health",
+		"request":{}
+	}`)
+	n := fmt.Sprintf("%s.health", srv.Server().Options().Name)
+
+	dshc := m.NewHealthChecker(
+		n,
+		"Checking db-srv health",
+		func() (map[string]string, error) {
+			_, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body))
+			if err != nil {
+				return map[string]string{
+					"info": fmt.Sprintf("POST request with body %s failed: %s", string(body), err),
+				}, err
+			}
+
+			return map[string]string{
+				"info": "OK",
+			}, nil
+		},
+	)
+
+	if err := m.Register(dshc); err != nil {
 		fmt.Println("ERROR registering HealthChecker %v", n, err)
 	}
 }
