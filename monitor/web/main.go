@@ -19,7 +19,7 @@ func main() {
 	}
 
 	service := web.NewService(
-		web.Name("go.micro.web.monitor"),
+		web.Name("com.kazoup.web.monitor"),
 		web.Handler(handler.Router()),
 	)
 
