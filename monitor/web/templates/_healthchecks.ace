@@ -9,4 +9,8 @@ div.row
       {{end}}
       li.list-group-item Service: {{.Service.Name}}
       li.list-group-item Timestamp: {{TimeAgo .Timestamp}}
+      li.list-group-item Results:
+        {{range $k, $v := .Results}}
+           p {{$k}}: {{$v}}
+        {{end}}
 {{end}}
