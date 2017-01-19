@@ -4,6 +4,7 @@ import (
 	"github.com/kazoup/platform/db/srv/engine"
 	_ "github.com/kazoup/platform/db/srv/engine/elastic"
 	"github.com/kazoup/platform/db/srv/handler"
+	"github.com/kazoup/platform/db/srv/healthchecks"
 	"github.com/kazoup/platform/lib/globals"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
@@ -26,6 +27,9 @@ func srv(ctx *cli.Context) {
 		monitor.Server(service.Server()),
 	)
 	defer m.Close()
+
+	// Register healtchecks for db-srv
+	healthchecks.Register(service, m)
 
 	// Register Handler
 	service.Server().Handle(
