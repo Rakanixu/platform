@@ -101,7 +101,7 @@ func setup(app *ccli.App) {
 
 func desktop(ctx *ccli.Context) {
 	var wg sync.WaitGroup
-	var nc *exec.Cmd
+	var nc, cr *exec.Cmd
 	cmds := ctx.App.Commands
 	binary, err := osext.Executable()
 	if err != nil {
@@ -112,8 +112,7 @@ func desktop(ctx *ccli.Context) {
 		log.Println(err.Error())
 	}
 
-	// Execute nats server binary. Only linux amd64. Other platforms should run binary manually.
-
+	// Execute nats server binary.
 	wg.Add(1)
 	nc = exec.Command(fmt.Sprintf("%s%s%s%s%s/gnatsd", dir, "/nats/gnatsd-v0.9.4-", runtime.GOOS, "-", runtime.GOARCH))
 	nc.Stdout = os.Stdout
@@ -123,6 +122,29 @@ func desktop(ctx *ccli.Context) {
 		wg.Done()
 	}
 	time.Sleep(time.Second * 2)
+
+	// Execute consul as registry in development
+	// consul agent -server -bootstrap-expect 1 -data-dir /tmp/consul -bind=127.0.0.1
+	/*
+		wg.Add(1)
+		cr = exec.Command(
+			fmt.Sprintf("%s%s%s%s%s/consul", dir, "/consul/consul_0.7.2_", runtime.GOOS, "_", runtime.GOARCH),
+			"agent",
+			"-server",
+			"-bootstrap-expect",
+			"1",
+			"-data-dir",
+			"/tmp/consul",
+			"-bind=127.0.0.1",
+		)
+		//cr.Stdout = os.Stdout
+		//cr.Stderr = os.Stderr
+		if err := cr.Start(); err != nil {
+			log.Fatal(err.Error())
+			wg.Done()
+		}
+		time.Sleep(time.Second * 3)
+	*/
 
 	for _, cmd := range cmds {
 		if cmd.Name != "help" && len(cmd.Subcommands) > 0 {
