@@ -178,7 +178,7 @@
                                     indeterminate></paper-progress>
                 </paper-toolbar>
 
-                <div class="lists-container" hidden$="[[emptyState.visible]]">
+                <div class="lists-container" hidden$="[[!_searchVisible(elementVisible)]]">
                     <!-- Search results -->
                     <iron-list id="searchList" items="[[searchResults]]" on-scroll="_handleScroll">
                         <template>
@@ -256,9 +256,13 @@
 
                 <empty-state id="emptyState"
                              class="fit"
-                             hidden$="[[!emptyState.visible]]"
+                             hidden$="[[!_emtyStateVisible(elementVisible)]]"
                              icon="[[emptyState.icon]]"
                              header="[[emptyState.header]]"></empty-state>
+
+                <onboarding-empty-datasources id="onboardingEmptyDatasources"
+                                         class="fit"
+                                         hidden$="[[!_onboardingEmptyDatasourcesVisibility(elementVisible)]]"></onboarding-empty-datasources>
 
             </paper-header-panel>
 
@@ -354,6 +358,11 @@
                     notify: true,
                     value: false
                 },
+                elementVisible: {
+                    type: String,
+                    notify: true,
+                    value: 'onboarding-empty-search'
+                },
                 size: {
                     type: Number,
                     notify: false,
@@ -443,7 +452,6 @@
                     value: function() {
                         return {
                             visible: false,
-                            icon: 'icons:search',
                             header:  'Nope, nothing, nada. Try another search.'
                         };
                     }
@@ -589,11 +597,16 @@
                     }.bind(this));
                     this.$.searchList.fire('iron-resize');
 
-                    if (this.searchResults.length) {
-                        this.set('emptyState.visible', false);
-                    } else {
-                        this.set('emptyState.visible', true);
+                    // Show empty state when there are datasources but no results
+                    // When there is no datasources onboarding-empty-search myust be shown
+                    if (this.searchResults.length === 0 && this.datasourceResults.length > 0) {
+                        this.set('elementVisible', 'empty-state');
+                    } else if (this.searchResults.length > 0) {
+                        this.set('elementVisible', 'search-page');
+                    } else if (this.datasourceResults.length === 0) {
+                        this.set('elementVisible', 'onboarding-empty-datasources');
                     }
+                    console.log(this.elementVisible)
                 }
                 this.set('loading', false);
             },
@@ -844,6 +857,15 @@
                         });
                     }
                 } catch(e) {}
+            },
+            _searchVisible: function(visibility) {
+                return (visibility === 'search-page');
+            },
+            _emtyStateVisible: function(visibility) {
+                return (visibility === 'empty-state');
+            },
+            _onboardingEmptyDatasourcesVisibility: function(visibility) {
+                return (visibility === 'onboarding-empty-datasources');
             }
         });
     }()); 
