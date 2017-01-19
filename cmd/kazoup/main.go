@@ -114,7 +114,11 @@ func desktop(ctx *ccli.Context) {
 
 	// Execute nats server binary.
 	wg.Add(1)
-	nc = exec.Command(fmt.Sprintf("%s%s%s%s%s/gnatsd", dir, "/nats/gnatsd-v0.9.4-", runtime.GOOS, "-", runtime.GOARCH))
+	nc = exec.Command(
+		fmt.Sprintf("%s%s%s%s%s/gnatsd", dir, "/nats/gnatsd-v0.9.4-", runtime.GOOS, "-", runtime.GOARCH),
+		"-m",
+		"8222",
+	)
 	nc.Stdout = os.Stdout
 	nc.Stderr = os.Stderr
 	if err := nc.Start(); err != nil {
