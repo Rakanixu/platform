@@ -101,7 +101,7 @@ func setup(app *ccli.App) {
 
 func desktop(ctx *ccli.Context) {
 	var wg sync.WaitGroup
-	var nc, cr *exec.Cmd
+	var nc *exec.Cmd
 	cmds := ctx.App.Commands
 	binary, err := osext.Executable()
 	if err != nil {
@@ -126,6 +126,7 @@ func desktop(ctx *ccli.Context) {
 	// Execute consul as registry in development
 	// consul agent -server -bootstrap-expect 1 -data-dir /tmp/consul -bind=127.0.0.1
 	/*
+		var cr *exec.Cmd
 		wg.Add(1)
 		cr = exec.Command(
 			fmt.Sprintf("%s%s%s%s%s/consul", dir, "/consul/consul_0.7.2_", runtime.GOOS, "_", runtime.GOARCH),
