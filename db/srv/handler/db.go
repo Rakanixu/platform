@@ -86,3 +86,10 @@ func (db *DB) SearchById(ctx context.Context, req *proto.SearchByIdRequest, rsp 
 
 	return nil
 }
+
+func (db *DB) Health(ctx context.Context, req *proto.HealthRequest, rsp *proto.HealthResponse) error {
+	rsp.Status = 200
+	rsp.Info = "OK"
+
+	return nil
+}

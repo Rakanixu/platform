@@ -29,8 +29,11 @@ type statusES struct {
 	ActiveShardsPercentAsNumber float64 `json:"active_shards_percent_as_number"`
 }
 
-func Register(srv micro.Service, m monitor.Monitor) {
-	// Set ES details from env variables
+func RegisterDBHealthChecks(srv micro.Service, m monitor.Monitor) {
+	dbConnectionHealthCheck(srv, m)
+}
+
+func dbConnectionHealthCheck(srv micro.Service, m monitor.Monitor) {
 	host := os.Getenv("ELASTICSEARCH_URL")
 	if host == "" {
 		host = "http://elasticsearch:9200"
@@ -53,9 +56,10 @@ func Register(srv micro.Service, m monitor.Monitor) {
 		credentials,
 		domain[1],
 	)
+	n := fmt.Sprintf("%s.elasticsearch.connection", srv.Server().Options().Name)
 
 	chc := m.NewHealthChecker(
-		"com.kazoup.db.connection",
+		n,
 		"Checking Elastic Search status",
 		func() (map[string]string, error) {
 			var status statusES
@@ -93,5 +97,8 @@ func Register(srv micro.Service, m monitor.Monitor) {
 			}, nil
 		},
 	)
-	m.Register(chc)
+
+	if err := m.Register(chc); err != nil {
+		fmt.Println("ERROR registering HealthChecker %v", n, err)
+	}
 }

@@ -99,3 +99,12 @@ message SearchByIdRequest {
 message SearchByIdResponse {
   string result = 1;
 }
+
+message HealthRequest {
+
+}
+
+message HealthResponse {
+  int64 status = 1;
+  string info = 2;
+}

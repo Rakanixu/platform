@@ -4,8 +4,8 @@ import (
 	"github.com/kazoup/platform/db/srv/engine"
 	_ "github.com/kazoup/platform/db/srv/engine/elastic"
 	"github.com/kazoup/platform/db/srv/handler"
-	"github.com/kazoup/platform/db/srv/healthchecks"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/cli"
@@ -22,14 +22,15 @@ func srv(ctx *cli.Context) {
 
 	// db-srv monitor
 	m = monitor.NewMonitor(
-		monitor.Interval(time.Minute),
+		monitor.Interval(time.Second*5),
 		monitor.Client(service.Client()),
 		monitor.Server(service.Server()),
 	)
 	defer m.Close()
 
 	// Register healtchecks for db-srv
-	healthchecks.Register(service, m)
+	healthchecks.RegisterDBHealthChecks(service, m)
+	healthchecks.RegisterBrokerHealthChecks(service, m)
 
 	// Register Handler
 	service.Server().Handle(
