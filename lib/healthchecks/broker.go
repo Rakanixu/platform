@@ -18,7 +18,7 @@ type statusBroker struct {
 	NumMatches       int     `json:"num_matches"`
 	CacheHitRate     float64 `json:"cache_hit_rate"`
 	MaxFanout        int     `json:"max_fanout"`
-	AvgFanout        int     `json:"avg_fanout"`
+	AvgFanout        float64 `json:"avg_fanout"`
 }
 
 func RegisterBrokerHealthChecks(srv micro.Service, m monitor.Monitor) {
@@ -63,7 +63,7 @@ func brokerConnectionHealthCheck(srv micro.Service, m monitor.Monitor) {
 				"num_matches":       strconv.Itoa(status.NumMatches),
 				"cache_hit_rate":    strconv.FormatFloat(status.CacheHitRate, 'f', 6, 64),
 				"max_fanout":        strconv.Itoa(status.MaxFanout),
-				"avg_fanout":        strconv.Itoa(status.AvgFanout),
+				"avg_fanout":        strconv.FormatFloat(status.AvgFanout, 'f', 6, 64),
 			}, nil
 		},
 	)

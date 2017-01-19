@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/kazoup/platform/lib/globals"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-os/monitor"
 	"net/http"
@@ -108,7 +109,7 @@ func dbConnectionHealthCheck(srv micro.Service, m monitor.Monitor) {
 func dbSrvHealthCheck(srv micro.Service, m monitor.Monitor) {
 	url := "https://web.kazoup.io:8082/rpc"
 	body := []byte(`{
-		"service":"c` + srv.Server().Options().Name + `",
+		"service":"` + srv.Server().Options().Name + `",
 		"method":"DB.Health",
 		"request":{}
 	}`)
@@ -118,7 +119,15 @@ func dbSrvHealthCheck(srv micro.Service, m monitor.Monitor) {
 		n,
 		"Checking db-srv health",
 		func() (map[string]string, error) {
-			_, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body))
+			c := &http.Client{}
+			req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body))
+			if err != nil {
+				return map[string]string{
+					"info": "Error building request",
+				}, err
+			}
+			req.Header.Set("Authorization", globals.SYSTEM_TOKEN)
+			rsp, err := c.Do(req)
 			if err != nil {
 				return map[string]string{
 					"info": fmt.Sprintf("POST request with body %s failed: %s", string(body), err),
@@ -126,7 +135,8 @@ func dbSrvHealthCheck(srv micro.Service, m monitor.Monitor) {
 			}
 
 			return map[string]string{
-				"info": "OK",
+				"info":   "OK",
+				"status": strconv.Itoa(rsp.StatusCode),
 			}, nil
 		},
 	)
