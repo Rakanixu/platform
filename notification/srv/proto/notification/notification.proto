@@ -4,6 +4,7 @@ package go.micro.srv.notification;
 
 service Notification {
   rpc Stream(StreamRequest) returns (stream StreamResponse) {}
+  rpc Health(HealthRequest) returns (HealthResponse) {}
 }
 
 message NotificationMessage {
@@ -19,4 +20,13 @@ message StreamRequest {
 
 message StreamResponse {
   NotificationMessage message = 1;
+}
+
+message HealthRequest {
+  string type = 1;
+}
+
+message HealthResponse {
+  int64 status = 1;
+  string info = 2;
 }
