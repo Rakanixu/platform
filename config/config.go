@@ -1,57 +1,38 @@
 package config
 
 import (
-	srv_handler "github.com/kazoup/platform/config/srv/handler"
+	"github.com/kazoup/platform/config/web/handler"
 	"github.com/kazoup/platform/config/web/sockets"
+	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
-	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/cli"
 	"github.com/micro/go-os/monitor"
 	microweb "github.com/micro/go-web"
 	"golang.org/x/net/websocket"
-	"log"
 	"time"
 )
 
-func srv(ctx *cli.Context) {
+func web(ctx *cli.Context) {
 	var m monitor.Monitor
 
-	service := wrappers.NewKazoupService("config", m)
+	web := microweb.NewService(microweb.Name("go.micro.web.config"))
 
-	// config-srv monitor
+	// config-web monitor
 	m = monitor.NewMonitor(
 		monitor.Interval(time.Minute),
-		monitor.Client(service.Client()),
-		monitor.Server(service.Server()),
 	)
 	defer m.Close()
 
-	// Attach handler
-	service.Server().Handle(
-		service.Server().NewHandler(&srv_handler.Config{
-			Client: service.Client(),
-		}),
-	)
-	if err := service.Run(); err != nil {
-		log.Fatalf("%v", err)
-	}
-}
-
-func web(ctx *cli.Context) {
-	web := microweb.NewService(microweb.Name("go.micro.web.config"))
+	healthchecks.RegisterConfigWebHealthChecks(m)
 
 	// Attach web handler (socket)
 	web.Handle("/platform/ping", websocket.Handler(sockets.PingPlatform))
+	web.HandleFunc("/health", handler.HandleHealthCheck)
 	web.Run()
 }
 
 func configCommands() []cli.Command {
 	return []cli.Command{
-		{
-			Name:   "srv",
-			Usage:  "Run config srv service",
-			Action: srv,
-		},
 		{
 			Name:   "web",
 			Usage:  "Run config web service",

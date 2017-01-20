@@ -19,7 +19,7 @@ func main() {
 	http.HandleFunc("/search", IndexHandler)
 	http.HandleFunc("/settings", IndexHandler)
 
-	err := http.ListenAndServeTLS(":9090", "/secrets/tls.crt", "/secrets/tls.key", nil)
+	err := http.ListenAndServeTLS(":9090", "/secrets/all.pem", "/secrets/tls.key", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
