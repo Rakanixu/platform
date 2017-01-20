@@ -8,17 +8,41 @@
         color: rgba(0,0,0,0.5);
       }
 
-      .container {
-        /*height: 100%;*/
-        /*padding-top: 340px;*/
+      .container .inner-container {
+        margin: auto;
+        width: 70%;
+        text-align: center;
+      }
+
+      .container .inner-container h3 {
+        text-transform: uppercase;
+        font-size: 1.8em;
+        color: black;
+        opacity: 0.5;
+        margin-bottom: 0;
+      }
+      .container .inner-container p {
+        font-size:1em;
+        color:black;
+        opacity: 0.4;
+
+      }
+      .container .inner-container iron-icon {
+        opacity: 0.7;
+      }
+
+      .container .inner-container .icon-size {
+        width: 128px;
+        height: 128px;
       }
     </style>
 
     <div class="container vertical layout">
-      <div>
-        <!--<iron-icon icon="icons:chevron-left"></iron-icon>-->
-        <h3>Let's get started </h3>
-        <p>Add some files to index by going to settings in left menu.</p>
+      <div class="inner-container">
+        <iron-icon class="icon-size" icon="{{icon}}"></iron-icon>
+
+        <h3 id="header">Let's get started </h3>
+        <p id="message">Add some files to index by going to settings in left menu.</p>
       </div>
     </div>
 
