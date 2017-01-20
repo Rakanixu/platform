@@ -155,6 +155,20 @@ func SaveDataSource(ctx context.Context, c client.Client, data interface{}, id s
 // DeleteDataSource deletes a datasource previously stored and index associated with it
 func DeleteDataSource(ctx context.Context, c client.Client, endpoint *datasource_proto.Endpoint) error {
 	if endpoint != nil {
+		// Remove index for datasource associated with it
+		deleteIndexReq := c.NewRequest(
+			globals.DB_SERVICE_NAME,
+			"Config.DeleteIndex",
+			&db_config_proto.DeleteIndexRequest{
+				Index: endpoint.Index,
+			},
+		)
+		deleteIndexRes := &db_proto.DeleteResponse{}
+
+		if err := c.Call(ctx, deleteIndexReq, deleteIndexRes); err != nil {
+			return err
+		}
+
 		// Delete record from datasources index
 		srvReq := c.NewRequest(
 			globals.DB_SERVICE_NAME,
@@ -168,20 +182,6 @@ func DeleteDataSource(ctx context.Context, c client.Client, endpoint *datasource
 		srvRes := &db_proto.DeleteResponse{}
 
 		if err := c.Call(ctx, srvReq, srvRes); err != nil {
-			return err
-		}
-
-		// Remove index for datasource associated with it
-		deleteIndexReq := c.NewRequest(
-			globals.DB_SERVICE_NAME,
-			"Config.DeleteIndex",
-			&db_config_proto.DeleteIndexRequest{
-				Index: endpoint.Index,
-			},
-		)
-		deleteIndexRes := &db_proto.DeleteResponse{}
-
-		if err := c.Call(ctx, deleteIndexReq, deleteIndexRes); err != nil {
 			return err
 		}
 	}
