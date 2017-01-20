@@ -6,6 +6,7 @@ service File {
   rpc Create(CreateRequest) returns (CreateResponse) {}  // Creates a new file
   rpc Delete(DeleteRequest) returns (CreateResponse) {}  // Deletes an existing file from third-party and kazoup indexes
   rpc Share(ShareRequest) returns (ShareResponse) {}     // Shares a file
+  rpc Health(HealthRequest) returns (HealthResponse) {}
 }
 
 message CreateRequest {
@@ -43,4 +44,13 @@ message ShareRequest {
 message ShareResponse {
   string public_url = 1;   // If provided, url to access file
   bool share_publicly = 2; // Option back from request
+}
+
+message HealthRequest {
+  string type = 1;
+}
+
+message HealthResponse {
+  int64 status = 1;
+  string info = 2;
 }

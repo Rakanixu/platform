@@ -39,6 +39,8 @@ It has these top-level messages:
 	SearchResponse
 	SearchByIdRequest
 	SearchByIdResponse
+	HealthRequest
+	HealthResponse
 */
 package go_micro_srv_db
 

@@ -72,6 +72,11 @@ func setup(app *ccli.App) {
 			Usage:  "TLS Key file",
 			EnvVar: "MICRO_TLS_KEY_FILE",
 		},
+		ccli.StringFlag{
+			Name:   "tls_client_ca_file",
+			Usage:  "TLS CA file to verify clients against",
+			EnvVar: "MICRO_TLS_CLIENT_CA_FILE",
+		},
 		ccli.IntFlag{
 			Name:   "register_ttl",
 			EnvVar: "MICRO_REGISTER_TTL",
@@ -114,7 +119,11 @@ func desktop(ctx *ccli.Context) {
 
 	// Execute nats server binary.
 	wg.Add(1)
-	nc = exec.Command(fmt.Sprintf("%s%s%s%s%s/gnatsd", dir, "/nats/gnatsd-v0.9.4-", runtime.GOOS, "-", runtime.GOARCH))
+	nc = exec.Command(
+		fmt.Sprintf("%s%s%s%s%s/gnatsd", dir, "/nats/gnatsd-v0.9.4-", runtime.GOOS, "-", runtime.GOARCH),
+		"-m",
+		"8222",
+	)
 	nc.Stdout = os.Stdout
 	nc.Stderr = os.Stderr
 	if err := nc.Start(); err != nil {
@@ -159,7 +168,7 @@ func desktop(ctx *ccli.Context) {
 					"--broker=nats",
 					"--broker_address=127.0.0.1:4222",
 					"--enable_tls",
-					"--tls_cert_file=ssl/cert.pem",
+					"--tls_cert_file=ssl/all.pem",
 					"--tls_key_file=ssl/key.pem",
 					cmd.Name,
 					subcmd.Name,
@@ -182,7 +191,7 @@ func desktop(ctx *ccli.Context) {
 				"--transport=tcp",
 				"--broker_address=127.0.0.1:4222",
 				"--enable_tls",
-				"--tls_cert_file=ssl/cert.pem",
+				"--tls_cert_file=ssl/all.pem",
 				"--tls_key_file=ssl/key.pem",
 				cmd.Name)
 			c.Stdout = os.Stdout
