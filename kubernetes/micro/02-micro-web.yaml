@@ -26,7 +26,7 @@ spec:
             "--register_interval=30",
             "--web_cors=*",
             "--enable_tls",
-            "--tls_cert_file=/secrets/tls.crt",
+            "--tls_cert_file=/secrets/all.pem",
             "--tls_key_file=/secrets/tls.key",
             "--broker=nats",
             "--broker_address=nats:4222",
