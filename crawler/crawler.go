@@ -4,6 +4,7 @@ import (
 	"github.com/kazoup/platform/crawler/srv/subscriber"
 	"github.com/kazoup/platform/lib/categories"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/cli"
@@ -28,6 +29,8 @@ func srv(ctx *cli.Context) {
 		monitor.Server(service.Server()),
 	)
 	defer m.Close()
+
+	healthchecks.RegisterBrokerHealthChecks(service, m)
 
 	// Attach subscriber
 	if err := service.Server().Subscribe(
