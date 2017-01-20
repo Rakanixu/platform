@@ -6,7 +6,6 @@ import (
 	"github.com/micro/go-micro"
 	"github.com/micro/go-os/monitor"
 	"net/http"
-	"os"
 	"strconv"
 )
 
@@ -26,13 +25,7 @@ func RegisterBrokerHealthChecks(srv micro.Service, m monitor.Monitor) {
 }
 
 func brokerConnectionHealthCheck(srv micro.Service, m monitor.Monitor) {
-	// This one is set by kubernetes
-	rsh := os.Getenv("REGISTRY_SERVICE_HOST")
-	if rsh == "" {
-		rsh = "localhost"
-	}
-
-	url := fmt.Sprintf("http://%s:8222/subscriptionsz", rsh)
+	url := "http://nats:8222/subscriptionsz"
 	n := fmt.Sprintf("%s.nats.connection", srv.Server().Options().Name)
 
 	bhc := m.NewHealthChecker(

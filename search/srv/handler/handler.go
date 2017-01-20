@@ -37,3 +37,10 @@ func (s *Search) Aggregate(ctx context.Context, req *proto.AggregateRequest, rsp
 
 	return nil
 }
+
+func (s *Search) Health(ctx context.Context, req *proto.HealthRequest, rsp *proto.HealthResponse) error {
+	rsp.Status = 200
+	rsp.Info = "OK"
+
+	return nil
+}

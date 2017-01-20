@@ -1,15 +1,15 @@
 package datasource
 
 import (
-	"log"
-
 	"github.com/kazoup/platform/datasource/srv/handler"
 	"github.com/kazoup/platform/datasource/srv/subscriber"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/cli"
 	"github.com/micro/go-os/monitor"
+	"log"
 	"time"
 )
 
@@ -25,6 +25,9 @@ func srv(ctx *cli.Context) {
 		monitor.Server(service.Server()),
 	)
 	defer m.Close()
+
+	healthchecks.RegisterDatasourceHealthChecks(service, m)
+	healthchecks.RegisterBrokerHealthChecks(service, m)
 
 	// Attach crawler started subscriber
 	if err := service.Server().Subscribe(

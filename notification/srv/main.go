@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/kazoup/platform/notification/srv/handler"
@@ -23,6 +24,9 @@ func main() {
 		monitor.Server(service.Server()),
 	)
 	defer m.Close()
+
+	healthchecks.RegisterNotificationSrvHealthChecks(service, m)
+	healthchecks.RegisterBrokerHealthChecks(service, m)
 
 	// This subscriber receives notification messages and publish same message but over the broker directly
 	if err := service.Server().Subscribe(

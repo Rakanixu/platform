@@ -48,3 +48,10 @@ func (n *Notification) Stream(ctx context.Context, stream server.Streamer) error
 
 	return nil
 }
+
+func (n *Notification) Health(ctx context.Context, req *proto.HealthRequest, rsp *proto.HealthResponse) error {
+	rsp.Status = 200
+	rsp.Info = "OK"
+
+	return nil
+}

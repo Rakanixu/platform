@@ -181,3 +181,10 @@ func (ds *DataSource) ScanAll(ctx context.Context, req *proto.ScanAllRequest, rs
 
 	return nil
 }
+
+func (ds *DataSource) Health(ctx context.Context, req *proto.HealthRequest, rsp *proto.HealthResponse) error {
+	rsp.Status = 200
+	rsp.Info = "OK"
+
+	return nil
+}
