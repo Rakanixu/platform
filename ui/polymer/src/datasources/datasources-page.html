@@ -70,8 +70,9 @@
     <empty-state id="emptyState"
                  class="fit"
                  hidden$="[[!emptyState.visible]]"
-                 icon="[[emptyState.icon]]"
-                 header="[[emptyState.header]]"></empty-state>
+                
+                 header="[[emptyState.header]]"
+                 message="[[emptyState.message]]"></empty-state>
 
     <add-datasources-dialog id="addDatasourceDialog"></add-datasources-dialog>
 
@@ -161,7 +162,8 @@
               return {
                 visible: false,
                 icon: "icons:build",
-                header: "No datasources."
+                header: "Let's get started.",
+                message: "Add files you want to index by clicking plus button in top right corner.",
               };
             }
           }
