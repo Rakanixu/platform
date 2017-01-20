@@ -8,6 +8,7 @@ service DataSource {
   rpc Search(SearchRequest) returns (SearchResponse) {}
   rpc Scan(ScanRequest) returns (ScanResponse) {}
   rpc ScanAll(ScanAllRequest) returns (ScanAllResponse) {}
+  rpc Health(HealthRequest) returns (HealthResponse) {}
 }
 
 message Endpoint {
@@ -85,4 +86,13 @@ message DeleteBucketMessage {
 message DeleteFileInBucketMessage {
   string file_id = 1;
   string index = 2;
+}
+
+message HealthRequest {
+  string type = 1;
+}
+
+message HealthResponse {
+  int64 status = 1;
+  string info = 2;
 }

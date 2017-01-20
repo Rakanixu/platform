@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/kazoup/platform/search/srv/engine"
@@ -24,6 +25,9 @@ func main() {
 		monitor.Server(service.Server()),
 	)
 	defer m.Close()
+
+	healthchecks.RegisterSearchHealthChecks(service, m)
+	healthchecks.RegisterBrokerHealthChecks(service, m)
 
 	// Register Handler
 	service.Server().Handle(
