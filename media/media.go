@@ -1,25 +1,30 @@
 package media
 
 import (
-	"log"
-	"os"
-	"path/filepath"
-
+	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/media/web/handler"
 	"github.com/micro/cli"
+	"github.com/micro/go-os/monitor"
 	microweb "github.com/micro/go-web"
+	"time"
 )
 
 func web(ctx *cli.Context) {
-	wd, _ := os.Getwd()
-
-	log.Printf("volume name: %s  path :%s", filepath.VolumeName(wd), wd)
+	var m monitor.Monitor
 
 	service := microweb.NewService(microweb.Name("go.micro.web.media"))
 
+	m = monitor.NewMonitor(
+		monitor.Interval(time.Minute),
+	)
+	defer m.Close()
+
+	healthchecks.RegisterMediaWebHealthChecks(m)
+
 	service.Handle("/preview", handler.NewImageHandler())
 	service.Handle("/thumbnail", handler.NewThumbnailHandler())
+	service.HandleFunc("/health", handler.HandleHealthCheck)
 
 	service.Run()
 }
