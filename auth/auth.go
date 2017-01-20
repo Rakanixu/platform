@@ -1,15 +1,27 @@
 package auth
 
 import (
-	"log"
-
 	"github.com/kazoup/platform/auth/web/handler"
+	"github.com/kazoup/platform/lib/healthchecks"
 	"github.com/micro/cli"
+	"github.com/micro/go-os/monitor"
 	webmicro "github.com/micro/go-web"
+	"log"
+	"time"
 )
 
 func web(ctx *cli.Context) {
+	var m monitor.Monitor
+
 	service := webmicro.NewService(webmicro.Name("go.micro.web.auth"))
+
+	// auth-web monitor
+	m = monitor.NewMonitor(
+		monitor.Interval(time.Minute),
+	)
+	defer m.Close()
+
+	healthchecks.RegisterAuthWebHealthChecks(m)
 
 	service.HandleFunc("/google/login", handler.HandleGoogleLogin)
 	service.HandleFunc("/google/callback", handler.HandleGoogleCallback)
@@ -23,6 +35,7 @@ func web(ctx *cli.Context) {
 	service.HandleFunc("/box/callback", handler.HandleBoxCallback)
 	service.HandleFunc("/gmail/login", handler.HandleGmailLogin)
 	service.HandleFunc("/gmail/callback", handler.HandleGmailCallback)
+	service.HandleFunc("/health", handler.HandleHealthCheck)
 
 	if err := service.Run(); err != nil {
 		log.Panic(err)
