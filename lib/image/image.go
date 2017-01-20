@@ -6,8 +6,8 @@ import (
 	"github.com/nfnt/resize"
 	"image"
 	_ "image/gif"
-	"image/jpeg"
 	_ "image/jpeg"
+	"image/png"
 	_ "image/png"
 	"io"
 )
@@ -21,7 +21,7 @@ func Thumbnail(rd io.ReadCloser, width int) (io.Reader, error) {
 	}
 
 	buf := new(bytes.Buffer)
-	err = jpeg.Encode(buf, resize.Resize(uint(width), 0, img, resize.MitchellNetravali), nil)
+	err = png.Encode(buf, resize.Resize(uint(width), 0, img, resize.MitchellNetravali))
 	if err != nil {
 		return nil, err
 	}
