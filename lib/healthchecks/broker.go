@@ -29,10 +29,10 @@ func brokerConnectionHealthCheck(srv micro.Service, m monitor.Monitor) {
 	// This one is set by kubernetes
 	rsh := os.Getenv("REGISTRY_SERVICE_HOST")
 	if rsh == "" {
-		rsh = "http://localhost:8222"
+		rsh = "localhost"
 	}
 
-	url := fmt.Sprintf("%s/subscriptionsz", rsh)
+	url := fmt.Sprintf("http://%s:8222/subscriptionsz", rsh)
 	n := fmt.Sprintf("%s.nats.connection", srv.Server().Options().Name)
 
 	bhc := m.NewHealthChecker(
