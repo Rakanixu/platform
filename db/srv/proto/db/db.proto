@@ -10,6 +10,7 @@ service DB {
   rpc DeleteByQuery(DeleteByQueryRequest) returns (DeleteByQueryResponse) {}
   rpc Search(SearchRequest) returns (SearchResponse) {}
   rpc SearchById(SearchByIdRequest) returns (SearchByIdResponse) {}
+  rpc Health(HealthRequest) returns (HealthResponse) {}
 }
 
 message CreateRequest {
@@ -101,7 +102,7 @@ message SearchByIdResponse {
 }
 
 message HealthRequest {
-
+  string type = 1;
 }
 
 message HealthResponse {

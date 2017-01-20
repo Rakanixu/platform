@@ -194,3 +194,10 @@ func (f *File) Share(ctx context.Context, req *proto.ShareRequest, rsp *proto.Sh
 
 	return nil
 }
+
+func (f *File) Health(ctx context.Context, req *proto.HealthRequest, rsp *proto.HealthResponse) error {
+	rsp.Status = 200
+	rsp.Info = "OK"
+
+	return nil
+}

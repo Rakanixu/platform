@@ -22,7 +22,7 @@ func srv(ctx *cli.Context) {
 
 	// db-srv monitor
 	m = monitor.NewMonitor(
-		monitor.Interval(time.Second*5),
+		monitor.Interval(time.Minute),
 		monitor.Client(service.Client()),
 		monitor.Server(service.Server()),
 	)

@@ -127,6 +127,7 @@ func dbSrvHealthCheck(srv micro.Service, m monitor.Monitor) {
 				}, err
 			}
 			req.Header.Set("Authorization", globals.SYSTEM_TOKEN)
+			req.Header.Set("Content-Type", "application/json")
 			rsp, err := c.Do(req)
 			if err != nil {
 				return map[string]string{
