@@ -27,10 +27,16 @@ func main() {
 
 //IndexHandler serves index.html file of SPA
 func IndexHandler(w http.ResponseWriter, r *http.Request) {
+	// https://blog.bracebin.com/achieving-perfect-ssl-labs-score-with-go
+	w.Header().Add("Strict-Transport-Security", "max-age=63072000; includeSubDomains")
+
 	http.ServeFile(w, r, "html/index.html")
 }
 
 // redirect redirects request over http to https
 func redirect(w http.ResponseWriter, req *http.Request) {
+	// https://blog.bracebin.com/achieving-perfect-ssl-labs-score-with-go
+	w.Header().Add("Strict-Transport-Security", "max-age=63072000; includeSubDomains")
+
 	http.Redirect(w, req, "https://"+req.Host+req.URL.String(), http.StatusMovedPermanently)
 }
