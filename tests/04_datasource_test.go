@@ -12,19 +12,10 @@ import (
 )
 
 const (
-	RPC_ENPOINT    = "https://web.kazoup.io:8082/rpc"
-	USER_ID        = "test@kazoup.com"
-	USER_PWD       = "ksu4awemtest"
-	STATUS_OK      = 200
 	NUM_DS_CREATED = 6
 )
 
-var c *http.Client
 var datasources []proto.Endpoint
-
-func init() {
-	c = &http.Client{}
-}
 
 var createtests = []struct {
 	in  []byte
