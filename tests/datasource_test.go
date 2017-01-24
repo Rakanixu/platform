@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/lib/globals"
+	"io/ioutil"
 	"net/http"
 	"testing"
 	"time"
@@ -125,7 +126,7 @@ var createtests = []struct {
 					"access_token": "",
 					"token_type": "",
 					"refresh_token": "",
-					"expiry": ""
+					"expiry": 0
 				}
 			}
 		}
@@ -149,7 +150,7 @@ var createtests = []struct {
 	}`), &http.Response{StatusCode: 500}},
 }
 
-func TestCreate(t *testing.T) {
+func TestDatasourceCreate(t *testing.T) {
 	for _, v := range createtests {
 		req, err := http.NewRequest(http.MethodPost, RPC_ENPOINT, bytes.NewBuffer(v.in))
 		if err != nil {
@@ -164,14 +165,16 @@ func TestCreate(t *testing.T) {
 		}
 
 		if rsp.StatusCode != v.out.StatusCode {
-			t.Errorf("Expected %v with body %s, got %v", v.out.StatusCode, string(v.in), rsp.StatusCode)
+			defer rsp.Body.Close()
+			b, _ := ioutil.ReadAll(rsp.Body)
+			t.Errorf("Expected %v with body %s, got %v %v", v.out.StatusCode, string(v.in), rsp.StatusCode, string(b))
 		}
 	}
 
 	time.Sleep(time.Second)
 }
 
-func TestSearch(t *testing.T) {
+func TestDatasourceSearch(t *testing.T) {
 	b := []byte(`{
 		"service":"com.kazoup.srv.datasource",
 		"method":"DataSource.Search",
@@ -195,6 +198,7 @@ func TestSearch(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error performing request with body: %s %v", string(b), err)
 	}
+	defer res.Body.Close()
 
 	type TestRsp struct {
 		Result string `json:"result"`
@@ -216,7 +220,7 @@ func TestSearch(t *testing.T) {
 	}
 }
 
-func TestScan(t *testing.T) {
+func TestDatasourceScan(t *testing.T) {
 	for _, v := range datasources {
 		b := []byte(`{
 			"service": "com.kazoup.srv.datasource",
@@ -237,15 +241,17 @@ func TestScan(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error performing request with body: %s %v", string(b), err)
 		}
+		defer rsp.Body.Close()
 
 		if rsp.StatusCode != STATUS_OK {
-			t.Errorf("Expected %v with body %s, got %v", STATUS_OK, string(b), rsp.StatusCode)
+			b, _ := ioutil.ReadAll(rsp.Body)
+			t.Errorf("Expected %v with body %s, got %v %v", STATUS_OK, string(b), rsp.StatusCode, string(b))
 		}
 	}
-	time.Sleep(time.Second)
+	time.Sleep(time.Second * 25)
 }
 
-func TestDelete(t *testing.T) {
+func TestDatasourceDelete(t *testing.T) {
 	for _, v := range datasources {
 		b := []byte(`{
 			"service": "com.kazoup.srv.datasource",
@@ -266,9 +272,11 @@ func TestDelete(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error performing request with body: %s %v", string(b), err)
 		}
+		defer rsp.Body.Close()
 
 		if rsp.StatusCode != STATUS_OK {
-			t.Errorf("Expected %v with body %s, got %v", STATUS_OK, string(b), rsp.StatusCode)
+			b, _ := ioutil.ReadAll(rsp.Body)
+			t.Errorf("Expected %v with body %s, got %v %v", STATUS_OK, string(b), rsp.StatusCode, string(b))
 		}
 	}
 	time.Sleep(time.Second)
