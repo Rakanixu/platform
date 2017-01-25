@@ -1,5 +1,6 @@
 package tests
 
+/*
 import (
 	"bytes"
 	"encoding/json"
@@ -272,3 +273,4 @@ func TestDatasourceDelete(t *testing.T) {
 	}
 	time.Sleep(time.Second)
 }
+*/
