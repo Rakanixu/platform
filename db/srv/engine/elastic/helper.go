@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/kazoup/platform/lib/globals"
-	search_proto "github.com/kazoup/platform/search/srv/proto/search"
 	lib "github.com/mattbaird/elastigo/lib"
 	"strconv"
 )
@@ -70,7 +69,6 @@ type ElasticQuery struct {
 	LastSeen             int64
 	Access               string
 	NoKazoupFileOriginal bool
-	Aggs                 []*search_proto.Aggregation
 }
 
 // Query generates a Elasticsearch DSL query
@@ -94,22 +92,6 @@ func (e *ElasticQuery) Query() (string, error) {
 	buffer.WriteString(`]}}, "sort":[`)
 	buffer.WriteString(e.defaultSorting())
 	buffer.WriteString(`]}`)
-
-	return buffer.String(), nil
-}
-
-// Query generates a Elasticsearch DSL query
-func (e *ElasticQuery) AggsQuery() (string, error) {
-	var buffer bytes.Buffer
-
-	buffer.WriteString(`{"size":0,"query":{"filtered":{"filter":{"bool":{"must":[`)
-	buffer.WriteString(e.filterType() + ",")
-	buffer.WriteString(e.queryTerm() + ",")
-	buffer.WriteString(e.filterCategory() + ",")
-	buffer.WriteString(e.filterUrl())
-	buffer.WriteString(`]}}}}, "aggs":{`)
-	buffer.WriteString(e.aggs())
-	buffer.WriteString(`}}`)
 
 	return buffer.String(), nil
 }
@@ -307,26 +289,6 @@ func (e *ElasticQuery) setSource() string {
 			"datasource_id",
 			"index"
 		],`)
-	}
-
-	return buffer.String()
-}
-
-func (e *ElasticQuery) aggs() string {
-	var buffer bytes.Buffer
-
-	for k, v := range e.Aggs {
-		buffer.WriteString(`"`)
-		buffer.WriteString(strconv.Itoa(k))
-		buffer.WriteString(`":{"`)
-		buffer.WriteString(v.AggregationType)
-		buffer.WriteString(`":{"field":"`)
-		buffer.WriteString(v.Field)
-		buffer.WriteString(`"}}`)
-
-		if len(e.Aggs) > k+1 {
-			buffer.WriteString(`,`)
-		}
 	}
 
 	return buffer.String()

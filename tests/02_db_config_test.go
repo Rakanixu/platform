@@ -167,8 +167,3 @@ func TestDBRenameAlias(t *testing.T) {
 	// Create index, add alias, rename alias, delete index
 	rangeTestTable(config_renamealias, t)
 }
-
-/* THIS was used with local files,
-func TestDBAggregate(t *testing.T) {
-
-}*/

@@ -251,15 +251,6 @@
                on-response="_handleSlackChannels"
                headers="[[headers]]"></iron-ajax>
 
-    <iron-ajax id="rpcAggregate"
-               method="POST"
-               content-type="application/json"
-               url="[[endpoints.endpoint]]"
-               handle-as="json"
-               on-error="_handleError"
-               on-response="_handleAggregate"
-               headers="[[headers]]"></iron-ajax>
-
   </template>
 
   <script>
@@ -356,23 +347,6 @@
                 }
               };
             }
-          },
-          rpcAggregateParams: {
-            type: Object,
-            notify: false,
-            value: function() {
-              return {
-                service: window.Endpoints.srvs.search.srv,
-                method: window.Endpoints.srvs.search.aggregate,
-                request: {
-                  filters: {
-                    index: 'files',
-                    type: 'file'
-                  },
-                  agg: []
-                }
-              };
-            }
           }
         },
         itemChanged: function(newVal, oldVal) {
@@ -384,26 +358,6 @@
 
           this.$.rpcRead.body = this.rpcReadParams;
           this.$.rpcRead.generateRequest();
-        },
-        getMoreInfoForDirectory: function() {
-          var reqParams;
-
-          if (this.item.is_dir) {
-            reqParams = _.cloneDeep(this.rpcAggregateParams);
-
-            reqParams.request.filters.url = this.item.url;
-            reqParams.request.agg.push({
-              aggregation_type: 'stats',
-              field: 'file_size'
-            });
-            reqParams.request.agg.push({
-              aggregation_type: 'terms',
-              field: 'category'
-            });
-
-            this.$.rpcAggregate.body = reqParams;
-            this.$.rpcAggregate.generateRequest();
-          }
         },
         getMoreInfoFromGoogleDrive: function() {
           var people = (this.item.original.permissions && this.item.original.permissions.length) ?
@@ -539,9 +493,6 @@
             this.set('item.original', JSON.parse(e.detail.response.result).original);
 
             switch(this.item.file_type) {
-              case 'local':
-                this.getMoreInfoForDirectory();
-                break;
               case 'slack':
                 this.getMoreInfoFromSlack();
                 break;
@@ -565,18 +516,6 @@
                 this.$$('#detailImg').style.height = height + 'px';
               }
             }, 250);
-          }
-        },
-        _handleAggregate: function(e) {
-          var aggs = {};
-
-          if (e.detail.response && e.detail.response.result) {
-            aggs = JSON.parse(e.detail.response.result);
-
-            this.set('aggsInfo', {
-              count: aggs['0'].count,
-              totalSize: aggs['0'].sum
-            });
           }
         },
         _handleSlackUsers: function(e) {
