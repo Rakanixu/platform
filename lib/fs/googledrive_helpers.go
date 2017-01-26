@@ -1,7 +1,6 @@
 package fs
 
 import (
-	"errors"
 	"github.com/kazoup/platform/lib/categories"
 	cs "github.com/kazoup/platform/lib/cloudstorage"
 	"github.com/kazoup/platform/lib/file"
@@ -94,12 +93,12 @@ func (gfs *GoogleDriveFs) generateThumbnail(f *drive.File, id string) error {
 
 		rc, err := gcs.Download(f.Id)
 		if err != nil {
-			return errors.New("ERROR downloading googledrive file")
+			return err
 		}
 
 		rd, err := image.Thumbnail(rc, globals.THUMBNAIL_WIDTH)
 		if err != nil {
-			return errors.New("ERROR generating thumbnail for googledrive file")
+			return err
 		}
 
 		// Upload file to GoogleCloudStorage, so connector is globals.GoogleCloudStorage

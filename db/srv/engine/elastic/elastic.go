@@ -10,7 +10,6 @@ import (
 	db "github.com/kazoup/platform/db/srv/proto/db"
 	subscriber "github.com/kazoup/platform/db/srv/subscriber/elastic"
 	"github.com/kazoup/platform/lib/globals"
-	search_proto "github.com/kazoup/platform/search/srv/proto/search"
 	lib "github.com/mattbaird/elastigo/lib"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
@@ -252,9 +251,17 @@ func (e *elastic) Search(ctx context.Context, req *db.SearchRequest) (*db.Search
 // This should return single ID as all files should have unique ID's as we seting them up based on unique path MD5
 // Method will work on any index and alias as long ID's are unique
 func (e *elastic) SearchById(ctx context.Context, req *db.SearchByIdRequest) (*db.SearchByIdResponse, error) {
-	uId, err := globals.ParseJWTToken(ctx)
-	if err != nil {
-		return &db.SearchByIdResponse{}, err
+	var uId string
+	var err error
+
+	// Get user id implicitly or explicitly
+	if len(req.UserId) == 0 {
+		uId, err = globals.ParseJWTToken(ctx)
+		if err != nil {
+			return &db.SearchByIdResponse{}, err
+		}
+	} else {
+		uId = req.UserId
 	}
 
 	eQuery := ElasticQuery{
@@ -385,33 +392,4 @@ func (e *elastic) RenameAlias(ctx context.Context, req *config.RenameAliasReques
 	}
 
 	return &config.RenameAliasResponse{}, nil
-}
-
-// Aggregate allow us to query for aggs in ES
-func (e *elastic) Aggregate(ctx context.Context, req *search_proto.AggregateRequest) (*search_proto.AggregateResponse, error) {
-	eQuery := ElasticQuery{
-		Term:     req.Filters.Term,
-		Category: req.Filters.Category,
-		Url:      req.Filters.Url,
-		Type:     globals.FileTypeFile, // We always want to agg on just files (data), no directories
-		Aggs:     req.Agg,
-	}
-	query, err := eQuery.AggsQuery()
-	if err != nil {
-		return nil, err
-	}
-
-	out, err := e.Conn.Search(req.Filters.Index, req.Filters.Type, nil, query)
-	if err != nil {
-		return nil, err
-	}
-
-	b, err := out.Aggregations.MarshalJSON()
-	if err != nil {
-		return nil, err
-	}
-
-	return &search_proto.AggregateResponse{
-		Result: string(b),
-	}, nil
 }

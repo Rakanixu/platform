@@ -6,7 +6,6 @@ import (
 	config "github.com/kazoup/platform/db/srv/proto/config"
 	db "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/lib/file"
-	search_proto "github.com/kazoup/platform/search/srv/proto/search"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 )
@@ -40,7 +39,6 @@ type Config interface {
 	DeleteIndex(ctx context.Context, req *config.DeleteIndexRequest) (*config.DeleteIndexResponse, error)
 	DeleteAlias(ctx context.Context, req *config.DeleteAliasRequest) (*config.DeleteAliasResponse, error)
 	RenameAlias(ctx context.Context, req *config.RenameAliasRequest) (*config.RenameAliasResponse, error)
-	Aggregate(ctx context.Context, req *search_proto.AggregateRequest) (*search_proto.AggregateResponse, error)
 }
 
 type Subscriber interface {
@@ -132,10 +130,6 @@ func DeleteAlias(ctx context.Context, req *config.DeleteAliasRequest) (*config.D
 
 func RenameAlias(ctx context.Context, req *config.RenameAliasRequest) (*config.RenameAliasResponse, error) {
 	return engine.RenameAlias(ctx, req)
-}
-
-func Aggregate(ctx context.Context, req *search_proto.AggregateRequest) (*search_proto.AggregateResponse, error) {
-	return engine.Aggregate(ctx, req)
 }
 
 func TypeFactory(typ string, data string) (interface{}, error) {

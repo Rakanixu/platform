@@ -479,61 +479,67 @@
                 '_breadcrumbsChanged(breadcrumbs.*)'
             ],
             _route: function(path) {
-                if (path === this.pagesMap.search.subpath) {
-                    this.init();
-                }
+                this.async(function() {
+                    if (path === this.pagesMap.search.subpath) {
+                        // Not need to call init as _routeData will be call
+                        // every time search is load, as we set queryParams
+                        // this.init();
+                    }
+                });
             },
             _routeData: function(data) {
-                // merge whatever is coming plus sane defaults into custom state
-                // if user adds bullshit, his problem
-                // backend + context secures data per user
-                var filters = _.extend(data, {
-                    file_type: data.category ? '' : 'files',
-                    type: 'file',
-                    from: 0,
-                    size: this.size,
-                    depth: 0,
-                    url: '',
-                    no_kazoup_file_original: true
-                });
-
                 this.async(function() {
-                    if (data && data.term && data.term.length) {
-                        this.set('searching', true);
-                        this.$.search.input.value = data.term;
-                    } else {
-                        this.set('searching', false);
-                        this.$.search.input.value = '';
+                    // merge whatever is coming plus sane defaults into custom state
+                    // if user adds bullshit, his problem
+                    // backend + context secures data per user
+                    var filters = _.extend(data, {
+                        file_type: data.category ? '' : 'files',
+                        type: 'file',
+                        from: 0,
+                        size: this.size,
+                        depth: 0,
+                        url: '',
+                        no_kazoup_file_original: true
+                    });
+
+                    this.async(function() {
+                        if (data && data.term && data.term.length) {
+                            this.set('searching', true);
+                            this.$.search.input.value = data.term;
+                        } else {
+                            this.set('searching', false);
+                            this.$.search.input.value = '';
+                        }
+                        this.$.search._inputHandler();
+                    });
+                    this.clearIronList();
+                    this.set('itemSelected', false);
+                    this.set('breadcrumbsVisible', (!filters.category) ? true : false);
+                    this.set('title', (filters.category) ? filters.category : 'Search');
+                    if (filters.access) {
+                        this.set('title', filters.access);
                     }
-                    this.$.search._inputHandler();
+
+                    if (filters.category === this.categoriesMap.images) {
+                        this.setGridView();
+                    } else {
+                        this.setListView();
+                    }
+
+                    if (filters.category === this.categoriesMap.videos) {
+                        this.set('bigVideoClass', 'big-video');
+                    } else {
+                        this.set('bigVideoClass', '');
+                    }
+
+                    this.refreshView();
+
+                    if (!filters.index) {
+                        filters.index = Auth.getMD5UserId();
+                    }
+
+                    this.$.filterConverter.setValues(filters);
                 });
-                this.clearIronList();
-                this.set('itemSelected', false);
-                this.set('breadcrumbsVisible', (!filters.category) ? true : false);
-                this.set('title', (filters.category) ? filters.category : 'Search');
-                if (filters.access) {
-                    this.set('title', filters.access);
-                }
-
-                if (filters.category === this.categoriesMap.images) {
-                    this.setGridView();
-                } else {
-                    this.setListView();
-                }
-
-                if (filters.category === this.categoriesMap.videos) {
-                    this.set('bigVideoClass', 'big-video');
-                } else {
-                    this.set('bigVideoClass', '');
-                }
-
-                this.refreshView();
-
-                if (!filters.index) {
-                    filters.index = Auth.getMD5UserId();
-                }
-
-                this.$.filterConverter.setValues(filters);
             },
             _breadcrumbsChanged: function(newVal, oldVal) {
                 this.set('lastBreadcrumb', this.breadcrumbs[this.breadcrumbs.length - 1]);
@@ -606,8 +612,8 @@
                     } else if (this.datasourceResults.length === 0) {
                         this.set('elementVisible', 'onboarding-empty-datasources');
                     }
-                    console.log(this.elementVisible)
                 }
+
                 this.set('loading', false);
             },
             _computeListWidth: function(isMobile) {
@@ -632,6 +638,7 @@
             },
             search: function() {
                 this.headers = Auth.getHeaders();
+
                 this.set('loading', true);
                 this.set('rpcElasticParams', {
                     service: 'com.kazoup.srv.search',

@@ -114,13 +114,6 @@ notification-web:
   links:
   - registry
   - nats
-
-scheduler-srv:
-  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 
-  image: kazoup/scheduler-srv:latest
-  links:
-  - registry
-  - nats
   
 search-srv:
   command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 

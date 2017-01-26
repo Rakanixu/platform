@@ -20,7 +20,6 @@ import (
 	media "github.com/kazoup/platform/media"
 	monitor "github.com/kazoup/platform/monitor"
 	notification "github.com/kazoup/platform/notification"
-	scheduler "github.com/kazoup/platform/scheduler"
 	search "github.com/kazoup/platform/search"
 	ui "github.com/kazoup/platform/ui"
 	"github.com/micro/cli"
@@ -38,7 +37,6 @@ func main() {
 	app.Commands = append(app.Commands, db.Commands()...)
 	app.Commands = append(app.Commands, media.Commands()...)
 	app.Commands = append(app.Commands, search.Commands()...)
-	app.Commands = append(app.Commands, scheduler.Commands()...)
 	app.Commands = append(app.Commands, file.Commands()...)
 	app.Commands = append(app.Commands, notification.Commands()...)
 	app.Commands = append(app.Commands, monitor.Commands()...)

@@ -25,19 +25,6 @@ func (s *Search) Search(ctx context.Context, req *proto.SearchRequest, rsp *prot
 	return nil
 }
 
-// Aggregate srv handler
-func (s *Search) Aggregate(ctx context.Context, req *proto.AggregateRequest, rsp *proto.AggregateResponse) error {
-	response, err := engine.Aggregate(ctx, req, s.Client)
-	if err != nil {
-		return err
-	}
-
-	rsp.Result = response.Result
-	rsp.Info = response.Info
-
-	return nil
-}
-
 func (s *Search) Health(ctx context.Context, req *proto.HealthRequest, rsp *proto.HealthResponse) error {
 	rsp.Status = 200
 	rsp.Info = "OK"

@@ -1,7 +1,6 @@
 package fs
 
 import (
-	"errors"
 	"fmt"
 	cs "github.com/kazoup/platform/lib/cloudstorage"
 	"github.com/kazoup/platform/lib/file"
@@ -130,12 +129,12 @@ func (gfs *GmailFs) generateThumbnail(gf *gmailhelper.GmailFile, msg *gmail.Mess
 
 		pr, err := gcs.Download(msg.Id, msgp.Body.AttachmentId)
 		if err != nil {
-			return errors.New("ERROR downloading gmail file")
+			return err
 		}
 
 		b, err := image.Thumbnail(pr, globals.THUMBNAIL_WIDTH)
 		if err != nil {
-			return errors.New("ERROR generating thumbnail for gmail file")
+			return err
 		}
 
 		// Uploads to Google cloud storage, see connector
