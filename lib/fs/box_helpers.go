@@ -2,7 +2,6 @@ package fs
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/kazoup/platform/lib/box"
 	"github.com/kazoup/platform/lib/categories"
@@ -101,12 +100,12 @@ func (bfs *BoxFs) generateThumbnail(fm *box.BoxFileMeta, id string) error {
 
 		rc, err := bcs.Download(fm.ID)
 		if err != nil {
-			return errors.New("ERROR downloading box file")
+			return err
 		}
 
 		rd, err := image.Thumbnail(rc, globals.THUMBNAIL_WIDTH)
 		if err != nil {
-			return errors.New("ERROR generating thumbnail for box file")
+			return err
 		}
 
 		// Upload file to GoogleCloudStorage, so connector is globals.GoogleCloudStorage

@@ -2,7 +2,6 @@ package fs
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/kazoup/platform/lib/categories"
 	cs "github.com/kazoup/platform/lib/cloudstorage"
@@ -132,12 +131,12 @@ func (sfs *SlackFs) generateThumbnail(sf slack.SlackFile, id string) error {
 		}
 		pr, err := scs.Download(sf.URLPrivateDownload)
 		if err != nil {
-			return errors.New("ERROR downloading slack file")
+			return err
 		}
 
 		b, err := image.Thumbnail(pr, globals.THUMBNAIL_WIDTH)
 		if err != nil {
-			return errors.New("ERROR generating thumbnail for slack file")
+			return err
 		}
 
 		// Upload file to GoogleCloudStorage, so connector is globals.GoogleCloudStorage

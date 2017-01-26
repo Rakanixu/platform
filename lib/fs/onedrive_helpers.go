@@ -2,7 +2,6 @@ package fs
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/kazoup/platform/lib/categories"
 	cs "github.com/kazoup/platform/lib/cloudstorage"
 	"github.com/kazoup/platform/lib/file"
@@ -193,12 +192,12 @@ func (ofs *OneDriveFs) generateThumbnail(f onedrive.OneDriveFile, id string) err
 
 		pr, err := ocs.Download(f.ID)
 		if err != nil {
-			return errors.New("ERROR downloading onedrive file")
+			return err
 		}
 
 		b, err := image.Thumbnail(pr, globals.THUMBNAIL_WIDTH)
 		if err != nil {
-			return errors.New("ERROR generating thumbnail for onedrive file")
+			return err
 		}
 		// Upload file to GoogleCloudStorage, so connector is globals.GoogleCloudStorage
 		ncs, err := cs.NewCloudStorageFromEndpoint(ofs.Endpoint, globals.GoogleCloudStorage)
