@@ -12,14 +12,14 @@ var config_createindex = testTable{
 		"request": {
 			"index": "db_config_srv_create_index_test"
 		}
-	}`), &http.Response{StatusCode: 200}},
+	}`), &http.Response{StatusCode: 200}, noDuration},
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "Config.DeleteIndex",
 		"request": {
 			"index": "db_config_srv_create_index_test"
 		}
-	}`), &http.Response{StatusCode: 200}},
+	}`), &http.Response{StatusCode: 200}, noDuration},
 }
 
 var config_status = testTable{
@@ -27,7 +27,7 @@ var config_status = testTable{
 		"service": "com.kazoup.srv.db",
 		"method": "Config.Status",
 		"request": {}
-	}`), &http.Response{StatusCode: 200}},
+	}`), &http.Response{StatusCode: 200}, noDuration},
 }
 
 var config_addalias = testTable{
@@ -37,7 +37,7 @@ var config_addalias = testTable{
 		"request": {
 			"index": "db_config_srv_add_alias_test"
 		}
-	}`), &http.Response{StatusCode: 200}},
+	}`), &http.Response{StatusCode: 200}, noDuration},
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "Config.AddAlias",
@@ -45,14 +45,14 @@ var config_addalias = testTable{
 			"index": "db_config_srv_add_alias_test",
 			"alias": "test_alias"
 		}
-	}`), &http.Response{StatusCode: 200}},
+	}`), &http.Response{StatusCode: 200}, noDuration},
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "Config.DeleteIndex",
 		"request": {
 			"index": "db_config_srv_add_alias_test"
 		}
-	}`), &http.Response{StatusCode: 200}},
+	}`), &http.Response{StatusCode: 200}, noDuration},
 }
 
 var config_deleteindex = testTable{
@@ -62,14 +62,14 @@ var config_deleteindex = testTable{
 		"request": {
 			"index": "db_config_srv_delete_index_test"
 		}
-	}`), &http.Response{StatusCode: 200}},
+	}`), &http.Response{StatusCode: 200}, noDuration},
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "Config.DeleteIndex",
 		"request": {
 			"index": "db_config_srv_delete_index_test"
 		}
-	}`), &http.Response{StatusCode: 200}},
+	}`), &http.Response{StatusCode: 200}, noDuration},
 }
 
 var config_deletealias = testTable{
@@ -79,7 +79,7 @@ var config_deletealias = testTable{
 		"request": {
 			"index": "db_config_srv_delete_alias_test"
 		}
-	}`), &http.Response{StatusCode: 200}},
+	}`), &http.Response{StatusCode: 200}, noDuration},
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "Config.AddAlias",
@@ -87,7 +87,7 @@ var config_deletealias = testTable{
 			"index": "db_config_srv_delete_alias_test",
 			"alias": "test_alias"
 		}
-	}`), &http.Response{StatusCode: 200}},
+	}`), &http.Response{StatusCode: 200}, noDuration},
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "Config.DeleteAlias",
@@ -95,14 +95,14 @@ var config_deletealias = testTable{
 			"index": "db_config_srv_delete_alias_test",
 			"alias": "test_alias"
 		}
-	}`), &http.Response{StatusCode: 200}},
+	}`), &http.Response{StatusCode: 200}, noDuration},
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "Config.DeleteIndex",
 		"request": {
 			"index": "db_config_srv_delete_alias_test"
 		}
-	}`), &http.Response{StatusCode: 200}},
+	}`), &http.Response{StatusCode: 200}, noDuration},
 }
 
 var config_renamealias = testTable{
@@ -112,7 +112,7 @@ var config_renamealias = testTable{
 		"request": {
 			"index": "db_config_srv_rename_alias_test"
 		}
-	}`), &http.Response{StatusCode: 200}},
+	}`), &http.Response{StatusCode: 200}, noDuration},
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "Config.AddAlias",
@@ -120,7 +120,7 @@ var config_renamealias = testTable{
 			"index": "db_config_srv_rename_alias_test",
 			"alias": "test_alias"
 		}
-	}`), &http.Response{StatusCode: 200}},
+	}`), &http.Response{StatusCode: 200}, noDuration},
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "Config.RenameAlias",
@@ -129,14 +129,14 @@ var config_renamealias = testTable{
 			"old_alias": "test_alias",
 			"new_alias": "test_alias_renamed"
 		}
-	}`), &http.Response{StatusCode: 200}},
+	}`), &http.Response{StatusCode: 200}, noDuration},
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "Config.DeleteIndex",
 		"request": {
 			"index": "db_config_srv_rename_alias_test"
 		}
-	}`), &http.Response{StatusCode: 200}},
+	}`), &http.Response{StatusCode: 200}, noDuration},
 }
 
 func TestDBCreateIndex(t *testing.T) {

@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"testing"
+	"time"
 )
 
 const (
@@ -15,9 +16,12 @@ const (
 	STATUS_OK   = 200
 )
 
+const noDuration time.Duration = 0
+
 type testTable []struct {
-	in  []byte
-	out *http.Response
+	in    []byte
+	out   *http.Response
+	delay time.Duration // Timeout before request is done
 }
 
 type Checker func(*http.Response, *testing.T)
@@ -50,6 +54,7 @@ func makeRequest(body []byte, result *http.Response, t *testing.T) {
 
 func rangeTestTable(tt testTable, t *testing.T) {
 	for _, v := range tt {
+		time.Sleep(v.delay)
 		makeRequest(v.in, v.out, t)
 	}
 }
@@ -78,6 +83,7 @@ func makeRequestWithChecker(body []byte, result *http.Response, ch Checker, t *t
 
 func rangeTestTableWithChecker(tt testTable, ch Checker, t *testing.T) {
 	for _, v := range tt {
+		time.Sleep(v.delay)
 		makeRequestWithChecker(v.in, v.out, ch, t)
 	}
 }
