@@ -95,6 +95,7 @@ message SearchByIdRequest {
   string index = 1;
   string type = 2;
   string id = 3;
+  string user_id = 4;
 }
 
 message SearchByIdResponse {
