@@ -2,6 +2,7 @@ package tests
 
 import (
 	"bytes"
+	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/lib/globals"
 	"io/ioutil"
 	"net/http"
@@ -17,6 +18,17 @@ const (
 )
 
 const noDuration time.Duration = 0
+
+const (
+	BOX_URL          = "box://" + USER_ID
+	DROPBOX_URL      = "dropbox://" + USER_ID
+	GOOGLE_DRIVE_URL = "googledrive://" + USER_ID
+	ONE_DRIVE_URL    = "onedrive://" + USER_ID
+	GMAIL_URL        = "gmail://" + USER_ID
+	SLACK_URL        = "slack://" + USER_ID
+)
+
+var datasources []proto.Endpoint
 
 type testTable []struct {
 	in    []byte
