@@ -31,10 +31,10 @@ var datasources_test_data = testTable{
 				"user_id": "` + USER_ID + `",
 				"url": "` + BOX_URL + `",
 				"token": {
-					"access_token": "fQO1ykhzJU7ig2KQP9wW6NMnzFYAN4Ox",
+					"access_token": "qTplsDsS4PRZrmlSj40Ayfzgh539xdSy",
 					"token_type": "bearer",
-					"refresh_token": "T0mJ1ywOW1q5CzNZ9gXkNG9iaEiCJItpXBhlRScONPyUk2O7kjfIf5CvSMnCvM9P",
-					"expiry": 1485186804
+					"refresh_token": "x6HTx1DheiEDjIclPn1XAcFEsnW8lgIjkvCxOgg3ZvVMRgTJOfewF0QkGqk9qgQd",
+					"expiry": 1485513610
 				}
 			}
 		}
@@ -144,7 +144,7 @@ var datasources_test_data = testTable{
 	}`), &http.Response{StatusCode: 500}, noDuration},
 }
 
-var search_fro_crawled_files = testTable{
+var search_for_crawled_files = testTable{
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.Search",
@@ -221,7 +221,7 @@ func TestDatasourceCreate(t *testing.T) {
 	// Check crawlers behavior. Does indexes exists? There is expected number of elements?
 	// We could do this assertions with curl request to ES directly (no internal dependencies), on the other hand,
 	// We can do it using kazoup platform. That way ensures a better level of integrity of the system.
-	rangeTestTableWithChecker(search_fro_crawled_files, func(rsp *http.Response, t *testing.T) {
+	rangeTestTableWithChecker(search_for_crawled_files, func(rsp *http.Response, t *testing.T) {
 		type TestRsp struct {
 			Result string `json:"result"`
 			Info   string `json:"info"`
