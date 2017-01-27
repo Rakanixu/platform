@@ -182,12 +182,6 @@
             this.$.datasources.render();
           }
         },
-        ready: function() {
-          if (window && window.process && window.process.type) {
-            ipcRenderer.on('add-folder', this._addDatasource.bind(this));
-            ipcRenderer.on('auth-callback-message', this._authSuccessful.bind(this));
-          }
-        },
         openDatasourceDialog: function() {
           this.$.addDatasourceDialog.openDatasourceDialog();
         },
@@ -212,25 +206,6 @@
           this.rpcDeleteDatasourceParams.request.id = e.model.__data__.item.id;
           this.$.rpcDeleteDatasource.body = this.rpcDeleteDatasourceParams;
           this.$.rpcDeleteDatasource.generateRequest();
-        },
-        _addDatasource: function(e, folder) {
-          this.headers = Auth.getHeaders();
-          this.set('loading', true);
-
-          if (folder.length > 0) {
-            this.set('lastDatasourceCreated', {
-              endpoint: {
-                url: 'local://' + folder[0]
-              }
-            });
-          }
-
-          this.$.rpcAddDatasource.body = {
-            service: 'com.kazoup.srv.datasource',
-            method: 'DataSource.Create',
-            request: this.lastDatasourceCreated
-          };
-          this.$.rpcAddDatasource.generateRequest();
         },
         _handleStartScan: function(e) {
           this.set('loading', false);
