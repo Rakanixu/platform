@@ -303,7 +303,6 @@
         },
         setPathWithParams: function(e) {
           this.closeMenu();
-
           this.set('route.path', e.currentTarget.dataset.path);
           this.set('route.__queryParams', JSON.parse(e.currentTarget.dataset.params));
         },

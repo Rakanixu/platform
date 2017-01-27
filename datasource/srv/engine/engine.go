@@ -6,7 +6,6 @@ import (
 	db_config_proto "github.com/kazoup/platform/db/srv/proto/config"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/lib/globals"
-	scheduler_proto "github.com/kazoup/platform/scheduler/srv/proto/scheduler"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
@@ -31,7 +30,6 @@ type Engine interface {
 	Save(ctx context.Context, c client.Client, data interface{}, id string) error
 	Delete(ctx context.Context, c client.Client) error
 	Scan(ctx context.Context, c client.Client) error
-	ScheduleScan(ctx context.Context, c client.Client, sc *scheduler_proto.CreateScheduledTaskRequest) error
 	CreateIndexWithAlias(ctx context.Context, c client.Client) error
 }
 
@@ -250,21 +248,6 @@ func ScanAllDatasources(ctx context.Context, c client.Client, userId string) err
 		if err := ScanDataSource(ctx, c, v); err != nil {
 			log.Println("ERROR ScanAllDatasources, ", v, err)
 		}
-	}
-
-	return nil
-}
-
-func ScheduleScanDataSource(ctx context.Context, c client.Client, sch *scheduler_proto.CreateScheduledTaskRequest) error {
-	req := c.NewRequest(
-		globals.SCHEDULER_SERVICE_NAME,
-		"Scheduler.CreateScheduledTask",
-		sch,
-	)
-	rsp := &scheduler_proto.CreateScheduledTaskResponse{}
-
-	if err := c.Call(ctx, req, rsp); err != nil {
-		return err
 	}
 
 	return nil

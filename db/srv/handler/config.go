@@ -3,7 +3,6 @@ package handler
 import (
 	engine "github.com/kazoup/platform/db/srv/engine"
 	proto "github.com/kazoup/platform/db/srv/proto/config"
-	search_proto "github.com/kazoup/platform/search/srv/proto/search"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
 )
@@ -69,19 +68,6 @@ func (cf *Config) RenameAlias(ctx context.Context, req *proto.RenameAliasRequest
 	if err != nil {
 		return errors.InternalServerError("go.micro.srv.db.RenameAlias", err.Error())
 	}
-
-	return nil
-}
-
-// Aggregate Config srv handler
-func (cf *Config) Aggregate(ctx context.Context, req *search_proto.AggregateRequest, rsp *search_proto.AggregateResponse) error {
-	response, err := engine.Aggregate(ctx, req)
-	if err != nil {
-		return errors.InternalServerError("go.micro.srv.db.Aggregate", err.Error())
-	}
-
-	rsp.Result = response.Result
-	rsp.Info = response.Info
 
 	return nil
 }

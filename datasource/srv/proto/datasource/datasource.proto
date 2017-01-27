@@ -7,7 +7,6 @@ service DataSource {
   rpc Delete(DeleteRequest) returns (DeleteResponse) {}
   rpc Search(SearchRequest) returns (SearchResponse) {}
   rpc Scan(ScanRequest) returns (ScanResponse) {}
-  rpc ScanAll(ScanAllRequest) returns (ScanAllResponse) {}
   rpc Health(HealthRequest) returns (HealthResponse) {}
 }
 
@@ -60,15 +59,6 @@ message ScanRequest {
 }
 
 message ScanResponse {
-
-}
-
-message ScanAllRequest {
-  string user_id = 1;
-  repeated string datasources_id = 2;
-}
-
-message ScanAllResponse {
 
 }
 

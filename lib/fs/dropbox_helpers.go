@@ -108,12 +108,12 @@ func (dfs *DropboxFs) generateThumbnail(f dropbox.DropboxFile, id string) error 
 
 		pr, err := dcs.Download(f.ID)
 		if err != nil {
-			return errors.New("ERROR downloading dropbox file")
+			return err
 		}
 
 		b, err := image.Thumbnail(pr, globals.THUMBNAIL_WIDTH)
 		if err != nil {
-			return errors.New("ERROR generating thumbnail for dropbox file")
+			return err
 		}
 
 		// Uploads to Google cloud storage, see connector
