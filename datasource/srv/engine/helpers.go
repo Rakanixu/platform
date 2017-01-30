@@ -51,7 +51,6 @@ func SearchDataSources(ctx context.Context, c client.Client, req *datasource_pro
 			Term:     req.Term,
 			Depth:    req.Depth,
 			Url:      req.Url,
-			UserId:   req.UserId,
 		},
 	)
 	srvRes := &db_proto.SearchResponse{}
