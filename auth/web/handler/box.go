@@ -33,8 +33,15 @@ type BoxUser struct {
 
 //HandleBoxLogin Oauth
 func HandleBoxLogin(w http.ResponseWriter, r *http.Request) {
-	t := []byte(r.URL.Query().Get("user"))                          // String to encrypt
-	nt, err := globals.Encrypt([]byte(globals.ENCRYTION_KEY_32), t) // Encryption
+	jwt := r.URL.Query().Get("jwt")
+	uID, err := globals.ParseJWTToken(jwt) // Parse JWT to be sure was signed by us
+	if err != nil {
+		log.Printf("JWT invalid '%s'\n", err)
+		NoAuthenticatedRedirect(w, r)
+		return
+	}
+
+	nt, err := globals.Encrypt([]byte(globals.ENCRYTION_KEY_32), []byte(uID)) // Encryption
 	if err != nil {
 		log.Printf("Encryption failed with '%s'\n", err)
 		NoAuthenticatedRedirect(w, r)

@@ -82,7 +82,7 @@ func (f *File) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *proto.
 	// Get userId
 	if len(req.UserId) == 0 {
 		// Get userId for later
-		uId, err = globals.ParseJWTToken(ctx)
+		uId, err = globals.ParseJWTTokenFromContext(ctx)
 		if err != nil {
 			return err
 		}

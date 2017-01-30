@@ -145,7 +145,7 @@ func (ds *DataSource) ScanAll(ctx context.Context, req *proto.ScanAllRequest, rs
 		}
 	} else {
 		// Scan all datasources for given user
-		cuID, err := globals.ParseJWTToken(ctx)
+		cuID, err := globals.ParseJWTTokenFromContext(ctx)
 		if err != nil {
 			return err
 		}

@@ -113,6 +113,7 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 			return errors.Unauthorized("", "Authorization required")
 		}
 
+		// Authentication
 		if md["Authorization"] != globals.SYSTEM_TOKEN {
 			token, err := jwt.Parse(md["Authorization"], func(token *jwt.Token) (interface{}, error) {
 				// Don't forget to validate the alg is what you expect:
@@ -137,6 +138,9 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 			}
 		}
 
+		// Authorization
+		// ctx is admin ,group ,user_id from JWT Token
+		//
 		f = fn(ctx, req, rsp)
 
 		return f

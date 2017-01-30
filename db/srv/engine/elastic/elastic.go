@@ -177,7 +177,7 @@ func (e *elastic) Search(ctx context.Context, req *db.SearchRequest) (*db.Search
 
 	// Get user id implicitly or explicitly
 	if len(req.UserId) == 0 {
-		uId, err = globals.ParseJWTToken(ctx)
+		uId, err = globals.ParseJWTTokenFromContext(ctx)
 		if err != nil {
 			return &db.SearchResponse{}, err
 		}
@@ -256,7 +256,7 @@ func (e *elastic) SearchById(ctx context.Context, req *db.SearchByIdRequest) (*d
 
 	// Get user id implicitly or explicitly
 	if len(req.UserId) == 0 {
-		uId, err = globals.ParseJWTToken(ctx)
+		uId, err = globals.ParseJWTTokenFromContext(ctx)
 		if err != nil {
 			return &db.SearchByIdResponse{}, err
 		}
