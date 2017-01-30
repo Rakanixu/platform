@@ -1,4 +1,3 @@
-//go:generate cp -r ../src/build/unbundled html
 package main
 
 import (
