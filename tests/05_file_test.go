@@ -15,6 +15,8 @@ Dropbox and onedrive will overwrite the file.
 */
 
 import (
+	"encoding/json"
+	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	"net/http"
 	"testing"
@@ -104,38 +106,29 @@ var create_file_tests_data = testTable{
 	}`), &http.Response{StatusCode: 200}, noDuration},
 }
 
-var delete_file_tests_data = testTable{
+var ds_delete_tests_data = testTable{
+	// Dropbox
 	{[]byte(`{
-		"service":"com.kazoup.srv.file",
-		"method":"File.Delete",
-		"request":{
-			"datasource_id":"f8dd3f4cdecfcd6a8103570a38f9c723",
-			"index":"index86e5e9616454-4779-84cd-7e308167f0c2",
-			"file_id":"57ed5a61f513b361b18df7dfa42af6de",
-			"original_id":"B8F82FA8A78FA9C8!115",
-			"original_file_path":""
+		"service": "com.kazoup.srv.datasource",
+		"method": "DataSource.Delete",
+		"request": {
+			"id": "` + globals.GetMD5Hash(DROPBOX_URL+USER_ID) + `"
 		}
 	}`), &http.Response{StatusCode: 200}, noDuration},
+	// GoogleDrive
 	{[]byte(`{
-		"service":"com.kazoup.srv.file",
-		"method":"File.Delete",
-		"request":{
-			"datasource_id":"f8dd3f4cdecfcd6a8103570a38f9c723",
-			"index":"index86e5e9616454-4779-84cd-7e308167f0c2",
-			"file_id":"57ed5a61f513b361b18df7dfa42af6de",
-			"original_id":"B8F82FA8A78FA9C8!115",
-			"original_file_path":""
+		"service": "com.kazoup.srv.datasource",
+		"method": "DataSource.Delete",
+		"request": {
+			"id": "` + globals.GetMD5Hash(GOOGLE_DRIVE_URL+USER_ID) + `"
 		}
 	}`), &http.Response{StatusCode: 200}, noDuration},
+	// Onedrive
 	{[]byte(`{
-		"service":"com.kazoup.srv.file",
-		"method":"File.Delete",
-		"request":{
-			"datasource_id":"f8dd3f4cdecfcd6a8103570a38f9c723",
-			"index":"index86e5e9616454-4779-84cd-7e308167f0c2",
-			"file_id":"57ed5a61f513b361b18df7dfa42af6de",
-			"original_id":"B8F82FA8A78FA9C8!115",
-			"original_file_path":""
+		"service": "com.kazoup.srv.datasource",
+		"method": "DataSource.Delete",
+		"request": {
+			"id": "` + globals.GetMD5Hash(ONE_DRIVE_URL+USER_ID) + `"
 		}
 	}`), &http.Response{StatusCode: 200}, noDuration},
 }
@@ -146,52 +139,63 @@ func TestFileCreate(t *testing.T) {
 
 	time.Sleep(time.Second * 30)
 
-	// Create a file per datasource
-	rangeTestTable(create_file_tests_data, t)
+	// This loop is due to unmarshalling to known types
+	for k, v := range create_file_tests_data {
+		// Create a file per datasource
+		rangeTestTableWithChecker(testTable{v}, func(rsp *http.Response, t *testing.T) {
+			type TestRsp struct {
+				Data   string `json:"data"`
+				DocUrl string `json:"doc_url"`
+			}
 
-	/*
+			var tr TestRsp
+			var f file.File
 
-		data
-		:
-		"{"id":"05ca5f37f3d1fb751a19bcc358058384","user_id":"google-apps|pablo.aguirre@kazoup.com","name":"test","url":"https://docs.google.com/a/kazoup.com/document/d/1ure_-YanCUKHh_AgqdYCup5hVCY-ZUMZxwnsuhOMXHU/edit?usp=drivesdk","modified":"2017-01-27T16:55:11.306Z","file_size":0,"is_dir":false,"category":"None","mime_type":"application/vnd.google-apps.document","depth":0,"file_type":"googledrive","last_seen":1485536115,"access":"private","datasource_id":"5f7393781db95c51ad03cdf23a42dd1f","index":"index22e2f85a0bbc-4b44-a4b0-6a043f86c8e6","original":{"capabilities":{"canComment":true,"canCopy":true,"canEdit":true,"canReadRevisions":true,"canShare":true},"createdTime":"2017-01-27T16:55:11.306Z","iconLink":"https://ssl.gstatic.com/docs/doclist/images/icon_11_document_list.png","id":"1ure_-YanCUKHh_AgqdYCup5hVCY-ZUMZxwnsuhOMXHU","isAppAuthorized":true,"kind":"drive#file","lastModifyingUser":{"displayName":"Pablo Aguirre","emailAddress":"pablo.aguirre@kazoup.com","kind":"drive#user","me":true,"permissionId":"09634826227332287579"},"mimeType":"application/vnd.google-apps.document","modifiedByMeTime":"2017-01-27T16:55:11.306Z","modifiedTime":"2017-01-27T16:55:11.306Z","name":"test","ownedByMe":true,"owners":[{"displayName":"Pablo Aguirre","emailAddress":"pablo.aguirre@kazoup.com","kind":"drive#user","me":true,"permissionId":"09634826227332287579"}],"parents":["0AI9SNXL1FJ8pUk9PVA"],"permissions":[{"displayName":"Pablo Aguirre","emailAddress":"pablo.aguirre@kazoup.com","id":"09634826227332287579","kind":"drive#permission","role":"owner","type":"user"}],"spaces":["drive"],"version":"5366","viewedByMe":true,"viewedByMeTime":"2017-01-27T16:55:11.461Z","viewersCanCopyContent":true,"webViewLink":"https://docs.google.com/a/kazoup.com/document/d/1ure_-YanCUKHh_AgqdYCup5hVCY-ZUMZxwnsuhOMXHU/edit?usp=drivesdk","writersCanShare":true}}"
-		doc_url
-		:
-		"https://docs.google.com/a/kazoup.com/document/d/1ure_-YanCUKHh_AgqdYCup5hVCY-ZUMZxwnsuhOMXHU/edit?usp=drivesdk"
-	*/
+			switch k {
+			case 0:
+				//Dropbox
+				f = &file.KazoupDropboxFile{}
+			case 1:
+				// Google
+				f = &file.KazoupGoogleFile{}
+			case 2:
+				//Onedrive
+				f = &file.KazoupOneDriveFile{}
+			}
 
+			if err := json.NewDecoder(rsp.Body).Decode(&tr); err != nil {
+				t.Fatalf("Error decoding response: %v", err)
+			}
+
+			if err := json.Unmarshal([]byte(tr.Data), f); err != nil {
+				t.Fatalf("Error unmarshalling response data: %v", err)
+			}
+
+			b := []byte(`{
+				"service":"com.kazoup.srv.file",
+				"method":"File.Delete",
+				"request":{
+					"datasource_id": "` + f.GetDatasourceID() + `",
+					"index": "` + f.GetIndex() + `",
+					"file_id": "` + f.GetID() + `",
+					"original_id": "` + f.GetIDFromOriginal() + `",
+					"original_file_path": "` + f.GetPathDisplay() + `",
+					"user_id": "` + USER_ID + `"
+				}
+			}`)
+
+			// Now we test file deletion
+			makeRequest(b, &http.Response{StatusCode: 200}, t)
+		}, t)
+	}
+
+	// Remove all datrasources created for the test
+	rangeTestTable(ds_delete_tests_data, t)
 }
 
 // Tear down of TestFileCreate
 /*
 func TestFileDelete(t *testing.T) {
 
-}
-*/
-
-/*Gdrive
-{
-"service":"com.kazoup.srv.file",
-"method":"File.Delete",
-"request":{
-"datasource_id":"5f7393781db95c51ad03cdf23a42dd1f",
-"index":"indexc1374dc3ffcb-4755-b265-5d69d786dc33",
-"file_id":"328859ee95ab34fca6a17dbbb3d1c4e5",
-"original_id":"1rJYyqzjaWo5pFpcZlzfuRgec_IMisQHz7vdy7eETdoc",
-"original_file_path":""
-}
-}*/
-
-/*
-//Dropbox
-{
-   "service":"com.kazoup.srv.file",
-   "method":"File.Delete",
-   "request":{
-      "datasource_id":"e80d54ad29d18cb62cf9bb2bb54fcfd5",
-      "index":"indexcad4e1f4c1fd-42d3-ad92-b07ecbcdf5a8",
-      "file_id":"f35de774285d862cfcc0c0053955c3ef",
-      "original_id":"id:lXWZMx78s2AAAAAAAAAABg",
-      "original_file_path":"/test.docx"
-   }
 }
 */
