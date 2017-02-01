@@ -118,6 +118,8 @@ const (
 
 	GmailEndpoint = "https://mail.google.com/mail/u/"
 
+	TMP_TOKEN_BUCKET = "tmp-token"
+
 	StartScanTask = "start_scan"
 
 	SERVER_ADDRESS        = "https://web.kazoup.io"

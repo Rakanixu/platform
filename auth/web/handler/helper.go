@@ -1,8 +1,10 @@
 package handler
 
 import (
+	"bytes"
 	"fmt"
 	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/lib/cloudstorage"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/wrappers"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
@@ -10,6 +12,7 @@ import (
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -46,6 +49,51 @@ func SaveDatasource(ctx context.Context, user string, url string, token *oauth2.
 	return nil
 }
 
+// SaveTmpToken saves JWT in GCS
+func SaveTmpToken(uuid, jwt string) error {
+	_, err := globals.ParseJWTToken(jwt) // Parse JWT to be sure was signed by us
+	if err != nil {
+		return err
+	}
+
+	// We save uuid - jwt token pair in GCS
+	gcs := cloudstorage.NewGoogleCloudStorage(&proto_datasource.Endpoint{
+		Index: globals.TMP_TOKEN_BUCKET,
+	})
+
+	if err := gcs.Upload(bytes.NewBufferString(jwt), uuid); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// RetrieveUserAndContextFromUUID retrieves userId and context from GCS
+func RetrieveUserAndContextFromUUID(uuid string) (string, context.Context, error) {
+	// Retrieve JWT associated with uuid
+	gcs := cloudstorage.NewGoogleCloudStorage(&proto_datasource.Endpoint{
+		Index: globals.TMP_TOKEN_BUCKET,
+	})
+	rd, err := gcs.Download(string(uuid))
+	if err != nil {
+		return "", nil, err
+	}
+	defer rd.Close()
+
+	jwt, err := ioutil.ReadAll(rd)
+	if err != nil {
+		return "", nil, err
+	}
+
+	// Parse JWT as a way to validate it, and retrieve user_id associated with that JWT
+	uID, err := globals.ParseJWTToken(string(jwt))
+	if err != nil {
+		return "", nil, err
+	}
+
+	return uID, globals.NewContextFromJWT(string(jwt)), nil
+}
+
 //PublishNotification send data source created notification
 func PublishNotification(uID string) error {
 	n := &notification_proto.NotificationMessage{
@@ -61,8 +109,8 @@ func PublishNotification(uID string) error {
 	)
 }
 
-// NoAuthenticatedRedirect loads app in settings page, and the close that window
-func NoAuthenticatedRedirect(w http.ResponseWriter, r *http.Request) {
+// CloseBrowserWindow loads app in settings page, and the close that window
+func CloseBrowserWindow(w http.ResponseWriter, r *http.Request) {
 	// Close window
 	fmt.Fprintf(w, "%s", `
 		<script>
