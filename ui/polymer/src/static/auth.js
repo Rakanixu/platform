@@ -107,6 +107,9 @@ window.Auth = (function() {
 
       return _customHeaders;
     },
+    getJWT: function() {
+      return localStorage.getItem('token');
+    },
     getProfile: function() {
       if (_.isEmpty(_profile)) {
         return JSON.parse(localStorage.getItem('profile'));

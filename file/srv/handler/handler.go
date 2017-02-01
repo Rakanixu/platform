@@ -72,12 +72,15 @@ func (f *File) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.
 
 // Delete File handler
 func (f *File) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *proto.DeleteResponse) error {
+	var uId string
+	var err error
+
 	if len(req.DatasourceId) == 0 {
 		return errors.BadRequest("com.kazoup.srv.file", "datasource_id required")
 	}
 
-	// Get userId for later
-	uId, err := globals.ParseJWTToken(ctx)
+	// Get userId
+	uId, err = globals.ParseUserIdFromContext(ctx)
 	if err != nil {
 		return err
 	}

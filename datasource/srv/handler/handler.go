@@ -145,18 +145,9 @@ func (ds *DataSource) ScanAll(ctx context.Context, req *proto.ScanAllRequest, rs
 		}
 	} else {
 		// Scan all datasources for given user
-		cuID, err := globals.ParseJWTToken(ctx)
+		uID, err := globals.ParseUserIdFromContext(ctx)
 		if err != nil {
 			return err
-		}
-
-		var uID string
-		if len(req.UserId) > 0 {
-			uID = req.UserId
-		} else if len(cuID) > 0 {
-			uID = cuID
-		} else {
-			return errors.BadRequest("go.micro.srv.datasource.ScanAll", "user_id required explicitly or implictly")
 		}
 
 		if err := engine.ScanAllDatasources(ctx, ds.Client, uID); err != nil {

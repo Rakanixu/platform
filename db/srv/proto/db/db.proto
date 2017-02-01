@@ -80,10 +80,9 @@ message SearchRequest {
   int64 depth = 7;
   string type = 8;
   string file_type = 9;
-  string user_id = 10;
-  int64 last_seen = 11;
-  string access = 12;
-  bool no_kazoup_file_original = 13;
+  int64 last_seen = 10;
+  string access = 11;
+  bool no_kazoup_file_original = 12;
 }
 
 message SearchResponse {
@@ -95,7 +94,6 @@ message SearchByIdRequest {
   string index = 1;
   string type = 2;
   string id = 3;
-  string user_id = 4;
 }
 
 message SearchByIdResponse {

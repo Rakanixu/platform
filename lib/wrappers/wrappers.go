@@ -113,6 +113,7 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 			return errors.Unauthorized("", "Authorization required")
 		}
 
+		// Authentication
 		if md["Authorization"] != globals.SYSTEM_TOKEN {
 			token, err := jwt.Parse(md["Authorization"], func(token *jwt.Token) (interface{}, error) {
 				// Don't forget to validate the alg is what you expect:
@@ -135,6 +136,12 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 			if !token.Valid {
 				return errors.Unauthorized("", "Invalid token")
 			}
+
+			// Authorization, inject id in context
+			ctx = metadata.NewContext(context.TODO(), map[string]string{
+				"Authorization": md["Authorization"],
+				"Id":            token.Claims.(jwt.MapClaims)["sub"].(string),
+			})
 		}
 
 		f = fn(ctx, req, rsp)

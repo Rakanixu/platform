@@ -53,16 +53,29 @@ type DropboxAccount struct {
 
 //HandleDropboxLogin redirect
 func HandleDropboxLogin(w http.ResponseWriter, r *http.Request) {
-	t := []byte(r.URL.Query().Get("user"))                          // String to encrypt
-	nt, err := globals.Encrypt([]byte(globals.ENCRYTION_KEY_32), t) // Encryption
+	jwt := r.URL.Query().Get("jwt")
+	uuid, err := globals.NewUUID()
+	if err != nil {
+		fmt.Printf("UUID generation failed with '%s'\n", err)
+		CloseBrowserWindow(w, r)
+		return
+	}
+
+	if err := SaveTmpToken(uuid, jwt); err != nil {
+		log.Printf("Save tmp token failed with error: '%s'\n", err)
+		CloseBrowserWindow(w, r)
+		return
+	}
+
+	nt, err := globals.Encrypt([]byte(globals.ENCRYTION_KEY_32), []byte(uuid)) // Encryption
 	if err != nil {
 		log.Printf("Encryption failed with '%s'\n", err)
-		NoAuthenticatedRedirect(w, r)
+		CloseBrowserWindow(w, r)
 		return
 	}
 
 	// Code conversion from bytes to hexadecimal string to be send over the wire
-	// Dropbox does not follow oauth2 spec. They do define a new flag force_reapprove Boolean. twats
+	// Dropbox does not follow oauth2 spec. They do define a new flag force_reapprove Boolean.
 	url := globals.NewDropboxOauthConfig().AuthCodeURL(fmt.Sprintf("%0x", nt), oauth2.SetAuthURLParam("force_reapprove", "true"))
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
@@ -71,17 +84,25 @@ func HandleDropboxLogin(w http.ResponseWriter, r *http.Request) {
 func HandleDropboxCallback(w http.ResponseWriter, r *http.Request) {
 	var da *DropboxAccount
 
-	euID, err := hex.DecodeString(r.FormValue("state"))                 // Convert the code we sent in hex format to bytes
-	uID, err := globals.Decrypt([]byte(globals.ENCRYTION_KEY_32), euID) // Decrypt the bytes into bytes --> string(bytes) was the encrypted string
+	euID, err := hex.DecodeString(r.FormValue("state"))                  // Convert the code we sent in hex format to bytes
+	uuid, err := globals.Decrypt([]byte(globals.ENCRYTION_KEY_32), euID) // Decrypt the bytes into bytes --> string(bytes) was the encrypted string
 	if err != nil {
 		log.Printf("Decryption failed with '%s'\n", err)
-		NoAuthenticatedRedirect(w, r)
+		CloseBrowserWindow(w, r)
 		return
 	}
 
-	if len(uID) == 0 {
-		fmt.Printf("invalid oauth state, got '%s'\n", uID)
-		NoAuthenticatedRedirect(w, r)
+	if len(uuid) == 0 {
+		fmt.Printf("invalid oauth state, got '%s'\n", uuid)
+		CloseBrowserWindow(w, r)
+		return
+	}
+
+	// Get userId and context
+	uID, uCtx, err := RetrieveUserAndContextFromUUID(string(uuid))
+	if err != nil {
+		log.Printf("Retrieving user_id and context failed with '%s'\n", err)
+		CloseBrowserWindow(w, r)
 		return
 	}
 
@@ -89,7 +110,7 @@ func HandleDropboxCallback(w http.ResponseWriter, r *http.Request) {
 	token, err := globals.NewDropboxOauthConfig().Exchange(oauth2.NoContext, code)
 	if err != nil {
 		log.Printf("Code exchange failed with '%s'\n", err)
-		NoAuthenticatedRedirect(w, r)
+		CloseBrowserWindow(w, r)
 		return
 	}
 
@@ -98,7 +119,7 @@ func HandleDropboxCallback(w http.ResponseWriter, r *http.Request) {
 
 	req, err := http.NewRequest("POST", globals.DropboxAccountEndpoint, bytes.NewBuffer(b))
 	if err != nil {
-		NoAuthenticatedRedirect(w, r)
+		CloseBrowserWindow(w, r)
 		return
 	}
 	req.Header.Set("Authorization", "Bearer "+token.AccessToken)
@@ -106,7 +127,7 @@ func HandleDropboxCallback(w http.ResponseWriter, r *http.Request) {
 	rsp, err := c.Do(req)
 	if err != nil {
 		log.Printf("Getting user account failed with '%s'\n", err)
-		NoAuthenticatedRedirect(w, r)
+		CloseBrowserWindow(w, r)
 		return
 	}
 	defer rsp.Body.Close()
@@ -117,20 +138,13 @@ func HandleDropboxCallback(w http.ResponseWriter, r *http.Request) {
 	}
 	url := fmt.Sprintf("dropbox://%s", da.Email)
 
-	if err := SaveDatasource(globals.NewSystemContext(), string(uID), url, token); err != nil {
+	if err := SaveDatasource(uCtx, uID, url, token); err != nil {
 		fmt.Fprintf(w, "Error adding data source %s \n", err.Error())
 	}
 
-	fmt.Fprintf(w, "%s", `
-		<script>
-		'use stric';
-			(function() {
-				window.close();
-			}());
-		</script>
-	`)
+	CloseBrowserWindow(w, r)
 
-	if err := PublishNotification(string(uID)); err != nil {
+	if err := PublishNotification(uID); err != nil {
 		log.Println("Error publishing notification msg (DataSource.Create)", err)
 	}
 }
