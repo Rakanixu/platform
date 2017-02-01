@@ -136,11 +136,14 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 			if !token.Valid {
 				return errors.Unauthorized("", "Invalid token")
 			}
+
+			// Authorization, inject id in context
+			ctx = metadata.NewContext(context.TODO(), map[string]string{
+				"Authorization": md["Authorization"],
+				"Id":            token.Claims.(jwt.MapClaims)["sub"].(string),
+			})
 		}
 
-		// Authorization
-		// ctx is admin ,group ,user_id from JWT Token
-		//
 		f = fn(ctx, req, rsp)
 
 		return f

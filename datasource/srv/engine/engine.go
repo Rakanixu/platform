@@ -88,12 +88,11 @@ func GenerateEndpoint(ctx context.Context, c client.Client, endpoint datasource_
 	// DB.Search internally tries to get userId explicitly (from request). If not preset, tries to get from context
 	// If context is system context, an error will be trow
 	srvRsp, err := SearchDataSources(ctx, c, &datasource_proto.SearchRequest{
-		Index:  globals.IndexDatasources,
-		Type:   globals.TypeDatasource,
-		From:   0,
-		Size:   9999,
-		Url:    endpoint.Url,
-		UserId: endpoint.UserId,
+		Index: globals.IndexDatasources,
+		Type:  globals.TypeDatasource,
+		From:  0,
+		Size:  9999,
+		Url:   endpoint.Url,
 	})
 	if err != nil {
 		return datasource_proto.Endpoint{}, err
@@ -229,11 +228,10 @@ func ScanDataSource(ctx context.Context, c client.Client, endpoint *datasource_p
 // ScanAllDatasources publishes scan messages for all datasources of a given user
 func ScanAllDatasources(ctx context.Context, c client.Client, userId string) error {
 	rsp, err := SearchDataSources(ctx, c, &datasource_proto.SearchRequest{
-		Index:  globals.IndexDatasources,
-		Type:   globals.TypeDatasource,
-		UserId: userId,
-		From:   0,
-		Size:   1000, // Per user, should not have that many
+		Index: globals.IndexDatasources,
+		Type:  globals.TypeDatasource,
+		From:  0,
+		Size:  1000, // Per user, should not have that many
 	})
 	if err != nil {
 		return err

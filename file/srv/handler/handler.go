@@ -80,14 +80,9 @@ func (f *File) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *proto.
 	}
 
 	// Get userId
-	if len(req.UserId) == 0 {
-		// Get userId for later
-		uId, err = globals.ParseJWTTokenFromContext(ctx)
-		if err != nil {
-			return err
-		}
-	} else {
-		uId = req.UserId
+	uId, err = globals.ParseUserIdFromContext(ctx)
+	if err != nil {
+		return err
 	}
 
 	// Instantiate file system

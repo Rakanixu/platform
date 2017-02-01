@@ -26,7 +26,6 @@ message DeleteRequest {
   string file_id = 3;             // File ID to delete (for kazoup)
   string original_id = 4;         // Original file ID (to refer third-parties)
   string original_file_path = 5;  // Original file path. Internal to some third-party (Dropbox)
-  string user_id = 6;             // User ID associated with the action
 }
 
 message DeleteResponse {

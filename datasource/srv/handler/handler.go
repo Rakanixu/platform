@@ -132,41 +132,6 @@ func (ds *DataSource) Scan(ctx context.Context, req *proto.ScanRequest, rsp *pro
 	return nil
 }
 
-// ScanAll datasources handler, will publish to scan topic
-// If req.DatasourcesId not empty, those specific datasources will be scanned
-// If req.DatasourcesId empty, all user datasources will be scanned
-func (ds *DataSource) ScanAll(ctx context.Context, req *proto.ScanAllRequest, rsp *proto.ScanAllResponse) error {
-	if len(req.DatasourcesId) > 0 {
-		// Scan all datasources specified on request
-		for _, v := range req.DatasourcesId {
-			if err := ds.Scan(ctx, &proto.ScanRequest{Id: v}, &proto.ScanResponse{}); err != nil {
-				log.Println("ERROR starting scan for ", v, err)
-			}
-		}
-	} else {
-		// Scan all datasources for given user
-		cuID, err := globals.ParseJWTTokenFromContext(ctx)
-		if err != nil {
-			return err
-		}
-
-		var uID string
-		if len(req.UserId) > 0 {
-			uID = req.UserId
-		} else if len(cuID) > 0 {
-			uID = cuID
-		} else {
-			return errors.BadRequest("go.micro.srv.datasource.ScanAll", "user_id required explicitly or implictly")
-		}
-
-		if err := engine.ScanAllDatasources(ctx, ds.Client, uID); err != nil {
-			return errors.InternalServerError("go.micro.srv.datasource.ScanAll", err.Error())
-		}
-	}
-
-	return nil
-}
-
 func (ds *DataSource) Health(ctx context.Context, req *proto.HealthRequest, rsp *proto.HealthResponse) error {
 	rsp.Status = 200
 	rsp.Info = "OK"

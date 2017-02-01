@@ -263,13 +263,13 @@ func NewContextFromJWT(jwt string) context.Context {
 	})
 }
 
-func ParseJWTTokenFromContext(ctx context.Context) (string, error) {
+func ParseUserIdFromContext(ctx context.Context) (string, error) {
 	md, ok := metadata.FromContext(ctx)
 	if !ok {
-		return "", micro_errors.InternalServerError("AuthWrapper", "Unable to retrieve metadata")
+		return "", micro_errors.InternalServerError("ParseUserIdFromContext", "Unable to retrieve metadata")
 	}
 
-	return ParseJWTToken(md["Authorization"])
+	return md["Id"], nil
 }
 
 func ParseJWTToken(str string) (string, error) {

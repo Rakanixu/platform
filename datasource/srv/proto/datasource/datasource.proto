@@ -46,7 +46,6 @@ message SearchRequest {
   string url = 6;
   int64 depth = 7;
   string type = 8;
-  string user_id = 9;
 }
 
 message SearchResponse {
