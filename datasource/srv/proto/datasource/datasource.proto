@@ -63,7 +63,6 @@ message ScanResponse {
 }
 
 message ScanAllRequest {
-  string user_id = 1;
   repeated string datasources_id = 2;
 }
 
