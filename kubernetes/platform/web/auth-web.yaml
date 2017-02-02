@@ -24,6 +24,9 @@ spec:
                   "--transport=tcp",
                   ]
         image: eu.gcr.io/desktop-1470249894548/auth-web:latest
+        env:
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value:  "/google-cloud-service-account/google-cloud-service-account.json"
         imagePullPolicy: Always
         ports:
         - containerPort: 9090
