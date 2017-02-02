@@ -120,7 +120,7 @@
               ipcRenderer.send(
                 'auth-message',
                 {
-                  url: e.currentTarget.getAttribute('data-url') + '?user=' + Auth.getUserId(),
+                  url: e.currentTarget.getAttribute('data-url') + '?jwt=' + Auth.getJWT(),
                   token: localStorage.getItem('token'),
                   id_token: localStorage.getItem('id_token'),
                   show_onboarding: localStorage.getItem('show_onboarding')
@@ -128,7 +128,7 @@
               );
             }
           } else {
-            window.open(e.currentTarget.getAttribute('data-url') + '?user=' + Auth.getUserId());
+            window.open(e.currentTarget.getAttribute('data-url') + '?jwt=' + Auth.getJWT());
           }
 
           this.closeDatasourceDialog();

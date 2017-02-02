@@ -97,8 +97,24 @@ func (gcs *GoogleCloudStorage) Upload(r io.Reader, fileID string) error {
 }
 
 // Download resource
-func (gcs *GoogleCloudStorage) Download(string, ...string) (io.ReadCloser, error) {
-	return nil, nil
+func (gcs *GoogleCloudStorage) Download(id string, opts ...string) (io.ReadCloser, error) {
+	url, err := gcs.SignedObjectStorageURL(gcs.Endpoint.Index, id)
+	if err != nil {
+		return nil, err
+	}
+
+	cl := &http.Client{}
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := cl.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return res.Body, nil
 }
 
 // Delete resource
@@ -111,11 +127,10 @@ func (gcs *GoogleCloudStorage) Delete(bucketName, objName string) error {
 	if err != nil {
 		return err
 	}
-	log.Println("!!!!!!!", bucketName, objName)
+
 	if err := srv.Objects.Delete(bucketName, objName).Do(); err != nil {
 		return err
 	}
-	log.Println("OK")
 
 	return nil
 }

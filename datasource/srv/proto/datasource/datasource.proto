@@ -7,6 +7,7 @@ service DataSource {
   rpc Delete(DeleteRequest) returns (DeleteResponse) {}
   rpc Search(SearchRequest) returns (SearchResponse) {}
   rpc Scan(ScanRequest) returns (ScanResponse) {}
+  rpc ScanAll(ScanAllRequest) returns (ScanAllResponse) {}
   rpc Health(HealthRequest) returns (HealthResponse) {}
 }
 
@@ -46,7 +47,6 @@ message SearchRequest {
   string url = 6;
   int64 depth = 7;
   string type = 8;
-  string user_id = 9;
 }
 
 message SearchResponse {
@@ -62,20 +62,13 @@ message ScanResponse {
 
 }
 
-message Token {
- string access_token = 1;
- string token_type = 2;
- string refresh_token = 3;
- int64 expiry = 4;
+message ScanAllRequest {
+  string user_id = 1;
+  repeated string datasources_id = 2;
 }
 
-message DeleteBucketMessage {
-  Endpoint endpoint = 1;
-}
+message ScanAllResponse {
 
-message DeleteFileInBucketMessage {
-  string file_id = 1;
-  string index = 2;
 }
 
 message HealthRequest {
@@ -85,4 +78,20 @@ message HealthRequest {
 message HealthResponse {
   int64 status = 1;
   string info = 2;
+}
+
+message Token {
+  string access_token = 1;
+  string token_type = 2;
+  string refresh_token = 3;
+  int64 expiry = 4;
+}
+
+message DeleteBucketMessage {
+  Endpoint endpoint = 1;
+}
+
+message DeleteFileInBucketMessage {
+  string file_id = 1;
+  string index = 2;
 }

@@ -118,6 +118,8 @@ const (
 
 	GmailEndpoint = "https://mail.google.com/mail/u/"
 
+	TMP_TOKEN_BUCKET = "tmp-token"
+
 	StartScanTask = "start_scan"
 
 	SERVER_ADDRESS        = "https://web.kazoup.io"
@@ -255,13 +257,23 @@ func NewSystemContext() context.Context {
 	})
 }
 
-func ParseJWTToken(ctx context.Context) (string, error) {
+func NewContextFromJWT(jwt string) context.Context {
+	return metadata.NewContext(context.TODO(), map[string]string{
+		"Authorization": jwt,
+	})
+}
+
+func ParseUserIdFromContext(ctx context.Context) (string, error) {
 	md, ok := metadata.FromContext(ctx)
 	if !ok {
-		return "", micro_errors.InternalServerError("AuthWrapper", "Unable to retrieve metadata")
+		return "", micro_errors.InternalServerError("ParseUserIdFromContext", "Unable to retrieve metadata")
 	}
 
-	token, err := jwt.Parse(md["Authorization"], func(token *jwt.Token) (interface{}, error) {
+	return md["Id"], nil
+}
+
+func ParseJWTToken(str string) (string, error) {
+	token, err := jwt.Parse(str, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

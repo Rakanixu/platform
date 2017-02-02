@@ -175,14 +175,10 @@ func (e *elastic) Search(ctx context.Context, req *db.SearchRequest) (*db.Search
 	var rstr string
 	var uId string
 
-	// Get user id implicitly or explicitly
-	if len(req.UserId) == 0 {
-		uId, err = globals.ParseJWTToken(ctx)
-		if err != nil {
-			return &db.SearchResponse{}, err
-		}
-	} else {
-		uId = req.UserId
+	// Get user id from context
+	uId, err = globals.ParseUserIdFromContext(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	eQuery := ElasticQuery{
@@ -254,14 +250,10 @@ func (e *elastic) SearchById(ctx context.Context, req *db.SearchByIdRequest) (*d
 	var uId string
 	var err error
 
-	// Get user id implicitly or explicitly
-	if len(req.UserId) == 0 {
-		uId, err = globals.ParseJWTToken(ctx)
-		if err != nil {
-			return &db.SearchByIdResponse{}, err
-		}
-	} else {
-		uId = req.UserId
+	// Get user id implicitly
+	uId, err = globals.ParseUserIdFromContext(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	eQuery := ElasticQuery{
