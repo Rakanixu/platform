@@ -98,12 +98,7 @@ func (dfs *DropboxFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 			return
 		}
 		req.Header.Set("Authorization", dfs.token())
-		req.Header.Set("Dropbox-API-Arg", `{
-			"path": "/`+rq.FileName+`.`+globals.GetDocumentTemplate(rq.MimeType, false)+`",
-			"mode": "add",
-			"autorename": true,
-			"mute": false
-		}`)
+		req.Header.Set("Dropbox-API-Arg", `{"path": "/`+rq.FileName+`.`+globals.GetDocumentTemplate(rq.MimeType, false)+`","mode": "add","autorename": true,"mute": false}`)
 		req.Header.Set("Content-Type", "application/octet-stream")
 		rsp, err := hc.Do(req)
 		if err != nil {

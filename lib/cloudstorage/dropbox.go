@@ -31,9 +31,7 @@ func (dcs *DropboxCloudStorage) Download(fileID string, opts ...string) (io.Read
 		return nil, err
 	}
 	req.Header.Set("Authorization", dcs.token())
-	req.Header.Set("Dropbox-API-Arg", `{
-			"path": "`+fileID+`"
-		}`)
+	req.Header.Set("Dropbox-API-Arg", `{"path": "`+fileID+`"}`)
 	rsp, err := c.Do(req)
 	if err != nil {
 		return nil, err
