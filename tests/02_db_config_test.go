@@ -22,12 +22,37 @@ var config_createindex = testTable{
 	}`), &http.Response{StatusCode: 200}, noDuration},
 }
 
+var config_createindex_invalidJWT = testTable{
+	{[]byte(`{
+		"service": "com.kazoup.srv.db",
+		"method": "Config.CreateIndex",
+		"request": {
+			"index": "db_config_srv_create_index_test"
+		}
+	}`), &http.Response{StatusCode: 401}, noDuration},
+	{[]byte(`{
+		"service": "com.kazoup.srv.db",
+		"method": "Config.DeleteIndex",
+		"request": {
+			"index": "db_config_srv_create_index_test"
+		}
+	}`), &http.Response{StatusCode: 401}, noDuration},
+}
+
 var config_status = testTable{
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "Config.Status",
 		"request": {}
 	}`), &http.Response{StatusCode: 200}, noDuration},
+}
+
+var config_status_invalidJWT = testTable{
+	{[]byte(`{
+		"service": "com.kazoup.srv.db",
+		"method": "Config.Status",
+		"request": {}
+	}`), &http.Response{StatusCode: 401}, noDuration},
 }
 
 var config_addalias = testTable{
@@ -55,6 +80,31 @@ var config_addalias = testTable{
 	}`), &http.Response{StatusCode: 200}, noDuration},
 }
 
+var config_addalias_invalidJWT = testTable{
+	{[]byte(`{
+		"service": "com.kazoup.srv.db",
+		"method": "Config.CreateIndex",
+		"request": {
+			"index": "db_config_srv_add_alias_test"
+		}
+	}`), &http.Response{StatusCode: 401}, noDuration},
+	{[]byte(`{
+		"service": "com.kazoup.srv.db",
+		"method": "Config.AddAlias",
+		"request": {
+			"index": "db_config_srv_add_alias_test",
+			"alias": "test_alias"
+		}
+	}`), &http.Response{StatusCode: 401}, noDuration},
+	{[]byte(`{
+		"service": "com.kazoup.srv.db",
+		"method": "Config.DeleteIndex",
+		"request": {
+			"index": "db_config_srv_add_alias_test"
+		}
+	}`), &http.Response{StatusCode: 401}, noDuration},
+}
+
 var config_deleteindex = testTable{
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
@@ -70,6 +120,23 @@ var config_deleteindex = testTable{
 			"index": "db_config_srv_delete_index_test"
 		}
 	}`), &http.Response{StatusCode: 200}, noDuration},
+}
+
+var config_deleteindex_invalidJWT = testTable{
+	{[]byte(`{
+		"service": "com.kazoup.srv.db",
+		"method": "Config.CreateIndex",
+		"request": {
+			"index": "db_config_srv_delete_index_test"
+		}
+	}`), &http.Response{StatusCode: 401}, noDuration},
+	{[]byte(`{
+		"service": "com.kazoup.srv.db",
+		"method": "Config.DeleteIndex",
+		"request": {
+			"index": "db_config_srv_delete_index_test"
+		}
+	}`), &http.Response{StatusCode: 401}, noDuration},
 }
 
 var config_deletealias = testTable{
@@ -103,6 +170,39 @@ var config_deletealias = testTable{
 			"index": "db_config_srv_delete_alias_test"
 		}
 	}`), &http.Response{StatusCode: 200}, noDuration},
+}
+
+var config_deletealias_invalidJWT = testTable{
+	{[]byte(`{
+		"service": "com.kazoup.srv.db",
+		"method": "Config.CreateIndex",
+		"request": {
+			"index": "db_config_srv_delete_alias_test"
+		}
+	}`), &http.Response{StatusCode: 401}, noDuration},
+	{[]byte(`{
+		"service": "com.kazoup.srv.db",
+		"method": "Config.AddAlias",
+		"request": {
+			"index": "db_config_srv_delete_alias_test",
+			"alias": "test_alias"
+		}
+	}`), &http.Response{StatusCode: 401}, noDuration},
+	{[]byte(`{
+		"service": "com.kazoup.srv.db",
+		"method": "Config.DeleteAlias",
+		"request": {
+			"index": "db_config_srv_delete_alias_test",
+			"alias": "test_alias"
+		}
+	}`), &http.Response{StatusCode: 401}, noDuration},
+	{[]byte(`{
+		"service": "com.kazoup.srv.db",
+		"method": "Config.DeleteIndex",
+		"request": {
+			"index": "db_config_srv_delete_alias_test"
+		}
+	}`), &http.Response{StatusCode: 401}, noDuration},
 }
 
 var config_renamealias = testTable{
@@ -139,31 +239,93 @@ var config_renamealias = testTable{
 	}`), &http.Response{StatusCode: 200}, noDuration},
 }
 
+var config_renamealias_invalidJWT = testTable{
+	{[]byte(`{
+		"service": "com.kazoup.srv.db",
+		"method": "Config.CreateIndex",
+		"request": {
+			"index": "db_config_srv_rename_alias_test"
+		}
+	}`), &http.Response{StatusCode: 401}, noDuration},
+	{[]byte(`{
+		"service": "com.kazoup.srv.db",
+		"method": "Config.AddAlias",
+		"request": {
+			"index": "db_config_srv_rename_alias_test",
+			"alias": "test_alias"
+		}
+	}`), &http.Response{StatusCode: 401}, noDuration},
+	{[]byte(`{
+		"service": "com.kazoup.srv.db",
+		"method": "Config.RenameAlias",
+		"request": {
+			"index": "db_config_srv_rename_alias_test",
+			"old_alias": "test_alias",
+			"new_alias": "test_alias_renamed"
+		}
+	}`), &http.Response{StatusCode: 401}, noDuration},
+	{[]byte(`{
+		"service": "com.kazoup.srv.db",
+		"method": "Config.DeleteIndex",
+		"request": {
+			"index": "db_config_srv_rename_alias_test"
+		}
+	}`), &http.Response{StatusCode: 401}, noDuration},
+}
+
 func TestDBCreateIndex(t *testing.T) {
 	// Create index, then delete index
-	rangeTestTable(config_createindex, t)
+	rangeTestTable(config_createindex, JWT_TOKEN_USER_1, t)
+}
+
+func TestDBCreateIndexInvalidJWT(t *testing.T) {
+	rangeTestTable(config_createindex_invalidJWT, JWT_INVALID, t)
 }
 
 func TestDBStatus(t *testing.T) {
-	rangeTestTable(config_status, t)
+	rangeTestTable(config_status, JWT_TOKEN_USER_1, t)
+}
+
+func TestDBStatusInvalidJWT(t *testing.T) {
+	rangeTestTable(config_status_invalidJWT, JWT_INVALID, t)
 }
 
 func TestDBAddAlias(t *testing.T) {
 	// Create index, add alias, delete index
-	rangeTestTable(config_addalias, t)
+	rangeTestTable(config_addalias, JWT_TOKEN_USER_1, t)
+}
+
+func TestDBAddAliasInvalidJWT(t *testing.T) {
+	// Create index, add alias, delete index
+	rangeTestTable(config_addalias_invalidJWT, JWT_INVALID, t)
 }
 
 func TestDBDeleteIndex(t *testing.T) {
 	// Create index, delete index
-	rangeTestTable(config_deleteindex, t)
+	rangeTestTable(config_deleteindex, JWT_TOKEN_USER_1, t)
+}
+
+func TestDBDeleteIndexInvalidJWT(t *testing.T) {
+	// Create index, delete index
+	rangeTestTable(config_deleteindex_invalidJWT, JWT_INVALID, t)
 }
 
 func TestDBDeleteAlias(t *testing.T) {
 	// Create index, add alias, delete alias, delete index
-	rangeTestTable(config_deletealias, t)
+	rangeTestTable(config_deletealias, JWT_TOKEN_USER_1, t)
+}
+
+func TestDBDeleteAliasInvalidJWT(t *testing.T) {
+	// Create index, add alias, delete alias, delete index
+	rangeTestTable(config_deletealias_invalidJWT, JWT_INVALID, t)
 }
 
 func TestDBRenameAlias(t *testing.T) {
 	// Create index, add alias, rename alias, delete index
-	rangeTestTable(config_renamealias, t)
+	rangeTestTable(config_renamealias, JWT_TOKEN_USER_1, t)
+}
+
+func TestDBRenameAliasInvalidJWT(t *testing.T) {
+	// Create index, add alias, rename alias, delete index
+	rangeTestTable(config_renamealias_invalidJWT, JWT_INVALID, t)
 }
