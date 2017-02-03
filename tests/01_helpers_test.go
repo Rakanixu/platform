@@ -14,8 +14,9 @@ import (
 
 const (
 	RPC_ENPOINT = "https://web.kazoup.io:8082/rpc"
-	USER_ID     = "test@kazoup.io"
-	USER_ID_2   = "test2@kazoup.io"
+	USER_NAME   = "test@kazoup.io"
+	USER_NAME_2 = "test2@kazoup.io"
+	USER_ID     = "auth0|58944e290861f87f6329526d"
 	USER_PWD    = "ksu4awemtest"
 	STATUS_OK   = 200
 )
@@ -23,12 +24,12 @@ const (
 const noDuration time.Duration = 0
 
 const (
-	BOX_URL          = "box://" + USER_ID
-	DROPBOX_URL      = "dropbox://" + USER_ID
-	GOOGLE_DRIVE_URL = "googledrive://" + USER_ID
-	ONE_DRIVE_URL    = "onedrive://" + USER_ID
-	GMAIL_URL        = "gmail://" + USER_ID
-	SLACK_URL        = "slack://" + USER_ID
+	BOX_URL          = "box://" + USER_NAME
+	DROPBOX_URL      = "dropbox://" + USER_NAME
+	GOOGLE_DRIVE_URL = "googledrive://" + USER_NAME
+	ONE_DRIVE_URL    = "onedrive://" + USER_NAME
+	GMAIL_URL        = "gmail://" + USER_NAME
+	SLACK_URL        = "slack://" + USER_NAME
 )
 
 var datasources []proto.Endpoint
@@ -59,12 +60,12 @@ func init() {
 
 	c = &http.Client{}
 
-	JWT_TOKEN_USER_1, err = authenticateTestUser(USER_ID, USER_PWD)
+	JWT_TOKEN_USER_1, err = authenticateTestUser(USER_NAME, USER_PWD)
 	if err != nil {
 		panic(err)
 	}
 
-	JWT_TOKEN_USER_2, err = authenticateTestUser(USER_ID_2, USER_PWD)
+	JWT_TOKEN_USER_2, err = authenticateTestUser(USER_NAME_2, USER_PWD)
 	if err != nil {
 		panic(err)
 	}
