@@ -14,7 +14,7 @@ Gdrive creates new file per request, even if the type and name is the same.
 Dropbox and onedrive will overwrite the file.
 */
 
-import (
+/*import (
 	"encoding/json"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
@@ -179,8 +179,7 @@ func TestFileCreate(t *testing.T) {
 					"index": "` + f.GetIndex() + `",
 					"file_id": "` + f.GetID() + `",
 					"original_id": "` + f.GetIDFromOriginal() + `",
-					"original_file_path": "` + f.GetPathDisplay() + `",
-					"user_id": "` + USER_ID + `"
+					"original_file_path": "` + f.GetPathDisplay() + `"
 				}
 			}`)
 
@@ -191,7 +190,7 @@ func TestFileCreate(t *testing.T) {
 
 	// Remove all datrasources created for the test
 	rangeTestTable(ds_delete_tests_data, t)
-}
+}*/
 
 // Tear down of TestFileCreate
 /*

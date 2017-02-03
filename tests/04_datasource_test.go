@@ -11,7 +11,7 @@ box auth is expired and won't refresh itself as after refresh first time we do n
 On the other hand, onedrive implementation differs, and same process will work.
 Gmail can discover what ever is received on the inbox
 */
-
+/*
 import (
 	"encoding/json"
 	"github.com/kazoup/platform/lib/globals"
@@ -217,8 +217,7 @@ var search_datasources = testTable{
 			"index":"datasources",
 			"type":"datasource",
 			"from":0,
-			"size":9999,
-			"user_id": "` + USER_ID + `"
+			"size":9999
 		}
 	}`), &http.Response{StatusCode: 200}, time.Second},
 }
@@ -300,7 +299,7 @@ func TestDatasourceSearch(t *testing.T) {
 
 	// Remove datasources
 	rangeTestTable(delete_datasources_test_data[4:6], t)
-}
+}*/
 
 // Following tests are a subset of operation carried out on previous tests
 // No value to execute them, but add noise on tests results in case of failing

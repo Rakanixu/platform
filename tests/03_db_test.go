@@ -238,35 +238,35 @@ var db_deleteindex_for_searchbyid = testTable{
 
 func TestDBCreate(t *testing.T) {
 	// Create document, delete index
-	rangeTestTable(db_create, t)
+	rangeTestTable(db_create, JWT_TOKEN_USER_1, t)
 }
 
 func TestDBRead(t *testing.T) {
 	// Create document, read document, delete index
-	rangeTestTable(db_read, t)
+	rangeTestTable(db_read, JWT_TOKEN_USER_1, t)
 }
 
 func TestDBUpdate(t *testing.T) {
 	// Create document, update document, delete index
-	rangeTestTable(db_update, t)
+	rangeTestTable(db_update, JWT_TOKEN_USER_1, t)
 }
 
 func TestDBDelete(t *testing.T) {
 	// Create document, delete document, delete index
-	rangeTestTable(db_delete, t)
+	rangeTestTable(db_delete, JWT_TOKEN_USER_1, t)
 }
 
 func TestDBDeleteByQuery(t *testing.T) {
 	// Create document, delete document, delete index
-	rangeTestTable(db_deletebyquery, t)
+	rangeTestTable(db_deletebyquery, JWT_TOKEN_USER_1, t)
 }
 
 func TestDBSearch(t *testing.T) {
 	// Create 2 document
-	rangeTestTable(db_create_for_search, t)
+	rangeTestTable(db_create_for_search, JWT_TOKEN_USER_1, t)
 
 	// Search by term for 1 document
-	rangeTestTableWithChecker(db_search, func(rsp *http.Response, t *testing.T) {
+	rangeTestTableWithChecker(db_search, JWT_TOKEN_USER_1, func(rsp *http.Response, t *testing.T) {
 		type TestRsp struct {
 			Result string `json:"result"`
 			Info   string `json:"info"`
@@ -289,16 +289,16 @@ func TestDBSearch(t *testing.T) {
 	}, t)
 
 	// Delete index used for test
-	rangeTestTable(db_deleteindex_for_search, t)
+	rangeTestTable(db_deleteindex_for_search, JWT_TOKEN_USER_1, t)
 }
 
 // Requires to add user_id to prototype
 func TestDBSearchById(t *testing.T) {
 	// Create 2 document
-	rangeTestTable(db_create_for_searchbyid, t)
+	rangeTestTable(db_create_for_searchbyid, JWT_TOKEN_USER_1, t)
 
 	// Search by id for 1 document
-	rangeTestTableWithChecker(db_searchbyid, func(rsp *http.Response, t *testing.T) {
+	rangeTestTableWithChecker(db_searchbyid, JWT_TOKEN_USER_1, func(rsp *http.Response, t *testing.T) {
 		type TestRsp struct {
 			Result string `json:"result"`
 		}
@@ -316,5 +316,5 @@ func TestDBSearchById(t *testing.T) {
 	}, t)
 
 	// Delete index used for test
-	rangeTestTable(db_deleteindex_for_searchbyid, t)
+	rangeTestTable(db_deleteindex_for_searchbyid, JWT_TOKEN_USER_1, t)
 }
