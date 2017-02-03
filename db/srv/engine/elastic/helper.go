@@ -211,14 +211,9 @@ func (e *ElasticQuery) filterUrl() string {
 func (e *ElasticQuery) filterUser() string {
 	var buffer bytes.Buffer
 
-	// We filter by user_id when quering file or datasource ES documents.
-	if len(e.UserId) > 0 && (e.Type == globals.FileType || e.Type == globals.TypeDatasource) {
-		buffer.WriteString(`{"term": {"user_id": "`)
-		buffer.WriteString(e.UserId)
-		buffer.WriteString(`"}}`)
-	} else {
-		buffer.WriteString(`{}`)
-	}
+	buffer.WriteString(`{"term": {"user_id": "`)
+	buffer.WriteString(e.UserId)
+	buffer.WriteString(`"}}`)
 
 	return buffer.String()
 }

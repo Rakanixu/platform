@@ -2,6 +2,7 @@ package tests
 
 import (
 	"encoding/json"
+	//"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/globals"
 	"net/http"
 	"testing"
@@ -287,20 +288,20 @@ var db_create_for_search = testTable{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.Create",
 		"request": {
-			"index": "db_srv_search_test",
+			"index": "index_db_srv_search_test",
 			"type": "test_document",
 			"id": "test_id_1",
-			"data": "{\"name\": \"tree\", \"category\": \"green\", \"last_seen\": 1, \"string\": \"string\",\"bool\": true,\"int\": 1}"
+			"data": "{\"name\": \"tree\", \"user_id\": \"` + USER_ID + `\", \"category\": \"green\", \"last_seen\": 1, \"string\": \"string\",\"bool\": true,\"int\": 1}"
 		}
 	}`), &http.Response{StatusCode: 200}, noDuration},
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.Create",
 		"request": {
-			"index": "db_srv_search_test",
+			"index": "index_db_srv_search_test",
 			"type": "test_document",
 			"id": "test_id_2",
-			"data": "{\"name\": \"orange\", \"category\": \"green\", \"last_seen\": 1, \"string\": \"string\",\"bool\": true,\"int\": 1}"
+			"data": "{\"name\": \"orange\", \"user_id\": \"` + USER_ID + `\", \"category\": \"green\", \"last_seen\": 1, \"string\": \"string\",\"bool\": true,\"int\": 1}"
 		}
 	}`), &http.Response{StatusCode: 200}, noDuration},
 }
@@ -310,9 +311,11 @@ var db_search = testTable{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.Search",
 		"request": {
-			"index": "db_srv_search_test",
+			"index": "index_db_srv_search_test",
 			"type": "test_document",
-			"term": "tree"
+			"term": "tree",
+			"from": 0,
+			"size": 2
 		}
 	}`), &http.Response{StatusCode: 200}, time.Second},
 }
@@ -334,7 +337,7 @@ var db_deleteindex_for_search = testTable{
 		"service": "com.kazoup.srv.db",
 		"method": "Config.DeleteIndex",
 		"request": {
-			"index": "db_srv_search_test"
+			"index": "index_db_srv_search_test"
 		}
 	}`), &http.Response{StatusCode: 200}, noDuration},
 }
@@ -370,6 +373,7 @@ var db_searchbyid = testTable{
 			"index": "db_srv_searchbyid_test",
 			"type": "test_document",
 			"id": "test_id_1",
+			"user_id": "` + USER_NAME + `",
 			"name": "tree"
 		}
 	}`), &http.Response{StatusCode: 200}, time.Second},
