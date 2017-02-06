@@ -7,7 +7,27 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	"log"
 )
+
+func CreateIntoDB(c client.Client, ctx context.Context, req *db_proto.CreateRequest) (*db_proto.CreateResponse, error) {
+	// Inject into context the scope
+	nctx := globals.NewDBContext(ctx)
+
+	log.Println("NEWDBCONTECT", nctx)
+
+	creq := c.NewRequest(
+		globals.DB_SERVICE_NAME,
+		"DB.Create",
+		req,
+	)
+	crsp := &db_proto.CreateResponse{}
+	if err := c.Call(nctx, creq, crsp); err != nil {
+		return crsp, err
+	}
+
+	return crsp, nil
+}
 
 func UpdateFromDB(c client.Client, ctx context.Context, req *db_proto.UpdateRequest) (*db_proto.UpdateResponse, error) {
 	dreq := c.NewRequest(

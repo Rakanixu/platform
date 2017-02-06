@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/xray"
 	"github.com/dgrijalva/jwt-go"
+	kazoup_context "github.com/kazoup/platform/lib/context"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/micro/cli"
 	"github.com/micro/go-micro"
@@ -102,6 +103,11 @@ func (l *LogWrapper) Call(ctx context.Context, req client.Request, rsp interface
 
 func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 	return func(ctx context.Context, req server.Request, rsp interface{}) error {
+
+		log.Println("")
+		log.Println("")
+		log.Println("CTX ON AUTH", ctx)
+
 		var f error
 
 		md, ok := metadata.FromContext(ctx)
@@ -112,6 +118,10 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 		if len(md["Authorization"]) == 0 {
 			return errors.Unauthorized("", "Authorization required")
 		}
+
+		log.Println("CTX ON AUTH AFTER", ctx)
+		log.Println("")
+		log.Println("")
 
 		// Authentication
 		if md["Authorization"] != globals.SYSTEM_TOKEN {
@@ -137,11 +147,13 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 				return errors.Unauthorized("", "Invalid token")
 			}
 
-			// Authorization, inject id in context
-			ctx = metadata.NewContext(context.TODO(), map[string]string{
-				"Authorization": md["Authorization"],
-				"Id":            token.Claims.(jwt.MapClaims)["sub"].(string),
-			})
+			log.Println("WRAPPER", ctx)
+
+			ctx = context.WithValue(
+				ctx,
+				kazoup_context.UserIdCtxKey{},
+				kazoup_context.UserIdCtxValue(token.Claims.(jwt.MapClaims)["sub"].(string)),
+			)
 		}
 
 		f = fn(ctx, req, rsp)
@@ -234,7 +246,7 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapClient(awsxray.NewClientWrapper(opts...)),
 			micro.WrapSubscriber(SubscriberWrapper),
-			micro.WrapHandler(awsxray.NewHandlerWrapper(opts...), AuthWrapper),
+			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ AuthWrapper),
 			micro.Flags(
 				cli.StringFlag{
 					Name:   "elasticsearch_hosts",
@@ -262,7 +274,7 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapSubscriber(SubscriberWrapper),
 			micro.WrapClient(awsxray.NewClientWrapper(opts...)),
-			micro.WrapHandler(awsxray.NewHandlerWrapper(opts...), AuthWrapper),
+			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...),*/ AuthWrapper),
 		)
 	} else {
 		service = micro.NewService(
@@ -274,7 +286,7 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapSubscriber(SubscriberWrapper),
 			micro.WrapClient(awsxray.NewClientWrapper(opts...), monitor.ClientWrapper(m)),
-			micro.WrapHandler(awsxray.NewHandlerWrapper(opts...), monitor.HandlerWrapper(m), AuthWrapper),
+			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...),*/ monitor.HandlerWrapper(m), AuthWrapper),
 		)
 	}
 

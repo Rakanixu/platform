@@ -3,8 +3,11 @@ package handler
 import (
 	engine "github.com/kazoup/platform/db/srv/engine"
 	proto "github.com/kazoup/platform/db/srv/proto/db"
+	kazoup_context "github.com/kazoup/platform/lib/context"
+	"github.com/kazoup/platform/lib/globals"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
+	"log"
 )
 
 // DB struct
@@ -12,6 +15,16 @@ type DB struct{}
 
 // Create db srv handler
 func (db *DB) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.CreateResponse) error {
+	log.Println("CREATE", ctx)
+
+	scp := globals.ContextScope(ctx)
+
+	log.Println("SCOPE", scp)
+
+	if scp != kazoup_context.CTX_SCOPE_INTERNAL {
+		return errors.Forbidden("go.micro.srv.db.Create", "Incorrect scope")
+	}
+
 	_, err := engine.Create(ctx, req)
 	if err != nil {
 		return errors.InternalServerError("go.micro.srv.db.Create", err.Error())

@@ -9,13 +9,10 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"io"
-
-	"log"
-
 	"github.com/dgrijalva/jwt-go"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
+	kazoup_context "github.com/kazoup/platform/lib/context"
 	"github.com/micro/go-micro/client"
 	micro_errors "github.com/micro/go-micro/errors"
 	"github.com/micro/go-micro/metadata"
@@ -23,6 +20,8 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"golang.org/x/oauth2/slack"
+	"io"
+	"log"
 )
 
 const (
@@ -263,17 +262,37 @@ func NewContextFromJWT(jwt string) context.Context {
 	})
 }
 
+func NewDBContext(ctx context.Context) context.Context {
+	return context.WithValue(
+		ctx,
+		kazoup_context.ScopeCtxKey{},
+		kazoup_context.ScopeCtxValue(kazoup_context.CTX_SCOPE_INTERNAL),
+	)
+}
+
+func ContextScope(ctx context.Context) string {
+	log.Println("AFTER WRAPPER", ctx)
+
+	if ctx.Value(kazoup_context.ScopeCtxKey{}) == nil {
+		log.Println("1111")
+	}
+
+	log.Println("222", ctx.Value(kazoup_context.ScopeCtxKey{}).(kazoup_context.ScopeCtxValue))
+
+	return string(ctx.Value(kazoup_context.ScopeCtxKey{}).(kazoup_context.ScopeCtxValue))
+}
+
 func ParseUserIdFromContext(ctx context.Context) (string, error) {
-	md, ok := metadata.FromContext(ctx)
-	if !ok {
-		return "", micro_errors.Unauthorized("ParseUserIdFromContext", "Unable to retrieve metadata")
+	if ctx.Value(kazoup_context.UserIdCtxKey{}) == nil {
+		return "", micro_errors.Unauthorized("ParseUserIdFromContext", "Unable to retrieve user from context")
 	}
 
-	if len(md["Id"]) == 0 {
-		return "", micro_errors.Unauthorized("ParseUserIdFromContext", "No user_id for given context")
+	id := string(ctx.Value(kazoup_context.UserIdCtxKey{}).(kazoup_context.UserIdCtxValue))
+	if len(id) == 0 {
+		return "", micro_errors.Unauthorized("ParseUserIdFromContext", "No user for given context")
 	}
 
-	return md["Id"], nil
+	return id, nil
 }
 
 func ParseJWTToken(str string) (string, error) {
