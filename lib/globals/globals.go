@@ -266,7 +266,11 @@ func NewContextFromJWT(jwt string) context.Context {
 func ParseUserIdFromContext(ctx context.Context) (string, error) {
 	md, ok := metadata.FromContext(ctx)
 	if !ok {
-		return "", micro_errors.InternalServerError("ParseUserIdFromContext", "Unable to retrieve metadata")
+		return "", micro_errors.Unauthorized("ParseUserIdFromContext", "Unable to retrieve metadata")
+	}
+
+	if len(md["Id"]) == 0 {
+		return "", micro_errors.Unauthorized("ParseUserIdFromContext", "No user_id for given context")
 	}
 
 	return md["Id"], nil
