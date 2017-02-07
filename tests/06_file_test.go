@@ -135,14 +135,14 @@ var ds_delete_tests_data = testTable{
 
 func TestFileCreate(t *testing.T) {
 	// Create datasources to perfomr file operations over them
-	rangeTestTable(ds_file_tests_data, JWT_TOKEN_USER_1, t)
+	rangeTestTable(ds_file_tests_data, JWT_TOKEN_USER_1, emptyHeader, t)
 
 	time.Sleep(time.Second * 30)
 
 	// This loop is due to unmarshalling to known types
 	for k, v := range create_file_tests_data {
 		// Create a file per datasource
-		rangeTestTableWithChecker(testTable{v}, JWT_TOKEN_USER_1, func(rsp *http.Response, t *testing.T) {
+		rangeTestTableWithChecker(testTable{v}, JWT_TOKEN_USER_1, emptyHeader, func(rsp *http.Response, t *testing.T) {
 			type TestRsp struct {
 				Data   string `json:"data"`
 				DocUrl string `json:"doc_url"`
@@ -184,12 +184,12 @@ func TestFileCreate(t *testing.T) {
 			}`)
 
 			// Now we test file deletion
-			makeRequest(b, &http.Response{StatusCode: 200}, JWT_TOKEN_USER_1, t)
+			makeRequest(b, &http.Response{StatusCode: 200}, JWT_TOKEN_USER_1, emptyHeader, t)
 		}, t)
 	}
 
 	// Remove all datrasources created for the test
-	rangeTestTable(ds_delete_tests_data, JWT_TOKEN_USER_1, t)
+	rangeTestTable(ds_delete_tests_data, JWT_TOKEN_USER_1, emptyHeader, t)
 }
 
 // Tear down of TestFileCreate

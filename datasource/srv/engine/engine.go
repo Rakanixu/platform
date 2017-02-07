@@ -5,6 +5,7 @@ import (
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_config_proto "github.com/kazoup/platform/db/srv/proto/config"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
+	db_conn "github.com/kazoup/platform/lib/dbhelper"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
@@ -127,23 +128,18 @@ func GenerateEndpoint(ctx context.Context, c client.Client, endpoint datasource_
 func SaveDataSource(ctx context.Context, c client.Client, data interface{}, id string) error {
 	b, err := json.Marshal(data)
 	if err != nil {
-		return errors.New("com.kazoup.Datasource.SaveDataSource unmarshall error", err.Error(), 500)
+		return err
 	}
 
-	srvReq := c.NewRequest(
-		globals.DB_SERVICE_NAME,
-		"DB.Create",
-		&db_proto.CreateRequest{
-			Index: "datasources",
-			Type:  "datasource",
-			Id:    id,
-			Data:  string(b),
-		},
-	)
-	srvRes := &db_proto.CreateResponse{}
+	_, err = db_conn.CreateIntoDB(c, ctx, &db_proto.CreateRequest{
+		Index: "datasources",
+		Type:  "datasource",
+		Id:    id,
+		Data:  string(b),
+	})
 
-	if err := c.Call(ctx, srvReq, srvRes); err != nil {
-		return errors.New("com.kazoup.Datasource.SaveDataSource.clientCall DB.Create", err.Error(), 500)
+	if err != nil {
+		return err
 	}
 
 	return nil

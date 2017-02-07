@@ -33,7 +33,6 @@ func NewImageHandler() *ImageHandler {
 //http://ADDRESS:8082/desktop/image?user_id={user_id}&file_id={file_id}&width=300&height=300&mode=fit&quality=50
 func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//Extract values from URL
-	md5_user_id := r.FormValue("user_id")
 	file_id := r.FormValue("file_id")
 	width := r.FormValue("width")
 	height := r.FormValue("height")
@@ -60,10 +59,17 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Build context
 	ctx := metadata.NewContext(context.TODO(), map[string]string{
-		"Authorization": token,
+		"Authorization":  token,
+		"X-Kazoup-Token": globals.DB_ACCESS_TOKEN,
 	})
 
-	f, err := file.GetFileByID(ctx, md5_user_id, file_id)
+	uID, err := globals.ParseJWTToken(token)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	f, err := file.GetFileByID(ctx, globals.GetMD5Hash(uID), file_id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
