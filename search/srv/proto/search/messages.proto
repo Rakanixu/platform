@@ -2,6 +2,16 @@ syntax = "proto3";
 
 package go.micro.srv.search.search;
 
+message ReadRequest {
+  string index = 1;
+  string type = 2;
+  string id = 3;
+}
+
+message ReadResponse {
+  string result = 1;
+}
+
 message SearchRequest {
   string index = 1;
   string term = 2;
@@ -19,6 +29,16 @@ message SearchRequest {
 message SearchResponse {
   string result = 1;
   string info = 2;
+}
+
+message SearchByIdRequest {
+  string index = 1;
+  string type = 2;
+  string id = 3;
+}
+
+message SearchByIdResponse {
+  string result = 1;
 }
 
 message HealthRequest {

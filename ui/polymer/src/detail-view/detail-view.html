@@ -312,8 +312,8 @@
             notify: false,
             value: function() {
               return {
-                service: window.Endpoints.srvs.db.srv,
-                method: window.Endpoints.srvs.db.read,
+                service: window.Endpoints.srvs.search.srv,
+                method: window.Endpoints.srvs.search.read,
                 request: {
                   index: '',
                   type: 'file',
@@ -327,8 +327,8 @@
             notify: false,
             value: function() {
               return {
-                service: window.Endpoints.srvs.db.srv,
-                method: window.Endpoints.srvs.db.searchById,
+                service: window.Endpoints.srvs.search.srv,
+                method: window.Endpoints.srvs.search.searchById,
                 request: {
                   index: '',
                   type: 'user',
@@ -342,8 +342,8 @@
             notify: false,
             value: function() {
               return {
-                service: window.Endpoints.srvs.db.srv,
-                method: window.Endpoints.srvs.db.searchById,
+                service: window.Endpoints.srvs.search.srv,
+                method: window.Endpoints.srvs.search.searchById,
                 request: {
                   index: '',
                   type: 'channel',
