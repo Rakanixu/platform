@@ -125,6 +125,7 @@ const (
 	SECURE_SERVER_ADDRESS = "https://web.kazoup.io:8082"
 
 	SYSTEM_TOKEN     = "ajsdIgsnaloHFGis823jsdgyjTGDKijfcjk783JDUYFJyggvwejkxsnmbkjwpoj6483"
+	DB_ACCESS_TOKEN  = "GSjsfduh3jskJHGuiU87y-skjaXXu7hpcMkdKghsojssio_98sushmpPpodvhakasdB"
 	CLIENT_ID_SECRET = "EC1FD9R5t6D3cs9CzPbgJaBJjshoVgrJrTs6U39scYzYF7HYyMlv_mal2IjLLaA9" // Auth0 RPC API client
 	ENCRYTION_KEY_32 = "asjklasd766adfashj22kljasdhyfjkh"
 
@@ -256,32 +257,29 @@ func NewSystemContext() context.Context {
 	})
 }
 
+// NewContextFromJWT
 func NewContextFromJWT(jwt string) context.Context {
 	return metadata.NewContext(context.TODO(), map[string]string{
 		"Authorization": jwt,
 	})
 }
 
-func NewDBContext(ctx context.Context) context.Context {
-	return context.WithValue(
-		ctx,
-		kazoup_context.ScopeCtxKey{},
-		kazoup_context.ScopeCtxValue(kazoup_context.CTX_SCOPE_INTERNAL),
-	)
-}
+// DBAccess flags access to DB
+func DBAccess(ctx context.Context) error {
+	md, _ := metadata.FromContext(ctx)
 
-func ContextScope(ctx context.Context) string {
-	log.Println("AFTER WRAPPER", ctx)
-
-	if ctx.Value(kazoup_context.ScopeCtxKey{}) == nil {
-		log.Println("1111")
+	if len(md["X-Kazoup-Token"]) == 0 {
+		return micro_errors.Forbidden("com.kazoup.srv.db", "No scope")
 	}
 
-	log.Println("222", ctx.Value(kazoup_context.ScopeCtxKey{}).(kazoup_context.ScopeCtxValue))
+	if md["X-Kazoup-Token"] != DB_ACCESS_TOKEN {
+		return micro_errors.Forbidden("com.kazoup.srv.db", "Invalid scope")
+	}
 
-	return string(ctx.Value(kazoup_context.ScopeCtxKey{}).(kazoup_context.ScopeCtxValue))
+	return nil
 }
 
+// ParseUserIdFromContext returns user_id from context
 func ParseUserIdFromContext(ctx context.Context) (string, error) {
 	if ctx.Value(kazoup_context.UserIdCtxKey{}) == nil {
 		return "", micro_errors.Unauthorized("ParseUserIdFromContext", "Unable to retrieve user from context")
@@ -295,6 +293,7 @@ func ParseUserIdFromContext(ctx context.Context) (string, error) {
 	return id, nil
 }
 
+// ParseJWTToken validates JWT and returns user_id claim
 func ParseJWTToken(str string) (string, error) {
 	token, err := jwt.Parse(str, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:

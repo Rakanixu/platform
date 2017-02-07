@@ -3,9 +3,6 @@ package wrappers
 import (
 	"encoding/base64"
 	"fmt"
-	"os"
-	"time"
-
 	log "github.com/Sirupsen/logrus"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -18,38 +15,33 @@ import (
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"github.com/micro/go-micro/metadata"
-	"github.com/micro/go-micro/registry"
-	"github.com/micro/go-micro/selector"
 	"github.com/micro/go-micro/server"
 	"github.com/micro/go-os/monitor"
 	"github.com/micro/go-plugins/wrapper/trace/awsxray"
 	"golang.org/x/net/context"
+	"os"
+	"time"
 )
 
-// log wrapper logs every time a request is made
-type LogWrapper struct {
+type kazoupClientWrapper struct {
 	client.Client
 }
 
-type DesktopWrapper struct {
-	client.Client
-}
-
-type clientWrapper struct {
-	service micro.Service
-	client.Client
-}
-
-func (c *clientWrapper) Call(ctx context.Context, req client.Request, rsp interface{}, opts ...client.CallOption) error {
-	ctx = micro.NewContext(ctx, c.service)
-	return c.Client.Call(ctx, req, rsp, opts...)
-}
-
-// NewClientWrapper wraps a service within a client so it can be accessed by subsequent client wrappers.
-func NewClientWrapper(service micro.Service) client.Wrapper {
+// KazoupClientWrap wraps client
+func KazoupClientWrap() client.Wrapper {
 	return func(c client.Client) client.Client {
-		return &clientWrapper{service, c}
+		return &kazoupClientWrapper{c}
 	}
+}
+
+// Call will set X-Kazoup-Token with DB_ACCESS_TOKEN value in every internal request
+// Add here whatever is needed to add
+func (kcw *kazoupClientWrapper) Call(ctx context.Context, req client.Request, rsp interface{}, opts ...client.CallOption) error {
+	md, _ := metadata.FromContext(ctx)
+	md["X-Kazoup-Token"] = globals.DB_ACCESS_TOKEN
+	ctx = metadata.NewContext(ctx, md)
+
+	return kcw.Client.Call(ctx, req, rsp, opts...)
 }
 
 // NewHandlerWrapper wraps a service within the handler so it can be accessed by the handler itself.
@@ -62,32 +54,14 @@ func NewHandlerWrapper(service micro.Service) server.HandlerWrapper {
 	}
 }
 
-func (dw *DesktopWrapper) Call(ctx context.Context, req client.Request, rsp interface{}, opts ...client.CallOption) error {
-	hostname, _ := os.Hostname()
-	md, _ := metadata.FromContext(ctx)
-	filter := func(services []*registry.Service) []*registry.Service {
-		for _, service := range services {
-			var nodes []*registry.Node
-			for _, node := range service.Nodes {
-				if node.Metadata["hostname"] == hostname {
-					nodes = append(nodes, node)
-				}
-			}
-			service.Nodes = nodes
-		}
-		return services
-	}
-	callOptions := append(opts, client.WithSelectOption(
-		selector.WithFilter(filter),
-	))
-	log.WithFields(log.Fields{
-		"hostname": hostname,
-		"from":     md["X-Micro-From-Service"],
-		"service":  req.Service(),
-		"method":   req.Method(),
-		"request":  req.Request(),
-	}).Info("[Dekstop Wrapper] filtering for hostname")
-	return dw.Client.Call(ctx, req, rsp, callOptions...)
+// log wrapper logs every time a request is made
+type LogWrapper struct {
+	client.Client
+}
+
+// Implements client.Wrapper as logWrapper
+func LogWrap(c client.Client) client.Client {
+	return &LogWrapper{c}
 }
 
 func (l *LogWrapper) Call(ctx context.Context, req client.Request, rsp interface{}, opts ...client.CallOption) error {
@@ -98,16 +72,11 @@ func (l *LogWrapper) Call(ctx context.Context, req client.Request, rsp interface
 		"method":  req.Method(),
 		"request": req.Request(),
 	}).Info("Service call")
-	return l.Client.Call(ctx, req, rsp)
+	return l.Client.Call(ctx, req, rsp, opts...)
 }
 
 func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 	return func(ctx context.Context, req server.Request, rsp interface{}) error {
-
-		log.Println("")
-		log.Println("")
-		log.Println("CTX ON AUTH", ctx)
-
 		var f error
 
 		md, ok := metadata.FromContext(ctx)
@@ -118,10 +87,6 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 		if len(md["Authorization"]) == 0 {
 			return errors.Unauthorized("", "Authorization required")
 		}
-
-		log.Println("CTX ON AUTH AFTER", ctx)
-		log.Println("")
-		log.Println("")
 
 		// Authentication
 		if md["Authorization"] != globals.SYSTEM_TOKEN {
@@ -147,8 +112,6 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 				return errors.Unauthorized("", "Invalid token")
 			}
 
-			log.Println("WRAPPER", ctx)
-
 			ctx = context.WithValue(
 				ctx,
 				kazoup_context.UserIdCtxKey{},
@@ -173,16 +136,7 @@ func SubscriberWrapper(fn server.SubscriberFunc) server.SubscriberFunc {
 	}
 }
 
-// Implements client.Wrapper as logWrapper
-func LogWrap(c client.Client) client.Client {
-	return &LogWrapper{c}
-}
-func DesktopWrap(c client.Client) client.Client {
-	return &DesktopWrapper{c}
-}
-
 func NewKazoupClient() client.Client {
-
 	return client.NewClient()
 }
 
@@ -244,9 +198,9 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			micro.RegisterTTL(time.Minute),
 			micro.RegisterInterval(time.Second*30),
 			micro.Client(NewKazoupClientWithXrayTrace(sess)),
-			micro.WrapClient(awsxray.NewClientWrapper(opts...)),
+			micro.WrapClient(awsxray.NewClientWrapper(opts...), KazoupClientWrap()),
 			micro.WrapSubscriber(SubscriberWrapper),
-			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ AuthWrapper),
+			micro.WrapHandler(awsxray.NewHandlerWrapper(opts...), AuthWrapper),
 			micro.Flags(
 				cli.StringFlag{
 					Name:   "elasticsearch_hosts",
@@ -273,8 +227,8 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			micro.RegisterInterval(time.Second*30),
 			micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapSubscriber(SubscriberWrapper),
-			micro.WrapClient(awsxray.NewClientWrapper(opts...)),
-			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...),*/ AuthWrapper),
+			micro.WrapClient(awsxray.NewClientWrapper(opts...), KazoupClientWrap()),
+			micro.WrapHandler(awsxray.NewHandlerWrapper(opts...), AuthWrapper),
 		)
 	} else {
 		service = micro.NewService(
@@ -285,8 +239,8 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			micro.RegisterInterval(time.Second*30),
 			micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapSubscriber(SubscriberWrapper),
-			micro.WrapClient(awsxray.NewClientWrapper(opts...), monitor.ClientWrapper(m)),
-			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...),*/ monitor.HandlerWrapper(m), AuthWrapper),
+			micro.WrapClient(awsxray.NewClientWrapper(opts...), monitor.ClientWrapper(m), KazoupClientWrap()),
+			micro.WrapHandler(awsxray.NewHandlerWrapper(opts...), monitor.HandlerWrapper(m), AuthWrapper),
 		)
 	}
 

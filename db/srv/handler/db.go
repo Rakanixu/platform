@@ -3,11 +3,9 @@ package handler
 import (
 	engine "github.com/kazoup/platform/db/srv/engine"
 	proto "github.com/kazoup/platform/db/srv/proto/db"
-	kazoup_context "github.com/kazoup/platform/lib/context"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
-	"log"
 )
 
 // DB struct
@@ -15,14 +13,8 @@ type DB struct{}
 
 // Create db srv handler
 func (db *DB) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.CreateResponse) error {
-	log.Println("CREATE", ctx)
-
-	scp := globals.ContextScope(ctx)
-
-	log.Println("SCOPE", scp)
-
-	if scp != kazoup_context.CTX_SCOPE_INTERNAL {
-		return errors.Forbidden("go.micro.srv.db.Create", "Incorrect scope")
+	if err := globals.DBAccess(ctx); err != nil {
+		return err
 	}
 
 	_, err := engine.Create(ctx, req)
@@ -35,6 +27,10 @@ func (db *DB) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.C
 
 // Read db srv handler
 func (db *DB) Read(ctx context.Context, req *proto.ReadRequest, rsp *proto.ReadResponse) error {
+	if err := globals.DBAccess(ctx); err != nil {
+		return err
+	}
+
 	response, err := engine.Read(ctx, req)
 	if err != nil {
 		return errors.InternalServerError("go.micro.srv.db.Read", err.Error())
@@ -47,6 +43,10 @@ func (db *DB) Read(ctx context.Context, req *proto.ReadRequest, rsp *proto.ReadR
 
 // Update db srv handler
 func (db *DB) Update(ctx context.Context, req *proto.UpdateRequest, rsp *proto.UpdateResponse) error {
+	if err := globals.DBAccess(ctx); err != nil {
+		return err
+	}
+
 	_, err := engine.Update(ctx, req)
 	if err != nil {
 		return errors.InternalServerError("go.micro.srv.db.Update", err.Error())
@@ -57,6 +57,10 @@ func (db *DB) Update(ctx context.Context, req *proto.UpdateRequest, rsp *proto.U
 
 // Delete db srv handler
 func (db *DB) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *proto.DeleteResponse) error {
+	if err := globals.DBAccess(ctx); err != nil {
+		return err
+	}
+
 	_, err := engine.Delete(ctx, req)
 	if err != nil {
 		return errors.InternalServerError("go.micro.srv.db.Delete", err.Error())
@@ -67,6 +71,10 @@ func (db *DB) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *proto.D
 
 // DeleteByQuery db srv handler
 func (db *DB) DeleteByQuery(ctx context.Context, req *proto.DeleteByQueryRequest, rsp *proto.DeleteByQueryResponse) error {
+	if err := globals.DBAccess(ctx); err != nil {
+		return err
+	}
+
 	_, err := engine.DeleteByQuery(ctx, req)
 	if err != nil {
 		return errors.InternalServerError("go.micro.srv.db.DeleteByQuery", err.Error())
@@ -77,6 +85,10 @@ func (db *DB) DeleteByQuery(ctx context.Context, req *proto.DeleteByQueryRequest
 
 // Search db srv handler
 func (db *DB) Search(ctx context.Context, req *proto.SearchRequest, rsp *proto.SearchResponse) error {
+	if err := globals.DBAccess(ctx); err != nil {
+		return err
+	}
+
 	response, err := engine.Search(ctx, req)
 	if err != nil {
 		return errors.InternalServerError("go.micro.srv.db.Search", err.Error())
@@ -90,6 +102,10 @@ func (db *DB) Search(ctx context.Context, req *proto.SearchRequest, rsp *proto.S
 
 // Search db srv handler
 func (db *DB) SearchById(ctx context.Context, req *proto.SearchByIdRequest, rsp *proto.SearchByIdResponse) error {
+	if err := globals.DBAccess(ctx); err != nil {
+		return err
+	}
+
 	response, err := engine.SearchById(ctx, req)
 	if err != nil {
 		return errors.InternalServerError("go.micro.srv.db.SearchById", err.Error())
@@ -101,6 +117,10 @@ func (db *DB) SearchById(ctx context.Context, req *proto.SearchByIdRequest, rsp 
 }
 
 func (db *DB) Health(ctx context.Context, req *proto.HealthRequest, rsp *proto.HealthResponse) error {
+	if err := globals.DBAccess(ctx); err != nil {
+		return err
+	}
+
 	rsp.Status = 200
 	rsp.Info = "OK"
 
