@@ -163,18 +163,13 @@ func DeleteDataSource(ctx context.Context, c client.Client, endpoint *datasource
 		}
 
 		// Delete record from datasources index
-		srvReq := c.NewRequest(
-			globals.DB_SERVICE_NAME,
-			"DB.Delete",
-			&db_proto.DeleteRequest{
-				Index: "datasources",
-				Type:  "datasource",
-				Id:    endpoint.Id,
-			},
-		)
-		srvRes := &db_proto.DeleteResponse{}
+		_, err := db_conn.DeleteFromDB(c, ctx, &db_proto.DeleteRequest{
+			Index: "datasources",
+			Type:  "datasource",
+			Id:    endpoint.Id,
+		})
 
-		if err := c.Call(ctx, srvReq, srvRes); err != nil {
+		if err != nil {
 			return err
 		}
 	}
@@ -192,19 +187,14 @@ func ScanDataSource(ctx context.Context, c client.Client, endpoint *datasource_p
 		return err
 	}
 
-	srvReq := c.NewRequest(
-		globals.DB_SERVICE_NAME,
-		"DB.Update",
-		&db_proto.UpdateRequest{
-			Index: "datasources",
-			Type:  "datasource",
-			Id:    endpoint.Id,
-			Data:  string(b),
-		},
-	)
-	srvRes := &db_proto.UpdateResponse{}
+	_, err = db_conn.UpdateFromDB(c, ctx, &db_proto.UpdateRequest{
+		Index: "datasources",
+		Type:  "datasource",
+		Id:    endpoint.Id,
+		Data:  string(b),
+	})
 
-	if err := c.Call(ctx, srvReq, srvRes); err != nil {
+	if err != nil {
 		return err
 	}
 
