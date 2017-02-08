@@ -23,6 +23,20 @@ func CreateIntoDB(c client.Client, ctx context.Context, req *db_proto.CreateRequ
 	return crsp, nil
 }
 
+func ReadFromDB(c client.Client, ctx context.Context, req *db_proto.ReadRequest) (*db_proto.ReadResponse, error) {
+	rreq := c.NewRequest(
+		globals.DB_SERVICE_NAME,
+		"DB.Read",
+		req,
+	)
+	rrsp := &db_proto.ReadResponse{}
+	if err := c.Call(ctx, rreq, rrsp); err != nil {
+		return rrsp, err
+	}
+
+	return rrsp, nil
+}
+
 func UpdateFromDB(c client.Client, ctx context.Context, req *db_proto.UpdateRequest) (*db_proto.UpdateResponse, error) {
 	dreq := c.NewRequest(
 		globals.DB_SERVICE_NAME,
@@ -49,6 +63,34 @@ func DeleteFromDB(c client.Client, ctx context.Context, req *db_proto.DeleteRequ
 	}
 
 	return drsp, nil
+}
+
+func SearchFromDB(c client.Client, ctx context.Context, req *db_proto.SearchRequest) (*db_proto.SearchResponse, error) {
+	sreq := c.NewRequest(
+		globals.DB_SERVICE_NAME,
+		"DB.Search",
+		req,
+	)
+	srsp := &db_proto.SearchResponse{}
+	if err := c.Call(ctx, sreq, srsp); err != nil {
+		return nil, err
+	}
+
+	return srsp, nil
+}
+
+func SearchById(c client.Client, ctx context.Context, req *db_proto.SearchByIdRequest) (*db_proto.SearchByIdResponse, error) {
+	sreq := c.NewRequest(
+		globals.DB_SERVICE_NAME,
+		"DB.SearchById",
+		req,
+	)
+	srsp := &db_proto.SearchByIdResponse{}
+	if err := c.Call(ctx, sreq, srsp); err != nil {
+		return nil, err
+	}
+
+	return srsp, nil
 }
 
 func UpdateFileSystemAuth(fc client.Client, ctx context.Context, id string, token *datasource_proto.Token) error {
