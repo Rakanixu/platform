@@ -10,6 +10,7 @@ import (
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/image"
+	"github.com/kazoup/platform/lib/tika"
 	"log"
 	"net/http"
 	"strings"
@@ -125,6 +126,31 @@ func (dfs *DropboxFs) generateThumbnail(f dropbox.DropboxFile, id string) error 
 		if err := ncs.Upload(b, id); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+// enrichFile sends the original file to tika and enrich KazoupDropboxFile with Tika interface
+func (dfs *DropboxFs) enrichFile(f *file.KazoupDropboxFile) error {
+	if f.Category == globals.CATEGORY_DOCUMENT {
+		// Download file from Dropbox, so connector is globals.Dropbox
+		dfs, err := cs.NewCloudStorageFromEndpoint(dfs.Endpoint, globals.Dropbox)
+		if err != nil {
+			return err
+		}
+
+		rc, err := dfs.Download(f.Original.ID)
+		if err != nil {
+			return err
+		}
+
+		t, err := tika.ExtractContent(rc)
+		if err != nil {
+			return err
+		}
+
+		f.Content = t.Content()
 	}
 
 	return nil
@@ -285,6 +311,10 @@ func (dfs *DropboxFs) pushFilesToChannel(list *dropbox.FilesListResponse) {
 			}
 
 			if err := dfs.generateThumbnail(v, f.ID); err != nil {
+				log.Println(err)
+			}
+
+			if err := dfs.enrichFile(f); err != nil {
 				log.Println(err)
 			}
 
