@@ -18,5 +18,6 @@ type KazoupFile struct {
 	LastSeen     int64     `json:"last_seen"`
 	Access       string    `json:"access"`
 	DatasourceId string    `json:"datasource_id"`
-	Index        string    `json:"index,omitempty"` //Index the file will be pushed to
+	Index        string    `json:"index,omitempty"`   // Index the file will be pushed to
+	Content      string    `json:"content,omitempty"` // Content extarcted from tika
 }

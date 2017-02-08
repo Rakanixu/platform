@@ -29,7 +29,6 @@ const (
 	DB_SERVICE_NAME           string = NAMESPACE + ".srv.db"
 	DATASOURCE_SERVICE_NAME   string = NAMESPACE + ".srv.datasource"
 	NOTIFICATION_SERVICE_NAME string = NAMESPACE + ".srv.notification"
-	SCHEDULER_SERVICE_NAME    string = NAMESPACE + ".srv.scheduler"
 	MONITOR_SERVICE_NAME      string = NAMESPACE + ".srv.monitor"
 	FilesTopic                string = NAMESPACE + ".topic.files"
 	SlackChannelsTopic        string = NAMESPACE + ".topic.slackchannels"
@@ -81,7 +80,8 @@ const (
 	MIME_JPG  = "image/jpg"
 	MIME_JPEG = "image/jpeg"
 
-	CATEGORY_PICTURE = "Pictures"
+	CATEGORY_PICTURE  = "Pictures"
+	CATEGORY_DOCUMENT = "Documents"
 
 	THUMBNAIL_WIDTH = 178
 
