@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
+	db_helper "github.com/kazoup/platform/lib/dbhelper"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
@@ -39,24 +40,18 @@ func ReadDataSource(ctx context.Context, c client.Client, id string) (*datasourc
 
 // SearchDataSources queries for datasources stored in ES
 func SearchDataSources(ctx context.Context, c client.Client, req *datasource_proto.SearchRequest) (*datasource_proto.SearchResponse, error) {
-	srvReq := c.NewRequest(
-		globals.DB_SERVICE_NAME,
-		"DB.Search",
-		&db_proto.SearchRequest{
-			Index:    "datasources",
-			Type:     "datasource",
-			From:     req.From,
-			Size:     req.Size,
-			Category: req.Category,
-			Term:     req.Term,
-			Depth:    req.Depth,
-			Url:      req.Url,
-		},
-	)
-	srvRes := &db_proto.SearchResponse{}
-
-	if err := c.Call(ctx, srvReq, srvRes); err != nil {
-		return nil, err
+	srvRes, err := db_helper.SearchFromDB(c, ctx, &db_proto.SearchRequest{
+		Index:    "datasources",
+		Type:     "datasource",
+		From:     req.From,
+		Size:     req.Size,
+		Category: req.Category,
+		Term:     req.Term,
+		Depth:    req.Depth,
+		Url:      req.Url,
+	})
+	if err != nil {
+		return &datasource_proto.SearchResponse{}, err
 	}
 
 	rsp := &datasource_proto.SearchResponse{

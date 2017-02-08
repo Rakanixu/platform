@@ -7,6 +7,7 @@ import (
 	db "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/lib/box"
 	"github.com/kazoup/platform/lib/categories"
+	db_helper "github.com/kazoup/platform/lib/dbhelper"
 	"github.com/kazoup/platform/lib/dropbox"
 	"github.com/kazoup/platform/lib/globals"
 	gmailhelper "github.com/kazoup/platform/lib/gmail"
@@ -24,18 +25,12 @@ import (
 
 // GetFileByID retrieves a file given its id and the user belongs to
 func GetFileByID(ctx context.Context, md5UserId, id string) (File, error) {
-	rq := client.DefaultClient.NewRequest(
-		globals.DB_SERVICE_NAME,
-		"DB.SearchById",
-		&db.SearchByIdRequest{
-			Index: md5UserId,
-			Type:  "file",
-			Id:    id,
-		},
-	)
-	rs := &db.SearchByIdResponse{}
-
-	if err := client.DefaultClient.Call(ctx, rq, rs); err != nil {
+	rs, err := db_helper.SearchById(client.DefaultClient, ctx, &db.SearchByIdRequest{
+		Index: md5UserId,
+		Type:  "file",
+		Id:    id,
+	})
+	if err != nil {
 		return nil, err
 	}
 
