@@ -12,6 +12,18 @@ type Search struct {
 	Client client.Client
 }
 
+// Read srv handler - proxy to DB.Read
+func (s *Search) Read(ctx context.Context, req *proto.ReadRequest, rsp *proto.ReadResponse) error {
+	response, err := engine.Read(ctx, req, s.Client)
+	if err != nil {
+		return err
+	}
+
+	rsp.Result = response.Result
+
+	return nil
+}
+
 // Search srv handler
 func (s *Search) Search(ctx context.Context, req *proto.SearchRequest, rsp *proto.SearchResponse) error {
 	response, err := engine.Search(ctx, req, s.Client)
@@ -21,6 +33,18 @@ func (s *Search) Search(ctx context.Context, req *proto.SearchRequest, rsp *prot
 
 	rsp.Result = response.Result
 	rsp.Info = response.Info
+
+	return nil
+}
+
+// SearchById srv handler
+func (s *Search) SearchById(ctx context.Context, req *proto.SearchByIdRequest, rsp *proto.SearchByIdResponse) error {
+	response, err := engine.SearchById(ctx, req, s.Client)
+	if err != nil {
+		return err
+	}
+
+	rsp.Result = response.Result
 
 	return nil
 }

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/lib/globals"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -47,6 +48,11 @@ type testTable []struct {
 
 type Checker func(*http.Response, *testing.T)
 
+type headers map[string]string
+
+var emptyHeader = headers{}
+var dbAccessHeader = headers{"X-Kazoup-Token": globals.DB_ACCESS_TOKEN}
+
 type authRsp struct {
 	IDToken     string `json:"id_token"`
 	AccessToken string `json:"access_token"`
@@ -73,10 +79,14 @@ func init() {
 	JWT_INVALID = "randomstringwithwithbitsofvalidonef0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2them91cC5ldS5hdXRoMC5jb20vIiwic3ViIjoiYXV0aDB8NTg5NDRlMjkwODYxZjg3ZjYzMjk1MjZkIiwiYXVkIjoiNnpJRG04SW5oYlRScDFiTDJDNG0xVEs0TGxyNGFyVHkiLCJleHAiOjE0ODYxNTQ4OTQsImlhdCI6MTQ4NjExODg5NCwiYXpwIjoiNU9DSll1VHE1RG9nOTYwYzNsZlZFc0JscXVEWDlLYTIifQ.M9PvX8kErBeC2In5JJz2"
 }
 
-func makeRequest(body []byte, result *http.Response, jwt string, t *testing.T) {
+func makeRequest(body []byte, result *http.Response, jwt string, h headers, t *testing.T) {
 	req, err := http.NewRequest(http.MethodPost, RPC_ENPOINT, bytes.NewBuffer(body))
 	if err != nil {
 		t.Fatalf("Error create request %v", err)
+	}
+
+	for k, v := range h {
+		req.Header.Add(k, v)
 	}
 
 	req.Header.Add("Authorization", jwt)
@@ -89,21 +99,25 @@ func makeRequest(body []byte, result *http.Response, jwt string, t *testing.T) {
 
 	if rsp.StatusCode != result.StatusCode {
 		b, _ := ioutil.ReadAll(rsp.Body)
-		t.Errorf("Expected %v with body %s, got %v", result.StatusCode, string(body), rsp.StatusCode, string(b))
+		t.Fatalf("Expected %v with body %s, got %v", result.StatusCode, string(body), rsp.StatusCode, string(b))
 	}
 }
 
-func rangeTestTable(tt testTable, jwt string, t *testing.T) {
+func rangeTestTable(tt testTable, jwt string, h headers, t *testing.T) {
 	for _, v := range tt {
 		time.Sleep(v.delay)
-		makeRequest(v.in, v.out, jwt, t)
+		makeRequest(v.in, v.out, jwt, h, t)
 	}
 }
 
-func makeRequestWithChecker(body []byte, result *http.Response, jwt string, ch Checker, t *testing.T) {
+func makeRequestWithChecker(body []byte, result *http.Response, jwt string, h headers, ch Checker, t *testing.T) {
 	req, err := http.NewRequest(http.MethodPost, RPC_ENPOINT, bytes.NewBuffer(body))
 	if err != nil {
 		t.Fatalf("Error create request %v", err)
+	}
+
+	for k, v := range h {
+		req.Header.Add(k, v)
 	}
 
 	req.Header.Add("Authorization", jwt)
@@ -116,16 +130,16 @@ func makeRequestWithChecker(body []byte, result *http.Response, jwt string, ch C
 
 	if rsp.StatusCode != result.StatusCode {
 		b, _ := ioutil.ReadAll(rsp.Body)
-		t.Errorf("Expected %v with body %s, got %v", result.StatusCode, string(body), rsp.StatusCode, string(b))
+		t.Fatalf("Expected %v with body %s, got %v", result.StatusCode, string(body), rsp.StatusCode, string(b))
 	}
 
 	ch(rsp, t)
 }
 
-func rangeTestTableWithChecker(tt testTable, jwt string, ch Checker, t *testing.T) {
+func rangeTestTableWithChecker(tt testTable, jwt string, h headers, ch Checker, t *testing.T) {
 	for _, v := range tt {
 		time.Sleep(v.delay)
-		makeRequestWithChecker(v.in, v.out, jwt, ch, t)
+		makeRequestWithChecker(v.in, v.out, jwt, h, ch, t)
 	}
 }
 

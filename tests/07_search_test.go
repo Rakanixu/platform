@@ -127,9 +127,9 @@ var search_deleteindex = testTable{
 func TestSearchSearch(t *testing.T) {
 	i := 0
 
-	rangeTestTable(searcheable_set_data, JWT_TOKEN_USER_1, t)
+	rangeTestTable(searcheable_set_data, JWT_TOKEN_USER_1, dbAccessHeader, t)
 
-	rangeTestTableWithChecker(search_test, JWT_TOKEN_USER_1, func(rsp *http.Response, t *testing.T) {
+	rangeTestTableWithChecker(search_test, JWT_TOKEN_USER_1, emptyHeader, func(rsp *http.Response, t *testing.T) {
 		defer rsp.Body.Close()
 		type TestRsp struct {
 			Info   string `json:"info"`
@@ -154,15 +154,15 @@ func TestSearchSearch(t *testing.T) {
 		i++
 	}, t)
 
-	rangeTestTable(search_deleteindex, JWT_TOKEN_USER_1, t)
+	rangeTestTable(search_deleteindex, JWT_TOKEN_USER_1, emptyHeader, t)
 }
 
 func TestSearchSearchScopedData(t *testing.T) {
 	i := 0
 
-	rangeTestTable(searcheable_set_data, JWT_TOKEN_USER_2, t)
+	rangeTestTable(searcheable_set_data, JWT_TOKEN_USER_2, dbAccessHeader, t)
 
-	rangeTestTableWithChecker(search_test, JWT_TOKEN_USER_2, func(rsp *http.Response, t *testing.T) {
+	rangeTestTableWithChecker(search_test, JWT_TOKEN_USER_2, emptyHeader, func(rsp *http.Response, t *testing.T) {
 		defer rsp.Body.Close()
 		type TestRsp struct {
 			Info   string `json:"info"`
@@ -187,5 +187,5 @@ func TestSearchSearchScopedData(t *testing.T) {
 		i++
 	}, t)
 
-	rangeTestTable(search_deleteindex, JWT_TOKEN_USER_2, t)
+	rangeTestTable(search_deleteindex, JWT_TOKEN_USER_2, emptyHeader, t)
 }

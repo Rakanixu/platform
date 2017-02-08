@@ -9,6 +9,20 @@ import (
 	"golang.org/x/net/context"
 )
 
+func CreateIntoDB(c client.Client, ctx context.Context, req *db_proto.CreateRequest) (*db_proto.CreateResponse, error) {
+	creq := c.NewRequest(
+		globals.DB_SERVICE_NAME,
+		"DB.Create",
+		req,
+	)
+	crsp := &db_proto.CreateResponse{}
+	if err := c.Call(ctx, creq, crsp); err != nil {
+		return crsp, err
+	}
+
+	return crsp, nil
+}
+
 func UpdateFromDB(c client.Client, ctx context.Context, req *db_proto.UpdateRequest) (*db_proto.UpdateResponse, error) {
 	dreq := c.NewRequest(
 		globals.DB_SERVICE_NAME,

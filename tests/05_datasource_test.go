@@ -222,7 +222,7 @@ var search_datasources = testTable{
 
 func TestDatasourceCreate(t *testing.T) {
 	// Create datasources,
-	rangeTestTable(datasources_test_data, JWT_TOKEN_USER_1, t)
+	rangeTestTable(datasources_test_data, JWT_TOKEN_USER_1, emptyHeader, t)
 
 	// Crawlers are triggered for created datasources.
 	// Wait half a minute to let crawlers do its job. (There are 4 files per test account)
@@ -231,7 +231,7 @@ func TestDatasourceCreate(t *testing.T) {
 	// Check crawlers behavior. Does indexes exists? There is expected number of elements?
 	// We could do this assertions with curl request to ES directly (no internal dependencies), on the other hand,
 	// We can do it using kazoup platform. That way ensures a better level of integrity of the system.
-	rangeTestTableWithChecker(search_for_crawled_files, JWT_TOKEN_USER_1, func(rsp *http.Response, t *testing.T) {
+	rangeTestTableWithChecker(search_for_crawled_files, JWT_TOKEN_USER_1, dbAccessHeader, func(rsp *http.Response, t *testing.T) {
 		type TestRsp struct {
 			Result string `json:"result"`
 			Info   string `json:"info"`
@@ -256,12 +256,12 @@ func TestDatasourceCreate(t *testing.T) {
 		}
 	}, t)
 	// Clean datasources created for the test
-	rangeTestTable(delete_datasources_test_data, JWT_TOKEN_USER_1, t)
+	rangeTestTable(delete_datasources_test_data, JWT_TOKEN_USER_1, emptyHeader, t)
 }
 
 func TestDatasourceSearch(t *testing.T) {
 	// Just create two datasources, gmail and slack, so we won't wait for crawler
-	rangeTestTable(datasources_test_data[4:6], JWT_TOKEN_USER_1, t)
+	rangeTestTable(datasources_test_data[4:6], JWT_TOKEN_USER_1, emptyHeader, t)
 
 	// There are a internal listener timeouts on crawler implementation, to be sure crawler is not stopped before walking all files
 	// This is due to the nature of discovering files (we do not know them until we do), and push them async to channels to be indexed afterwards.
@@ -272,7 +272,7 @@ func TestDatasourceSearch(t *testing.T) {
 	time.Sleep(time.Second * 20)
 
 	// Search for those 2 datasources
-	rangeTestTableWithChecker(search_datasources, JWT_TOKEN_USER_1, func(rsp *http.Response, t *testing.T) {
+	rangeTestTableWithChecker(search_datasources, JWT_TOKEN_USER_1, emptyHeader, func(rsp *http.Response, t *testing.T) {
 		type TestRsp struct {
 			Result string `json:"result"`
 			Info   string `json:"info"`
@@ -295,7 +295,7 @@ func TestDatasourceSearch(t *testing.T) {
 	}, t)
 
 	// Remove datasources
-	rangeTestTable(delete_datasources_test_data[4:6], JWT_TOKEN_USER_1, t)
+	rangeTestTable(delete_datasources_test_data[4:6], JWT_TOKEN_USER_1, emptyHeader, t)
 }
 
 // Following tests are a subset of operation carried out on previous tests

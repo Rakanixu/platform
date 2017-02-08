@@ -275,57 +275,57 @@ var config_renamealias_invalidJWT = testTable{
 
 func TestDBCreateIndex(t *testing.T) {
 	// Create index, then delete index
-	rangeTestTable(config_createindex, JWT_TOKEN_USER_1, t)
+	rangeTestTable(config_createindex, JWT_TOKEN_USER_1, emptyHeader, t)
 }
 
 func TestDBCreateIndexInvalidJWT(t *testing.T) {
-	rangeTestTable(config_createindex_invalidJWT, JWT_INVALID, t)
+	rangeTestTable(config_createindex_invalidJWT, JWT_INVALID, emptyHeader, t)
 }
 
 func TestDBStatus(t *testing.T) {
-	rangeTestTable(config_status, JWT_TOKEN_USER_1, t)
+	rangeTestTable(config_status, JWT_TOKEN_USER_1, emptyHeader, t)
 }
 
 func TestDBStatusInvalidJWT(t *testing.T) {
-	rangeTestTable(config_status_invalidJWT, JWT_INVALID, t)
+	rangeTestTable(config_status_invalidJWT, JWT_INVALID, emptyHeader, t)
 }
 
 func TestDBAddAlias(t *testing.T) {
 	// Create index, add alias, delete index
-	rangeTestTable(config_addalias, JWT_TOKEN_USER_1, t)
+	rangeTestTable(config_addalias, JWT_TOKEN_USER_1, emptyHeader, t)
 }
 
 func TestDBAddAliasInvalidJWT(t *testing.T) {
 	// Create index, add alias, delete index
-	rangeTestTable(config_addalias_invalidJWT, JWT_INVALID, t)
+	rangeTestTable(config_addalias_invalidJWT, JWT_INVALID, emptyHeader, t)
 }
 
 func TestDBDeleteIndex(t *testing.T) {
 	// Create index, delete index
-	rangeTestTable(config_deleteindex, JWT_TOKEN_USER_1, t)
+	rangeTestTable(config_deleteindex, JWT_TOKEN_USER_1, emptyHeader, t)
 }
 
 func TestDBDeleteIndexInvalidJWT(t *testing.T) {
 	// Create index, delete index
-	rangeTestTable(config_deleteindex_invalidJWT, JWT_INVALID, t)
+	rangeTestTable(config_deleteindex_invalidJWT, JWT_INVALID, emptyHeader, t)
 }
 
 func TestDBDeleteAlias(t *testing.T) {
 	// Create index, add alias, delete alias, delete index
-	rangeTestTable(config_deletealias, JWT_TOKEN_USER_1, t)
+	rangeTestTable(config_deletealias, JWT_TOKEN_USER_1, emptyHeader, t)
 }
 
 func TestDBDeleteAliasInvalidJWT(t *testing.T) {
 	// Create index, add alias, delete alias, delete index
-	rangeTestTable(config_deletealias_invalidJWT, JWT_INVALID, t)
+	rangeTestTable(config_deletealias_invalidJWT, JWT_INVALID, emptyHeader, t)
 }
 
 func TestDBRenameAlias(t *testing.T) {
 	// Create index, add alias, rename alias, delete index
-	rangeTestTable(config_renamealias, JWT_TOKEN_USER_1, t)
+	rangeTestTable(config_renamealias, JWT_TOKEN_USER_1, emptyHeader, t)
 }
 
 func TestDBRenameAliasInvalidJWT(t *testing.T) {
 	// Create index, add alias, rename alias, delete index
-	rangeTestTable(config_renamealias_invalidJWT, JWT_INVALID, t)
+	rangeTestTable(config_renamealias_invalidJWT, JWT_INVALID, emptyHeader, t)
 }

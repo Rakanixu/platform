@@ -9,13 +9,10 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"io"
-
-	"log"
-
 	"github.com/dgrijalva/jwt-go"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
+	kazoup_context "github.com/kazoup/platform/lib/context"
 	"github.com/micro/go-micro/client"
 	micro_errors "github.com/micro/go-micro/errors"
 	"github.com/micro/go-micro/metadata"
@@ -23,6 +20,8 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"golang.org/x/oauth2/slack"
+	"io"
+	"log"
 )
 
 const (
@@ -126,6 +125,7 @@ const (
 	SECURE_SERVER_ADDRESS = "https://web.kazoup.io:8082"
 
 	SYSTEM_TOKEN     = "ajsdIgsnaloHFGis823jsdgyjTGDKijfcjk783JDUYFJyggvwejkxsnmbkjwpoj6483"
+	DB_ACCESS_TOKEN  = "GSjsfduh3jskJHGuiU87y-skjaXXu7hpcMkdKghsojssio_98sushmpPpodvhakasdB"
 	CLIENT_ID_SECRET = "EC1FD9R5t6D3cs9CzPbgJaBJjshoVgrJrTs6U39scYzYF7HYyMlv_mal2IjLLaA9" // Auth0 RPC API client
 	ENCRYTION_KEY_32 = "asjklasd766adfashj22kljasdhyfjkh"
 
@@ -257,25 +257,43 @@ func NewSystemContext() context.Context {
 	})
 }
 
+// NewContextFromJWT
 func NewContextFromJWT(jwt string) context.Context {
 	return metadata.NewContext(context.TODO(), map[string]string{
 		"Authorization": jwt,
 	})
 }
 
-func ParseUserIdFromContext(ctx context.Context) (string, error) {
-	md, ok := metadata.FromContext(ctx)
-	if !ok {
-		return "", micro_errors.Unauthorized("ParseUserIdFromContext", "Unable to retrieve metadata")
+// DBAccess flags access to DB
+func DBAccess(ctx context.Context) error {
+	md, _ := metadata.FromContext(ctx)
+
+	if len(md["X-Kazoup-Token"]) == 0 {
+		return micro_errors.Forbidden("com.kazoup.srv.db", "No scope")
 	}
 
-	if len(md["Id"]) == 0 {
-		return "", micro_errors.Unauthorized("ParseUserIdFromContext", "No user_id for given context")
+	if md["X-Kazoup-Token"] != DB_ACCESS_TOKEN {
+		return micro_errors.Forbidden("com.kazoup.srv.db", "Invalid scope")
 	}
 
-	return md["Id"], nil
+	return nil
 }
 
+// ParseUserIdFromContext returns user_id from context
+func ParseUserIdFromContext(ctx context.Context) (string, error) {
+	if ctx.Value(kazoup_context.UserIdCtxKey{}) == nil {
+		return "", micro_errors.Unauthorized("ParseUserIdFromContext", "Unable to retrieve user from context")
+	}
+
+	id := string(ctx.Value(kazoup_context.UserIdCtxKey{}).(kazoup_context.UserIdCtxValue))
+	if len(id) == 0 {
+		return "", micro_errors.Unauthorized("ParseUserIdFromContext", "No user for given context")
+	}
+
+	return id, nil
+}
+
+// ParseJWTToken validates JWT and returns user_id claim
 func ParseJWTToken(str string) (string, error) {
 	token, err := jwt.Parse(str, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:

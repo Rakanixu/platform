@@ -1,14 +1,13 @@
 package tests
 
 import (
-	"encoding/json"
 	"github.com/kazoup/platform/lib/globals"
 	"net/http"
 	"testing"
 	"time"
 )
 
-var db_create = testTable{
+var db_create_forbidden_access = testTable{
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.Create",
@@ -18,17 +17,17 @@ var db_create = testTable{
 			"id": "test_id_1",
 			"data": "{\"name\": \"tree\", \"category\": \"green\", \"last_seen\": 1, \"string\": \"string\",\"bool\": true,\"int\": 1}"
 		}
-	}`), &http.Response{StatusCode: 200}, noDuration},
+	}`), &http.Response{StatusCode: 403}, noDuration},
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "Config.DeleteIndex",
 		"request": {
 			"index": "db_srv_create_test"
 		}
-	}`), &http.Response{StatusCode: 200}, noDuration},
+	}`), &http.Response{StatusCode: 500}, noDuration},
 }
 
-var db_create_invalidJWT = testTable{
+var db_create_forbidden_access_invalidJWT = testTable{
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.Create",
@@ -48,7 +47,7 @@ var db_create_invalidJWT = testTable{
 	}`), &http.Response{StatusCode: 401}, noDuration},
 }
 
-var db_read = testTable{
+var db_read_forbidden_access = testTable{
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.Create",
@@ -58,7 +57,7 @@ var db_read = testTable{
 			"id": "test_id_1",
 			"data": "{\"name\": \"tree\", \"category\": \"green\", \"last_seen\": 1, \"string\": \"string\",\"bool\": true,\"int\": 1}"
 		}
-	}`), &http.Response{StatusCode: 200}, noDuration},
+	}`), &http.Response{StatusCode: 403}, noDuration},
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.Read",
@@ -67,17 +66,17 @@ var db_read = testTable{
 			"type": "test_document",
 			"id": "test_id"
 		}
-	}`), &http.Response{StatusCode: 200}, noDuration},
+	}`), &http.Response{StatusCode: 403}, noDuration},
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "Config.DeleteIndex",
 		"request": {
 			"index": "db_srv_read_test"
 		}
-	}`), &http.Response{StatusCode: 200}, noDuration},
+	}`), &http.Response{StatusCode: 500}, noDuration},
 }
 
-var db_read_invalidJWT = testTable{
+var db_read_forbidden_access_invalidJWT = testTable{
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.Create",
@@ -106,7 +105,7 @@ var db_read_invalidJWT = testTable{
 	}`), &http.Response{StatusCode: 401}, noDuration},
 }
 
-var db_update = testTable{
+var db_update_forbidden_access = testTable{
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.Create",
@@ -116,7 +115,7 @@ var db_update = testTable{
 			"id": "test_id_1",
 			"data": "{\"name\": \"tree\", \"category\": \"green\", \"last_seen\": 1, \"string\": \"string\",\"bool\": true,\"int\": 1}"
 		}
-	}`), &http.Response{StatusCode: 200}, noDuration},
+	}`), &http.Response{StatusCode: 403}, noDuration},
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.Update",
@@ -126,17 +125,17 @@ var db_update = testTable{
 			"id": "test_id_1",
 			"data": "{\"name\": \"tree\", \"category\": \"green\", \"last_seen\": 1, \"string\": \"updated string\",\"bool\": false,\"int\": 0}"
 		}
-	}`), &http.Response{StatusCode: 200}, noDuration},
+	}`), &http.Response{StatusCode: 403}, noDuration},
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "Config.DeleteIndex",
 		"request": {
 			"index": "db_srv_update_test"
 		}
-	}`), &http.Response{StatusCode: 200}, noDuration},
+	}`), &http.Response{StatusCode: 500}, noDuration},
 }
 
-var db_update_invalidJWT = testTable{
+var db_update_forbidden_access_invalidJWT = testTable{
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.Create",
@@ -166,7 +165,7 @@ var db_update_invalidJWT = testTable{
 	}`), &http.Response{StatusCode: 401}, noDuration},
 }
 
-var db_delete = testTable{
+var db_delete_forbidden_access = testTable{
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.Create",
@@ -176,7 +175,7 @@ var db_delete = testTable{
 			"id": "test_id_1",
 			"data": "{\"name\": \"tree\", \"category\": \"green\", \"last_seen\": 1, \"string\": \"string\",\"bool\": true,\"int\": 1}"
 		}
-	}`), &http.Response{StatusCode: 200}, noDuration},
+	}`), &http.Response{StatusCode: 403}, noDuration},
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.Delete",
@@ -185,17 +184,17 @@ var db_delete = testTable{
 			"type": "test_document",
 			"id": "test_id_1"
 		}
-	}`), &http.Response{StatusCode: 200}, noDuration},
+	}`), &http.Response{StatusCode: 403}, noDuration},
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "Config.DeleteIndex",
 		"request": {
 			"index": "db_srv_delete_test"
 		}
-	}`), &http.Response{StatusCode: 200}, noDuration},
+	}`), &http.Response{StatusCode: 500}, noDuration},
 }
 
-var db_delete_invalidJWT = testTable{
+var db_delete_forbidden_access_invalidJWT = testTable{
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.Create",
@@ -224,7 +223,7 @@ var db_delete_invalidJWT = testTable{
 	}`), &http.Response{StatusCode: 401}, noDuration},
 }
 
-var db_deletebyquery = testTable{
+var db_delete_forbidden_accessbyquery = testTable{
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.Create",
@@ -234,7 +233,7 @@ var db_deletebyquery = testTable{
 			"id": "test_id_1",
 			"data": "{\"name\": \"tree\", \"category\": \"green\", \"last_seen\": 1, \"string\": \"string\",\"bool\": true,\"int\": 1}"
 		}
-	}`), &http.Response{StatusCode: 200}, noDuration},
+	}`), &http.Response{StatusCode: 403}, noDuration},
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.DeleteByQuery",
@@ -243,17 +242,17 @@ var db_deletebyquery = testTable{
 			"types": ["test_document"],
 			"last_seen": 2
 		}
-	}`), &http.Response{StatusCode: 200}, time.Second},
+	}`), &http.Response{StatusCode: 403}, time.Second},
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "Config.DeleteIndex",
 		"request": {
 			"index": "db_srv_deletebyquery_test"
 		}
-	}`), &http.Response{StatusCode: 200}, noDuration},
+	}`), &http.Response{StatusCode: 500}, noDuration},
 }
 
-var db_deletebyquery_invalidJWT = testTable{
+var db_delete_forbidden_accessbyquery_invalidJWT = testTable{
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.Create",
@@ -282,7 +281,7 @@ var db_deletebyquery_invalidJWT = testTable{
 	}`), &http.Response{StatusCode: 401}, noDuration},
 }
 
-var db_create_for_search = testTable{
+var db_create_forbidden_access_for_search = testTable{
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.Create",
@@ -292,7 +291,7 @@ var db_create_for_search = testTable{
 			"id": "test_id_1",
 			"data": "{\"name\": \"tree\", \"user_id\": \"` + USER_ID + `\", \"category\": \"green\", \"last_seen\": 1, \"string\": \"string\",\"bool\": true,\"int\": 1}"
 		}
-	}`), &http.Response{StatusCode: 200}, noDuration},
+	}`), &http.Response{StatusCode: 403}, noDuration},
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.Create",
@@ -302,10 +301,10 @@ var db_create_for_search = testTable{
 			"id": "test_id_2",
 			"data": "{\"name\": \"orange\", \"user_id\": \"` + USER_ID + `\", \"category\": \"green\", \"last_seen\": 1, \"string\": \"string\",\"bool\": true,\"int\": 1}"
 		}
-	}`), &http.Response{StatusCode: 200}, noDuration},
+	}`), &http.Response{StatusCode: 403}, noDuration},
 }
 
-var db_search = testTable{
+var db_search_forbidden_access = testTable{
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.Search",
@@ -316,10 +315,10 @@ var db_search = testTable{
 			"from": 0,
 			"size": 2
 		}
-	}`), &http.Response{StatusCode: 200}, time.Second},
+	}`), &http.Response{StatusCode: 403}, time.Second},
 }
 
-var db_search_systemToken = testTable{
+var db_search_forbidden_access_systemToken = testTable{
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.Search",
@@ -328,20 +327,20 @@ var db_search_systemToken = testTable{
 			"type": "test_document",
 			"term": "tree"
 		}
-	}`), &http.Response{StatusCode: 500}, time.Second},
+	}`), &http.Response{StatusCode: 403}, time.Second},
 }
 
-var db_deleteindex_for_search = testTable{
+var db_delete_forbidden_accessindex_for_search = testTable{
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "Config.DeleteIndex",
 		"request": {
 			"index": "index_db_srv_search_test"
 		}
-	}`), &http.Response{StatusCode: 200}, noDuration},
+	}`), &http.Response{StatusCode: 500}, noDuration},
 }
 
-var db_create_for_searchbyid = testTable{
+var db_create_forbidden_access_for_searchbyid = testTable{
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.Create",
@@ -351,7 +350,7 @@ var db_create_for_searchbyid = testTable{
 			"id": "test_id_1",
 			"data": "{\"id\": \"test_id_1\", \"name\": \"tree\", \"category\": \"green\", \"last_seen\": 1, \"string\": \"string\",\"bool\": true,\"int\": 1}"
 		}
-	}`), &http.Response{StatusCode: 200}, noDuration},
+	}`), &http.Response{StatusCode: 403}, noDuration},
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.Create",
@@ -361,10 +360,10 @@ var db_create_for_searchbyid = testTable{
 			"id": "test_id_2",
 			"data": "{\"id\": \"test_id_2\", \"name\": \"orange\", \"category\": \"green\", \"last_seen\": 1, \"string\": \"string\",\"bool\": true,\"int\": 1}"
 		}
-	}`), &http.Response{StatusCode: 200}, noDuration},
+	}`), &http.Response{StatusCode: 403}, noDuration},
 }
 
-var db_searchbyid = testTable{
+var db_search_forbidden_accessbyid = testTable{
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.SearchById",
@@ -375,10 +374,10 @@ var db_searchbyid = testTable{
 			"user_id": "` + USER_NAME + `",
 			"name": "tree"
 		}
-	}`), &http.Response{StatusCode: 200}, time.Second},
+	}`), &http.Response{StatusCode: 403}, time.Second},
 }
 
-var db_searchbyid_systemToken = testTable{
+var db_search_forbidden_accessbyid_systemToken = testTable{
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.SearchById",
@@ -388,143 +387,107 @@ var db_searchbyid_systemToken = testTable{
 			"id": "test_id_1",
 			"name": "tree"
 		}
-	}`), &http.Response{StatusCode: 500}, time.Second},
+	}`), &http.Response{StatusCode: 403}, time.Second},
 }
 
-var db_deleteindex_for_searchbyid = testTable{
+var db_delete_forbidden_accessindex_for_searchbyid = testTable{
 	{[]byte(`{
 		"service": "com.kazoup.srv.db",
 		"method": "Config.DeleteIndex",
 		"request": {
 			"index": "db_srv_searchbyid_test"
 		}
-	}`), &http.Response{StatusCode: 200}, noDuration},
+	}`), &http.Response{StatusCode: 500}, noDuration},
 }
 
-func TestDBCreate(t *testing.T) {
-
+func TestDBCreateForbiddenAccess(t *testing.T) {
 	// Create document, delete index
-	rangeTestTable(db_create, JWT_TOKEN_USER_1, dbAccessHeader, t)
+	rangeTestTable(db_create_forbidden_access, JWT_TOKEN_USER_1, emptyHeader, t)
 }
 
-func TestDBCreateInvalidJWT(t *testing.T) {
+func TestDBCreateInvalidJWTForbiddenAccess(t *testing.T) {
 	// Create document, delete index
-	rangeTestTable(db_create_invalidJWT, JWT_INVALID, dbAccessHeader, t)
+	rangeTestTable(db_create_forbidden_access_invalidJWT, JWT_INVALID, emptyHeader, t)
 }
 
-func TestDBRead(t *testing.T) {
+func TestDBReadForbiddenAccess(t *testing.T) {
 	// Create document, read document, delete index
-	rangeTestTable(db_read, JWT_TOKEN_USER_1, dbAccessHeader, t)
+	rangeTestTable(db_read_forbidden_access, JWT_TOKEN_USER_1, emptyHeader, t)
 }
 
-func TestDBReadInvalidJWT(t *testing.T) {
+func TestDBReadInvalidJWTForbiddenAccess(t *testing.T) {
 	// Create document, read document, delete index
-	rangeTestTable(db_read_invalidJWT, JWT_INVALID, dbAccessHeader, t)
+	rangeTestTable(db_read_forbidden_access_invalidJWT, JWT_INVALID, emptyHeader, t)
 }
 
-func TestDBUpdate(t *testing.T) {
+func TestDBUpdateForbiddenAccess(t *testing.T) {
 	// Create document, update document, delete index
-	rangeTestTable(db_update, JWT_TOKEN_USER_1, dbAccessHeader, t)
+	rangeTestTable(db_update_forbidden_access, JWT_TOKEN_USER_1, emptyHeader, t)
 }
 
-func TestDBUpdateInvalidJWT(t *testing.T) {
+func TestDBUpdateInvalidJWTForbiddenAccess(t *testing.T) {
 	// Create document, update document, delete index
-	rangeTestTable(db_update_invalidJWT, JWT_INVALID, dbAccessHeader, t)
+	rangeTestTable(db_update_forbidden_access_invalidJWT, JWT_INVALID, emptyHeader, t)
 }
 
-func TestDBDelete(t *testing.T) {
+func TestDBDeleteForbiddenAccess(t *testing.T) {
 	// Create document, delete document, delete index
-	rangeTestTable(db_delete, JWT_TOKEN_USER_1, dbAccessHeader, t)
+	rangeTestTable(db_delete_forbidden_access, JWT_TOKEN_USER_1, emptyHeader, t)
 }
 
-func TestDBDeleteInvalidJWT(t *testing.T) {
+func TestDBDeleteInvalidJWTForbiddenAccess(t *testing.T) {
 	// Create document, delete document, delete index
-	rangeTestTable(db_delete_invalidJWT, JWT_INVALID, dbAccessHeader, t)
+	rangeTestTable(db_delete_forbidden_access_invalidJWT, JWT_INVALID, emptyHeader, t)
 }
 
-func TestDBDeleteByQuery(t *testing.T) {
+func TestDBDeleteByQueryForbiddenAccess(t *testing.T) {
 	// Create document, delete document, delete index
-	rangeTestTable(db_deletebyquery, JWT_TOKEN_USER_1, dbAccessHeader, t)
+	rangeTestTable(db_delete_forbidden_accessbyquery, JWT_TOKEN_USER_1, emptyHeader, t)
 }
 
-func TestDBDeleteByQueryInvalidJWT(t *testing.T) {
+func TestDBDeleteByQueryInvalidJWTForbiddenAccess(t *testing.T) {
 	// Create document, delete document, delete index
-	rangeTestTable(db_deletebyquery_invalidJWT, JWT_INVALID, dbAccessHeader, t)
+	rangeTestTable(db_delete_forbidden_accessbyquery_invalidJWT, JWT_INVALID, emptyHeader, t)
 }
 
-func TestDBSearch(t *testing.T) {
+func TestDBSearchForbiddenAccess(t *testing.T) {
 	// Create 2 document
-	rangeTestTable(db_create_for_search, JWT_TOKEN_USER_1, dbAccessHeader, t)
+	rangeTestTable(db_create_forbidden_access_for_search, JWT_TOKEN_USER_1, emptyHeader, t)
 
 	// Search by term for 1 document
-	rangeTestTableWithChecker(db_search, JWT_TOKEN_USER_1, dbAccessHeader, func(rsp *http.Response, t *testing.T) {
-		type TestRsp struct {
-			Result string `json:"result"`
-			Info   string `json:"info"`
-		}
-
-		var tr TestRsp
-		var tl map[string]int
-
-		if err := json.NewDecoder(rsp.Body).Decode(&tr); err != nil {
-			t.Fatalf("Error decoding response: %v", err)
-		}
-
-		if err := json.Unmarshal([]byte(tr.Info), &tl); err != nil {
-			t.Fatalf("Error unmarshalling response: %v", err)
-		}
-
-		if tl["total"] != 1 {
-			t.Errorf("Expected 1 result, got %v", tl["total"])
-		}
-	}, t)
+	rangeTestTable(db_search_forbidden_access, JWT_TOKEN_USER_1, emptyHeader, t)
 
 	// Delete index used for test
-	rangeTestTable(db_deleteindex_for_search, JWT_TOKEN_USER_1, dbAccessHeader, t)
+	rangeTestTable(db_delete_forbidden_accessindex_for_search, JWT_TOKEN_USER_1, emptyHeader, t)
 }
 
-func TestDBSearchSystemToken(t *testing.T) {
+func TestDBSearchSystemTokenForbiddenAccess(t *testing.T) {
 	// Create 2 document
-	rangeTestTable(db_create_for_search, globals.SYSTEM_TOKEN, dbAccessHeader, t)
+	rangeTestTable(db_create_forbidden_access_for_search, globals.SYSTEM_TOKEN, emptyHeader, t)
 
-	rangeTestTable(db_search_systemToken, globals.SYSTEM_TOKEN, dbAccessHeader, t)
+	rangeTestTable(db_search_forbidden_access_systemToken, globals.SYSTEM_TOKEN, emptyHeader, t)
 
 	// Delete index used for test
-	rangeTestTable(db_deleteindex_for_search, globals.SYSTEM_TOKEN, dbAccessHeader, t)
+	rangeTestTable(db_delete_forbidden_accessindex_for_search, globals.SYSTEM_TOKEN, emptyHeader, t)
 }
 
-func TestDBSearchById(t *testing.T) {
+func TestDBSearchByIdForbiddenAccess(t *testing.T) {
 	// Create 2 document
-	rangeTestTable(db_create_for_searchbyid, JWT_TOKEN_USER_1, dbAccessHeader, t)
+	rangeTestTable(db_create_forbidden_access_for_searchbyid, JWT_TOKEN_USER_1, emptyHeader, t)
 
 	// Search by id for 1 document
-	rangeTestTableWithChecker(db_searchbyid, JWT_TOKEN_USER_1, dbAccessHeader, func(rsp *http.Response, t *testing.T) {
-		type TestRsp struct {
-			Result string `json:"result"`
-		}
-
-		var tr TestRsp
-
-		if err := json.NewDecoder(rsp.Body).Decode(&tr); err != nil {
-			t.Fatalf("Error decoding response: %v", err)
-		}
-
-		// Search by id returns an object stringify, so empty result will be "{}"
-		if len(tr.Result) <= 2 {
-			t.Errorf("Expected string with result, got: %v", tr.Result)
-		}
-	}, t)
+	rangeTestTable(db_search_forbidden_accessbyid, JWT_TOKEN_USER_1, emptyHeader, t)
 
 	// Delete index used for test
-	rangeTestTable(db_deleteindex_for_searchbyid, JWT_TOKEN_USER_1, dbAccessHeader, t)
+	rangeTestTable(db_delete_forbidden_accessindex_for_searchbyid, JWT_TOKEN_USER_1, emptyHeader, t)
 }
 
-func TestDBSearchByIdSystemToken(t *testing.T) {
+func TestDBSearchByIdSystemTokenForbiddenAccess(t *testing.T) {
 	// Create 2 document
-	rangeTestTable(db_create_for_searchbyid, globals.SYSTEM_TOKEN, dbAccessHeader, t)
+	rangeTestTable(db_create_forbidden_access_for_searchbyid, globals.SYSTEM_TOKEN, emptyHeader, t)
 
-	rangeTestTable(db_searchbyid_systemToken, globals.SYSTEM_TOKEN, dbAccessHeader, t)
+	rangeTestTable(db_search_forbidden_accessbyid_systemToken, globals.SYSTEM_TOKEN, emptyHeader, t)
 
 	// Delete index used for test
-	rangeTestTable(db_deleteindex_for_searchbyid, globals.SYSTEM_TOKEN, dbAccessHeader, t)
+	rangeTestTable(db_delete_forbidden_accessindex_for_searchbyid, globals.SYSTEM_TOKEN, emptyHeader, t)
 }
