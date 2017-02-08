@@ -1,8 +1,10 @@
 package cloudstorage
 
 import (
+	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"io"
+	"net/http"
 )
 
 type GoogleDriveCloudStorage struct {
@@ -28,9 +30,24 @@ func (gcs *GoogleDriveCloudStorage) Download(fileID string, opts ...string) (io.
 		return nil, err
 	}
 
-	res, err := srv.Files.Get(fileID).Download()
-	if err != nil {
-		return nil, err
+	var res *http.Response
+	if len(opts) > 0 {
+		// Google documents are special, so the have to be exported
+		if opts[0] == "export" {
+			fmt.Println(opts[1])
+
+			res, err = srv.Files.Export(fileID, opts[1]).Download()
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		if opts[0] == "download" {
+			res, err = srv.Files.Get(fileID).Download()
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 
 	return res.Body, nil

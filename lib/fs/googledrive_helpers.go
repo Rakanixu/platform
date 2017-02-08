@@ -11,6 +11,7 @@ import (
 	"golang.org/x/oauth2"
 	"google.golang.org/api/drive/v3"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -129,7 +130,17 @@ func (gfs *GoogleDriveFs) enrichFile(f *file.KazoupGoogleFile) error {
 			return err
 		}
 
-		rc, err := gcs.Download(f.Original.Id)
+		var opts [2]string
+
+		if strings.Contains(f.MimeType, "vnd.google-apps.") {
+			opts[0] = "export"
+			opts[1] = ""
+		} else {
+			opts[0] = "download"
+			opts[1] = f.MimeType
+		}
+
+		rc, err := gcs.Download(f.Original.Id, opts[0], opts[1])
 		if err != nil {
 			return err
 		}
