@@ -130,14 +130,14 @@ func (gfs *GoogleDriveFs) enrichFile(f *file.KazoupGoogleFile) error {
 			return err
 		}
 
+		// Google documents cannot be dowloaded, they should be exported to required mimeType
 		var opts [2]string
-
 		if strings.Contains(f.MimeType, "vnd.google-apps.") {
 			opts[0] = "export"
-			opts[1] = ""
+			opts[1] = globals.GoogleDriveExportAs(f.MimeType)
 		} else {
 			opts[0] = "download"
-			opts[1] = f.MimeType
+			opts[1] = ""
 		}
 
 		rc, err := gcs.Download(f.Original.Id, opts[0], opts[1])

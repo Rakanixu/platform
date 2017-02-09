@@ -399,6 +399,20 @@ func GetMimeType(fileSystemType, fileType string) string {
 	return ""
 }
 
+func GoogleDriveExportAs(originalMimeType string) string {
+	//https://developers.google.com/drive/v3/web/integrate-open#open_and_convert_google_docs_in_your_app
+	switch originalMimeType {
+	case GOOGLE_DRIVE_DOCUMENT:
+		return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+	case GOOGLE_DRIVE_PRESETATION:
+		return "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+	case GOOGLE_DRIVE_SPREADSHEET:
+		return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+	}
+
+	return ""
+}
+
 func GetDocumentTemplate(fileType string, fullName bool) string {
 	var tmp string
 
