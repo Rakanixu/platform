@@ -2,6 +2,7 @@ package elastic
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/kazoup/gabs"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/kazoup/platform/db/srv/engine"
@@ -13,7 +14,9 @@ import (
 	lib "github.com/mattbaird/elastigo/lib"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	elib "gopkg.in/olivere/elastic.v5"
 	"os"
+	"time"
 )
 
 type elastic struct {
@@ -34,6 +37,8 @@ func init() {
 // Init Elastic db (engine)
 // Common init for DB, Config and Subscriber interfaces
 func (e *elastic) Init() error {
+	var err error
+
 	// Set ES details from env variables
 	url := os.Getenv("ELASTICSEARCH_URL")
 	if url == "" {
@@ -42,22 +47,52 @@ func (e *elastic) Init() error {
 	username := os.Getenv("ES_USERNAME")
 	password := os.Getenv("ES_PASSWORD")
 
-	//connect
-	e.Conn = lib.NewConn()
-	err := e.Conn.SetFromUrl(url)
-
-	if err != nil {
-		return err
-	}
 	if username != "" {
 		e.Conn.Username = username
 	}
 	if password != "" {
 		e.Conn.Password = password
 	}
+
+	// DELETE  -------------------------------
 	e.Bulk = e.Conn.NewBulkIndexerErrors(100, 5)
 	e.Bulk.BulkMaxDocs = 100000
 	e.Bulk.Start()
+
+	//connect
+	e.Conn = lib.NewConn()
+	err = e.Conn.SetFromUrl(url)
+	if err != nil {
+		return err
+	}
+	// DELETE --------------------------------
+
+	// Client
+	e.Client, err = elib.NewClient(
+		elib.SetURL(url),
+		elib.SetBasicAuth(username, password),
+		elib.SetMaxRetries(3),
+	)
+	if err != nil {
+		return err
+	}
+
+	rs, err := globals.NewUUID()
+	if err != nil {
+		return err
+	}
+
+	// Bulk Processor
+	e.BulkProcessor, err = e.Client.BulkProcessor().
+		Name(fmt.Sprintf("bulkProcessor-%s", rs)).
+		Workers(3).
+		BulkActions(100).               // commit if # requests >= 100
+		BulkSize(2 << 20).              // commit if size of requests >= 2 MB
+		FlushInterval(5 * time.Second). // commit every 5s, notification message can be send and until 5s later is not really finished
+		Do(context.Background())
+	if err != nil {
+		return err
+	}
 
 	// Initialize subscribers
 	if err := subscriber.Subscribe(e.Elastic); err != nil {
@@ -69,7 +104,23 @@ func (e *elastic) Init() error {
 
 // Create record
 func (e *elastic) Create(ctx context.Context, req *db.CreateRequest) (*db.CreateResponse, error) {
-	_, err := e.Conn.Index(req.Index, req.Type, req.Id, nil, req.Data)
+	exists, err := e.Client.IndexExists(req.Index).Do(ctx)
+	if err != nil {
+		return &db.CreateResponse{}, err
+	}
+
+	if !exists {
+		// Create a new index.
+		_, err := e.Client.CreateIndex(req.Index).Do(ctx)
+		if err != nil {
+			return &db.CreateResponse{}, err
+		}
+	}
+
+	_, err = e.Client.Index().Index(req.Index).Type(req.Type).Id(req.Id).BodyString(req.Data).Do(ctx)
+	if err != nil {
+		return &db.CreateResponse{}, err
+	}
 
 	return &db.CreateResponse{}, err
 }
@@ -106,16 +157,14 @@ func (e *elastic) SubscribeCrawlerFinished(ctx context.Context, msg *crawler.Cra
 }
 
 func (e *elastic) Read(ctx context.Context, req *db.ReadRequest) (*db.ReadResponse, error) {
-	r, err := e.Conn.Get(req.Index, req.Type, req.Id, nil)
+	r, err := e.Client.Get().Index(req.Index).Type(req.Type).Id(req.Id).Do(ctx)
 	if err != nil {
-		// elastigo returns error when does not exists
-		if err.Error() == "record not found" {
-			return &db.ReadResponse{
-				Result: `{}`,
-			}, nil
-		}
-
 		return &db.ReadResponse{}, err
+	}
+
+	// Return empty if not found
+	if !r.Found {
+		return &db.ReadResponse{}, nil
 	}
 
 	data, err := r.Source.MarshalJSON()
@@ -132,14 +181,14 @@ func (e *elastic) Read(ctx context.Context, req *db.ReadRequest) (*db.ReadRespon
 
 // Update record
 func (e *elastic) Update(ctx context.Context, req *db.UpdateRequest) (*db.UpdateResponse, error) {
-	_, err := e.Conn.Index(req.Index, req.Type, req.Id, nil, req.Data)
+	_, err := e.Client.Update().Index(req.Index).Type(req.Type).Id(req.Id).Script(elib.NewScript("ctx._source")).Upsert(req.Data).Do(ctx)
 
 	return &db.UpdateResponse{}, err
 }
 
 // Delete record
 func (e *elastic) Delete(ctx context.Context, req *db.DeleteRequest) (*db.DeleteResponse, error) {
-	_, err := e.Conn.Delete(req.Index, req.Type, req.Id, nil)
+	_, err := e.Client.Delete().Index(req.Index).Type(req.Type).Id(req.Id).Do(ctx)
 
 	return &db.DeleteResponse{}, err
 }

@@ -4,10 +4,13 @@ import (
 	model "github.com/kazoup/platform/db/srv/engine/elastic/model"
 	"github.com/kazoup/platform/lib/globals"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
+	"golang.org/x/net/context"
+	elib "gopkg.in/olivere/elastic.v5"
 	"log"
 )
 
 func Subscribe(e *model.Elastic) error {
+
 	// Files
 	go func() {
 		for {
@@ -16,8 +19,9 @@ func Subscribe(e *model.Elastic) error {
 				// File message can be notified, when a file is create, deleted or shared within kazoup
 				if v.FileMessage.Notify {
 					// We do not use bulk, as is just one element
-					if _, err := e.Conn.Index(v.FileMessage.Index, "file", v.FileMessage.Id, nil, v.FileMessage.Data); err != nil {
-						log.Print("Bulk Indexer error %s", err)
+					_, err := e.Client.Index().Index(v.FileMessage.Index).Type(globals.FileType).Id(v.FileMessage.Id).BodyString(v.FileMessage.Data).Do(context.Background())
+					if err != nil {
+						log.Print("Indexer error %s", err)
 					}
 
 					n := &notification_proto.NotificationMessage{
@@ -30,10 +34,9 @@ func Subscribe(e *model.Elastic) error {
 						log.Print("Publishing (notify file) error %s", err)
 					}
 				} else {
-					// Use bulk as we will index groups of documents
-					if err := e.Bulk.Index(v.FileMessage.Index, "file", v.FileMessage.Id, "", "", nil, v.FileMessage.Data); err != nil {
-						log.Print("Bulk Indexer error %s", err)
-					}
+					// Use bulk processor as we will index groups of documents
+					r := elib.NewBulkIndexRequest().Index(v.FileMessage.Index).Type(globals.FileType).Id(v.FileMessage.Id).Doc(v.FileMessage.Data)
+					e.BulkProcessor.Add(r)
 				}
 			}
 
@@ -45,9 +48,9 @@ func Subscribe(e *model.Elastic) error {
 		for {
 			select {
 			case v := <-e.SlackUsersChannel:
-				if err := e.Bulk.Index(v.Index, "user", v.Id, "", "", nil, v.Data); err != nil {
-					log.Print("Bulk Indexer error %s", err)
-				}
+				// Use bulk processor as we will index groups of documents
+				r := elib.NewBulkIndexRequest().Index(v.Index).Type(globals.UserType).Id(v.Id).Doc(v.Data)
+				e.BulkProcessor.Add(r)
 			}
 
 		}
@@ -58,9 +61,9 @@ func Subscribe(e *model.Elastic) error {
 		for {
 			select {
 			case v := <-e.SlackChannelsChannel:
-				if err := e.Bulk.Index(v.Index, "channel", v.Id, "", "", nil, v.Data); err != nil {
-					log.Print("Bulk Indexer error %s", err)
-				}
+				// Use bulk processor as we will index groups of documents
+				r := elib.NewBulkIndexRequest().Index(v.Index).Type(globals.ChannelType).Id(v.Id).Doc(v.Data)
+				e.BulkProcessor.Add(r)
 			}
 
 		}

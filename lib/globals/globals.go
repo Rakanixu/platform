@@ -47,6 +47,8 @@ const (
 	IndexHelper       = "files_helper"
 	FileType          = "file"
 	FoldeType         = "folder"
+	UserType          = "user"
+	ChannelType       = "channel"
 	FileTypeFile      = "files"
 	FileTypeDirectory = "directories"
 	TypeDatasource    = "datasource"
