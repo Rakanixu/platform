@@ -6,10 +6,12 @@ import (
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/image"
+	"github.com/kazoup/platform/lib/tika"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"google.golang.org/api/drive/v3"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -71,6 +73,10 @@ func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
 				log.Println(err)
 			}
 
+			if err := gfs.enrichFile(f); err != nil {
+				log.Println(err)
+			}
+
 			gfs.FilesChan <- NewFileMsg(f, nil)
 		}
 	}
@@ -110,6 +116,41 @@ func (gfs *GoogleDriveFs) generateThumbnail(f *drive.File, id string) error {
 		if err := ncs.Upload(rd, id); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+// enrichFile sends the original file to tika and enrich KazoupGoogleFile with Tika interface
+func (gfs *GoogleDriveFs) enrichFile(f *file.KazoupGoogleFile) error {
+	if f.Category == globals.CATEGORY_DOCUMENT {
+		// Download file from GoogleDrive, so connector is globals.GoogleDrive
+		gcs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.GoogleDrive)
+		if err != nil {
+			return err
+		}
+
+		// Google documents cannot be dowloaded, they should be exported to required mimeType
+		var opts [2]string
+		if strings.Contains(f.MimeType, "vnd.google-apps.") {
+			opts[0] = "export"
+			opts[1] = globals.GoogleDriveExportAs(f.MimeType)
+		} else {
+			opts[0] = "download"
+			opts[1] = ""
+		}
+
+		rc, err := gcs.Download(f.Original.Id, opts[0], opts[1])
+		if err != nil {
+			return err
+		}
+
+		t, err := tika.ExtractContent(rc)
+		if err != nil {
+			return err
+		}
+
+		f.Content = t.Content()
 	}
 
 	return nil

@@ -2,129 +2,166 @@
 # 2. Run scripts/es_init.sh
 # 3. Restart elasticsearch to have delete-by-query plugin working
 elasticsearch:
- image: elasticsearch:2.3.4
+ image: docker.elastic.co/elasticsearch/elasticsearch:5.2.0
  hostname: "elasticsearch"
  ports:
    - "9200:9200"
    - "9300:9300"
  environment:
-   ES_HEAP_SIZE: 512m
-   ES_CLUSTER_NAME: Kazoup
+    - cluster.name=docker-cluster
+    - bootstrap.memory_lock=true
+    - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    - "http.cors.enabled=true"
+    - "http.cors.allow-origin=\"*\""
+    - "http.cors.allow-headers=Authorization"
+    - "xpack.security.enabled=false"
+ ulimits:
+    memlock:
+      soft: -1
+      hard: -1
+    nofile:
+      soft: 65536
+      hard: 65536
+ mem_limit: 2g
+ cap_add:
+ - IPC_LOCK
 
-nats:
-    image: 'nats:0.9.4'
-    entrypoint: "/gnatsd -DV"
-    expose:
-      - "4222"
-    ports:
-      - "8222:8222"
-
-registry:
-  command: -server -bootstrap -rejoin -log-level err
-  image: progrium/consul:latest
+kibana:
+  image: docker.elastic.co/kibana/kibana:5.2.0
+  hostname: "kibana"
+  links:
+    - elasticsearch
   ports:
-  - "8300:8300"
-  - "8400:8400"
-  - "8500:8500"
-  - "8600:53/udp"
+    - 5601:5601
 
-web:
-  command: --registry_address=registry:8500 --register_interval=5 --register_ttl=10 --web_namespace=com.kazoup.web  --enable_stats=true  --selector=cache --enable_tls -tls_cert_file=/ssl/all.pem --tls_key_file=/ssl/key.pem --web_cors=* web
-  image: microhq/micro:latest
-  links:
-  - registry
+elasticsearch-head:
+  image: mobz/elasticsearch-head:5
+  hostname: "elasticsearch-head"
   ports:
-  - "8082:8082"
-  volumes:
-  - "./cmd/kazoup/ssl:/ssl"
-
-
-auth-web:
-  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 
-  image: kazoup/auth-web:latest
+    - "9101:9100"
   links:
-  - registry
-  - nats
+    - elasticsearch
 
+tika:
+ image: logicalspark/docker-tikaserver
+ hostname: "tika"
+ ports:
+   - "9998:9998"
 
-config-srv: 
-  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 
-  image: kazoup/config-srv:latest
-  links:
-  - registry
-  - nats
-
-config-web: 
-  command: --registry_address=registry:8500 --selector=cache  --broker=nats --broker_address=nats:4222 
-  image: kazoup/config-web:latest
-  links:
-  - registry
-
-crawler-srv:
-   command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 
-   image: kazoup/crawler-srv:latest
-   links:
-   - registry
-   - nats
-
-datasource-srv:
-  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 
-  image: kazoup/datasource-srv:latest
-  links:
-  - registry
-  - nats
-
-db-srv:
-  command: --elasticsearch_hosts=elasticsearch:9200 --registry_address=registry:8500  --selector=cache --broker=nats --broker_address=nats:4222 
-  image: kazoup/db-srv:latest
-  environment:
-  - ELASTICSEARCH_URL = "https://fdcafef6eb3464e469a96ae1d6da9fe6.eu-west-1.aws.found.io:9243"
-  - ES_USERNAME = "elastic"
-  - ES_PASSWORD = "q3cbAJ3TueRCTBIrgLLlpLkD"
-  links:
-  - registry
-  - nats
-  
-file-srv:
-  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 
-  image: kazoup/file-srv:latest
-  links:
-  - registry
-  - nats
-
-
-
-media-web:
-  command: --registry_address=registry:8500 --selector=cache  --broker=nats --broker_address=nats:4222 
-  image: kazoup/media-web:latest
-  links:
-  - registry
-  - nats
-
-notification-srv:
-  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 
-  image: kazoup/notification-srv:latest
-  links:
-  - registry
-  - nats
-
-notification-web:
-  command: --registry_address=registry:8500 --selector=cache  --broker=nats --broker_address=nats:4222 
-  image: kazoup/notification-web:latest
-  links:
-  - registry
-  - nats
-  
-search-srv:
-  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222 
-  image: kazoup/search-srv:latest
-  links:
-  - registry
-  - nats
-  
-ui-web:
-  command: --registry_address=registry:8500 --selector=cache  --broker=nats --broker_address=nats:4222 
-  image: kazoup/ui-web:latest
-  links:
-  - registry
-  - nats
+#nats:
+#    image: 'nats:0.9.4'
+#    entrypoint: "/gnatsd -DV"
+#    expose:
+#      - "4222"
+#    ports:
+#      - "8222:8222"
+#
+#registry:
+#  command: -server -bootstrap -rejoin -log-level err
+#  image: progrium/consul:latest
+#  ports:
+#  - "8300:8300"
+#  - "8400:8400"
+#  - "8500:8500"
+#  - "8600:53/udp"
+#
+#web:
+#  command: --registry_address=registry:8500 --register_interval=5 --register_ttl=10 --web_namespace=com.kazoup.web  --enable_stats=true  --selector=cache --enable_tls -tls_cert_file=/ssl/all.pem --tls_key_file=/ssl/key.pem --web_cors=* web
+#  image: microhq/micro:latest
+#  links:
+#  - registry
+#  ports:
+#  - "8082:8082"
+#  volumes:
+#  - "./cmd/kazoup/ssl:/ssl"
+#
+#
+#auth-web:
+#  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222
+#  image: kazoup/auth-web:latest
+#  links:
+#  - registry
+#  - nats
+#
+#
+#config-srv:
+#  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222
+#  image: kazoup/config-srv:latest
+#  links:
+#  - registry
+#  - nats
+#
+#config-web:
+#  command: --registry_address=registry:8500 --selector=cache  --broker=nats --broker_address=nats:4222
+#  image: kazoup/config-web:latest
+#  links:
+#  - registry
+#
+#crawler-srv:
+#   command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222
+#   image: kazoup/crawler-srv:latest
+#   links:
+#   - registry
+#   - nats
+#
+#datasource-srv:
+#  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222
+#  image: kazoup/datasource-srv:latest
+#  links:
+#  - registry
+#  - nats
+#
+#db-srv:
+#  command: --elasticsearch_hosts=elasticsearch:9200 --registry_address=registry:8500  --selector=cache --broker=nats --broker_address=nats:4222
+#  image: kazoup/db-srv:latest
+#  environment:
+#  - ELASTICSEARCH_URL = "https://fdcafef6eb3464e469a96ae1d6da9fe6.eu-west-1.aws.found.io:9243"
+#  - ES_USERNAME = "elastic"
+#  - ES_PASSWORD = "q3cbAJ3TueRCTBIrgLLlpLkD"
+#  links:
+#  - registry
+#  - nats
+#
+#file-srv:
+#  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222
+#  image: kazoup/file-srv:latest
+#  links:
+#  - registry
+#  - nats
+#
+#
+#
+#media-web:
+#  command: --registry_address=registry:8500 --selector=cache  --broker=nats --broker_address=nats:4222
+#  image: kazoup/media-web:latest
+#  links:
+#  - registry
+#  - nats
+#
+#notification-srv:
+#  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222
+#  image: kazoup/notification-srv:latest
+#  links:
+#  - registry
+#  - nats
+#
+#notification-web:
+#  command: --registry_address=registry:8500 --selector=cache  --broker=nats --broker_address=nats:4222
+#  image: kazoup/notification-web:latest
+#  links:
+#  - registry
+#  - nats
+#
+#search-srv:
+#  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222
+#  image: kazoup/search-srv:latest
+#  links:
+#  - registry
+#  - nats
+#
+#ui-web:
+#  command: --registry_address=registry:8500 --selector=cache  --broker=nats --broker_address=nats:4222
+#  image: kazoup/ui-web:latest
+#  links:
+#  - registry
+#  - nats

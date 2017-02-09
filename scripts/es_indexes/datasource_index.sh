@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-curl -XPOST http://localhost:9200/datasources -d '
+curl -XPUT 'localhost:9200/datasources?pretty' -H 'Content-Type: application/json' -d'
 {
   "settings": {
     "analysis": {
