@@ -33,9 +33,12 @@ func (e *ElasticQuery) Query() (string, error) {
 	buffer.WriteString(e.setSource())
 	buffer.WriteString(e.filterFrom() + ",")
 	buffer.WriteString(e.filterSize() + ",")
-	buffer.WriteString(`"query": {"bool":{"must":[`)
-	buffer.WriteString(e.queryTerm())
-	buffer.WriteString(`], "filter":[`)
+	buffer.WriteString(`"query": {"bool":{"must":{`)
+	buffer.WriteString(`"bool":{"should":[`)
+	buffer.WriteString(e.queryTerm() + `,`)
+	buffer.WriteString(e.queryContent())
+	buffer.WriteString(`]}`)
+	buffer.WriteString(`}, "filter":[`)
 	buffer.WriteString(e.filterCategory() + ",")
 	buffer.WriteString(e.filterDepth() + ",")
 	buffer.WriteString(e.filterUrl() + ",")
@@ -186,6 +189,20 @@ func (e *ElasticQuery) queryTerm() string {
 	return buffer.String()
 }
 
+func (e *ElasticQuery) queryContent() string {
+	var buffer bytes.Buffer
+
+	if len(e.Term) > 0 && e.Type == globals.FileType {
+		buffer.WriteString(`{"match_phrase": {"content": "`)
+		buffer.WriteString(e.Term)
+		buffer.WriteString(`"}}`)
+	} else {
+		buffer.WriteString(`{}`)
+	}
+
+	return buffer.String()
+}
+
 func (e *ElasticQuery) filterCategory() string {
 	var buffer bytes.Buffer
 
@@ -236,7 +253,8 @@ func (e *ElasticQuery) setSource() string {
 			"file_type",
 			"last_seen",
 			"datasource_id",
-			"index"
+			"index",
+			"content"
 		],`)
 	}
 
