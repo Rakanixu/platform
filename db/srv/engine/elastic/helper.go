@@ -2,55 +2,9 @@ package elastic
 
 import (
 	"bytes"
-	"encoding/json"
-	"errors"
 	"github.com/kazoup/platform/lib/globals"
-	lib "github.com/mattbaird/elastigo/lib"
 	"strconv"
 )
-
-type JsonRemoveAliases struct {
-	Actions []JsonAliasRemove `json:"actions"`
-}
-
-type JsonAliasRemove struct {
-	Remove lib.JsonAlias `json:"remove"`
-}
-
-// The API allows you to remove an index alias through an API.
-func (e *elastic) RemoveAlias(index string, alias string) (lib.BaseResponse, error) {
-	var url string
-	var retval lib.BaseResponse
-
-	if len(index) > 0 {
-		url = "/_aliases"
-	} else {
-		return retval, errors.New("alias required")
-	}
-
-	jsonAliases := JsonRemoveAliases{}
-	jsonAliasRemove := JsonAliasRemove{}
-	jsonAliasRemove.Remove.Alias = alias
-	jsonAliasRemove.Remove.Index = index
-	jsonAliases.Actions = append(jsonAliases.Actions, jsonAliasRemove)
-	requestBody, err := json.Marshal(jsonAliases)
-
-	if err != nil {
-		return retval, err
-	}
-
-	body, err := e.Conn.DoCommand("POST", url, nil, requestBody)
-	if err != nil {
-		return retval, err
-	}
-
-	jsonErr := json.Unmarshal(body, &retval)
-	if jsonErr != nil {
-		return retval, jsonErr
-	}
-
-	return retval, err
-}
 
 // TODO: use gabs (handle JSON in go)
 // ElasticQuery to generate DSL query from params
@@ -111,14 +65,14 @@ func (e *ElasticQuery) DeleteQuery() (string, error) {
 func (e *ElasticQuery) QueryById() (string, error) {
 	var buffer bytes.Buffer
 
-	buffer.WriteString(`{"query":{"filtered":{"filter":{"bool":{"must":[{"term":{"id":"`)
+	buffer.WriteString(`{"query":{"bool":{"must":[{"term":{"id":"`)
 	buffer.WriteString(e.Id + `"}}`)
 	// Filter by user for files, not for users or channels (slack)
 	// This is due to channels and users (slack) does not have to store the user they belong to
 	if e.FileType == globals.FileType {
 		buffer.WriteString(`,` + e.filterUser())
 	}
-	buffer.WriteString(`]}}}}}`)
+	buffer.WriteString(`]}}}`)
 
 	return buffer.String(), nil
 }
