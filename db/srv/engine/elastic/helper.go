@@ -183,7 +183,10 @@ func (e *ElasticQuery) queryTerm() string {
 	if len(e.Term) <= 0 {
 		buffer.WriteString(`{}`)
 	} else {
-		buffer.WriteString(`{"match": {"name":{"boost":2,"query": "`)
+		buffer.WriteString(`{"match": {"name.raw":{"boost":10,"query": "`)
+		buffer.WriteString(e.Term)
+		buffer.WriteString(`"}}},`)
+		buffer.WriteString(`{"match": {"name":{"query": "`)
 		buffer.WriteString(e.Term)
 		buffer.WriteString(`"}}}`)
 	}
