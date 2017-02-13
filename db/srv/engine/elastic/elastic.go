@@ -48,7 +48,7 @@ func (e *elastic) Init() error {
 	password := os.Getenv("ES_PASSWORD")
 
 	// Client
-	e.Client, err = elib.NewClient(
+	e.Client, err = elib.NewSimpleClient(
 		elib.SetURL(url),
 		elib.SetBasicAuth(username, password),
 		elib.SetMaxRetries(3),

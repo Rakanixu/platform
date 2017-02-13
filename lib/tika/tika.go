@@ -27,7 +27,7 @@ func (tc *TikaContent) Content() string {
 func ExtractContent(rc io.ReadCloser) (Tika, error) {
 	defer rc.Close()
 
-	req, err := http.NewRequest(http.MethodPut, "http://localhost:9998/rmeta", rc)
+	req, err := http.NewRequest(http.MethodPut, "http://tika:9998/rmeta", rc)
 	if err != nil {
 		return nil, err
 	}
