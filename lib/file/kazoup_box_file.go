@@ -59,3 +59,7 @@ func (kf *KazoupBoxFile) GetExtension() string {
 func (kf *KazoupBoxFile) GetBase64() string {
 	return ""
 }
+
+func (kf *KazoupBoxFile) SetHighlight(s string) {
+	kf.Highlight = s
+}

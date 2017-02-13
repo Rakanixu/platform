@@ -55,3 +55,7 @@ func (kf *KazoupDropboxFile) GetExtension() string {
 func (kf *KazoupDropboxFile) GetBase64() string {
 	return ""
 }
+
+func (kf *KazoupDropboxFile) SetHighlight(s string) {
+	kf.Highlight = s
+}

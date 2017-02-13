@@ -56,3 +56,7 @@ func (kf *KazoupOneDriveFile) GetExtension() string {
 func (kf *KazoupOneDriveFile) GetBase64() string {
 	return ""
 }
+
+func (kf *KazoupOneDriveFile) SetHighlight(s string) {
+	kf.Highlight = s
+}
