@@ -1,0 +1,68 @@
+<dom-module id="string-html">
+  <style include="iron-flex iron-flex-alignment"></style>
+  <style include="shared-styles">
+    :host {
+      display: inline;
+    }
+
+    * {
+      -webkit-appearance:none;
+      -moz-appearance:none;
+      -o-appearance: none;
+      -ms-appearance: none;
+    }
+
+    div.content {
+      padding: 0;
+      margin: 0;
+      line-height: 14px;
+      font-size: 0.95em;
+      opacity: 0.65;
+      margin-bottom: 5px;
+    }
+
+    em {
+      font-weight: 800;
+    }
+
+    p, h1, h2, h3, h4, h5, h6, a {
+      margin: 4px 0 0 0 !important;
+      padding: 0 !important;
+      font-size: 0.95em !important;
+    }
+
+    b {
+      font-weight: 400;
+    }
+  </style>
+
+  <template>
+    <div id="content" class="content">
+      <p id="target"></p>
+    </div>
+  </template>
+
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'string-html',
+        properties: {
+          text: {
+            type: String,
+            notify: true,
+            observer: 'textChanged'
+          }
+        },
+        textChanged: function() {
+          if (this.text) {
+            this.$.target.innerHTML = this.text;
+          } else {
+            this.$.target.innerHTML = '';
+          }
+        }
+      });
+    }());
+  </script>
+</dom-module>

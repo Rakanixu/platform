@@ -7,6 +7,7 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	gmailhelper "github.com/kazoup/platform/lib/gmail"
 	"github.com/kazoup/platform/lib/image"
+	"github.com/kazoup/platform/lib/tika"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	gmail "google.golang.org/api/gmail/v1"
@@ -110,6 +111,10 @@ func (gfs *GmailFs) pushMessagesToChanForPage(s *gmail.Service, msgs []*gmail.Me
 					log.Println(err)
 				}
 
+				if err := gfs.enrichFile(f, v, vl); err != nil {
+					log.Println(err)
+				}
+
 				gfs.FilesChan <- NewFileMsg(f, nil)
 			}
 		}
@@ -146,6 +151,31 @@ func (gfs *GmailFs) generateThumbnail(gf *gmailhelper.GmailFile, msg *gmail.Mess
 		if err := ncs.Upload(b, id); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+// enrichFile sends the original file to tika and enrich KazoupGmailFile with Tika interface
+func (gfs *GmailFs) enrichFile(f *file.KazoupGmailFile, msg *gmail.Message, msgp *gmail.MessagePart) error {
+	if f.Category == globals.CATEGORY_DOCUMENT {
+		// Download file from Gmail, so connector is globals.Gmail
+		gcs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.Gmail)
+		if err != nil {
+			return err
+		}
+
+		rc, err := gcs.Download(msg.Id, msgp.Body.AttachmentId)
+		if err != nil {
+			return err
+		}
+
+		t, err := tika.ExtractContent(rc)
+		if err != nil {
+			return err
+		}
+
+		f.Content = t.Content()
 	}
 
 	return nil

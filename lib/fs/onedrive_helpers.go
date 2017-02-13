@@ -8,6 +8,7 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/image"
 	"github.com/kazoup/platform/lib/onedrive"
+	"github.com/kazoup/platform/lib/tika"
 	"log"
 	"net/http"
 	"strings"
@@ -174,6 +175,10 @@ func (ofs *OneDriveFs) pushToFilesChannel(f onedrive.OneDriveFile) error {
 		log.Println(err)
 	}
 
+	if err := ofs.enrichFile(kof); err != nil {
+		log.Println(err)
+	}
+
 	ofs.FilesChan <- NewFileMsg(kof, nil)
 
 	return nil
@@ -208,6 +213,31 @@ func (ofs *OneDriveFs) generateThumbnail(f onedrive.OneDriveFile, id string) err
 		if err := ncs.Upload(b, id); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+// enrichFile sends the original file to tika and enrich KazoupOneDriveFile with Tika interface
+func (ofs *OneDriveFs) enrichFile(f *file.KazoupOneDriveFile) error {
+	if f.Category == globals.CATEGORY_DOCUMENT {
+		// Download file from GoogleDrive, so connector is globals.OneDrive
+		ocs, err := cs.NewCloudStorageFromEndpoint(ofs.Endpoint, globals.OneDrive)
+		if err != nil {
+			return err
+		}
+
+		rc, err := ocs.Download(f.Original.ID)
+		if err != nil {
+			return err
+		}
+
+		t, err := tika.ExtractContent(rc)
+		if err != nil {
+			return err
+		}
+
+		f.Content = t.Content()
 	}
 
 	return nil

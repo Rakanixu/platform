@@ -1,0 +1,53 @@
+package tika
+
+import (
+	"encoding/json"
+	"github.com/pkg/errors"
+	"io"
+	"net/http"
+)
+
+type Tika interface {
+	Content() string
+}
+
+type TikaContent struct {
+	Author       string `json:"Author"`
+	LastAuthor   string `json:"Last-Author"`
+	WordCount    string `json:"Word-Count"`
+	XTIKAContent string `json:"X-TIKA:content"`
+	CpRevision   string `json:"cp:revision"`
+}
+
+func (tc *TikaContent) Content() string {
+	return tc.XTIKAContent
+}
+
+// ExtractContent receives a io.ReadCloser and returns a Tika interface
+func ExtractContent(rc io.ReadCloser) (Tika, error) {
+	defer rc.Close()
+
+	req, err := http.NewRequest(http.MethodPut, "http://localhost:9998/rmeta", rc)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Accept", "application/json")
+
+	rsp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer rsp.Body.Close()
+
+	var tc []*TikaContent
+
+	if err := json.NewDecoder(rsp.Body).Decode(&tc); err != nil {
+		return nil, err
+	}
+
+	if len(tc) == 0 {
+		return nil, errors.New("No result")
+	}
+
+	return tc[0], nil
+}

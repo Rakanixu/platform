@@ -9,6 +9,7 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/image"
 	"github.com/kazoup/platform/lib/slack"
+	"github.com/kazoup/platform/lib/tika"
 	"log"
 	"net/http"
 	"net/url"
@@ -111,6 +112,10 @@ func (sfs *SlackFs) getFiles(page int) error {
 			log.Println(err)
 		}
 
+		if err := sfs.enrichFile(f); err != nil {
+			log.Println(err)
+		}
+
 		sfs.FilesChan <- NewFileMsg(f, nil)
 	}
 
@@ -148,6 +153,31 @@ func (sfs *SlackFs) generateThumbnail(sf slack.SlackFile, id string) error {
 		if err := ncs.Upload(b, id); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+// enrichFile sends the original file to tika and enrich KazoupOneDriveFile with Tika interface
+func (sfs *SlackFs) enrichFile(f *file.KazoupSlackFile) error {
+	if f.Category == globals.CATEGORY_DOCUMENT {
+		// Download file from GoogleDrive, so connector is globals.OneDrive
+		scs, err := cs.NewCloudStorageFromEndpoint(sfs.Endpoint, globals.OneDrive)
+		if err != nil {
+			return err
+		}
+
+		rc, err := scs.Download(f.Original.ID)
+		if err != nil {
+			return err
+		}
+
+		t, err := tika.ExtractContent(rc)
+		if err != nil {
+			return err
+		}
+
+		f.Content = t.Content()
 	}
 
 	return nil

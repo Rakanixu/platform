@@ -29,7 +29,6 @@ const (
 	DB_SERVICE_NAME           string = NAMESPACE + ".srv.db"
 	DATASOURCE_SERVICE_NAME   string = NAMESPACE + ".srv.datasource"
 	NOTIFICATION_SERVICE_NAME string = NAMESPACE + ".srv.notification"
-	SCHEDULER_SERVICE_NAME    string = NAMESPACE + ".srv.scheduler"
 	MONITOR_SERVICE_NAME      string = NAMESPACE + ".srv.monitor"
 	FilesTopic                string = NAMESPACE + ".topic.files"
 	SlackChannelsTopic        string = NAMESPACE + ".topic.slackchannels"
@@ -48,6 +47,8 @@ const (
 	IndexHelper       = "files_helper"
 	FileType          = "file"
 	FoldeType         = "folder"
+	UserType          = "user"
+	ChannelType       = "channel"
 	FileTypeFile      = "files"
 	FileTypeDirectory = "directories"
 	TypeDatasource    = "datasource"
@@ -81,7 +82,8 @@ const (
 	MIME_JPG  = "image/jpg"
 	MIME_JPEG = "image/jpeg"
 
-	CATEGORY_PICTURE = "Pictures"
+	CATEGORY_PICTURE  = "Pictures"
+	CATEGORY_DOCUMENT = "Documents"
 
 	THUMBNAIL_WIDTH = 178
 
@@ -394,6 +396,20 @@ func GetMimeType(fileSystemType, fileType string) string {
 		if len(fileTypeDict.m[fileSystemType][fileType]) > 0 {
 			return fileTypeDict.m[fileSystemType][fileType]
 		}
+	}
+
+	return ""
+}
+
+func GoogleDriveExportAs(originalMimeType string) string {
+	//https://developers.google.com/drive/v3/web/integrate-open#open_and_convert_google_docs_in_your_app
+	switch originalMimeType {
+	case GOOGLE_DRIVE_DOCUMENT:
+		return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+	case GOOGLE_DRIVE_PRESETATION:
+		return "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+	case GOOGLE_DRIVE_SPREADSHEET:
+		return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 	}
 
 	return ""

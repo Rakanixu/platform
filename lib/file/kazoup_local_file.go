@@ -70,3 +70,7 @@ func (kf *KazoupLocalFile) GetExtension() string {
 func (kf *KazoupLocalFile) GetBase64() string {
 	return ""
 }
+
+func (kf *KazoupLocalFile) SetHighlight(s string) {
+	kf.Highlight = s
+}

@@ -9,6 +9,7 @@ import (
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/image"
+	"github.com/kazoup/platform/lib/tika"
 	"log"
 	"net/http"
 	"strings"
@@ -82,6 +83,10 @@ func (bfs *BoxFs) getMetadataFromFile(id string) error {
 		log.Println(err)
 	}
 
+	if err := bfs.enrichFile(f); err != nil {
+		log.Println(err)
+	}
+
 	bfs.FilesChan <- NewFileMsg(f, nil)
 
 	return nil
@@ -117,6 +122,31 @@ func (bfs *BoxFs) generateThumbnail(fm *box.BoxFileMeta, id string) error {
 		if err := ncs.Upload(rd, id); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+// enrichFile sends the original file to tika and enrich KazoupBoxFile with Tika interface
+func (bfs *BoxFs) enrichFile(f *file.KazoupBoxFile) error {
+	if f.Category == globals.CATEGORY_DOCUMENT {
+		// Download file from Box, so connector is globals.Box
+		bcs, err := cs.NewCloudStorageFromEndpoint(bfs.Endpoint, globals.Box)
+		if err != nil {
+			return err
+		}
+
+		rc, err := bcs.Download(f.Original.ID)
+		if err != nil {
+			return err
+		}
+
+		t, err := tika.ExtractContent(rc)
+		if err != nil {
+			return err
+		}
+
+		f.Content = t.Content()
 	}
 
 	return nil

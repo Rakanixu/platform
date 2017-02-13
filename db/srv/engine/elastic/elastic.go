@@ -2,6 +2,7 @@ package elastic
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/kazoup/gabs"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/kazoup/platform/db/srv/engine"
@@ -9,11 +10,13 @@ import (
 	config "github.com/kazoup/platform/db/srv/proto/config"
 	db "github.com/kazoup/platform/db/srv/proto/db"
 	subscriber "github.com/kazoup/platform/db/srv/subscriber/elastic"
+	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
-	lib "github.com/mattbaird/elastigo/lib"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	elib "gopkg.in/olivere/elastic.v5"
 	"os"
+	"time"
 )
 
 type elastic struct {
@@ -34,6 +37,8 @@ func init() {
 // Init Elastic db (engine)
 // Common init for DB, Config and Subscriber interfaces
 func (e *elastic) Init() error {
+	var err error
+
 	// Set ES details from env variables
 	url := os.Getenv("ELASTICSEARCH_URL")
 	if url == "" {
@@ -42,22 +47,32 @@ func (e *elastic) Init() error {
 	username := os.Getenv("ES_USERNAME")
 	password := os.Getenv("ES_PASSWORD")
 
-	//connect
-	e.Conn = lib.NewConn()
-	err := e.Conn.SetFromUrl(url)
-
+	// Client
+	e.Client, err = elib.NewClient(
+		elib.SetURL(url),
+		elib.SetBasicAuth(username, password),
+		elib.SetMaxRetries(3),
+	)
 	if err != nil {
 		return err
 	}
-	if username != "" {
-		e.Conn.Username = username
+
+	rs, err := globals.NewUUID()
+	if err != nil {
+		return err
 	}
-	if password != "" {
-		e.Conn.Password = password
+
+	// Bulk Processor
+	e.BulkProcessor, err = e.Client.BulkProcessor().
+		Name(fmt.Sprintf("bulkProcessor-%s", rs)).
+		Workers(3).
+		BulkActions(100).               // commit if # requests >= 100
+		BulkSize(2 << 20).              // commit if size of requests >= 2 MB, probably to big, btw other constrains will be hit before
+		FlushInterval(5 * time.Second). // commit every 5s, notification message can be send and until 5s later is not really finished
+		Do(context.Background())
+	if err != nil {
+		return err
 	}
-	e.Bulk = e.Conn.NewBulkIndexerErrors(100, 5)
-	e.Bulk.BulkMaxDocs = 100000
-	e.Bulk.Start()
 
 	// Initialize subscribers
 	if err := subscriber.Subscribe(e.Elastic); err != nil {
@@ -69,7 +84,23 @@ func (e *elastic) Init() error {
 
 // Create record
 func (e *elastic) Create(ctx context.Context, req *db.CreateRequest) (*db.CreateResponse, error) {
-	_, err := e.Conn.Index(req.Index, req.Type, req.Id, nil, req.Data)
+	exists, err := e.Client.IndexExists(req.Index).Do(ctx)
+	if err != nil {
+		return &db.CreateResponse{}, err
+	}
+
+	if !exists {
+		// Create a new index.
+		_, err := e.Client.CreateIndex(req.Index).Do(ctx)
+		if err != nil {
+			return &db.CreateResponse{}, err
+		}
+	}
+
+	_, err = e.Client.Index().Index(req.Index).Type(req.Type).Id(req.Id).BodyString(req.Data).Do(ctx)
+	if err != nil {
+		return &db.CreateResponse{}, err
+	}
 
 	return &db.CreateResponse{}, err
 }
@@ -106,16 +137,14 @@ func (e *elastic) SubscribeCrawlerFinished(ctx context.Context, msg *crawler.Cra
 }
 
 func (e *elastic) Read(ctx context.Context, req *db.ReadRequest) (*db.ReadResponse, error) {
-	r, err := e.Conn.Get(req.Index, req.Type, req.Id, nil)
+	r, err := e.Client.Get().Index(req.Index).Type(req.Type).Id(req.Id).Do(ctx)
 	if err != nil {
-		// elastigo returns error when does not exists
-		if err.Error() == "record not found" {
-			return &db.ReadResponse{
-				Result: `{}`,
-			}, nil
-		}
-
 		return &db.ReadResponse{}, err
+	}
+
+	// Return empty if not found
+	if !r.Found {
+		return &db.ReadResponse{}, nil
 	}
 
 	data, err := r.Source.MarshalJSON()
@@ -132,14 +161,20 @@ func (e *elastic) Read(ctx context.Context, req *db.ReadRequest) (*db.ReadRespon
 
 // Update record
 func (e *elastic) Update(ctx context.Context, req *db.UpdateRequest) (*db.UpdateResponse, error) {
-	_, err := e.Conn.Index(req.Index, req.Type, req.Id, nil, req.Data)
+	// Udate library from library is meant to do updates when data is known
+	_, err := e.Create(ctx, &db.CreateRequest{
+		Index: req.Index,
+		Type:  req.Type,
+		Id:    req.Id,
+		Data:  req.Data,
+	})
 
 	return &db.UpdateResponse{}, err
 }
 
 // Delete record
 func (e *elastic) Delete(ctx context.Context, req *db.DeleteRequest) (*db.DeleteResponse, error) {
-	_, err := e.Conn.Delete(req.Index, req.Type, req.Id, nil)
+	_, err := e.Client.Delete().Index(req.Index).Type(req.Type).Id(req.Id).Do(ctx)
 
 	return &db.DeleteResponse{}, err
 }
@@ -160,7 +195,7 @@ func (e *elastic) DeleteByQuery(ctx context.Context, req *db.DeleteByQueryReques
 		return nil, err
 	}
 
-	_, err = e.Conn.DeleteByQuery(req.Indexes, req.Types, nil, query)
+	_, err = e.Client.DeleteByQuery(req.Indexes...).Type(req.Types...).Body(query).Do(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -197,17 +232,11 @@ func (e *elastic) Search(ctx context.Context, req *db.SearchRequest) (*db.Search
 		NoKazoupFileOriginal: req.NoKazoupFileOriginal,
 	}
 	query, err := eQuery.Query()
-
 	if err != nil {
 		return &db.SearchResponse{}, err
 	}
 
-	out, err := e.Conn.Search(req.Index, req.Type, nil, query)
-	// Library returns an error when no matching documents, continue
-	if err != nil && err.Error() != globals.ES_NO_RESULTS {
-		return &db.SearchResponse{}, err
-	}
-
+	out, err := e.Client.Search(req.Index).Type(req.Type).Source(query).Do(ctx)
 	for _, v := range out.Hits.Hits {
 		data, err := v.Source.MarshalJSON()
 		if err != nil {
@@ -217,6 +246,15 @@ func (e *elastic) Search(ctx context.Context, req *db.SearchRequest) (*db.Search
 		if err != nil {
 			return &db.SearchResponse{}, err
 		}
+
+		// Check if interface implements file.File interface
+		_, ok := s.(file.File)
+		// Set the highlight
+		if ok && v.Highlight != nil && v.Highlight["content"] != nil {
+			// We want just one fragment over content field, check how query is generated
+			s.(file.File).SetHighlight(v.Highlight["content"][0])
+		}
+
 		if err := json.Unmarshal(data, &s); err != nil {
 			return &db.SearchResponse{}, err
 		}
@@ -224,7 +262,7 @@ func (e *elastic) Search(ctx context.Context, req *db.SearchRequest) (*db.Search
 	}
 
 	info := gabs.New()
-	info.Set(out.Hits.Total, "total")
+	info.Set(out.Hits.TotalHits, "total")
 
 	if len(results) == 0 {
 		rstr = `[]`
@@ -268,13 +306,13 @@ func (e *elastic) SearchById(ctx context.Context, req *db.SearchByIdRequest) (*d
 	}
 
 	//Search request
-	out, err := e.Conn.Search(req.Index, req.Type, nil, query)
+	out, err := e.Client.Search(req.Index).Type(req.Type).Source(query).Do(ctx)
 	if err != nil {
 		return &db.SearchByIdResponse{}, err
 	}
 	v := out.Hits.Hits
 	// hmmm hacky FIXME
-	if out.Hits.Total == 0 || out.Hits.Total != 1 {
+	if out.Hits.TotalHits == 0 || out.Hits.TotalHits != 1 {
 		return &db.SearchByIdResponse{
 			Result: `{}`,
 		}, nil
@@ -298,15 +336,16 @@ func (e *elastic) SearchById(ctx context.Context, req *db.SearchByIdRequest) (*d
 	}, nil
 }
 
-// CreateIndexWithSettings creates an ES index with settings
+// CreateIndexWithSettings creates an ES index with template settings if match naming
 func (e *elastic) CreateIndex(ctx context.Context, req *config.CreateIndexRequest) (*config.CreateIndexResponse, error) {
-	exists, err := e.Conn.IndicesExists(req.Index)
+	exists, err := e.Client.IndexExists(req.Index).Do(ctx)
 	if err != nil {
 		return &config.CreateIndexResponse{}, err
 	}
 
 	if !exists {
-		_, err := e.Conn.CreateIndex(req.Index)
+		// Create a new index.
+		_, err := e.Client.CreateIndex(req.Index).Do(ctx)
 		if err != nil {
 			return &config.CreateIndexResponse{}, err
 		}
@@ -317,14 +356,12 @@ func (e *elastic) CreateIndex(ctx context.Context, req *config.CreateIndexReques
 
 // Status elasticsearch cluster
 func (e *elastic) Status(ctx context.Context, req *config.StatusRequest) (*config.StatusResponse, error) {
-	clusterState, err := e.Conn.ClusterState(lib.ClusterStateFilter{
-		FilterNodes:        true,
-		FilterRoutingTable: true,
-		FilterMetadata:     true,
-		FilterBlocks:       true,
-	})
+	cs, err := e.Client.ClusterState().Do(ctx)
+	if err != nil {
+		return &config.StatusResponse{}, err
+	}
 
-	b, err := json.Marshal(clusterState)
+	b, err := json.Marshal(cs)
 	if err != nil {
 		return &config.StatusResponse{}, err
 	}
@@ -338,7 +375,7 @@ func (e *elastic) Status(ctx context.Context, req *config.StatusRequest) (*confi
 
 // AddAlias to assign indexes (aliases) per datasource
 func (e *elastic) AddAlias(ctx context.Context, req *config.AddAliasRequest) (*config.AddAliasResponse, error) {
-	_, err := e.Conn.AddAlias(req.Index, req.Alias)
+	_, err := e.Client.Alias().Add(req.Index, req.Alias).Do(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -348,7 +385,7 @@ func (e *elastic) AddAlias(ctx context.Context, req *config.AddAliasRequest) (*c
 
 // DeleteIndex from ES
 func (e *elastic) DeleteIndex(ctx context.Context, req *config.DeleteIndexRequest) (*config.DeleteIndexResponse, error) {
-	_, err := e.Conn.DeleteIndex(req.Index)
+	_, err := e.Client.DeleteIndex(req.Index).Do(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -358,7 +395,7 @@ func (e *elastic) DeleteIndex(ctx context.Context, req *config.DeleteIndexReques
 
 // DeleteAlias from ES
 func (e *elastic) DeleteAlias(ctx context.Context, req *config.DeleteAliasRequest) (*config.DeleteAliasResponse, error) {
-	_, err := e.RemoveAlias(req.Index, req.Alias)
+	_, err := e.Client.Alias().Remove(req.Index, req.Alias).Do(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -368,9 +405,7 @@ func (e *elastic) DeleteAlias(ctx context.Context, req *config.DeleteAliasReques
 
 // RenameAlias from ES
 func (e *elastic) RenameAlias(ctx context.Context, req *config.RenameAliasRequest) (*config.RenameAliasResponse, error) {
-	var err error
-
-	_, err = e.RemoveAlias(req.Index, req.OldAlias)
+	_, err := e.Client.Alias().Remove(req.Index, req.OldAlias).Do(ctx)
 	if err != nil {
 		return nil, err
 	}
