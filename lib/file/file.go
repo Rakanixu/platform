@@ -25,6 +25,7 @@ type File interface {
 	GetURL() string
 	GetExtension() string
 	GetBase64() string
+	SetHighlight(highlight string)
 }
 
 func IndexAsync(c client.Client, file File, topic, index string, notify bool) error {

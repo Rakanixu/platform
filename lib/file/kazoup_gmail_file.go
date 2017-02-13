@@ -59,3 +59,7 @@ func (kf *KazoupGmailFile) GetExtension() string {
 func (kf *KazoupGmailFile) GetBase64() string {
 	return kf.Original.Base64
 }
+
+func (kf *KazoupGmailFile) SetHighlight(s string) {
+	kf.Highlight = s
+}

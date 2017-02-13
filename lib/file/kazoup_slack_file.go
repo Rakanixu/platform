@@ -72,3 +72,7 @@ func (kf *KazoupSlackFile) GetExtension() string {
 func (kf *KazoupSlackFile) GetBase64() string {
 	return ""
 }
+
+func (kf *KazoupSlackFile) SetHighlight(s string) {
+	kf.Highlight = s
+}

@@ -10,6 +10,7 @@ import (
 	config "github.com/kazoup/platform/db/srv/proto/config"
 	db "github.com/kazoup/platform/db/srv/proto/db"
 	subscriber "github.com/kazoup/platform/db/srv/subscriber/elastic"
+	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
@@ -231,7 +232,6 @@ func (e *elastic) Search(ctx context.Context, req *db.SearchRequest) (*db.Search
 		NoKazoupFileOriginal: req.NoKazoupFileOriginal,
 	}
 	query, err := eQuery.Query()
-
 	if err != nil {
 		return &db.SearchResponse{}, err
 	}
@@ -246,6 +246,15 @@ func (e *elastic) Search(ctx context.Context, req *db.SearchRequest) (*db.Search
 		if err != nil {
 			return &db.SearchResponse{}, err
 		}
+
+		// Check if interface implements file.File interface
+		_, ok := s.(file.File)
+		// Set the highlight
+		if ok && v.Highlight != nil && v.Highlight["content"] != nil {
+			// We want just one fragment over content field, check how query is generated
+			s.(file.File).SetHighlight(v.Highlight["content"][0])
+		}
+
 		if err := json.Unmarshal(data, &s); err != nil {
 			return &db.SearchResponse{}, err
 		}

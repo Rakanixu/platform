@@ -19,6 +19,15 @@ curl -XPUT localhost:9200/_template/template_file -d '
           ],
           "tokenizer": "filename"
         },
+        "content_analyzer": {
+          "type": "custom",
+          "char_filter" : [ "html_strip" ],
+          "filter": [
+            "lowercase",
+            "asciifolding"
+          ],
+          "tokenizer": "content"
+        },
         "path_analyzer": {
           "type": "custom",
           "tokenizer": "path_tokenizer"
@@ -39,6 +48,9 @@ curl -XPUT localhost:9200/_template/template_file -d '
         "filename": {
           "pattern": "[^\\p{L}\\d]+",
           "type": "pattern"
+        },
+        "content": {
+          "type": "whitespace"
         },
         "path_tokenizer": {
           "type": "path_hierarchy"
@@ -88,6 +100,10 @@ curl -XPUT localhost:9200/_template/template_file -d '
         },
         "file_size": {
           "type": "long"
+        },
+        "content": {
+          "type": "string",
+          "analyzer": "content_analyzer"
         }
       }
     }

@@ -33,9 +33,12 @@ func (e *ElasticQuery) Query() (string, error) {
 	buffer.WriteString(e.setSource())
 	buffer.WriteString(e.filterFrom() + ",")
 	buffer.WriteString(e.filterSize() + ",")
-	buffer.WriteString(`"query": {"bool":{"must":[`)
-	buffer.WriteString(e.queryTerm())
-	buffer.WriteString(`], "filter":[`)
+	buffer.WriteString(`"query": {"bool":{"must":{`)
+	buffer.WriteString(`"bool":{"should":[`)
+	buffer.WriteString(e.queryTerm() + `,`)
+	buffer.WriteString(e.queryContent())
+	buffer.WriteString(`]}`)
+	buffer.WriteString(`}, "filter":[`)
 	buffer.WriteString(e.filterCategory() + ",")
 	buffer.WriteString(e.filterDepth() + ",")
 	buffer.WriteString(e.filterUrl() + ",")
@@ -45,7 +48,9 @@ func (e *ElasticQuery) Query() (string, error) {
 	buffer.WriteString(e.filterAccess())
 	buffer.WriteString(`]}}, "sort":[`)
 	buffer.WriteString(e.defaultSorting())
-	buffer.WriteString(`]}`)
+	buffer.WriteString(`]`)
+	buffer.WriteString(e.contentHighlight())
+	buffer.WriteString(`}`)
 
 	return buffer.String(), nil
 }
@@ -178,9 +183,33 @@ func (e *ElasticQuery) queryTerm() string {
 	if len(e.Term) <= 0 {
 		buffer.WriteString(`{}`)
 	} else {
-		buffer.WriteString(`{"match": {"name": "`)
+		buffer.WriteString(`{"match": {"name":{"boost":2,"query": "`)
 		buffer.WriteString(e.Term)
-		buffer.WriteString(`"}}`)
+		buffer.WriteString(`"}}}`)
+	}
+
+	return buffer.String()
+}
+
+func (e *ElasticQuery) queryContent() string {
+	var buffer bytes.Buffer
+
+	if len(e.Term) > 0 && e.Type == globals.FileType {
+		buffer.WriteString(`{"match_phrase": {"content":{"boost":6,"query":"`)
+		buffer.WriteString(e.Term)
+		buffer.WriteString(`"}}}`)
+	} else {
+		buffer.WriteString(`{}`)
+	}
+
+	return buffer.String()
+}
+
+func (e *ElasticQuery) contentHighlight() string {
+	var buffer bytes.Buffer
+
+	if len(e.Term) > 0 && e.Type == globals.FileType {
+		buffer.WriteString(`,"highlight":{"fields":{"content":{"number_of_fragments": 1,"fragment_size":150}}}`)
 	}
 
 	return buffer.String()

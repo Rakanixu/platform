@@ -56,3 +56,7 @@ func (kf *KazoupGoogleFile) GetExtension() string {
 func (kf *KazoupGoogleFile) GetBase64() string {
 	return ""
 }
+
+func (kf *KazoupGoogleFile) SetHighlight(s string) {
+	kf.Highlight = s
+}
