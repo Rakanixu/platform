@@ -104,6 +104,18 @@ curl -XPUT localhost:9200/_template/template_file -d '
         "content": {
           "type": "string",
           "analyzer": "content_analyzer"
+        },
+        "content_timestamp": {
+          "type": "date",
+          "format": "date_optional_time"
+        },
+        "tags": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "tags_timestamp": {
+          "type": "date",
+          "format": "date_optional_time"
         }
       }
     }

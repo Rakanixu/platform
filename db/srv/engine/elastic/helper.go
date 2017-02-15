@@ -36,7 +36,8 @@ func (e *ElasticQuery) Query() (string, error) {
 	buffer.WriteString(`"query": {"bool":{"must":{`)
 	buffer.WriteString(`"bool":{"should":[`)
 	buffer.WriteString(e.queryTerm() + `,`)
-	buffer.WriteString(e.queryContent())
+	buffer.WriteString(e.queryContent() + `,`)
+	buffer.WriteString(e.queryTags())
 	buffer.WriteString(`]}`)
 	buffer.WriteString(`}, "filter":[`)
 	buffer.WriteString(e.filterCategory() + ",")
@@ -199,6 +200,20 @@ func (e *ElasticQuery) queryContent() string {
 
 	if len(e.Term) > 0 && e.Type == globals.FileType {
 		buffer.WriteString(`{"match_phrase": {"content":{"boost":6,"query":"`)
+		buffer.WriteString(e.Term)
+		buffer.WriteString(`"}}}`)
+	} else {
+		buffer.WriteString(`{}`)
+	}
+
+	return buffer.String()
+}
+
+func (e *ElasticQuery) queryTags() string {
+	var buffer bytes.Buffer
+
+	if len(e.Term) > 0 && e.Type == globals.FileType {
+		buffer.WriteString(`{"match": {"tags":{"boost":6,"query":"`)
 		buffer.WriteString(e.Term)
 		buffer.WriteString(`"}}}`)
 	} else {
