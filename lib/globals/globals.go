@@ -85,7 +85,8 @@ const (
 	CATEGORY_PICTURE  = "Pictures"
 	CATEGORY_DOCUMENT = "Documents"
 
-	THUMBNAIL_WIDTH = 178
+	THUMBNAIL_WIDTH        = 178
+	CLOUD_VISION_IMG_WIDTH = 640
 
 	ACCESS_PUBLIC  = "public"
 	ACCESS_SHARED  = "shared"

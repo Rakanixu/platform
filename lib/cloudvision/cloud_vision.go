@@ -2,33 +2,33 @@ package cloudvision
 
 import (
 	"cloud.google.com/go/vision"
-	"fmt"
 	"golang.org/x/net/context"
 	"io"
 )
 
-func Tag(rd io.ReadCloser) error {
+func Tag(rd io.ReadCloser) ([]string, error) {
+	var s []string
+
 	defer rd.Close()
 
 	client, err := vision.NewClient(context.Background())
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	image, err := vision.NewImageFromReader(rd)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	labels, err := client.DetectLabels(context.Background(), image, 10)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	fmt.Println("Labels:")
 	for _, label := range labels {
-		fmt.Println(label.Description)
+		s = append(s, label.Description)
 	}
 
-	return nil
+	return s, nil
 }

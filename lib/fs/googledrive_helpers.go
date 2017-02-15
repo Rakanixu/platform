@@ -1,8 +1,11 @@
 package fs
 
 import (
+	"bufio"
+	"bytes"
 	"github.com/kazoup/platform/lib/categories"
 	cs "github.com/kazoup/platform/lib/cloudstorage"
+	"github.com/kazoup/platform/lib/cloudvision"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/image"
@@ -10,6 +13,8 @@ import (
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"google.golang.org/api/drive/v3"
+	"io"
+	"io/ioutil"
 	"log"
 	"strings"
 	"time"
@@ -69,11 +74,11 @@ func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
 	for _, v := range files {
 		f := file.NewKazoupFileFromGoogleDriveFile(*v, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
 		if f != nil {
-			if err := gfs.generateThumbnail(v, f.ID); err != nil {
+			if err := gfs.processImage(f, f.ID); err != nil {
 				log.Println(err)
 			}
 
-			if err := gfs.enrichFile(f); err != nil {
+			if err := gfs.processDocument(f); err != nil {
 				log.Println(err)
 			}
 
@@ -84,9 +89,9 @@ func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
 	return nil
 }
 
-func (gfs *GoogleDriveFs) generateThumbnail(f *drive.File, id string) error {
-	c := categories.GetDocType("." + f.FullFileExtension)
-	if len(f.FullFileExtension) == 0 {
+func (gfs *GoogleDriveFs) processImage(f *file.KazoupGoogleFile, id string) error {
+	c := categories.GetDocType("." + f.Original.FullFileExtension)
+	if len(f.Original.FullFileExtension) == 0 {
 		c = categories.GetDocType(f.MimeType)
 	}
 
@@ -97,32 +102,56 @@ func (gfs *GoogleDriveFs) generateThumbnail(f *drive.File, id string) error {
 			return err
 		}
 
-		rc, err := gcs.Download(f.Id)
+		// Not great, but check implementation for details about variadic params
+		rc, err := gcs.Download(f.Original.Id, "download", "")
 		if err != nil {
 			return err
 		}
 
-		rd, err := image.Thumbnail(rc, globals.THUMBNAIL_WIDTH)
+		// Split readcloser into two or more for different processing
+		var buf1, buf2 bytes.Buffer
+		w := io.MultiWriter(&buf1, &buf2)
+
+		if _, err = io.Copy(w, rc); err != nil {
+			return err
+		}
+
+		go func() {
+			// Resize to our thumbnail size
+			rd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf2)), globals.THUMBNAIL_WIDTH)
+			if err != nil {
+				log.Println(err)
+			}
+
+			// Upload file to GoogleCloudStorage, so connector is globals.GoogleCloudStorage
+			ncs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.GoogleCloudStorage)
+			if err != nil {
+				log.Println(err)
+			}
+
+			if err := ncs.Upload(rd, id); err != nil {
+				log.Println(err)
+			}
+		}()
+
+		// Resize to optimal size for cloud vision API
+		cvrd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf1)), globals.CLOUD_VISION_IMG_WIDTH)
 		if err != nil {
 			return err
 		}
 
-		// Upload file to GoogleCloudStorage, so connector is globals.GoogleCloudStorage
-		ncs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.GoogleCloudStorage)
-		if err != nil {
+		if f.Tags, err = cloudvision.Tag(ioutil.NopCloser(cvrd)); err != nil {
 			return err
 		}
 
-		if err := ncs.Upload(rd, id); err != nil {
-			return err
-		}
+		f.TagsTimestamp = time.Now()
 	}
 
 	return nil
 }
 
-// enrichFile sends the original file to tika and enrich KazoupGoogleFile with Tika interface
-func (gfs *GoogleDriveFs) enrichFile(f *file.KazoupGoogleFile) error {
+// processDocument sends the original file to tika and enrich KazoupGoogleFile with Tika interface
+func (gfs *GoogleDriveFs) processDocument(f *file.KazoupGoogleFile) error {
 	if f.Category == globals.CATEGORY_DOCUMENT {
 		// Download file from GoogleDrive, so connector is globals.GoogleDrive
 		gcs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.GoogleDrive)
