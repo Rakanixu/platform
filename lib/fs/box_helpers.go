@@ -79,13 +79,13 @@ func (bfs *BoxFs) getMetadataFromFile(id string) error {
 
 	f := file.NewKazoupFileFromBoxFile(*fm, bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
 
-	if err := bfs.generateThumbnail(fm, f.ID); err != nil {
-		log.Println(err)
-	}
+	/*	if err := bfs.generateThumbnail(fm, f.ID); err != nil {
+			log.Println(err)
+		}
 
-	if err := bfs.enrichFile(f); err != nil {
-		log.Println(err)
-	}
+		if err := bfs.enrichFile(f); err != nil {
+			log.Println(err)
+		}*/
 
 	bfs.FilesChan <- NewFileMsg(f, nil)
 

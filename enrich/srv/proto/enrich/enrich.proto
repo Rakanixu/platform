@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+message EnrichMessage {
+  string id = 1;
+  string user_id = 2;
+  string index = 3;
+}
