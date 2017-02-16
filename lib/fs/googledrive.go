@@ -65,6 +65,16 @@ func (gfs *GoogleDriveFs) WalkChannels() (chan ChannelMsg, chan bool) {
 	return gfs.ChannelsChan, gfs.WalkChannelsRunning
 }
 
+// Enrich
+func (gfs *GoogleDriveFs) Enrich(f file.File) chan FileMsg {
+	go func() {
+		//bfs.processImage()
+		//bfs.processDocument()
+	}()
+
+	return gfs.FilesChan
+}
+
 // CreateFile creates a google file and index it on Elastic Search
 func (gfs *GoogleDriveFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 	go func() {

@@ -10,7 +10,6 @@ import (
 )
 
 func Subscribe(e *model.Elastic) error {
-
 	// Files
 	go func() {
 		for {
@@ -36,7 +35,7 @@ func Subscribe(e *model.Elastic) error {
 				} else {
 					// Use bulk processor as we will index groups of documents
 					r := elib.NewBulkIndexRequest().Index(v.FileMessage.Index).Type(globals.FileType).Id(v.FileMessage.Id).Doc(v.FileMessage.Data)
-					e.BulkProcessor.Add(r)
+					e.BulkFilesProcessor.Add(r)
 				}
 			}
 

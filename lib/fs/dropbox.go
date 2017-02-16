@@ -73,6 +73,16 @@ func (dfs *DropboxFs) WalkChannels() (chan ChannelMsg, chan bool) {
 	return dfs.ChannelsChan, dfs.WalkChannelsRunning
 }
 
+// Enrich
+func (dfs *DropboxFs) Enrich(f file.File) chan FileMsg {
+	go func() {
+		//bfs.processImage()
+		//bfs.processDocument()
+	}()
+
+	return dfs.FilesChan
+}
+
 // Create a file in dropbox
 func (dfs *DropboxFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 	go func() {

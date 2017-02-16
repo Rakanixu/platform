@@ -78,6 +78,16 @@ func (lfs *LocalFs) WalkChannels() (chan ChannelMsg, chan bool) {
 	return lfs.ChannelsChan, lfs.WalkChannelsRunning
 }
 
+// Enrich
+func (lfs *LocalFs) Enrich(f file.File) chan FileMsg {
+	go func() {
+		//bfs.processImage()
+		//bfs.processDocument()
+	}()
+
+	return lfs.FilesChan
+}
+
 // Create file (not implemented)
 func (lfs *LocalFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 	return lfs.FilesChan

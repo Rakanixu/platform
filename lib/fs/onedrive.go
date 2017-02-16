@@ -106,6 +106,16 @@ func (ofs *OneDriveFs) WalkChannels() (chan ChannelMsg, chan bool) {
 	return ofs.ChannelsChan, ofs.WalkChannelsRunning
 }
 
+// Enrich
+func (ofs *OneDriveFs) Enrich(f file.File) chan FileMsg {
+	go func() {
+		//bfs.processImage()
+		//bfs.processDocument()
+	}()
+
+	return ofs.FilesChan
+}
+
 // Create a one drive file
 func (ofs *OneDriveFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 	go func() {

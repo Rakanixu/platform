@@ -106,6 +106,49 @@ func (bfs *BoxFs) WalkChannels() (chan ChannelMsg, chan bool) {
 	return bfs.ChannelsChan, bfs.WalkChannelsRunning
 }
 
+// Enrich extracts content from file and add to File
+func (bfs *BoxFs) Enrich(f file.File) chan FileMsg {
+	go func() {
+		var err error
+
+		_, ok := f.(*file.KazoupBoxFile)
+		if !ok {
+			bfs.FilesChan <- NewFileMsg(nil, errors.New("Error enriching file"))
+			return
+		}
+
+		if "kazoup-logo-small.png" == f.(*file.KazoupBoxFile).Name {
+			//t, _ := time.Parse("2006-01-02T15:04:05.000Z", f.(*file.KazoupBoxFile).TagsTimestamp.String())
+			//log.Println(f.(*file.KazoupBoxFile).ID)
+			log.Println(f.(*file.KazoupBoxFile).TagsTimestamp)
+			log.Println(f.(*file.KazoupBoxFile).Modified)
+
+			log.Println("----", f.(*file.KazoupBoxFile).TagsTimestamp, f.(*file.KazoupBoxFile).Modified)
+		}
+
+		if f.(*file.KazoupBoxFile).Category == globals.CATEGORY_PICTURE {
+			f, err = bfs.processImage(f.(*file.KazoupBoxFile))
+			if err != nil {
+				bfs.FilesChan <- NewFileMsg(nil, err)
+				return
+			}
+			log.Println("---- new", f.(*file.KazoupBoxFile).TagsTimestamp)
+		}
+
+		if f.(*file.KazoupBoxFile).Category == globals.CATEGORY_DOCUMENT {
+			f, err = bfs.processDocument(f.(*file.KazoupBoxFile))
+			if err != nil {
+				bfs.FilesChan <- NewFileMsg(nil, err)
+				return
+			}
+		}
+
+		bfs.FilesChan <- NewFileMsg(f, err)
+	}()
+
+	return bfs.FilesChan
+}
+
 // Create file in box
 func (bfs *BoxFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 	go func() {

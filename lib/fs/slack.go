@@ -3,6 +3,7 @@ package fs
 import (
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
+	"github.com/kazoup/platform/lib/file"
 	"log"
 )
 
@@ -65,6 +66,16 @@ func (sfs *SlackFs) WalkChannels() (chan ChannelMsg, chan bool) {
 	}()
 
 	return sfs.ChannelsChan, sfs.WalkChannelsRunning
+}
+
+// Enrich
+func (sfs *SlackFs) Enrich(f file.File) chan FileMsg {
+	go func() {
+		//bfs.processImage()
+		//bfs.processDocument()
+	}()
+
+	return sfs.FilesChan
 }
 
 // CreateFile belongs to Fs interface

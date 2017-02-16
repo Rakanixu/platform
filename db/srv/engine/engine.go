@@ -16,7 +16,7 @@ const (
 )
 
 type Engine interface {
-	Init() error
+	Init(client.Client) error
 	DB
 	Config
 	Subscriber
@@ -56,8 +56,8 @@ func Register(backend Engine) {
 	engine = backend
 }
 
-func Init() error {
-	return engine.Init()
+func Init(c client.Client) error {
+	return engine.Init(c)
 }
 
 type Files struct {

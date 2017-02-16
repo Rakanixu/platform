@@ -3,6 +3,7 @@ package fs
 import (
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
+	file "github.com/kazoup/platform/lib/file"
 	"log"
 )
 
@@ -59,6 +60,16 @@ func (gfs *GmailFs) WalkChannels() (chan ChannelMsg, chan bool) {
 	}()
 
 	return gfs.ChannelsChan, gfs.WalkChannelsRunning
+}
+
+// Enrich
+func (gfs *GmailFs) Enrich(f file.File) chan FileMsg {
+	go func() {
+		//bfs.processImage()
+		//bfs.processDocument()
+	}()
+
+	return gfs.FilesChan
 }
 
 // Create file in gmail (not implemented)
