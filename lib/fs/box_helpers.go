@@ -136,8 +136,13 @@ func (bfs *BoxFs) processImage(f *file.KazoupBoxFile) (file.File, error) {
 		return nil, err
 	}
 
-	tt, _ := time.Parse(time.RFC3339, time.Now().String())
-	f.TagsTimestamp = time.Now().Format()
+	if f.OptsKazoupFile == nil {
+		f.OptsKazoupFile = &file.OptsKazoupFile{
+			TagsTimestamp: time.Now(),
+		}
+	} else {
+		f.OptsKazoupFile.TagsTimestamp = time.Now()
+	}
 
 	return f, nil
 }
@@ -161,7 +166,13 @@ func (bfs *BoxFs) processDocument(f *file.KazoupBoxFile) (file.File, error) {
 	}
 
 	f.Content = t.Content()
-	f.ContentTimestamp = time.Now()
+	if f.OptsKazoupFile == nil {
+		f.OptsKazoupFile = &file.OptsKazoupFile{
+			ContentTimestamp: time.Now(),
+		}
+	} else {
+		f.OptsKazoupFile.ContentTimestamp = time.Now()
+	}
 
 	return f, nil
 }

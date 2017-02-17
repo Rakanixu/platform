@@ -24,7 +24,6 @@ func (e *Enrich) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessa
 		Type:  globals.FileType,
 		Id:    enrichmsg.Id,
 	})
-
 	if err != nil {
 		return err
 	}

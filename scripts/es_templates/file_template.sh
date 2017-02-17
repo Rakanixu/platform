@@ -105,17 +105,22 @@ curl -XPUT localhost:9200/_template/template_file -d '
           "type": "string",
           "analyzer": "content_analyzer"
         },
-        "content_timestamp": {
-          "type": "date",
-          "format": "date_optional_time"
-        },
         "tags": {
           "type": "string",
           "index": "not_analyzed"
         },
-        "tags_timestamp": {
-          "type": "date",
-          "format": "date_optional_time"
+        "opts_kazoup_file": {
+          "type": "nested",
+          "properties": {
+            "tags_timestamp": {
+              "type": "date",
+              "format": "date_optional_time"
+            },
+            "content_timestamp": {
+              "type": "date",
+              "format": "date_optional_time"
+            }
+          }
         }
       }
     }

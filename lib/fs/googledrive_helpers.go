@@ -144,7 +144,7 @@ func (gfs *GoogleDriveFs) processImage(f *file.KazoupGoogleFile, id string) erro
 			return err
 		}
 
-		f.TagsTimestamp = time.Now()
+		f.OptsKazoupFile.TagsTimestamp = time.Now()
 	}
 
 	return nil

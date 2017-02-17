@@ -80,7 +80,11 @@ func (e *elastic) Init(c client.Client) error {
 	e.BulkFilesProcessor, err = e.Client.BulkProcessor().
 		After(func(executionId int64, requests []elib.BulkableRequest, response *elib.BulkResponse, err error) {
 			for _, req := range requests {
-				var kf file.KazoupFile
+				type updateBody struct {
+					Doc *file.KazoupFile `json:"doc"`
+				}
+
+				var kf updateBody
 
 				// elib.BulkableRequest stores two objects, headers and body
 				src, err := req.Source()
@@ -94,9 +98,9 @@ func (e *elastic) Init(c client.Client) error {
 				}
 
 				n := &enrich_proto.EnrichMessage{
-					Index:  kf.Index,
-					Id:     kf.ID,
-					UserId: kf.UserId,
+					Index:  kf.Doc.Index,
+					Id:     kf.Doc.ID,
+					UserId: kf.Doc.UserId,
 				}
 
 				// Publish EnrichMessage

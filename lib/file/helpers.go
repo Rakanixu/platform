@@ -45,50 +45,50 @@ func GetFileByID(ctx context.Context, md5UserId, id string) (File, error) {
 func NewFileFromString(s string) (File, error) {
 	kf := &KazoupFile{}
 	if err := json.Unmarshal([]byte(s), kf); err != nil {
-		return nil, errors.New("Error unmarsahling NewFileFromString")
+		return nil, err
 	}
 
 	switch kf.FileType {
 	case globals.Local:
 		klf := &KazoupLocalFile{}
 		if err := json.Unmarshal([]byte(s), klf); err != nil {
-			return nil, errors.New("Error unmarsahling NewFileFromString case local")
+			return nil, err
 		}
 		return klf, nil
 	case globals.Slack:
 		ksf := &KazoupSlackFile{}
 		if err := json.Unmarshal([]byte(s), ksf); err != nil {
-			return nil, errors.New("Error unmarsahling NewFileFromString case slack")
+			return nil, err
 		}
 		return ksf, nil
 	case globals.GoogleDrive:
 		kgf := &KazoupGoogleFile{}
 		if err := json.Unmarshal([]byte(s), kgf); err != nil {
-			return nil, errors.New("Error unmarsahling NewFileFromString case googledrive")
+			return nil, err
 		}
 		return kgf, nil
 	case globals.Gmail:
 		kgf := &KazoupGmailFile{}
 		if err := json.Unmarshal([]byte(s), kgf); err != nil {
-			return nil, errors.New("Error unmarsahling NewFileFromString case gmail")
+			return nil, err
 		}
 		return kgf, nil
 	case globals.OneDrive:
 		kof := &KazoupOneDriveFile{}
 		if err := json.Unmarshal([]byte(s), kof); err != nil {
-			return nil, errors.New("Error unmarsahling NewFileFromString case onedrive")
+			return nil, err
 		}
 		return kof, nil
 	case globals.Dropbox:
 		kdf := &KazoupDropboxFile{}
 		if err := json.Unmarshal([]byte(s), kdf); err != nil {
-			return nil, errors.New("Error unmarsahling NewFileFromString case dropbox")
+			return nil, err
 		}
 		return kdf, nil
 	case globals.Box:
 		kbf := &KazoupBoxFile{}
 		if err := json.Unmarshal([]byte(s), kbf); err != nil {
-			return nil, errors.New("Error unmarsahling NewFileFromString case box")
+			return nil, err
 		}
 		return kbf, nil
 	default:

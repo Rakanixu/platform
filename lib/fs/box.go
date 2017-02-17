@@ -117,25 +117,35 @@ func (bfs *BoxFs) Enrich(f file.File) chan FileMsg {
 			return
 		}
 
-		if "kazoup-logo-small.png" == f.(*file.KazoupBoxFile).Name {
-			//t, _ := time.Parse("2006-01-02T15:04:05.000Z", f.(*file.KazoupBoxFile).TagsTimestamp.String())
-			//log.Println(f.(*file.KazoupBoxFile).ID)
-			log.Println(f.(*file.KazoupBoxFile).TagsTimestamp)
-			log.Println(f.(*file.KazoupBoxFile).Modified)
-
-			log.Println("----", f.(*file.KazoupBoxFile).TagsTimestamp, f.(*file.KazoupBoxFile).Modified)
+		// OptsKazoupFile.ContentTimestamp and
+		// OptsKazoupFile.CTagsTimestamp are not defined,
+		// Content was never extracted before
+		process := struct {
+			Picture  bool
+			Document bool
+		}{
+			Picture:  false,
+			Document: false,
+		}
+		if f.(*file.KazoupBoxFile).OptsKazoupFile == nil {
+			process.Picture = true
+			process.Document = true
+		} else {
+			process.Picture = f.(*file.KazoupBoxFile).OptsKazoupFile.TagsTimestamp.Before(f.(*file.KazoupBoxFile).Modified)
+			process.Document = f.(*file.KazoupBoxFile).OptsKazoupFile.ContentTimestamp.Before(f.(*file.KazoupBoxFile).Modified)
 		}
 
-		if f.(*file.KazoupBoxFile).Category == globals.CATEGORY_PICTURE {
+		if f.(*file.KazoupBoxFile).Category == globals.CATEGORY_PICTURE && process.Picture {
+			log.Println("IMAGE TO BE PROCESS", f.(*file.KazoupBoxFile).Name)
 			f, err = bfs.processImage(f.(*file.KazoupBoxFile))
 			if err != nil {
 				bfs.FilesChan <- NewFileMsg(nil, err)
 				return
 			}
-			log.Println("---- new", f.(*file.KazoupBoxFile).TagsTimestamp)
 		}
 
-		if f.(*file.KazoupBoxFile).Category == globals.CATEGORY_DOCUMENT {
+		if f.(*file.KazoupBoxFile).Category == globals.CATEGORY_DOCUMENT && process.Document {
+			log.Println("DOCUMENT TO BE PROCESS", f.(*file.KazoupBoxFile).Name)
 			f, err = bfs.processDocument(f.(*file.KazoupBoxFile))
 			if err != nil {
 				bfs.FilesChan <- NewFileMsg(nil, err)

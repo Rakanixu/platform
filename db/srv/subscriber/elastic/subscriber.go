@@ -2,6 +2,7 @@ package subscriber
 
 import (
 	model "github.com/kazoup/platform/db/srv/engine/elastic/model"
+	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"golang.org/x/net/context"
@@ -33,8 +34,13 @@ func Subscribe(e *model.Elastic) error {
 						log.Print("Publishing (notify file) error %s", err)
 					}
 				} else {
+					f, err := file.NewFileFromString(v.FileMessage.Data)
+					if err != nil {
+						log.Print("Error creating file from string error %s", err)
+					}
+
 					// Use bulk processor as we will index groups of documents
-					r := elib.NewBulkIndexRequest().Index(v.FileMessage.Index).Type(globals.FileType).Id(v.FileMessage.Id).Doc(v.FileMessage.Data)
+					r := elib.NewBulkUpdateRequest().Index(v.FileMessage.Index).Type(globals.FileType).Id(v.FileMessage.Id).DocAsUpsert(true).Doc(f)
 					e.BulkFilesProcessor.Add(r)
 				}
 			}
