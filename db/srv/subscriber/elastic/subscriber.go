@@ -40,6 +40,7 @@ func Subscribe(e *model.Elastic) error {
 					}
 
 					// Use bulk processor as we will index groups of documents
+					// We need to build the file to be able to update JSON like obj, and not string
 					r := elib.NewBulkUpdateRequest().Index(v.FileMessage.Index).Type(globals.FileType).Id(v.FileMessage.Id).DocAsUpsert(true).Doc(f)
 					e.BulkFilesProcessor.Add(r)
 				}

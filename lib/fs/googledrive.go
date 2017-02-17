@@ -68,8 +68,49 @@ func (gfs *GoogleDriveFs) WalkChannels() (chan ChannelMsg, chan bool) {
 // Enrich
 func (gfs *GoogleDriveFs) Enrich(f file.File) chan FileMsg {
 	go func() {
-		//bfs.processImage()
-		//bfs.processDocument()
+		var err error
+
+		_, ok := f.(*file.KazoupGoogleFile)
+		if !ok {
+			gfs.FilesChan <- NewFileMsg(nil, errors.New("Error enriching file"))
+			return
+		}
+
+		// OptsKazoupFile.ContentTimestamp and
+		// OptsKazoupFile.TagsTimestamp are not defined,
+		// Content was never extracted before
+		process := struct {
+			Picture  bool
+			Document bool
+		}{
+			Picture:  false,
+			Document: false,
+		}
+		if f.(*file.KazoupGoogleFile).OptsKazoupFile == nil {
+			process.Picture = true
+			process.Document = true
+		} else {
+			process.Picture = f.(*file.KazoupGoogleFile).OptsKazoupFile.TagsTimestamp.Before(f.(*file.KazoupGoogleFile).Modified)
+			process.Document = f.(*file.KazoupGoogleFile).OptsKazoupFile.ContentTimestamp.Before(f.(*file.KazoupGoogleFile).Modified)
+		}
+
+		if f.(*file.KazoupGoogleFile).Category == globals.CATEGORY_PICTURE && process.Picture {
+			f, err = gfs.processImage(f.(*file.KazoupGoogleFile))
+			if err != nil {
+				gfs.FilesChan <- NewFileMsg(nil, err)
+				return
+			}
+		}
+
+		if f.(*file.KazoupGoogleFile).Category == globals.CATEGORY_DOCUMENT && process.Document {
+			f, err = gfs.processDocument(f.(*file.KazoupGoogleFile))
+			if err != nil {
+				gfs.FilesChan <- NewFileMsg(nil, err)
+				return
+			}
+		}
+
+		gfs.FilesChan <- NewFileMsg(f, err)
 	}()
 
 	return gfs.FilesChan

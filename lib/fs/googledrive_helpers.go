@@ -3,7 +3,6 @@ package fs
 import (
 	"bufio"
 	"bytes"
-	"github.com/kazoup/platform/lib/categories"
 	cs "github.com/kazoup/platform/lib/cloudstorage"
 	"github.com/kazoup/platform/lib/cloudvision"
 	"github.com/kazoup/platform/lib/file"
@@ -74,14 +73,6 @@ func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
 	for _, v := range files {
 		f := file.NewKazoupFileFromGoogleDriveFile(*v, gfs.Endpoint.Id, gfs.Endpoint.UserId, gfs.Endpoint.Index)
 		if f != nil {
-			if err := gfs.processImage(f, f.ID); err != nil {
-				log.Println(err)
-			}
-
-			if err := gfs.processDocument(f); err != nil {
-				log.Println(err)
-			}
-
 			gfs.FilesChan <- NewFileMsg(f, nil)
 		}
 	}
@@ -89,100 +80,105 @@ func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
 	return nil
 }
 
-func (gfs *GoogleDriveFs) processImage(f *file.KazoupGoogleFile, id string) error {
-	c := categories.GetDocType("." + f.Original.FullFileExtension)
-	if len(f.Original.FullFileExtension) == 0 {
-		c = categories.GetDocType(f.MimeType)
+// processImage, thumbnail generation, cloud vision processing
+func (gfs *GoogleDriveFs) processImage(f *file.KazoupGoogleFile) (file.File, error) {
+	// Download file from GoogleDrive, so connector is globals.GoogleDrive
+	gcs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.GoogleDrive)
+	if err != nil {
+		return nil, err
 	}
 
-	if c == globals.CATEGORY_PICTURE {
-		// Download file from GoogleDrive, so connector is globals.GoogleDrive
-		gcs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.GoogleDrive)
+	// Not great, but check implementation for details about variadic params
+	rc, err := gcs.Download(f.Original.Id, "download", "")
+	if err != nil {
+		return nil, err
+	}
+
+	// Split readcloser into two or more for different processing
+	var buf1, buf2 bytes.Buffer
+	w := io.MultiWriter(&buf1, &buf2)
+
+	if _, err = io.Copy(w, rc); err != nil {
+		return nil, err
+	}
+
+	go func() {
+		// Resize to our thumbnail size
+		rd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf2)), globals.THUMBNAIL_WIDTH)
 		if err != nil {
-			return err
+			log.Println(err)
 		}
 
-		// Not great, but check implementation for details about variadic params
-		rc, err := gcs.Download(f.Original.Id, "download", "")
+		// Upload file to GoogleCloudStorage, so connector is globals.GoogleCloudStorage
+		ncs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.GoogleCloudStorage)
 		if err != nil {
-			return err
+			log.Println(err)
 		}
 
-		// Split readcloser into two or more for different processing
-		var buf1, buf2 bytes.Buffer
-		w := io.MultiWriter(&buf1, &buf2)
-
-		if _, err = io.Copy(w, rc); err != nil {
-			return err
+		if err := ncs.Upload(rd, f.ID); err != nil {
+			log.Println(err)
 		}
+	}()
 
-		go func() {
-			// Resize to our thumbnail size
-			rd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf2)), globals.THUMBNAIL_WIDTH)
-			if err != nil {
-				log.Println(err)
-			}
+	// Resize to optimal size for cloud vision API
+	cvrd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf1)), globals.CLOUD_VISION_IMG_WIDTH)
+	if err != nil {
+		return nil, err
+	}
 
-			// Upload file to GoogleCloudStorage, so connector is globals.GoogleCloudStorage
-			ncs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.GoogleCloudStorage)
-			if err != nil {
-				log.Println(err)
-			}
+	if f.Tags, err = cloudvision.Tag(ioutil.NopCloser(cvrd)); err != nil {
+		return nil, err
+	}
 
-			if err := ncs.Upload(rd, id); err != nil {
-				log.Println(err)
-			}
-		}()
-
-		// Resize to optimal size for cloud vision API
-		cvrd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf1)), globals.CLOUD_VISION_IMG_WIDTH)
-		if err != nil {
-			return err
+	if f.OptsKazoupFile == nil {
+		f.OptsKazoupFile = &file.OptsKazoupFile{
+			TagsTimestamp: time.Now(),
 		}
-
-		if f.Tags, err = cloudvision.Tag(ioutil.NopCloser(cvrd)); err != nil {
-			return err
-		}
-
+	} else {
 		f.OptsKazoupFile.TagsTimestamp = time.Now()
 	}
 
-	return nil
+	return f, nil
 }
 
 // processDocument sends the original file to tika and enrich KazoupGoogleFile with Tika interface
-func (gfs *GoogleDriveFs) processDocument(f *file.KazoupGoogleFile) error {
-	if f.Category == globals.CATEGORY_DOCUMENT {
-		// Download file from GoogleDrive, so connector is globals.GoogleDrive
-		gcs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.GoogleDrive)
-		if err != nil {
-			return err
-		}
-
-		// Google documents cannot be dowloaded, they should be exported to required mimeType
-		var opts [2]string
-		if strings.Contains(f.MimeType, "vnd.google-apps.") {
-			opts[0] = "export"
-			opts[1] = globals.GoogleDriveExportAs(f.MimeType)
-		} else {
-			opts[0] = "download"
-			opts[1] = ""
-		}
-
-		rc, err := gcs.Download(f.Original.Id, opts[0], opts[1])
-		if err != nil {
-			return err
-		}
-
-		t, err := tika.ExtractContent(rc)
-		if err != nil {
-			return err
-		}
-
-		f.Content = t.Content()
+func (gfs *GoogleDriveFs) processDocument(f *file.KazoupGoogleFile) (file.File, error) {
+	// Download file from GoogleDrive, so connector is globals.GoogleDrive
+	gcs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.GoogleDrive)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	// Google documents cannot be dowloaded, they should be exported to required mimeType
+	var opts [2]string
+	if strings.Contains(f.MimeType, "vnd.google-apps.") {
+		opts[0] = "export"
+		opts[1] = globals.GoogleDriveExportAs(f.MimeType)
+	} else {
+		opts[0] = "download"
+		opts[1] = ""
+	}
+
+	rc, err := gcs.Download(f.Original.Id, opts[0], opts[1])
+	if err != nil {
+		return nil, err
+	}
+
+	t, err := tika.ExtractContent(rc)
+	if err != nil {
+		return nil, err
+	}
+
+	f.Content = t.Content()
+	if f.OptsKazoupFile == nil {
+		f.OptsKazoupFile = &file.OptsKazoupFile{
+			ContentTimestamp: time.Now(),
+		}
+	} else {
+		f.OptsKazoupFile.ContentTimestamp = time.Now()
+	}
+
+	return f, nil
 }
 
 // getDriveService return a google drive service instance

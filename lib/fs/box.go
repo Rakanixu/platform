@@ -136,7 +136,6 @@ func (bfs *BoxFs) Enrich(f file.File) chan FileMsg {
 		}
 
 		if f.(*file.KazoupBoxFile).Category == globals.CATEGORY_PICTURE && process.Picture {
-			log.Println("IMAGE TO BE PROCESS", f.(*file.KazoupBoxFile).Name)
 			f, err = bfs.processImage(f.(*file.KazoupBoxFile))
 			if err != nil {
 				bfs.FilesChan <- NewFileMsg(nil, err)
@@ -145,7 +144,6 @@ func (bfs *BoxFs) Enrich(f file.File) chan FileMsg {
 		}
 
 		if f.(*file.KazoupBoxFile).Category == globals.CATEGORY_DOCUMENT && process.Document {
-			log.Println("DOCUMENT TO BE PROCESS", f.(*file.KazoupBoxFile).Name)
 			f, err = bfs.processDocument(f.(*file.KazoupBoxFile))
 			if err != nil {
 				bfs.FilesChan <- NewFileMsg(nil, err)
