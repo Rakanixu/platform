@@ -1,17 +1,21 @@
 package fs
 
 import (
+	"bufio"
+	"bytes"
 	"encoding/json"
-	"github.com/kazoup/platform/lib/categories"
 	cs "github.com/kazoup/platform/lib/cloudstorage"
+	"github.com/kazoup/platform/lib/cloudvision"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/image"
 	"github.com/kazoup/platform/lib/onedrive"
 	"github.com/kazoup/platform/lib/tika"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
+	"time"
 )
 
 const (
@@ -171,76 +175,97 @@ func (ofs *OneDriveFs) pushToFilesChannel(f onedrive.OneDriveFile) error {
 		log.Println(err)
 	}
 
-	if err := ofs.generateThumbnail(f, kof.ID); err != nil {
-		log.Println(err)
-	}
-
-	if err := ofs.enrichFile(kof); err != nil {
-		log.Println(err)
-	}
-
 	ofs.FilesChan <- NewFileMsg(kof, nil)
 
 	return nil
 }
 
-// generateThumbnail downloads original picture, resize and uploads to Google storage
-func (ofs *OneDriveFs) generateThumbnail(f onedrive.OneDriveFile, id string) error {
-	n := strings.Split(f.Name, ".")
+// processImage, thumbnail generation, cloud vision processing
+func (ofs *OneDriveFs) processImage(f *file.KazoupOneDriveFile) (file.File, error) {
+	// Download file from OneDrive, so connector is globals.OneDrive
+	ocs, err := cs.NewCloudStorageFromEndpoint(ofs.Endpoint, globals.OneDrive)
+	if err != nil {
+		return nil, err
+	}
 
-	if categories.GetDocType("."+n[len(n)-1]) == globals.CATEGORY_PICTURE {
-		// Download file from OneDrive, so connector is globals.OneDrive
-		ocs, err := cs.NewCloudStorageFromEndpoint(ofs.Endpoint, globals.OneDrive)
-		if err != nil {
-			return err
-		}
+	rc, err := ocs.Download(f.Original.ID)
+	if err != nil {
+		return nil, err
+	}
 
-		pr, err := ocs.Download(f.ID)
-		if err != nil {
-			return err
-		}
+	// Split readcloser into two or more for paralel processing
+	var buf1, buf2 bytes.Buffer
+	w := io.MultiWriter(&buf1, &buf2)
 
-		b, err := image.Thumbnail(pr, globals.THUMBNAIL_WIDTH)
+	if _, err = io.Copy(w, rc); err != nil {
+		return nil, err
+	}
+
+	go func() {
+		b, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf2)), globals.THUMBNAIL_WIDTH)
 		if err != nil {
-			return err
+			log.Println(err)
 		}
 		// Upload file to GoogleCloudStorage, so connector is globals.GoogleCloudStorage
 		ncs, err := cs.NewCloudStorageFromEndpoint(ofs.Endpoint, globals.GoogleCloudStorage)
 		if err != nil {
-			return err
+			log.Println(err)
 		}
 
-		if err := ncs.Upload(b, id); err != nil {
-			return err
+		if err := ncs.Upload(b, f.ID); err != nil {
+			log.Println(err)
 		}
+	}()
+
+	// Resize to optimal size for cloud vision API
+	cvrd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf1)), globals.CLOUD_VISION_IMG_WIDTH)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	if f.Tags, err = cloudvision.Tag(ioutil.NopCloser(cvrd)); err != nil {
+		return nil, err
+	}
+
+	if f.OptsKazoupFile == nil {
+		f.OptsKazoupFile = &file.OptsKazoupFile{
+			TagsTimestamp: time.Now(),
+		}
+	} else {
+		f.OptsKazoupFile.TagsTimestamp = time.Now()
+	}
+
+	return f, nil
 }
 
-// enrichFile sends the original file to tika and enrich KazoupOneDriveFile with Tika interface
-func (ofs *OneDriveFs) enrichFile(f *file.KazoupOneDriveFile) error {
-	if f.Category == globals.CATEGORY_DOCUMENT {
-		// Download file from GoogleDrive, so connector is globals.OneDrive
-		ocs, err := cs.NewCloudStorageFromEndpoint(ofs.Endpoint, globals.OneDrive)
-		if err != nil {
-			return err
-		}
-
-		rc, err := ocs.Download(f.Original.ID)
-		if err != nil {
-			return err
-		}
-
-		t, err := tika.ExtractContent(rc)
-		if err != nil {
-			return err
-		}
-
-		f.Content = t.Content()
+// processDocument sends the original file to tika and enrich KazoupOneDriveFile with Tika interface
+func (ofs *OneDriveFs) processDocument(f *file.KazoupOneDriveFile) (file.File, error) {
+	// Download file from GoogleDrive, so connector is globals.OneDrive
+	ocs, err := cs.NewCloudStorageFromEndpoint(ofs.Endpoint, globals.OneDrive)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	rc, err := ocs.Download(f.Original.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	t, err := tika.ExtractContent(rc)
+	if err != nil {
+		return nil, err
+	}
+
+	f.Content = t.Content()
+	if f.OptsKazoupFile == nil {
+		f.OptsKazoupFile = &file.OptsKazoupFile{
+			ContentTimestamp: time.Now(),
+		}
+	} else {
+		f.OptsKazoupFile.ContentTimestamp = time.Now()
+	}
+
+	return f, nil
 }
 
 // token returns authorization header

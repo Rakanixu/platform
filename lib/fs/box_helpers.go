@@ -147,7 +147,7 @@ func (bfs *BoxFs) processImage(f *file.KazoupBoxFile) (file.File, error) {
 	return f, nil
 }
 
-// enrichFile sends the original file to tika and enrich KazoupBoxFile with Tika interface
+// processDocument sends the original file to tika and enrich KazoupBoxFile with Tika interface
 func (bfs *BoxFs) processDocument(f *file.KazoupBoxFile) (file.File, error) {
 	// Download file from Box, so connector is globals.Box
 	bcs, err := cs.NewCloudStorageFromEndpoint(bfs.Endpoint, globals.Box)
