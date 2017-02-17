@@ -76,8 +76,49 @@ func (dfs *DropboxFs) WalkChannels() (chan ChannelMsg, chan bool) {
 // Enrich
 func (dfs *DropboxFs) Enrich(f file.File) chan FileMsg {
 	go func() {
-		//bfs.processImage()
-		//bfs.processDocument()
+		var err error
+
+		_, ok := f.(*file.KazoupDropboxFile)
+		if !ok {
+			dfs.FilesChan <- NewFileMsg(nil, errors.New("Error enriching file"))
+			return
+		}
+
+		// OptsKazoupFile.ContentTimestamp and
+		// OptsKazoupFile.TagsTimestamp are not defined,
+		// Content was never extracted before
+		process := struct {
+			Picture  bool
+			Document bool
+		}{
+			Picture:  false,
+			Document: false,
+		}
+		if f.(*file.KazoupDropboxFile).OptsKazoupFile == nil {
+			process.Picture = true
+			process.Document = true
+		} else {
+			process.Picture = f.(*file.KazoupDropboxFile).OptsKazoupFile.TagsTimestamp.Before(f.(*file.KazoupDropboxFile).Modified)
+			process.Document = f.(*file.KazoupDropboxFile).OptsKazoupFile.ContentTimestamp.Before(f.(*file.KazoupDropboxFile).Modified)
+		}
+
+		if f.(*file.KazoupDropboxFile).Category == globals.CATEGORY_PICTURE && process.Picture {
+			f, err = dfs.processImage(f.(*file.KazoupDropboxFile))
+			if err != nil {
+				dfs.FilesChan <- NewFileMsg(nil, err)
+				return
+			}
+		}
+
+		if f.(*file.KazoupDropboxFile).Category == globals.CATEGORY_DOCUMENT && process.Document {
+			f, err = dfs.processDocument(f.(*file.KazoupDropboxFile))
+			if err != nil {
+				dfs.FilesChan <- NewFileMsg(nil, err)
+				return
+			}
+		}
+
+		dfs.FilesChan <- NewFileMsg(f, err)
 	}()
 
 	return dfs.FilesChan
