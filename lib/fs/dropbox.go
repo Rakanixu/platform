@@ -11,6 +11,7 @@ import (
 	"github.com/kazoup/platform/lib/dropbox"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"log"
 	"net/http"
 	"os"
@@ -71,6 +72,57 @@ func (dfs *DropboxFs) WalkChannels() (chan ChannelMsg, chan bool) {
 	}()
 
 	return dfs.ChannelsChan, dfs.WalkChannelsRunning
+}
+
+// Enrich
+func (dfs *DropboxFs) Enrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+	go func() {
+		var err error
+
+		_, ok := f.(*file.KazoupDropboxFile)
+		if !ok {
+			dfs.FilesChan <- NewFileMsg(nil, errors.New("Error enriching file"))
+			return
+		}
+
+		// OptsKazoupFile.ContentTimestamp and
+		// OptsKazoupFile.TagsTimestamp are not defined,
+		// Content was never extracted before
+		process := struct {
+			Picture  bool
+			Document bool
+		}{
+			Picture:  false,
+			Document: false,
+		}
+		if f.(*file.KazoupDropboxFile).OptsKazoupFile == nil {
+			process.Picture = true
+			process.Document = true
+		} else {
+			process.Picture = f.(*file.KazoupDropboxFile).OptsKazoupFile.TagsTimestamp.Before(f.(*file.KazoupDropboxFile).Modified)
+			process.Document = f.(*file.KazoupDropboxFile).OptsKazoupFile.ContentTimestamp.Before(f.(*file.KazoupDropboxFile).Modified)
+		}
+
+		if f.(*file.KazoupDropboxFile).Category == globals.CATEGORY_PICTURE && process.Picture {
+			f, err = dfs.processImage(gcs, f.(*file.KazoupDropboxFile))
+			if err != nil {
+				dfs.FilesChan <- NewFileMsg(nil, err)
+				return
+			}
+		}
+
+		if f.(*file.KazoupDropboxFile).Category == globals.CATEGORY_DOCUMENT && process.Document {
+			f, err = dfs.processDocument(f.(*file.KazoupDropboxFile))
+			if err != nil {
+				dfs.FilesChan <- NewFileMsg(nil, err)
+				return
+			}
+		}
+
+		dfs.FilesChan <- NewFileMsg(f, err)
+	}()
+
+	return dfs.FilesChan
 }
 
 // Create a file in dropbox

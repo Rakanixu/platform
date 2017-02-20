@@ -29,11 +29,13 @@ const (
 	DB_SERVICE_NAME           string = NAMESPACE + ".srv.db"
 	DATASOURCE_SERVICE_NAME   string = NAMESPACE + ".srv.datasource"
 	NOTIFICATION_SERVICE_NAME string = NAMESPACE + ".srv.notification"
+	ENRICH_SERVICE_NAME       string = NAMESPACE + ".srv.enrich"
 	MONITOR_SERVICE_NAME      string = NAMESPACE + ".srv.monitor"
 	FilesTopic                string = NAMESPACE + ".topic.files"
 	SlackChannelsTopic        string = NAMESPACE + ".topic.slackchannels"
 	SlackUsersTopic           string = NAMESPACE + ".topic.slackusers"
 	ScanTopic                 string = NAMESPACE + ".topic.scan"
+	EnrichTopic               string = NAMESPACE + ".topic.enrich"
 	CrawlerStartedTopic       string = NAMESPACE + ".topic.crawlerstarted"
 	CrawlerFinishedTopic      string = NAMESPACE + ".topic.crawlerfinished"
 	NotificationTopic         string = NAMESPACE + ".topic.notification"
@@ -85,7 +87,8 @@ const (
 	CATEGORY_PICTURE  = "Pictures"
 	CATEGORY_DOCUMENT = "Documents"
 
-	THUMBNAIL_WIDTH = 178
+	THUMBNAIL_WIDTH        = 178
+	CLOUD_VISION_IMG_WIDTH = 640
 
 	ACCESS_PUBLIC  = "public"
 	ACCESS_SHARED  = "shared"
@@ -119,7 +122,8 @@ const (
 
 	GmailEndpoint = "https://mail.google.com/mail/u/"
 
-	TMP_TOKEN_BUCKET = "tmp-token"
+	TMP_TOKEN_BUCKET  = "tmp-token"
+	THUMBNAILS_BUCKET = "thumbnails-bucket"
 
 	StartScanTask = "start_scan"
 

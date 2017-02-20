@@ -1,18 +1,24 @@
 package fs
 
 import (
+	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/kazoup/platform/lib/box"
-	"github.com/kazoup/platform/lib/categories"
 	cs "github.com/kazoup/platform/lib/cloudstorage"
+	"github.com/kazoup/platform/lib/cloudvision"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/image"
 	"github.com/kazoup/platform/lib/tika"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
+	"sync"
+	"time"
 )
 
 // getDirChildren get children from directory
@@ -79,77 +85,107 @@ func (bfs *BoxFs) getMetadataFromFile(id string) error {
 
 	f := file.NewKazoupFileFromBoxFile(*fm, bfs.Endpoint.Id, bfs.Endpoint.UserId, bfs.Endpoint.Index)
 
-	if err := bfs.generateThumbnail(fm, f.ID); err != nil {
-		log.Println(err)
-	}
-
-	if err := bfs.enrichFile(f); err != nil {
-		log.Println(err)
-	}
-
 	bfs.FilesChan <- NewFileMsg(f, nil)
 
 	return nil
 }
 
-// generateThumbnail downloads original picture, resize and uploads to Google storage with kazoup id
-func (bfs *BoxFs) generateThumbnail(fm *box.BoxFileMeta, id string) error {
-	name := strings.Split(fm.Name, ".")
-
-	if categories.GetDocType("."+name[len(name)-1]) == globals.CATEGORY_PICTURE {
-		// Download file from Box, so connector is globals.Box
-		bcs, err := cs.NewCloudStorageFromEndpoint(bfs.Endpoint, globals.Box)
-		if err != nil {
-			return err
-		}
-
-		rc, err := bcs.Download(fm.ID)
-		if err != nil {
-			return err
-		}
-
-		rd, err := image.Thumbnail(rc, globals.THUMBNAIL_WIDTH)
-		if err != nil {
-			return err
-		}
-
-		// Upload file to GoogleCloudStorage, so connector is globals.GoogleCloudStorage
-		ncs, err := cs.NewCloudStorageFromEndpoint(bfs.Endpoint, globals.GoogleCloudStorage)
-		if err != nil {
-			return err
-		}
-
-		if err := ncs.Upload(rd, id); err != nil {
-			return err
-		}
+// processImage, thumbnail generation, cloud vision processing
+func (bfs *BoxFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.KazoupBoxFile) (file.File, error) {
+	// Download file from Box, so connector is globals.Box
+	bcs, err := cs.NewCloudStorageFromEndpoint(bfs.Endpoint, globals.Box)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	rc, err := bcs.Download(f.Original.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Split readcloser into two or more for paralel processing
+	var buf1, buf2 bytes.Buffer
+	w := io.MultiWriter(&buf1, &buf2)
+
+	if _, err = io.Copy(w, rc); err != nil {
+		return nil, err
+	}
+
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		rd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf2)), globals.THUMBNAIL_WIDTH)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		if err := gcs.Upload(rd, bfs.Endpoint.Index, f.ID); err != nil {
+			log.Println(err)
+			return
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		// Resize to optimal size for cloud vision API
+		cvrd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf1)), globals.CLOUD_VISION_IMG_WIDTH)
+		if err != nil {
+			log.Println("CLOUD VISION ERROR", err)
+			return
+		}
+
+		if f.Tags, err = cloudvision.Tag(ioutil.NopCloser(cvrd)); err != nil {
+			log.Println("CLOUD VISION ERROR", err)
+			return
+		}
+
+		if f.OptsKazoupFile == nil {
+			f.OptsKazoupFile = &file.OptsKazoupFile{
+				TagsTimestamp: time.Now(),
+			}
+		} else {
+			f.OptsKazoupFile.TagsTimestamp = time.Now()
+		}
+	}()
+
+	wg.Wait()
+
+	return f, nil
 }
 
-// enrichFile sends the original file to tika and enrich KazoupBoxFile with Tika interface
-func (bfs *BoxFs) enrichFile(f *file.KazoupBoxFile) error {
-	if f.Category == globals.CATEGORY_DOCUMENT {
-		// Download file from Box, so connector is globals.Box
-		bcs, err := cs.NewCloudStorageFromEndpoint(bfs.Endpoint, globals.Box)
-		if err != nil {
-			return err
-		}
-
-		rc, err := bcs.Download(f.Original.ID)
-		if err != nil {
-			return err
-		}
-
-		t, err := tika.ExtractContent(rc)
-		if err != nil {
-			return err
-		}
-
-		f.Content = t.Content()
+// processDocument sends the original file to tika and enrich KazoupBoxFile with Tika interface
+func (bfs *BoxFs) processDocument(f *file.KazoupBoxFile) (file.File, error) {
+	// Download file from Box, so connector is globals.Box
+	bcs, err := cs.NewCloudStorageFromEndpoint(bfs.Endpoint, globals.Box)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	rc, err := bcs.Download(f.Original.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	t, err := tika.ExtractContent(rc)
+	if err != nil {
+		return nil, err
+	}
+
+	f.Content = t.Content()
+	if f.OptsKazoupFile == nil {
+		f.OptsKazoupFile = &file.OptsKazoupFile{
+			ContentTimestamp: time.Now(),
+		}
+	} else {
+		f.OptsKazoupFile.ContentTimestamp = time.Now()
+	}
+
+	return f, nil
 }
 
 // token returns authorization header token as string

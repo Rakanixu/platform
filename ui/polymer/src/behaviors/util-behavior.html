@@ -315,6 +315,9 @@
       isDeleteFileAvailable: function(fileType) {
         return this.isBox(fileType) || this.isDropbox(fileType) || this.isOneDrive(fileType) || this.isGoogleDrive(fileType);
       },
+      isTag: function(tags) {
+        return (tags && tags.length && tags.length > 0);
+      },
       profilePicture: function(url) {
         return (url && url.length) ? url : '/src/static/unknown-pic-profile.gif';
       },

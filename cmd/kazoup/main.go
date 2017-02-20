@@ -15,6 +15,7 @@ import (
 	crawler "github.com/kazoup/platform/crawler"
 	datasource "github.com/kazoup/platform/datasource"
 	db "github.com/kazoup/platform/db"
+	enrich "github.com/kazoup/platform/enrich"
 	file "github.com/kazoup/platform/file"
 	"github.com/kazoup/platform/lib/globals"
 	media "github.com/kazoup/platform/media"
@@ -33,6 +34,7 @@ func main() {
 	app.Commands = append(app.Commands, auth.Commands()...)
 	app.Commands = append(app.Commands, config.Commands()...)
 	app.Commands = append(app.Commands, crawler.Commands()...)
+	app.Commands = append(app.Commands, enrich.Commands()...)
 	app.Commands = append(app.Commands, datasource.Commands()...)
 	app.Commands = append(app.Commands, db.Commands()...)
 	app.Commands = append(app.Commands, media.Commands()...)

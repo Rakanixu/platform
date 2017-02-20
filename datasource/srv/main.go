@@ -1,15 +1,15 @@
 package main
 
 import (
-	"log"
-
 	"github.com/kazoup/platform/datasource/srv/handler"
 	"github.com/kazoup/platform/datasource/srv/subscriber"
 	"github.com/kazoup/platform/lib/globals"
+	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/go-os/monitor"
+	"log"
 	"time"
 )
 
@@ -65,10 +65,13 @@ func main() {
 		log.Fatal(err)
 	}
 
+	gcslib.Register()
+
 	// New service handler
 	service.Server().Handle(
 		service.Server().NewHandler(&handler.DataSource{
-			Client: service.Client(),
+			Client:             service.Client(),
+			GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
 		}),
 	)
 	service.Init()

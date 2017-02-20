@@ -1,19 +1,26 @@
 package fs
 
 import (
+	"bufio"
+	"bytes"
 	"encoding/json"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
-	"github.com/kazoup/platform/lib/categories"
 	cs "github.com/kazoup/platform/lib/cloudstorage"
+	"github.com/kazoup/platform/lib/cloudvision"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/image"
 	"github.com/kazoup/platform/lib/slack"
 	"github.com/kazoup/platform/lib/tika"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
 	"strconv"
+	"sync"
+	"time"
 )
 
 // getUsers retrieves users from slack team
@@ -108,14 +115,6 @@ func (sfs *SlackFs) getFiles(page int) error {
 	for _, v := range filesRsp.Files {
 		f := file.NewKazoupFileFromSlackFile(v, sfs.Endpoint.Id, sfs.Endpoint.UserId, sfs.Endpoint.Index)
 
-		if err := sfs.generateThumbnail(v, f.ID); err != nil {
-			log.Println(err)
-		}
-
-		if err := sfs.enrichFile(f); err != nil {
-			log.Println(err)
-		}
-
 		sfs.FilesChan <- NewFileMsg(f, nil)
 	}
 
@@ -127,60 +126,103 @@ func (sfs *SlackFs) getFiles(page int) error {
 }
 
 // generateThumbnail downloads original picture, resize and uploads to Google storage
-func (sfs *SlackFs) generateThumbnail(sf slack.SlackFile, id string) error {
-	if categories.GetDocType("."+sf.Filetype) == globals.CATEGORY_PICTURE {
-		// Download file from Slack, so connector is globals.Slack
-		scs, err := cs.NewCloudStorageFromEndpoint(sfs.Endpoint, globals.Slack)
-		if err != nil {
-			return err
-		}
-		pr, err := scs.Download(sf.URLPrivateDownload)
-		if err != nil {
-			return err
-		}
+func (sfs *SlackFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.KazoupSlackFile) (file.File, error) {
+	// Download file from Slack, so connector is globals.Slack
+	scs, err := cs.NewCloudStorageFromEndpoint(sfs.Endpoint, globals.Slack)
 
-		b, err := image.Thumbnail(pr, globals.THUMBNAIL_WIDTH)
-		if err != nil {
-			return err
-		}
-
-		// Upload file to GoogleCloudStorage, so connector is globals.GoogleCloudStorage
-		ncs, err := cs.NewCloudStorageFromEndpoint(sfs.Endpoint, globals.GoogleCloudStorage)
-		if err != nil {
-			return err
-		}
-
-		if err := ncs.Upload(b, id); err != nil {
-			return err
-		}
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	rc, err := scs.Download(f.Original.URLPrivateDownload)
+	if err != nil {
+		return nil, err
+	}
+
+	// Split readcloser into two or more for paralel processing
+	var buf1, buf2 bytes.Buffer
+	w := io.MultiWriter(&buf1, &buf2)
+
+	if _, err = io.Copy(w, rc); err != nil {
+		return nil, err
+	}
+
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		b, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf2)), globals.THUMBNAIL_WIDTH)
+		if err != nil {
+			log.Println("THUMBNAIL ERROR", err)
+			return
+		}
+
+		if err := gcs.Upload(b, sfs.Endpoint.Index, f.ID); err != nil {
+			log.Println("THUMBNAIL UPLOAD ERROR", err)
+			return
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		// Resize to optimal size for cloud vision API
+		cvrd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf1)), globals.CLOUD_VISION_IMG_WIDTH)
+		if err != nil {
+			log.Println("CLOUD VISION ERROR", err)
+			return
+		}
+
+		if f.Tags, err = cloudvision.Tag(ioutil.NopCloser(cvrd)); err != nil {
+			log.Println("CLOUD VISION ERROR", err)
+			return
+		}
+
+		if f.OptsKazoupFile == nil {
+			f.OptsKazoupFile = &file.OptsKazoupFile{
+				TagsTimestamp: time.Now(),
+			}
+		} else {
+			f.OptsKazoupFile.TagsTimestamp = time.Now()
+		}
+	}()
+
+	wg.Wait()
+
+	return f, nil
 }
 
 // enrichFile sends the original file to tika and enrich KazoupOneDriveFile with Tika interface
-func (sfs *SlackFs) enrichFile(f *file.KazoupSlackFile) error {
-	if f.Category == globals.CATEGORY_DOCUMENT {
-		// Download file from GoogleDrive, so connector is globals.OneDrive
-		scs, err := cs.NewCloudStorageFromEndpoint(sfs.Endpoint, globals.OneDrive)
-		if err != nil {
-			return err
-		}
-
-		rc, err := scs.Download(f.Original.ID)
-		if err != nil {
-			return err
-		}
-
-		t, err := tika.ExtractContent(rc)
-		if err != nil {
-			return err
-		}
-
-		f.Content = t.Content()
+func (sfs *SlackFs) processDocument(f *file.KazoupSlackFile) (file.File, error) {
+	// Download file from GoogleDrive, so connector is globals.OneDrive
+	scs, err := cs.NewCloudStorageFromEndpoint(sfs.Endpoint, globals.OneDrive)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	rc, err := scs.Download(f.Original.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	t, err := tika.ExtractContent(rc)
+	if err != nil {
+		return nil, err
+	}
+
+	f.Content = t.Content()
+	if f.OptsKazoupFile == nil {
+		f.OptsKazoupFile = &file.OptsKazoupFile{
+			ContentTimestamp: time.Now(),
+		}
+	} else {
+		f.OptsKazoupFile.ContentTimestamp = time.Now()
+	}
+
+	return f, nil
 }
 
 // shareFilePublicly will set a PermalinkPublic available and reachable for a file arcived/ stored in slack

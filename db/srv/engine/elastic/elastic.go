@@ -10,11 +10,13 @@ import (
 	config "github.com/kazoup/platform/db/srv/proto/config"
 	db "github.com/kazoup/platform/db/srv/proto/db"
 	subscriber "github.com/kazoup/platform/db/srv/subscriber/elastic"
+	enrich_proto "github.com/kazoup/platform/enrich/srv/proto/enrich"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	elib "gopkg.in/olivere/elastic.v5"
+	"log"
 	"os"
 	"time"
 )
@@ -36,7 +38,7 @@ func init() {
 
 // Init Elastic db (engine)
 // Common init for DB, Config and Subscriber interfaces
-func (e *elastic) Init() error {
+func (e *elastic) Init(c client.Client) error {
 	var err error
 
 	// Set ES details from env variables
@@ -62,9 +64,52 @@ func (e *elastic) Init() error {
 		return err
 	}
 
-	// Bulk Processor
+	// Bulk Processor, used for users and channels
 	e.BulkProcessor, err = e.Client.BulkProcessor().
 		Name(fmt.Sprintf("bulkProcessor-%s", rs)).
+		Workers(3).
+		BulkActions(100).                // commit if # requests >= 100
+		BulkSize(2 << 20).               // commit if size of requests >= 2 MB, probably to big, btw other constrains will be hit before
+		FlushInterval(10 * time.Second). // commit every 10s
+		Do(context.Background())
+	if err != nil {
+		return err
+	}
+
+	// Bulk Files Processor, used for index After function to
+	e.BulkFilesProcessor, err = e.Client.BulkProcessor().
+		After(func(executionId int64, requests []elib.BulkableRequest, response *elib.BulkResponse, err error) {
+			for _, req := range requests {
+				type updateBody struct {
+					Doc *file.KazoupFile `json:"doc"`
+				}
+
+				var kf updateBody
+
+				// elib.BulkableRequest stores two objects, headers and body
+				src, err := req.Source()
+				if err != nil {
+					log.Println("Error: %v", err)
+					return
+				}
+
+				if len(src) == 2 {
+					json.Unmarshal([]byte(src[1]), &kf)
+				}
+
+				n := &enrich_proto.EnrichMessage{
+					Index:  kf.Doc.Index,
+					Id:     kf.Doc.ID,
+					UserId: kf.Doc.UserId,
+				}
+
+				// Publish EnrichMessage
+				if err := c.Publish(globals.NewSystemContext(), c.NewPublication(globals.EnrichTopic, n)); err != nil {
+					log.Print("Publishing (enrich file) error %s", err)
+				}
+			}
+		}).
+		Name(fmt.Sprintf("bulkFilesProcessor-%s", rs)).
 		Workers(3).
 		BulkActions(100).               // commit if # requests >= 100
 		BulkSize(2 << 20).              // commit if size of requests >= 2 MB, probably to big, btw other constrains will be hit before

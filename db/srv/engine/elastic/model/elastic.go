@@ -14,6 +14,7 @@ type FilesChannel struct {
 type Elastic struct {
 	Client               *elib.Client
 	BulkProcessor        *elib.BulkProcessor
+	BulkFilesProcessor   *elib.BulkProcessor
 	FilesChannel         chan *FilesChannel
 	SlackUsersChannel    chan *crawler.SlackUserMessage
 	SlackChannelsChannel chan *crawler.SlackChannelMessage

@@ -3,6 +3,7 @@ package gmail
 type GmailFile struct {
 	Id           string `json:"id"`
 	MessageId    string `json:"message_id"`
+	AttachmentId string `json:"attachment_id"`
 	Name         string `json:"name"`
 	MimeType     string `json:"mime_type"`
 	Extension    string `json:"extension"`
