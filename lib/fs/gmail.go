@@ -4,6 +4,7 @@ import (
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	file "github.com/kazoup/platform/lib/file"
+	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"log"
 )
 
@@ -63,7 +64,7 @@ func (gfs *GmailFs) WalkChannels() (chan ChannelMsg, chan bool) {
 }
 
 // Enrich
-func (gfs *GmailFs) Enrich(f file.File) chan FileMsg {
+func (gfs *GmailFs) Enrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
 	go func() {
 		//bfs.processImage()
 		//bfs.processDocument()

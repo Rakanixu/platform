@@ -9,6 +9,7 @@ import (
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/onedrive"
 	"log"
 	"net/http"
@@ -107,7 +108,7 @@ func (ofs *OneDriveFs) WalkChannels() (chan ChannelMsg, chan bool) {
 }
 
 // Enrich
-func (ofs *OneDriveFs) Enrich(f file.File) chan FileMsg {
+func (ofs *OneDriveFs) Enrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
 	go func() {
 		var err error
 
@@ -136,7 +137,7 @@ func (ofs *OneDriveFs) Enrich(f file.File) chan FileMsg {
 		}
 
 		if f.(*file.KazoupOneDriveFile).Category == globals.CATEGORY_PICTURE && process.Picture {
-			f, err = ofs.processImage(f.(*file.KazoupOneDriveFile))
+			f, err = ofs.processImage(gcs, f.(*file.KazoupOneDriveFile))
 			if err != nil {
 				ofs.FilesChan <- NewFileMsg(nil, err)
 				return

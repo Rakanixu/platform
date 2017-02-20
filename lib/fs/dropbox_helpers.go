@@ -10,12 +10,14 @@ import (
 	"github.com/kazoup/platform/lib/dropbox"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/image"
 	"github.com/kazoup/platform/lib/tika"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -100,7 +102,7 @@ func (dfs *DropboxFs) getFiles() error {
 }
 
 // processImage, thumbnail generation, cloud vision processing
-func (dfs *DropboxFs) processImage(f *file.KazoupDropboxFile) (file.File, error) {
+func (dfs *DropboxFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.KazoupDropboxFile) (file.File, error) {
 	// Downloads from dropbox, see connector
 	dcs, err := cs.NewCloudStorageFromEndpoint(dfs.Endpoint, globals.Dropbox)
 	if err != nil {
@@ -120,40 +122,50 @@ func (dfs *DropboxFs) processImage(f *file.KazoupDropboxFile) (file.File, error)
 		return nil, err
 	}
 
+	var wg sync.WaitGroup
+
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
+
 		b, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf2)), globals.THUMBNAIL_WIDTH)
 		if err != nil {
 			log.Println(err)
+			return
 		}
 
-		// Uploads to Google cloud storage, see connector
-		ncs, err := cs.NewCloudStorageFromEndpoint(dfs.Endpoint, globals.GoogleCloudStorage)
-		if err != nil {
+		if err := gcs.Upload(b, dfs.Endpoint.Index, f.ID); err != nil {
 			log.Println(err)
-		}
-
-		if err := ncs.Upload(b, f.ID); err != nil {
-			log.Println(err)
+			return
 		}
 	}()
 
-	// Resize to optimal size for cloud vision API
-	cvrd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf1)), globals.CLOUD_VISION_IMG_WIDTH)
-	if err != nil {
-		return nil, err
-	}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
 
-	if f.Tags, err = cloudvision.Tag(ioutil.NopCloser(cvrd)); err != nil {
-		return nil, err
-	}
-
-	if f.OptsKazoupFile == nil {
-		f.OptsKazoupFile = &file.OptsKazoupFile{
-			TagsTimestamp: time.Now(),
+		// Resize to optimal size for cloud vision API
+		cvrd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf1)), globals.CLOUD_VISION_IMG_WIDTH)
+		if err != nil {
+			log.Println("CLOUD VISION ERROR", err)
+			return
 		}
-	} else {
-		f.OptsKazoupFile.TagsTimestamp = time.Now()
-	}
+
+		if f.Tags, err = cloudvision.Tag(ioutil.NopCloser(cvrd)); err != nil {
+			log.Println("CLOUD VISION ERROR", err)
+			return
+		}
+
+		if f.OptsKazoupFile == nil {
+			f.OptsKazoupFile = &file.OptsKazoupFile{
+				TagsTimestamp: time.Now(),
+			}
+		} else {
+			f.OptsKazoupFile.TagsTimestamp = time.Now()
+		}
+	}()
+
+	wg.Wait()
 
 	return f, nil
 }

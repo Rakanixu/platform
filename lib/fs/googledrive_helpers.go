@@ -7,6 +7,7 @@ import (
 	"github.com/kazoup/platform/lib/cloudvision"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/image"
 	"github.com/kazoup/platform/lib/tika"
 	"golang.org/x/net/context"
@@ -16,6 +17,7 @@ import (
 	"io/ioutil"
 	"log"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -81,15 +83,15 @@ func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
 }
 
 // processImage, thumbnail generation, cloud vision processing
-func (gfs *GoogleDriveFs) processImage(f *file.KazoupGoogleFile) (file.File, error) {
+func (gfs *GoogleDriveFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.KazoupGoogleFile) (file.File, error) {
 	// Download file from GoogleDrive, so connector is globals.GoogleDrive
-	gcs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.GoogleDrive)
+	gdcs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.GoogleDrive)
 	if err != nil {
 		return nil, err
 	}
 
 	// Not great, but check implementation for details about variadic params
-	rc, err := gcs.Download(f.Original.Id, "download", "")
+	rc, err := gdcs.Download(f.Original.Id, "download", "")
 	if err != nil {
 		return nil, err
 	}
@@ -102,41 +104,51 @@ func (gfs *GoogleDriveFs) processImage(f *file.KazoupGoogleFile) (file.File, err
 		return nil, err
 	}
 
+	var wg sync.WaitGroup
+
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
+
 		// Resize to our thumbnail size
 		rd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf2)), globals.THUMBNAIL_WIDTH)
 		if err != nil {
 			log.Println(err)
+			return
 		}
 
-		// Upload file to GoogleCloudStorage, so connector is globals.GoogleCloudStorage
-		ncs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.GoogleCloudStorage)
-		if err != nil {
+		if err := gcs.Upload(rd, gfs.Endpoint.Index, f.ID); err != nil {
 			log.Println(err)
-		}
-
-		if err := ncs.Upload(rd, f.ID); err != nil {
-			log.Println(err)
+			return
 		}
 	}()
 
-	// Resize to optimal size for cloud vision API
-	cvrd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf1)), globals.CLOUD_VISION_IMG_WIDTH)
-	if err != nil {
-		return nil, err
-	}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
 
-	if f.Tags, err = cloudvision.Tag(ioutil.NopCloser(cvrd)); err != nil {
-		return nil, err
-	}
-
-	if f.OptsKazoupFile == nil {
-		f.OptsKazoupFile = &file.OptsKazoupFile{
-			TagsTimestamp: time.Now(),
+		// Resize to optimal size for cloud vision API
+		cvrd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf1)), globals.CLOUD_VISION_IMG_WIDTH)
+		if err != nil {
+			log.Println("CLOUD VISION ERROR", err)
+			return
 		}
-	} else {
-		f.OptsKazoupFile.TagsTimestamp = time.Now()
-	}
+
+		if f.Tags, err = cloudvision.Tag(ioutil.NopCloser(cvrd)); err != nil {
+			log.Println("CLOUD VISION ERROR", err)
+			return
+		}
+
+		if f.OptsKazoupFile == nil {
+			f.OptsKazoupFile = &file.OptsKazoupFile{
+				TagsTimestamp: time.Now(),
+			}
+		} else {
+			f.OptsKazoupFile.TagsTimestamp = time.Now()
+		}
+	}()
+
+	wg.Wait()
 
 	return f, nil
 }

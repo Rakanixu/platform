@@ -9,12 +9,14 @@ import (
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
+	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 )
 
 type Enrich struct {
-	Client client.Client
+	Client             client.Client
+	GoogleCloudStorage *gcslib.GoogleCloudStorage
 }
 
 // Enrich subscriber, receive EnrichMessage to get the file and process it
@@ -52,7 +54,7 @@ func (e *Enrich) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessa
 		return err
 	}
 
-	ch := mfs.Enrich(f)
+	ch := mfs.Enrich(f, e.GoogleCloudStorage)
 	// Block while enriching, we expect only one m
 	fm := <-ch
 	close(ch)

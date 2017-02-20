@@ -11,6 +11,7 @@ import (
 	"github.com/kazoup/platform/lib/dropbox"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"log"
 	"net/http"
 	"os"
@@ -74,7 +75,7 @@ func (dfs *DropboxFs) WalkChannels() (chan ChannelMsg, chan bool) {
 }
 
 // Enrich
-func (dfs *DropboxFs) Enrich(f file.File) chan FileMsg {
+func (dfs *DropboxFs) Enrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
 	go func() {
 		var err error
 
@@ -103,7 +104,7 @@ func (dfs *DropboxFs) Enrich(f file.File) chan FileMsg {
 		}
 
 		if f.(*file.KazoupDropboxFile).Category == globals.CATEGORY_PICTURE && process.Picture {
-			f, err = dfs.processImage(f.(*file.KazoupDropboxFile))
+			f, err = dfs.processImage(gcs, f.(*file.KazoupDropboxFile))
 			if err != nil {
 				dfs.FilesChan <- NewFileMsg(nil, err)
 				return

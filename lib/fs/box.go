@@ -11,6 +11,7 @@ import (
 	"github.com/kazoup/platform/lib/box"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"io"
 	"log"
 	"mime/multipart"
@@ -107,7 +108,7 @@ func (bfs *BoxFs) WalkChannels() (chan ChannelMsg, chan bool) {
 }
 
 // Enrich extracts content from file and add to File
-func (bfs *BoxFs) Enrich(f file.File) chan FileMsg {
+func (bfs *BoxFs) Enrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
 	go func() {
 		var err error
 
@@ -136,7 +137,7 @@ func (bfs *BoxFs) Enrich(f file.File) chan FileMsg {
 		}
 
 		if f.(*file.KazoupBoxFile).Category == globals.CATEGORY_PICTURE && process.Picture {
-			f, err = bfs.processImage(f.(*file.KazoupBoxFile))
+			f, err = bfs.processImage(gcs, f.(*file.KazoupBoxFile))
 			if err != nil {
 				bfs.FilesChan <- NewFileMsg(nil, err)
 				return

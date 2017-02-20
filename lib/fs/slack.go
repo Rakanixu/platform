@@ -6,6 +6,7 @@ import (
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"log"
 )
 
@@ -71,7 +72,7 @@ func (sfs *SlackFs) WalkChannels() (chan ChannelMsg, chan bool) {
 }
 
 // Enrich
-func (sfs *SlackFs) Enrich(f file.File) chan FileMsg {
+func (sfs *SlackFs) Enrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
 	go func() {
 		var err error
 
@@ -100,7 +101,7 @@ func (sfs *SlackFs) Enrich(f file.File) chan FileMsg {
 		}
 
 		if f.(*file.KazoupSlackFile).Category == globals.CATEGORY_PICTURE && process.Picture {
-			f, err = sfs.processImage(f.(*file.KazoupSlackFile))
+			f, err = sfs.processImage(gcs, f.(*file.KazoupSlackFile))
 			if err != nil {
 				sfs.FilesChan <- NewFileMsg(nil, err)
 				return

@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/kazoup/platform/enrich/srv/subscriber"
 	"github.com/kazoup/platform/lib/globals"
+	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
@@ -26,12 +27,15 @@ func main() {
 
 	healthchecks.RegisterBrokerHealthChecks(service, m)
 
+	gcslib.Register()
+
 	// Attach subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.EnrichTopic,
 			&subscriber.Enrich{
-				Client: service.Client(),
+				Client:             service.Client(),
+				GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
 			},
 		),
 	); err != nil {

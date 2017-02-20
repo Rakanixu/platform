@@ -6,6 +6,7 @@ import (
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	file "github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"strings"
 )
 
@@ -19,7 +20,7 @@ type FsOperations interface {
 	Walk() (chan FileMsg, chan bool)
 	WalkUsers() (chan UserMsg, chan bool)
 	WalkChannels() (chan ChannelMsg, chan bool)
-	Enrich(file.File) chan FileMsg
+	Enrich(file.File, *gcslib.GoogleCloudStorage) chan FileMsg
 	Create(file_proto.CreateRequest) chan FileMsg
 	Delete(file_proto.DeleteRequest) chan FileMsg
 	Update(file_proto.ShareRequest) chan FileMsg

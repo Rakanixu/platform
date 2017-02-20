@@ -122,7 +122,8 @@ const (
 
 	GmailEndpoint = "https://mail.google.com/mail/u/"
 
-	TMP_TOKEN_BUCKET = "tmp-token"
+	TMP_TOKEN_BUCKET  = "tmp-token"
+	THUMBNAILS_BUCKET = "thumbnails-bucket"
 
 	StartScanTask = "start_scan"
 

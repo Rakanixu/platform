@@ -6,6 +6,7 @@ import (
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"google.golang.org/api/drive/v3"
 	"log"
 )
@@ -66,7 +67,7 @@ func (gfs *GoogleDriveFs) WalkChannels() (chan ChannelMsg, chan bool) {
 }
 
 // Enrich
-func (gfs *GoogleDriveFs) Enrich(f file.File) chan FileMsg {
+func (gfs *GoogleDriveFs) Enrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
 	go func() {
 		var err error
 
@@ -95,7 +96,7 @@ func (gfs *GoogleDriveFs) Enrich(f file.File) chan FileMsg {
 		}
 
 		if f.(*file.KazoupGoogleFile).Category == globals.CATEGORY_PICTURE && process.Picture {
-			f, err = gfs.processImage(f.(*file.KazoupGoogleFile))
+			f, err = gfs.processImage(gcs, f.(*file.KazoupGoogleFile))
 			if err != nil {
 				gfs.FilesChan <- NewFileMsg(nil, err)
 				return
