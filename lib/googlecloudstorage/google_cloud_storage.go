@@ -26,8 +26,6 @@ var (
 
 // Loads the "default" google cloud config
 func Register() {
-	log.Println("INIT LIBRARY")
-
 	b, err := ioutil.ReadFile(os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"))
 	if err != nil {
 		log.Fatalf("Error reading config file: %s", err)
