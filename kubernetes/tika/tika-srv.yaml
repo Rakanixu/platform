@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  namespace: default
+  name: tika
+spec:
+  replicas: 3
+  selector:
+    name: tika
+  template:
+    metadata:
+      labels:
+        app: tika
+        name: tika
+    spec:
+      containers:
+        - name: tika
+          image: logicalspark/docker-tikaserver
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 9998
+            name: tika

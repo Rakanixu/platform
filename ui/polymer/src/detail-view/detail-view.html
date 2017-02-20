@@ -6,6 +6,67 @@
         display: block;
       }
 
+      .tags {
+        margin: 0;
+        padding: 0;
+        position: relative;
+        bottom: -12px;
+        list-style: none;
+      }
+
+      .tags li, .tags a {
+        float: left;
+        height: 24px;
+        line-height: 24px;
+        position: relative;
+        font-size: 11px;
+        padding-bottom: 7px;
+      }
+
+      .tags a {
+        margin-left: 20px;
+        padding: 0 10px 0 12px;
+        background: #1d9ade;
+        color: #fff;
+        text-decoration: none;
+        -moz-border-radius-bottomright: 4px;
+        -webkit-border-bottom-right-radius: 4px;
+        border-bottom-right-radius: 4px;
+        -moz-border-radius-topright: 4px;
+        -webkit-border-top-right-radius: 4px;
+        border-top-right-radius: 4px;
+      }
+
+      .tags a:before{
+        content:"";
+        float:left;
+        position:absolute;
+        top:0;
+        left:-12px;
+        width:0;
+        height:0;
+        border-color:transparent #1d9ade transparent transparent;
+        border-style:solid;
+        border-width:12px 12px 12px 0;
+      }
+
+      .tags a:after{
+        content:"";
+        position:absolute;
+        top:10px;
+        left:0;
+        float:left;
+        width:4px;
+        height:4px;
+        -moz-border-radius:2px;
+        -webkit-border-radius:2px;
+        border-radius:2px;
+        background:#fff;
+        -moz-box-shadow:-1px -1px 2px #004977;
+        -webkit-box-shadow:-1px -1px 2px #004977;
+        box-shadow:-1px -1px 2px #004977;
+      }
+
       iron-image {
         background-image: -webkit-linear-gradient(45deg,#efefef 25%,transparent 25%,transparent 75%,#efefef 75%,#efefef),-webkit-linear-gradient(45deg,#efefef 25%,transparent 25%,transparent 75%,#efefef 75%,#efefef);
         background-position: 0 0,10px 10px;
@@ -47,6 +108,21 @@
           <source src="[[getAsset(item.url)]]">
         </video>
       </template>
+    </template>
+
+    <template is="dom-if" if="[[isTag(item.tags)]]" restamp="true">
+      <mat-item label="Tags"
+                class="no-ui-action  overflow-visible"
+                description="[[bytesToSize(aggsInfo.totalSize)]]"
+                tabindex="-1">
+        <ul class="tags">
+          <template is="dom-repeat" items="[[item.tags]]">
+            <li>
+              <a>[[item]]</a>
+            </li>
+          </template>
+        </ul>
+      </mat-item>
     </template>
 
     <template is="dom-if" if="[[isSlack(item.file_type)]]" restamp="true">
@@ -494,7 +570,10 @@
         },
         _handleRead: function(e) {
           if (e.detail.response && e.detail.response.result) {
-            this.set('item.original', JSON.parse(e.detail.response.result).original);
+            var doc = JSON.parse(e.detail.response.result);
+
+            this.set('item.original', doc.original);
+            this.set('item.tags', doc.tags);
 
             switch(this.item.file_type) {
               case 'slack':

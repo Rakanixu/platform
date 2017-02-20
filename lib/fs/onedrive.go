@@ -9,6 +9,7 @@ import (
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/onedrive"
 	"log"
 	"net/http"
@@ -104,6 +105,57 @@ func (ofs *OneDriveFs) WalkChannels() (chan ChannelMsg, chan bool) {
 	}()
 
 	return ofs.ChannelsChan, ofs.WalkChannelsRunning
+}
+
+// Enrich
+func (ofs *OneDriveFs) Enrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+	go func() {
+		var err error
+
+		_, ok := f.(*file.KazoupOneDriveFile)
+		if !ok {
+			ofs.FilesChan <- NewFileMsg(nil, errors.New("Error enriching file"))
+			return
+		}
+
+		// OptsKazoupFile.ContentTimestamp and
+		// OptsKazoupFile.CTagsTimestamp are not defined,
+		// Content was never extracted before
+		process := struct {
+			Picture  bool
+			Document bool
+		}{
+			Picture:  false,
+			Document: false,
+		}
+		if f.(*file.KazoupOneDriveFile).OptsKazoupFile == nil {
+			process.Picture = true
+			process.Document = true
+		} else {
+			process.Picture = f.(*file.KazoupOneDriveFile).OptsKazoupFile.TagsTimestamp.Before(f.(*file.KazoupOneDriveFile).Modified)
+			process.Document = f.(*file.KazoupOneDriveFile).OptsKazoupFile.ContentTimestamp.Before(f.(*file.KazoupOneDriveFile).Modified)
+		}
+
+		if f.(*file.KazoupOneDriveFile).Category == globals.CATEGORY_PICTURE && process.Picture {
+			f, err = ofs.processImage(gcs, f.(*file.KazoupOneDriveFile))
+			if err != nil {
+				ofs.FilesChan <- NewFileMsg(nil, err)
+				return
+			}
+		}
+
+		if f.(*file.KazoupOneDriveFile).Category == globals.CATEGORY_DOCUMENT && process.Document {
+			f, err = ofs.processDocument(f.(*file.KazoupOneDriveFile))
+			if err != nil {
+				ofs.FilesChan <- NewFileMsg(nil, err)
+				return
+			}
+		}
+
+		ofs.FilesChan <- NewFileMsg(f, err)
+	}()
+
+	return ofs.FilesChan
 }
 
 // Create a one drive file

@@ -4,6 +4,7 @@ import (
 	"github.com/kazoup/platform/datasource/srv/engine"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/lib/globals"
+	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
@@ -12,7 +13,8 @@ import (
 
 // DataSource struct
 type DataSource struct {
-	Client client.Client
+	Client             client.Client
+	GoogleCloudStorage *gcslib.GoogleCloudStorage
 }
 
 // Create datasource handler
@@ -50,6 +52,10 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 
 	if err := eng.CreateIndexWithAlias(ctx, ds.Client); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource.eng.CreateIndexWithAlias", err.Error())
+	}
+
+	if err := ds.GoogleCloudStorage.CreateBucket(endpoint.Index); err != nil {
+		return errors.InternalServerError("GoogleCloudStorage", err.Error())
 	}
 
 	// Scan created datasource

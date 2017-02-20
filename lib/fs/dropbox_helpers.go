@@ -1,19 +1,24 @@
 package fs
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/kazoup/platform/lib/categories"
 	cs "github.com/kazoup/platform/lib/cloudstorage"
+	"github.com/kazoup/platform/lib/cloudvision"
 	"github.com/kazoup/platform/lib/dropbox"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/image"
 	"github.com/kazoup/platform/lib/tika"
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
+	"sync"
+	"time"
 )
 
 // getFile retrieves a single file from dorpbox
@@ -96,64 +101,103 @@ func (dfs *DropboxFs) getFiles() error {
 	return nil
 }
 
-// generateThumbnail downloads original picture, resize and uploads to Google storage
-func (dfs *DropboxFs) generateThumbnail(f dropbox.DropboxFile, id string) error {
-	name := strings.Split(f.Name, ".")
-
-	if categories.GetDocType("."+name[len(name)-1]) == globals.CATEGORY_PICTURE {
-		// Downloads from dropbox, see connector
-		dcs, err := cs.NewCloudStorageFromEndpoint(dfs.Endpoint, globals.Dropbox)
-		if err != nil {
-			return err
-		}
-
-		pr, err := dcs.Download(f.ID)
-		if err != nil {
-			return err
-		}
-
-		b, err := image.Thumbnail(pr, globals.THUMBNAIL_WIDTH)
-		if err != nil {
-			return err
-		}
-
-		// Uploads to Google cloud storage, see connector
-		ncs, err := cs.NewCloudStorageFromEndpoint(dfs.Endpoint, globals.GoogleCloudStorage)
-		if err != nil {
-			return err
-		}
-
-		if err := ncs.Upload(b, id); err != nil {
-			return err
-		}
+// processImage, thumbnail generation, cloud vision processing
+func (dfs *DropboxFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.KazoupDropboxFile) (file.File, error) {
+	// Downloads from dropbox, see connector
+	dcs, err := cs.NewCloudStorageFromEndpoint(dfs.Endpoint, globals.Dropbox)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	rc, err := dcs.Download(f.Original.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Split readcloser into two or more for paralel processing
+	var buf1, buf2 bytes.Buffer
+	w := io.MultiWriter(&buf1, &buf2)
+
+	if _, err = io.Copy(w, rc); err != nil {
+		return nil, err
+	}
+
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		b, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf2)), globals.THUMBNAIL_WIDTH)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		if err := gcs.Upload(b, dfs.Endpoint.Index, f.ID); err != nil {
+			log.Println(err)
+			return
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		// Resize to optimal size for cloud vision API
+		cvrd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf1)), globals.CLOUD_VISION_IMG_WIDTH)
+		if err != nil {
+			log.Println("CLOUD VISION ERROR", err)
+			return
+		}
+
+		if f.Tags, err = cloudvision.Tag(ioutil.NopCloser(cvrd)); err != nil {
+			log.Println("CLOUD VISION ERROR", err)
+			return
+		}
+
+		if f.OptsKazoupFile == nil {
+			f.OptsKazoupFile = &file.OptsKazoupFile{
+				TagsTimestamp: time.Now(),
+			}
+		} else {
+			f.OptsKazoupFile.TagsTimestamp = time.Now()
+		}
+	}()
+
+	wg.Wait()
+
+	return f, nil
 }
 
 // enrichFile sends the original file to tika and enrich KazoupDropboxFile with Tika interface
-func (dfs *DropboxFs) enrichFile(f *file.KazoupDropboxFile) error {
-	if f.Category == globals.CATEGORY_DOCUMENT {
-		// Download file from Dropbox, so connector is globals.Dropbox
-		dfs, err := cs.NewCloudStorageFromEndpoint(dfs.Endpoint, globals.Dropbox)
-		if err != nil {
-			return err
-		}
-
-		rc, err := dfs.Download(f.Original.ID)
-		if err != nil {
-			return err
-		}
-
-		t, err := tika.ExtractContent(rc)
-		if err != nil {
-			return err
-		}
-
-		f.Content = t.Content()
+func (dfs *DropboxFs) processDocument(f *file.KazoupDropboxFile) (file.File, error) {
+	// Download file from Dropbox, so connector is globals.Dropbox
+	dcs, err := cs.NewCloudStorageFromEndpoint(dfs.Endpoint, globals.Dropbox)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	rc, err := dcs.Download(f.Original.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	t, err := tika.ExtractContent(rc)
+	if err != nil {
+		return nil, err
+	}
+
+	f.Content = t.Content()
+	if f.OptsKazoupFile == nil {
+		f.OptsKazoupFile = &file.OptsKazoupFile{
+			ContentTimestamp: time.Now(),
+		}
+	} else {
+		f.OptsKazoupFile.ContentTimestamp = time.Now()
+	}
+
+	return f, nil
 }
 
 // getNextPage allows pagination while discovering files
@@ -310,13 +354,13 @@ func (dfs *DropboxFs) pushFilesToChannel(list *dropbox.FilesListResponse) {
 				}
 			}
 
-			if err := dfs.generateThumbnail(v, f.ID); err != nil {
-				log.Println(err)
-			}
+			/*			if err := dfs.generateThumbnail(v, f.ID); err != nil {
+							log.Println(err)
+						}
 
-			if err := dfs.enrichFile(f); err != nil {
-				log.Println(err)
-			}
+						if err := dfs.enrichFile(f); err != nil {
+							log.Println(err)
+						}*/
 
 			dfs.FilesChan <- NewFileMsg(f, nil)
 		}
