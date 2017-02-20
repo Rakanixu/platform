@@ -15,8 +15,7 @@ spec:
         command: [
                   "/srv",
                   "--registry=consul",
-                  "--registry_address=$(REGISTRY_SERVICE_HOST)",
-                  "--server_address=0.0.0.0:9090",
+                  "--registry=kubernetes",
                   "--broker=nats",
                   "--broker_address=nats:4222",
                   "--transport=tcp",

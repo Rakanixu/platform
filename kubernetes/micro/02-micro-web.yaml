@@ -19,8 +19,7 @@ spec:
               cpu: "200m"
           command: [
             "/micro",
-            "--registry=consul",
-            "--registry_address=$(REGISTRY_SERVICE_HOST)",
+            "--registry=kubernetes",
             "--web_namespace=com.kazoup.web",
             "--register_ttl=60",
             "--register_interval=30",

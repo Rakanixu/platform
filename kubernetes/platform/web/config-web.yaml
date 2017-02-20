@@ -14,8 +14,7 @@ spec:
       - name: config-web
         command: [
                   "/web",
-                  "--registry_address=$(REGISTRY_SERVICE_HOST)",    
-                  "--server_address=0.0.0.0:9090",
+                 "--registry=kubernetes",
                   "--register_ttl=60",
                   "--register_interval=30",
                   "--broker=nats",
