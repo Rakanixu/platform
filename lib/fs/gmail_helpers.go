@@ -1,18 +1,25 @@
 package fs
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
 	cs "github.com/kazoup/platform/lib/cloudstorage"
+	"github.com/kazoup/platform/lib/cloudvision"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	gmailhelper "github.com/kazoup/platform/lib/gmail"
+	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/image"
 	"github.com/kazoup/platform/lib/tika"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	gmail "google.golang.org/api/gmail/v1"
+	"io"
+	"io/ioutil"
 	"log"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -93,6 +100,7 @@ func (gfs *GmailFs) pushMessagesToChanForPage(s *gmail.Service, msgs []*gmail.Me
 			gf := &gmailhelper.GmailFile{
 				Id:           fmt.Sprintf("%s%s", msgBdy.Id, vl.PartId),
 				MessageId:    msgBdy.Id,
+				AttachmentId: vl.Body.AttachmentId,
 				Extension:    "None",
 				InternalDate: msgBdy.InternalDate,
 				SizeEstimate: msgBdy.SizeEstimate,
@@ -107,13 +115,13 @@ func (gfs *GmailFs) pushMessagesToChanForPage(s *gmail.Service, msgs []*gmail.Me
 			// Constructor will return nil when the attachment has no name
 			// When an attachment has no name, attachment use to be a marketing image
 			if f != nil {
-				if err := gfs.generateThumbnail(gf, v, vl, f.ID); err != nil {
-					log.Println(err)
-				}
+				/*				if err := gfs.generateThumbnail(gf, v, vl, f.ID); err != nil {
+									log.Println(err)
+								}
 
-				if err := gfs.enrichFile(f, v, vl); err != nil {
-					log.Println(err)
-				}
+								if err := gfs.enrichFile(f, v, vl); err != nil {
+									log.Println(err)
+								}*/
 
 				gfs.FilesChan <- NewFileMsg(f, nil)
 			}
@@ -124,59 +132,93 @@ func (gfs *GmailFs) pushMessagesToChanForPage(s *gmail.Service, msgs []*gmail.Me
 }
 
 // generateThumbnail downloads original picture, resize and uploads to Google storage
-func (gfs *GmailFs) generateThumbnail(gf *gmailhelper.GmailFile, msg *gmail.Message, msgp *gmail.MessagePart, id string) error {
-	if msgp.MimeType == globals.MIME_PNG || msgp.MimeType == globals.MIME_JPG || msgp.MimeType == globals.MIME_JPEG {
-		// Downloads from gmail, see connector
-		gcs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.Gmail)
-		if err != nil {
-			return err
-		}
-
-		pr, err := gcs.Download(msg.Id, msgp.Body.AttachmentId)
-		if err != nil {
-			return err
-		}
-
-		b, err := image.Thumbnail(pr, globals.THUMBNAIL_WIDTH)
-		if err != nil {
-			return err
-		}
-
-		// Uploads to Google cloud storage, see connector
-		ncs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.GoogleCloudStorage)
-		if err != nil {
-			return err
-		}
-
-		if err := ncs.Upload(b, id); err != nil {
-			return err
-		}
+func (gfs *GmailFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.KazoupGmailFile) (file.File, error) {
+	// Downloads from gmail, see connector
+	gmcs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.Gmail)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	rc, err := gmcs.Download(f.Original.MessageId, f.Original.AttachmentId)
+	if err != nil {
+		return nil, err
+	}
+
+	// Split readcloser into two or more for paralel processing
+	var buf1, buf2 bytes.Buffer
+	w := io.MultiWriter(&buf1, &buf2)
+
+	if _, err = io.Copy(w, rc); err != nil {
+		return nil, err
+	}
+
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		b, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf2)), globals.THUMBNAIL_WIDTH)
+		if err != nil {
+			log.Println("THUMBNAIL ERROR", err)
+			return
+		}
+
+		if err := gcs.Upload(b, gfs.Endpoint.Index, f.ID); err != nil {
+			log.Println("THUMBNAIL ERROR", err)
+			return
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		// Resize to optimal size for cloud vision API
+		cvrd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf1)), globals.CLOUD_VISION_IMG_WIDTH)
+		if err != nil {
+			log.Println("CLOUD VISION ERROR", err)
+			return
+		}
+
+		if f.Tags, err = cloudvision.Tag(ioutil.NopCloser(cvrd)); err != nil {
+			log.Println("CLOUD VISION ERROR", err)
+			return
+		}
+
+		if f.OptsKazoupFile == nil {
+			f.OptsKazoupFile = &file.OptsKazoupFile{
+				TagsTimestamp: time.Now(),
+			}
+		} else {
+			f.OptsKazoupFile.TagsTimestamp = time.Now()
+		}
+	}()
+
+	wg.Wait()
+
+	return f, nil
 }
 
 // enrichFile sends the original file to tika and enrich KazoupGmailFile with Tika interface
-func (gfs *GmailFs) enrichFile(f *file.KazoupGmailFile, msg *gmail.Message, msgp *gmail.MessagePart) error {
-	if f.Category == globals.CATEGORY_DOCUMENT {
-		// Download file from Gmail, so connector is globals.Gmail
-		gcs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.Gmail)
-		if err != nil {
-			return err
-		}
-
-		rc, err := gcs.Download(msg.Id, msgp.Body.AttachmentId)
-		if err != nil {
-			return err
-		}
-
-		t, err := tika.ExtractContent(rc)
-		if err != nil {
-			return err
-		}
-
-		f.Content = t.Content()
+func (gfs *GmailFs) processDocument(f *file.KazoupGmailFile) (file.File, error) {
+	// Download file from Gmail, so connector is globals.Gmail
+	gcs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.Gmail)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	rc, err := gcs.Download(f.Original.MessageId, f.Original.AttachmentId)
+	if err != nil {
+		return nil, err
+	}
+
+	t, err := tika.ExtractContent(rc)
+	if err != nil {
+		return nil, err
+	}
+
+	f.Content = t.Content()
+
+	return f, nil
 }
