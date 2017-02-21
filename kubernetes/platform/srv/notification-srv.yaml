@@ -14,8 +14,7 @@ spec:
       - name: notification-srv
         command: [
                   "/srv",
-                  "--registry=consul",
-                  "--registry_address=$(REGISTRY_SERVICE_HOST)",             
+                  "--registry=kubernetes",             
                   "--server_address=0.0.0.0:9090",
                   "--broker=nats",
                   "--broker_address=nats:4222",

@@ -282,6 +282,16 @@ func (e *elastic) Search(ctx context.Context, req *db.SearchRequest) (*db.Search
 	}
 
 	out, err := e.Client.Search(req.Index).Type(req.Type).Source(query).Do(ctx)
+	if err != nil {
+		// Error Index does not exists likely to happen (User does not have datasources).
+		// Just empty result, as I do not want to check every possible error
+		// and manage them properly, empty result or error..
+		return &db.SearchResponse{
+			Result: `[]`,
+			Info:   `{"total":0}`,
+		}, nil
+	}
+
 	for _, v := range out.Hits.Hits {
 		data, err := v.Source.MarshalJSON()
 		if err != nil {
