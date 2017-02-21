@@ -107,6 +107,8 @@ func (e *elastic) Init(c client.Client) error {
 				if err := c.Publish(globals.NewSystemContext(), c.NewPublication(globals.EnrichTopic, n)); err != nil {
 					log.Print("Publishing (enrich file) error %s", err)
 				}
+
+				time.Sleep(globals.PUBLISHING_DELAY_MS)
 			}
 		}).
 		Name(fmt.Sprintf("bulkFilesProcessor-%s", rs)).

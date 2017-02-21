@@ -91,6 +91,8 @@ func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) erro
 				if err := file.IndexAsync(c.Client, fc.File, globals.FilesTopic, fc.File.GetIndex(), false); err != nil {
 					log.Println("Error indexing async file", err)
 				}
+
+				time.Sleep(globals.DISCOVERY_DELAY_MS)
 			}
 		}
 	}()

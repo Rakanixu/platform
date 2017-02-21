@@ -22,6 +22,7 @@ import (
 	"golang.org/x/oauth2/slack"
 	"io"
 	"log"
+	"time"
 )
 
 const (
@@ -55,14 +56,13 @@ const (
 	FileTypeDirectory = "directories"
 	TypeDatasource    = "datasource"
 
-	Local              = "local"
-	Slack              = "slack"
-	GoogleDrive        = "googledrive"
-	Gmail              = "gmail"
-	OneDrive           = "onedrive"
-	Dropbox            = "dropbox"
-	Box                = "box"
-	GoogleCloudStorage = "googlecloudstorage"
+	Local       = "local"
+	Slack       = "slack"
+	GoogleDrive = "googledrive"
+	Gmail       = "gmail"
+	OneDrive    = "onedrive"
+	Dropbox     = "dropbox"
+	Box         = "box"
 
 	DOCUMENT     = "document"
 	PRESENTATION = "presentation"
@@ -137,6 +137,9 @@ const (
 
 	NOTIFY_REFRESH_DATASOURCES = "refresh-datasources"
 	NOTIFY_REFRESH_SEARCH      = "refresh-search"
+
+	DISCOVERY_DELAY_MS  = 10 * time.Millisecond
+	PUBLISHING_DELAY_MS = 10 * time.Millisecond
 )
 
 func NewGoogleOautConfig() *oauth2.Config {

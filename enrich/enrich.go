@@ -8,6 +8,7 @@ import (
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/cli"
+	"github.com/micro/go-micro/server"
 	"github.com/micro/go-os/monitor"
 	"log"
 	"time"
@@ -38,6 +39,7 @@ func srv(ctx *cli.Context) {
 				Client:             service.Client(),
 				GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
 			},
+			server.SubscriberQueue("enrich"),
 		),
 	); err != nil {
 		log.Fatal(err)

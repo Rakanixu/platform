@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"github.com/cenkalti/backoff"
 	cs "github.com/kazoup/platform/lib/cloudstorage"
 	"github.com/kazoup/platform/lib/cloudvision"
 	"github.com/kazoup/platform/lib/file"
@@ -139,10 +140,15 @@ func (gfs *GmailFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.KazoupG
 		return nil, err
 	}
 
-	rc, err := gmcs.Download(f.Original.MessageId, f.Original.AttachmentId)
-	if err != nil {
-		return nil, err
-	}
+	var rc io.ReadCloser
+	backoff.Retry(func() error {
+		rc, err = gmcs.Download(f.Original.MessageId, f.Original.AttachmentId)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}, backoff.NewExponentialBackOff())
 
 	// Split readcloser into two or more for paralel processing
 	var buf1, buf2 bytes.Buffer
@@ -158,16 +164,21 @@ func (gfs *GmailFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.KazoupG
 	go func() {
 		defer wg.Done()
 
-		b, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf2)), globals.THUMBNAIL_WIDTH)
-		if err != nil {
-			log.Println("THUMBNAIL ERROR", err)
-			return
-		}
+		backoff.Retry(func() error {
+			b, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf2)), globals.THUMBNAIL_WIDTH)
+			if err != nil {
+				log.Println("THUMNAIL GENERATION ERROR, SKIPPING", err)
+				// Skip retry
+				return nil
+			}
 
-		if err := gcs.Upload(b, gfs.Endpoint.Index, f.ID); err != nil {
-			log.Println("THUMBNAIL ERROR", err)
-			return
-		}
+			if err := gcs.Upload(b, gfs.Endpoint.Index, f.ID); err != nil {
+				log.Println("THUMNAIL UPLOAD ERROR", err)
+				return err
+			}
+
+			return nil
+		}, backoff.NewExponentialBackOff())
 	}()
 
 	wg.Add(1)
