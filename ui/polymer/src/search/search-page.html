@@ -526,10 +526,8 @@
 
                     this.async(function() {
                         if (data && data.term && data.term.length) {
-                            this.set('searching', true);
                             this.$.search.input.value = data.term;
                         } else {
-                            this.set('searching', false);
                             this.$.search.input.value = '';
                         }
                         this.$.search._inputHandler();
@@ -709,6 +707,7 @@
                     });
                     this.$.search.focus();
                 }, 10);
+
                 this.set('searching', !this.searching);
             },
             mainAction: function(e, detail) {
