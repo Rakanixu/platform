@@ -3,6 +3,8 @@ package fs
 import (
 	"bufio"
 	"bytes"
+	//"github.com/cenkalti/backoff"
+	"github.com/cenkalti/backoff"
 	cs "github.com/kazoup/platform/lib/cloudstorage"
 	"github.com/kazoup/platform/lib/cloudvision"
 	"github.com/kazoup/platform/lib/file"
@@ -90,11 +92,16 @@ func (gfs *GoogleDriveFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.K
 		return nil, err
 	}
 
-	// Not great, but check implementation for details about variadic params
-	rc, err := gdcs.Download(f.Original.Id, "download", "")
-	if err != nil {
-		return nil, err
-	}
+	var rc io.ReadCloser
+	backoff.Retry(func() error {
+		// Not great, but check implementation for details about variadic params
+		rc, err = gdcs.Download(f.Original.Id, "download", "")
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}, backoff.NewExponentialBackOff())
 
 	// Split readcloser into two or more for different processing
 	var buf1, buf2 bytes.Buffer
@@ -110,17 +117,22 @@ func (gfs *GoogleDriveFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.K
 	go func() {
 		defer wg.Done()
 
-		// Resize to our thumbnail size
-		rd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf2)), globals.THUMBNAIL_WIDTH)
-		if err != nil {
-			log.Println(err)
-			return
-		}
+		backoff.Retry(func() error {
+			// Resize to our thumbnail size
+			rd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf2)), globals.THUMBNAIL_WIDTH)
+			if err != nil {
+				log.Println("THUMNAIL GENERATION ERROR, SKIPPING", err)
+				// Skip retry
+				return nil
+			}
 
-		if err := gcs.Upload(rd, gfs.Endpoint.Index, f.ID); err != nil {
-			log.Println(err)
-			return
-		}
+			if err := gcs.Upload(rd, gfs.Endpoint.Index, f.ID); err != nil {
+				log.Println("THUMNAIL UPLOAD ERROR", err)
+				return err
+			}
+
+			return nil
+		}, backoff.NewExponentialBackOff())
 	}()
 
 	wg.Add(1)

@@ -30,6 +30,8 @@ func srv(ctx *cli.Context) {
 	healthchecks.RegisterDatasourceHealthChecks(service, m)
 	healthchecks.RegisterBrokerHealthChecks(service, m)
 
+	gcslib.Register()
+
 	// Attach crawler started subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(globals.CrawlerStartedTopic, &subscriber.CrawlerStarted{
@@ -51,8 +53,9 @@ func srv(ctx *cli.Context) {
 	// Attach delete bucket subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(globals.DeleteBucketTopic, &subscriber.DeleteBucket{
-			Client: service.Client(),
-			Broker: service.Server().Options().Broker,
+			Client:             service.Client(),
+			Broker:             service.Server().Options().Broker,
+			GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
 		})); err != nil {
 		log.Fatal(err)
 	}
@@ -60,13 +63,12 @@ func srv(ctx *cli.Context) {
 	// Attach clean bucket subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(globals.DeleteFileInBucketTopic, &subscriber.DeleteFileInBucket{
-			Client: service.Client(),
-			Broker: service.Server().Options().Broker,
+			Client:             service.Client(),
+			Broker:             service.Server().Options().Broker,
+			GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
 		})); err != nil {
 		log.Fatal(err)
 	}
-
-	gcslib.Register()
 
 	// New service handler
 	service.Server().Handle(

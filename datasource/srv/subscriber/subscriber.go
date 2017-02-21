@@ -3,11 +3,10 @@ package subscriber
 import (
 	"encoding/json"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
-	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
-	cs "github.com/kazoup/platform/lib/cloudstorage"
 	"github.com/kazoup/platform/lib/globals"
+	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/broker"
 	"github.com/micro/go-micro/client"
@@ -111,33 +110,23 @@ func (cf *CrawlerFinished) SubscribeCrawlerFinished(ctx context.Context, msg *cr
 }
 
 type DeleteBucket struct {
-	Client client.Client
-	Broker broker.Broker
+	Client             client.Client
+	Broker             broker.Broker
+	GoogleCloudStorage *gcslib.GoogleCloudStorage
 }
 
 // SubscribeDeleteBucket subscribes to DeleteBucket Message to clean un a bicket in GC storage
 func (db *DeleteBucket) SubscribeDeleteBucket(ctx context.Context, msg *proto.DeleteBucketMessage) error {
-	ncs, err := cs.NewCloudStorageFromEndpoint(msg.Endpoint, globals.GoogleCloudStorage)
-	if err != nil {
-		return err
-	}
-
-	return ncs.DeleteBucket()
+	return db.GoogleCloudStorage.DeleteBucket(msg.Endpoint.Index)
 }
 
 type DeleteFileInBucket struct {
-	Client client.Client
-	Broker broker.Broker
+	Client             client.Client
+	Broker             broker.Broker
+	GoogleCloudStorage *gcslib.GoogleCloudStorage
 }
 
 // SubscribeCleanBucket subscribes to DCleanBucket Message to remove thumbs not longer related with document in index
 func (dfb *DeleteFileInBucket) SubscribeDeleteFileInBucket(ctx context.Context, msg *proto.DeleteFileInBucketMessage) error {
-	ncs, err := cs.NewCloudStorageFromEndpoint(&datasource_proto.Endpoint{
-		Index: msg.Index,
-	}, globals.GoogleCloudStorage)
-	if err != nil {
-		return err
-	}
-
-	return ncs.Delete(msg.Index, msg.FileId)
+	return dfb.GoogleCloudStorage.Delete(msg.Index, msg.FileId)
 }
