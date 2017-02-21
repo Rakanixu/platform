@@ -29,8 +29,6 @@ type CloudStorageUtils interface {
 // NewCloudStorageFromEndpoint constructor
 func NewCloudStorageFromEndpoint(e *datasource_proto.Endpoint, connector string) (CloudStorage, error) {
 	switch connector {
-	case globals.GoogleCloudStorage:
-		return NewGoogleCloudStorage(e), nil
 	case globals.Slack:
 		return NewSlackCloudStorage(e), nil
 	case globals.GoogleDrive:

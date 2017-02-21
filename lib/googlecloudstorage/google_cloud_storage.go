@@ -80,6 +80,47 @@ func (gcs *GoogleCloudStorage) CreateBucket(bucketName string) error {
 	return nil
 }
 
+// DeleteBucket deletes a bucket and all its contents in GCS account
+func (gcs *GoogleCloudStorage) DeleteBucket(bucketName string) error {
+	c, err := google.DefaultClient(context.Background(), storage.DevstorageFullControlScope)
+	if err != nil {
+		return err
+	}
+	srv, err := storage.New(c)
+	if err != nil {
+		return err
+	}
+
+	_, err = srv.Buckets.Get(bucketName).Do()
+	// Bucket does not exists
+	if err != nil {
+		return nil // If does not exists, it's already deleted, then success
+	}
+
+	r, err := srv.Objects.List(bucketName).Fields("items,nextPageToken").Do()
+	if err != nil {
+		return err
+	}
+
+	for _, v := range r.Items {
+		if err := srv.Objects.Delete(bucketName, v.Name).Do(); err != nil {
+			return err
+		}
+	}
+
+	if len(r.NextPageToken) > 0 {
+		if err := gcs.deleteBucketNextPage(srv, bucketName, r.NextPageToken); err != nil {
+			return err
+		}
+	}
+
+	if err := srv.Buckets.Delete(bucketName).Do(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Upload resource
 func (gcs *GoogleCloudStorage) Upload(r io.Reader, bucketName, key string) error {
 	c, err := google.DefaultClient(context.Background(), storage.DevstorageFullControlScope)
@@ -135,6 +176,27 @@ func (gcs *GoogleCloudStorage) Delete(bucketName, key string) error {
 
 	if err := srv.Objects.Delete(bucketName, key).Do(); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (gcs *GoogleCloudStorage) deleteBucketNextPage(srv *storage.Service, bucketName, nextPageToken string) error {
+	r, err := srv.Objects.List(bucketName).Fields("items,nextPageToken").PageToken(nextPageToken).Do()
+	if err != nil {
+		return err
+	}
+
+	for _, v := range r.Items {
+		if err := srv.Objects.Delete(bucketName, v.Name).Do(); err != nil {
+			return err
+		}
+	}
+
+	if len(r.NextPageToken) > 0 {
+		if err := gcs.deleteBucketNextPage(srv, bucketName, r.NextPageToken); err != nil {
+			return err
+		}
 	}
 
 	return nil
