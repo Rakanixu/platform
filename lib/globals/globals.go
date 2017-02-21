@@ -22,6 +22,7 @@ import (
 	"golang.org/x/oauth2/slack"
 	"io"
 	"log"
+	"time"
 )
 
 const (
@@ -136,6 +137,9 @@ const (
 
 	NOTIFY_REFRESH_DATASOURCES = "refresh-datasources"
 	NOTIFY_REFRESH_SEARCH      = "refresh-search"
+
+	DISCOVERY_DELAY_MS  = 10 * time.Millisecond
+	PUBLISHING_DELAY_MS = 10 * time.Millisecond
 )
 
 func NewGoogleOautConfig() *oauth2.Config {
