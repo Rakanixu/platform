@@ -27,9 +27,12 @@ import (
 	ccli "github.com/micro/cli"
 	"github.com/micro/go-micro/cmd"
 	"github.com/micro/micro/web"
+	//"github.com/pkg/profile"
 )
 
 func main() {
+	//defer profile.Start().Stop()
+
 	app := cmd.App()
 	app.Commands = append(app.Commands, auth.Commands()...)
 	app.Commands = append(app.Commands, config.Commands()...)

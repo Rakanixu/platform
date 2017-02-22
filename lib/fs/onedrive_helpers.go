@@ -192,16 +192,19 @@ func (ofs *OneDriveFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.Kazo
 	}
 
 	var rc io.ReadCloser
-	rc.Close()
 
-	backoff.Retry(func() error {
+	if err := backoff.Retry(func() error {
 		rc, err = ocs.Download(f.Original.ID)
 		if err != nil {
 			return err
 		}
 
 		return nil
-	}, backoff.NewExponentialBackOff())
+	}, backoff.NewExponentialBackOff()); err != nil {
+		log.Println("ERROR DOWNLOADING FILE", err)
+		return nil, err
+	}
+	defer rc.Close()
 
 	// Split readcloser into two or more for paralel processing
 	var buf1, buf2 bytes.Buffer
