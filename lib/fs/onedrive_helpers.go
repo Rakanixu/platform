@@ -192,6 +192,8 @@ func (ofs *OneDriveFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.Kazo
 	}
 
 	var rc io.ReadCloser
+	rc.Close()
+
 	backoff.Retry(func() error {
 		rc, err = ocs.Download(f.Original.ID)
 		if err != nil {
@@ -223,7 +225,7 @@ func (ofs *OneDriveFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.Kazo
 				return nil
 			}
 
-			if err := gcs.Upload(b, ofs.Endpoint.Index, f.ID); err != nil {
+			if err := gcs.Upload(ioutil.NopCloser(b), ofs.Endpoint.Index, f.ID); err != nil {
 				log.Println("THUMNAIL UPLOAD ERROR", err)
 				return err
 			}

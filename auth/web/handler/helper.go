@@ -64,7 +64,7 @@ func SaveTmpToken(uuid, jwt string) error {
 	}
 
 	// We save uuid - jwt token pair in GCS
-	if err := gcs.Upload(bytes.NewBufferString(jwt), globals.TMP_TOKEN_BUCKET, uuid); err != nil {
+	if err := gcs.Upload(ioutil.NopCloser(bytes.NewBufferString(jwt)), globals.TMP_TOKEN_BUCKET, uuid); err != nil {
 		return err
 	}
 

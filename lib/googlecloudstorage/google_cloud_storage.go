@@ -122,7 +122,9 @@ func (gcs *GoogleCloudStorage) DeleteBucket(bucketName string) error {
 }
 
 // Upload resource
-func (gcs *GoogleCloudStorage) Upload(r io.Reader, bucketName, key string) error {
+func (gcs *GoogleCloudStorage) Upload(r io.ReadCloser, bucketName, key string) error {
+	defer r.Close()
+
 	c, err := google.DefaultClient(context.Background(), storage.DevstorageFullControlScope)
 	if err != nil {
 		return err

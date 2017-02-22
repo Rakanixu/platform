@@ -111,6 +111,8 @@ func (dfs *DropboxFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.Kazou
 	}
 
 	var rc io.ReadCloser
+	rc.Close()
+
 	backoff.Retry(func() error {
 		rc, err = dcs.Download(f.Original.ID)
 		if err != nil {
@@ -142,7 +144,7 @@ func (dfs *DropboxFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.Kazou
 				return nil
 			}
 
-			if err := gcs.Upload(b, dfs.Endpoint.Index, f.ID); err != nil {
+			if err := gcs.Upload(ioutil.NopCloser(b), dfs.Endpoint.Index, f.ID); err != nil {
 				log.Println("THUMNAIL UPLOAD ERROR", err)
 				return err
 			}

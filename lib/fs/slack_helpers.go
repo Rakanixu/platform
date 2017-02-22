@@ -136,6 +136,8 @@ func (sfs *SlackFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.KazoupS
 	}
 
 	var rc io.ReadCloser
+	defer rc.Close()
+
 	backoff.Retry(func() error {
 		rc, err = scs.Download(f.Original.URLPrivateDownload)
 		if err != nil {
@@ -167,7 +169,7 @@ func (sfs *SlackFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.KazoupS
 				return nil
 			}
 
-			if err := gcs.Upload(b, sfs.Endpoint.Index, f.ID); err != nil {
+			if err := gcs.Upload(ioutil.NopCloser(b), sfs.Endpoint.Index, f.ID); err != nil {
 				log.Println("THUMNAIL UPLOAD ERROR", err)
 				return err
 			}

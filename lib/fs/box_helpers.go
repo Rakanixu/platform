@@ -100,6 +100,8 @@ func (bfs *BoxFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.KazoupBox
 	}
 
 	var rc io.ReadCloser
+	defer rc.Close()
+
 	backoff.Retry(func() error {
 		rc, err = bcs.Download(f.Original.ID)
 		if err != nil {
@@ -131,7 +133,7 @@ func (bfs *BoxFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.KazoupBox
 				return nil
 			}
 
-			if err := gcs.Upload(rd, bfs.Endpoint.Index, f.ID); err != nil {
+			if err := gcs.Upload(ioutil.NopCloser(rd), bfs.Endpoint.Index, f.ID); err != nil {
 				log.Println("THUMNAIL UPLOAD ERROR", err)
 				return err
 			}

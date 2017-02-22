@@ -93,9 +93,12 @@ func (gfs *GoogleDriveFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.K
 	}
 
 	var rc io.ReadCloser
+	defer rc.Close()
+
 	backoff.Retry(func() error {
 		// Not great, but check implementation for details about variadic params
 		rc, err = gdcs.Download(f.Original.Id, "download", "")
+
 		if err != nil {
 			return err
 		}
@@ -126,7 +129,7 @@ func (gfs *GoogleDriveFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.K
 				return nil
 			}
 
-			if err := gcs.Upload(rd, gfs.Endpoint.Index, f.ID); err != nil {
+			if err := gcs.Upload(ioutil.NopCloser(rd), gfs.Endpoint.Index, f.ID); err != nil {
 				log.Println("THUMNAIL UPLOAD ERROR", err)
 				return err
 			}
