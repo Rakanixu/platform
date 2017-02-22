@@ -141,6 +141,8 @@ func (gfs *GmailFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.KazoupG
 	}
 
 	var rc io.ReadCloser
+	rc.Close()
+
 	backoff.Retry(func() error {
 		rc, err = gmcs.Download(f.Original.MessageId, f.Original.AttachmentId)
 		if err != nil {
@@ -172,7 +174,7 @@ func (gfs *GmailFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.KazoupG
 				return nil
 			}
 
-			if err := gcs.Upload(b, gfs.Endpoint.Index, f.ID); err != nil {
+			if err := gcs.Upload(ioutil.NopCloser(b), gfs.Endpoint.Index, f.ID); err != nil {
 				log.Println("THUMNAIL UPLOAD ERROR", err)
 				return err
 			}
