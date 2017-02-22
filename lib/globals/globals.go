@@ -122,6 +122,8 @@ const (
 
 	GmailEndpoint = "https://mail.google.com/mail/u/"
 
+	ROSETTE_ENDPOINT = "https://api.rosette.com/rest/v1/entities/"
+
 	TMP_TOKEN_BUCKET  = "tmp-token"
 	THUMBNAILS_BUCKET = "thumbnails-bucket"
 
@@ -134,6 +136,7 @@ const (
 	DB_ACCESS_TOKEN  = "GSjsfduh3jskJHGuiU87y-skjaXXu7hpcMkdKghsojssio_98sushmpPpodvhakasdB"
 	CLIENT_ID_SECRET = "EC1FD9R5t6D3cs9CzPbgJaBJjshoVgrJrTs6U39scYzYF7HYyMlv_mal2IjLLaA9" // Auth0 RPC API client
 	ENCRYTION_KEY_32 = "asjklasd766adfashj22kljasdhyfjkh"
+	ROSETTE_API_KEY  = "c6872fa01aa45d59438d56831bb5b1a2"
 
 	NOTIFY_REFRESH_DATASOURCES = "refresh-datasources"
 	NOTIFY_REFRESH_SEARCH      = "refresh-search"
