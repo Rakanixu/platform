@@ -24,6 +24,7 @@ dependencies:
                 - sudo apt-get install ruby ruby-dev gcc make icnsutils graphicsmagick xz-utils
 test:
         override:
+                - go version
                 - ./test.sh
                 - ./build-ui.sh
                 - ./build-circle.sh
