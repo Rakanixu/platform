@@ -12,19 +12,42 @@ import (
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	"log"
 )
 
 type Enrich struct {
 	Client             client.Client
 	GoogleCloudStorage *gcslib.GoogleCloudStorage
+	EnrichMsgChan      chan *enrich_proto.EnrichMessage
 }
 
 // Enrich subscriber, receive EnrichMessage to get the file and process it
 func (e *Enrich) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
-	frsp, err := db_helper.ReadFromDB(e.Client, globals.NewSystemContext(), &db_proto.ReadRequest{
-		Index: enrichmsg.Index,
+	// Queue internally
+	e.EnrichMsgChan <- enrichmsg
+
+	return nil
+}
+
+func SyncMessages(e *Enrich) {
+	go func() {
+		for {
+			select {
+			case m := <-e.EnrichMsgChan:
+				if err := processEnrichMsg(e.Client, e.GoogleCloudStorage, m); err != nil {
+					log.Println("Error Processing enrich msg", err)
+
+				}
+			}
+		}
+	}()
+}
+
+func processEnrichMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m *enrich_proto.EnrichMessage) error {
+	frsp, err := db_helper.ReadFromDB(c, globals.NewSystemContext(), &db_proto.ReadRequest{
+		Index: m.Index,
 		Type:  globals.FileType,
-		Id:    enrichmsg.Id,
+		Id:    m.Id,
 	})
 	if err != nil {
 		return err
@@ -35,7 +58,7 @@ func (e *Enrich) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessa
 		return err
 	}
 
-	drsp, err := db_helper.ReadFromDB(e.Client, globals.NewSystemContext(), &db_proto.ReadRequest{
+	drsp, err := db_helper.ReadFromDB(c, globals.NewSystemContext(), &db_proto.ReadRequest{
 		Index: globals.IndexDatasources,
 		Type:  globals.TypeDatasource,
 		Id:    f.GetDatasourceID(),
@@ -54,7 +77,7 @@ func (e *Enrich) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessa
 		return err
 	}
 
-	ch := mfs.Enrich(f, e.GoogleCloudStorage)
+	ch := mfs.Enrich(f, gcs)
 	// Block while enriching, we expect only one m
 	fm := <-ch
 	close(ch)
@@ -68,10 +91,10 @@ func (e *Enrich) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessa
 		return err
 	}
 
-	_, err = db_helper.UpdateFromDB(e.Client, globals.NewSystemContext(), &db_proto.UpdateRequest{
-		Index: enrichmsg.Index,
+	_, err = db_helper.UpdateFromDB(c, globals.NewSystemContext(), &db_proto.UpdateRequest{
+		Index: m.Index,
 		Type:  globals.FileType,
-		Id:    enrichmsg.Id,
+		Id:    m.Id,
 		Data:  string(b),
 	})
 	if err != nil {

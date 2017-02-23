@@ -95,13 +95,13 @@ func (gfs *GoogleDriveFs) Enrich(f file.File, gcs *gcslib.GoogleCloudStorage) ch
 			process.Document = f.(*file.KazoupGoogleFile).OptsKazoupFile.ContentTimestamp.Before(f.(*file.KazoupGoogleFile).Modified)
 		}
 
-		/*		if f.(*file.KazoupGoogleFile).Category == globals.CATEGORY_PICTURE && process.Picture {
-				f, err = gfs.processImage(gcs, f.(*file.KazoupGoogleFile))
-				if err != nil {
-					gfs.FilesChan <- NewFileMsg(nil, err)
-					return
-				}
-			}*/
+		if f.(*file.KazoupGoogleFile).Category == globals.CATEGORY_PICTURE && process.Picture {
+			f, err = gfs.processImage(gcs, f.(*file.KazoupGoogleFile))
+			if err != nil {
+				gfs.FilesChan <- NewFileMsg(nil, err)
+				return
+			}
+		}
 
 		if f.(*file.KazoupGoogleFile).Category == globals.CATEGORY_DOCUMENT && process.Document {
 			f, err = gfs.processDocument(f.(*file.KazoupGoogleFile))
