@@ -100,16 +100,19 @@ func (bfs *BoxFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.KazoupBox
 	}
 
 	var rc io.ReadCloser
-	defer rc.Close()
 
-	backoff.Retry(func() error {
+	if err := backoff.Retry(func() error {
 		rc, err = bcs.Download(f.Original.ID)
 		if err != nil {
 			return err
 		}
 
 		return nil
-	}, backoff.NewExponentialBackOff())
+	}, backoff.NewExponentialBackOff()); err != nil {
+		log.Println("ERROR DOWNLOADING FILE", err)
+		return nil, err
+	}
+	defer rc.Close()
 
 	// Split readcloser into two or more for paralel processing
 	var buf1, buf2 bytes.Buffer

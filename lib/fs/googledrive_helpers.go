@@ -93,9 +93,8 @@ func (gfs *GoogleDriveFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.K
 	}
 
 	var rc io.ReadCloser
-	defer rc.Close()
 
-	backoff.Retry(func() error {
+	if err := backoff.Retry(func() error {
 		// Not great, but check implementation for details about variadic params
 		rc, err = gdcs.Download(f.Original.Id, "download", "")
 
@@ -104,7 +103,11 @@ func (gfs *GoogleDriveFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.K
 		}
 
 		return nil
-	}, backoff.NewExponentialBackOff())
+	}, backoff.NewExponentialBackOff()); err != nil {
+		log.Println("ERROR DOWNLOADING FILE", err)
+		return nil, err
+	}
+	defer rc.Close()
 
 	// Split readcloser into two or more for different processing
 	var buf1, buf2 bytes.Buffer
