@@ -136,16 +136,19 @@ func (sfs *SlackFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.KazoupS
 	}
 
 	var rc io.ReadCloser
-	defer rc.Close()
 
-	backoff.Retry(func() error {
+	if err := backoff.Retry(func() error {
 		rc, err = scs.Download(f.Original.URLPrivateDownload)
 		if err != nil {
 			return err
 		}
 
 		return nil
-	}, backoff.NewExponentialBackOff())
+	}, backoff.NewExponentialBackOff()); err != nil {
+		log.Println("ERROR DOWNLOADING FILE", err)
+		return nil, err
+	}
+	defer rc.Close()
 
 	// Split readcloser into two or more for paralel processing
 	var buf1, buf2 bytes.Buffer

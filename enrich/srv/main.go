@@ -1,6 +1,7 @@
 package main
 
 import (
+	enrich_proto "github.com/kazoup/platform/enrich/srv/proto/enrich"
 	"github.com/kazoup/platform/enrich/srv/subscriber"
 	"github.com/kazoup/platform/lib/globals"
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
@@ -30,14 +31,18 @@ func main() {
 
 	gcslib.Register()
 
+	s := &subscriber.Enrich{
+		Client:             service.Client(),
+		GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
+		EnrichMsgChan:      make(chan *enrich_proto.EnrichMessage, 10000000),
+	}
+	subscriber.SyncMessages(s)
+
 	// Attach subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.EnrichTopic,
-			&subscriber.Enrich{
-				Client:             service.Client(),
-				GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
-			},
+			s,
 			server.SubscriberQueue("enrich"),
 		),
 	); err != nil {
