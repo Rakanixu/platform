@@ -12,13 +12,16 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/image"
+	rossetelib "github.com/kazoup/platform/lib/rossete"
 	"github.com/kazoup/platform/lib/slack"
 	"github.com/kazoup/platform/lib/tika"
+	"github.com/kennygrant/sanitize"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"sync"
 	"time"
@@ -236,6 +239,23 @@ func (sfs *SlackFs) processDocument(f *file.KazoupSlackFile) (file.File, error) 
 		}
 	} else {
 		f.OptsKazoupFile.ContentTimestamp = time.Now()
+	}
+
+	// Apply rossete
+	if len(f.Content) > 0 {
+		nl, err := regexp.Compile("\n")
+		if err != nil {
+			return nil, err
+		}
+		q, err := regexp.Compile("\"")
+		if err != nil {
+			return nil, err
+		}
+
+		f.Entities, err = rossetelib.Entities(q.ReplaceAllString(nl.ReplaceAllString(sanitize.HTML(f.Content), " "), ""))
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return f, nil
