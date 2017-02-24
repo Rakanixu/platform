@@ -86,6 +86,7 @@ const (
 
 	CATEGORY_PICTURE  = "Pictures"
 	CATEGORY_DOCUMENT = "Documents"
+	CATEGORY_AUDIO    = "Audio"
 
 	THUMBNAIL_WIDTH        = 178
 	CLOUD_VISION_IMG_WIDTH = 640
@@ -124,8 +125,8 @@ const (
 
 	ROSETTE_ENDPOINT = "https://api.rosette.com/rest/v1/entities/"
 
-	TMP_TOKEN_BUCKET  = "tmp-token"
-	THUMBNAILS_BUCKET = "thumbnails-bucket"
+	TMP_TOKEN_BUCKET = "tmp-token"
+	AUDIO_BUCKET     = "kazoup-audio-bucket"
 
 	StartScanTask = "start_scan"
 

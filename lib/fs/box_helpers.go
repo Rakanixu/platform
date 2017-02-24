@@ -14,6 +14,7 @@ import (
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/image"
 	rossetelib "github.com/kazoup/platform/lib/rossete"
+	sttlib "github.com/kazoup/platform/lib/speechtotext"
 	"github.com/kazoup/platform/lib/tika"
 	"github.com/kennygrant/sanitize"
 	"io"
@@ -220,6 +221,41 @@ func (bfs *BoxFs) processDocument(f *file.KazoupBoxFile) (file.File, error) {
 			return nil, err
 		}
 	}
+
+	return f, nil
+}
+
+func (bfs *BoxFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.KazoupBoxFile) (file.File, error) {
+	// Download file from Box, so connector is globals.Box
+	bcs, err := cs.NewCloudStorageFromEndpoint(bfs.Endpoint, globals.Box)
+	if err != nil {
+		return nil, err
+	}
+
+	rc, err := bcs.Download(f.Original.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := gcs.Upload(rc, globals.AUDIO_BUCKET, f.ID); err != nil {
+		return nil, err
+	}
+
+	log.Println("111111111111111111")
+	stt, err := sttlib.AsyncContent(fmt.Sprintf("gs://%s/%s", globals.AUDIO_BUCKET, f.ID))
+	if err != nil {
+		return nil, err
+	}
+
+	f.Content = stt.Content()
+	if f.OptsKazoupFile == nil {
+		f.OptsKazoupFile = &file.OptsKazoupFile{
+			AudioTimestamp: time.Now(),
+		}
+	} else {
+		f.OptsKazoupFile.AudioTimestamp = time.Now()
+	}
+	log.Println("222222222222222222", f.Content)
 
 	return f, nil
 }

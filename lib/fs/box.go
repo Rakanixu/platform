@@ -124,16 +124,20 @@ func (bfs *BoxFs) Enrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileM
 		process := struct {
 			Picture  bool
 			Document bool
+			Audio    bool
 		}{
 			Picture:  false,
 			Document: false,
+			Audio:    false,
 		}
 		if f.(*file.KazoupBoxFile).OptsKazoupFile == nil {
 			process.Picture = true
 			process.Document = true
+			process.Audio = true
 		} else {
 			process.Picture = f.(*file.KazoupBoxFile).OptsKazoupFile.TagsTimestamp.Before(f.(*file.KazoupBoxFile).Modified)
 			process.Document = f.(*file.KazoupBoxFile).OptsKazoupFile.ContentTimestamp.Before(f.(*file.KazoupBoxFile).Modified)
+			process.Audio = f.(*file.KazoupBoxFile).OptsKazoupFile.AudioTimestamp.Before(f.(*file.KazoupBoxFile).Modified)
 		}
 
 		if f.(*file.KazoupBoxFile).Category == globals.CATEGORY_PICTURE && process.Picture {
@@ -146,6 +150,14 @@ func (bfs *BoxFs) Enrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileM
 
 		if f.(*file.KazoupBoxFile).Category == globals.CATEGORY_DOCUMENT && process.Document {
 			f, err = bfs.processDocument(f.(*file.KazoupBoxFile))
+			if err != nil {
+				bfs.FilesChan <- NewFileMsg(nil, err)
+				return
+			}
+		}
+
+		if f.(*file.KazoupBoxFile).Category == globals.CATEGORY_AUDIO && process.Audio {
+			f, err = bfs.processAudio(gcs, f.(*file.KazoupBoxFile))
 			if err != nil {
 				bfs.FilesChan <- NewFileMsg(nil, err)
 				return
