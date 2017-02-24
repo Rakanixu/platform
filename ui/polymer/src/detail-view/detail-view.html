@@ -125,6 +125,20 @@
       </mat-item>
     </template>
 
+    <template is="dom-if" if="[[isContentEntities(item.entities)]]" restamp="true">
+      <mat-item label="Content"
+                class="no-ui-action  overflow-visible"
+                tabindex="-1">
+        <ul class="tags">
+          <template is="dom-repeat" items="[[item.entities]]">
+            <li>
+              <a>[[item.type]]: [[item.mention]]</a>
+            </li>
+          </template>
+        </ul>
+      </mat-item>
+    </template>
+
     <template is="dom-if" if="[[isSlack(item.file_type)]]" restamp="true">
       <mat-item label="Owner"
                 href="slack://user?team=[[slackUser.team_id]]&id=[[slackUser.id]]"
@@ -574,6 +588,7 @@
 
             this.set('item.original', doc.original);
             this.set('item.tags', doc.tags);
+            this.set('item.entities', (doc.entities && doc.entities.entities) ? doc.entities.entities : []);
 
             switch(this.item.file_type) {
               case 'slack':

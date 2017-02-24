@@ -34,7 +34,7 @@ func main() {
 	s := &subscriber.Enrich{
 		Client:             service.Client(),
 		GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
-		EnrichMsgChan:      make(chan *enrich_proto.EnrichMessage, 10000000),
+		EnrichMsgChan:      make(chan *enrich_proto.EnrichMessage, 100000),
 	}
 	subscriber.SyncMessages(s)
 

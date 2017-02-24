@@ -36,7 +36,6 @@ func SyncMessages(e *Enrich) {
 			case m := <-e.EnrichMsgChan:
 				if err := processEnrichMsg(e.Client, e.GoogleCloudStorage, m); err != nil {
 					log.Println("Error Processing enrich msg", err)
-
 				}
 			}
 		}
