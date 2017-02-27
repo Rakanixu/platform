@@ -123,7 +123,7 @@ func (e *elastic) Init(c client.Client) error {
 						log.Print("Publishing (enrich file) error %s", err)
 					}
 
-					time.Sleep(globals.PUBLISHING_DELAY_MS)
+					log.Println("ENRICH MSG SENT", topic, n.Id)
 				}
 			}
 		}).
