@@ -1,12 +1,12 @@
 package main
 
 import (
-	enrich_proto "github.com/kazoup/platform/enrich/srv/proto/enrich"
-	"github.com/kazoup/platform/enrich/srv/subscriber"
+	"github.com/kazoup/platform/imgenrich/srv/subscriber"
 	"github.com/kazoup/platform/lib/globals"
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
+	enrich_proto "github.com/kazoup/platform/lib/protomsg"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/go-micro/server"
 	"github.com/micro/go-os/monitor"
@@ -17,7 +17,7 @@ import (
 func main() {
 	var m monitor.Monitor
 
-	service := wrappers.NewKazoupService("enrich", m)
+	service := wrappers.NewKazoupService("imgenrich", m)
 
 	// enrich-srv monitor
 	m = monitor.NewMonitor(
@@ -41,9 +41,9 @@ func main() {
 	// Attach subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
-			globals.EnrichTopic,
+			globals.ImgEnrichTopic,
 			s,
-			server.SubscriberQueue("enrich"),
+			server.SubscriberQueue("imgenrich"),
 		),
 	); err != nil {
 		log.Fatal(err)

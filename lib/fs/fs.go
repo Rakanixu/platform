@@ -14,13 +14,13 @@ import (
 type Fs interface {
 	FsOperations
 	FsUtils
+	FsProcessing
 }
 
 type FsOperations interface {
 	Walk() (chan FileMsg, chan bool)
 	WalkUsers() (chan UserMsg, chan bool)
 	WalkChannels() (chan ChannelMsg, chan bool)
-	Enrich(file.File, *gcslib.GoogleCloudStorage) chan FileMsg
 	Create(file_proto.CreateRequest) chan FileMsg
 	Delete(file_proto.DeleteRequest) chan FileMsg
 	Update(file_proto.ShareRequest) chan FileMsg
@@ -30,6 +30,12 @@ type FsUtils interface {
 	Authorize() (*datasource_proto.Token, error)
 	GetDatasourceId() string
 	GetThumbnail(string) (string, error)
+}
+
+type FsProcessing interface {
+	DocEnrich(file.File, *gcslib.GoogleCloudStorage) chan FileMsg
+	ImgEnrich(file.File, *gcslib.GoogleCloudStorage) chan FileMsg
+	AudioEnrich(file.File, *gcslib.GoogleCloudStorage) chan FileMsg
 }
 
 // NewFsFromEndpoint constructor from endpoint

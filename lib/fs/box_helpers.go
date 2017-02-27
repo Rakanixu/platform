@@ -241,7 +241,6 @@ func (bfs *BoxFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.KazoupBox
 		return nil, err
 	}
 
-	log.Println("111111111111111111")
 	stt, err := sttlib.AsyncContent(fmt.Sprintf("gs://%s/%s", globals.AUDIO_BUCKET, f.ID))
 	if err != nil {
 		return nil, err
@@ -255,7 +254,6 @@ func (bfs *BoxFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.KazoupBox
 	} else {
 		f.OptsKazoupFile.AudioTimestamp = time.Now()
 	}
-	log.Println("222222222222222222", f.Content)
 
 	return f, nil
 }

@@ -1,6 +1,6 @@
-# ENRICH SERVICE
+# IMAGE ENRICH SERVICE
 
-enrich-srv is microservice to enrich file and content metadata.
+imgenrich-srv is microservice to enrich images and generate thumbnails
 
 ## Getting started
 

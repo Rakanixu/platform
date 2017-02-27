@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
-	enrich_proto "github.com/kazoup/platform/enrich/srv/proto/enrich"
 	db_helper "github.com/kazoup/platform/lib/dbhelper"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
+	enrich_proto "github.com/kazoup/platform/lib/protomsg"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"log"
@@ -35,7 +35,7 @@ func SyncMessages(e *Enrich) {
 			select {
 			case m := <-e.EnrichMsgChan:
 				if err := processEnrichMsg(e.Client, e.GoogleCloudStorage, m); err != nil {
-					log.Println("Error Processing enrich msg", err)
+					log.Println("Error Processing enrich msg (Document)", err)
 				}
 			}
 		}
@@ -76,7 +76,7 @@ func processEnrichMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m *enrich
 		return err
 	}
 
-	ch := mfs.Enrich(f, gcs)
+	ch := mfs.DocEnrich(f, gcs)
 	// Block while enriching, we expect only one m
 	fm := <-ch
 	close(ch)

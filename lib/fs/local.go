@@ -7,7 +7,6 @@ import (
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
-	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/local"
 	"golang.org/x/net/context"
 	"log"
@@ -77,16 +76,6 @@ func (lfs *LocalFs) WalkChannels() (chan ChannelMsg, chan bool) {
 	}()
 
 	return lfs.ChannelsChan, lfs.WalkChannelsRunning
-}
-
-// Enrich
-func (lfs *LocalFs) Enrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
-	go func() {
-		//bfs.processImage()
-		//bfs.processDocument()
-	}()
-
-	return lfs.FilesChan
 }
 
 // Create file (not implemented)
