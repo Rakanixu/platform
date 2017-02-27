@@ -124,22 +124,22 @@ func (gfs *GoogleDriveFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.K
 	go func() {
 		defer wg.Done()
 
-		backoff.Retry(func() error {
-			// Resize to our thumbnail size
-			rd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf2)), globals.THUMBNAIL_WIDTH)
-			if err != nil {
-				log.Println("THUMNAIL GENERATION ERROR, SKIPPING", err)
-				// Skip retry
-				return nil
-			}
+		//backoff.Retry(func() error {
+		// Resize to our thumbnail size
+		rd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf2)), globals.THUMBNAIL_WIDTH)
+		if err != nil {
+			log.Println("THUMNAIL GENERATION ERROR, SKIPPING", err)
+			// Skip retry
+			return //nil
+		}
 
-			if err := gcs.Upload(ioutil.NopCloser(rd), gfs.Endpoint.Index, f.ID); err != nil {
-				log.Println("THUMNAIL UPLOAD ERROR", err)
-				return err
-			}
+		if err := gcs.Upload(ioutil.NopCloser(rd), gfs.Endpoint.Index, f.ID); err != nil {
+			log.Println("THUMNAIL UPLOAD ERROR", err)
+			return //err
+		}
 
-			return nil
-		}, backoff.NewExponentialBackOff())
+		/*			return nil
+		}, backoff.NewExponentialBackOff())*/
 	}()
 
 	wg.Add(1)
