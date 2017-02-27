@@ -79,5 +79,35 @@ func (gfs *GmailFs) ImgEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan 
 
 // AudioEnrich extracts audio and save it as text
 func (gfs *GmailFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+	go func() {
+		var err error
+
+		_, ok := f.(*file.KazoupGmailFile)
+		if !ok {
+			gfs.FilesChan <- NewFileMsg(nil, errors.New("Error enriching file (Audio)"))
+			return
+		}
+
+		// OptsKazoupFile.ContentTimestamp and
+		// OptsKazoupFile.CTagsTimestamp are not defined,
+		// Content was never extracted before
+		processAudio := false
+		if f.(*file.KazoupGmailFile).OptsKazoupFile == nil {
+			processAudio = true
+		} else {
+			processAudio = f.(*file.KazoupGmailFile).OptsKazoupFile.AudioTimestamp.Before(f.(*file.KazoupGmailFile).Modified)
+		}
+
+		if f.(*file.KazoupGmailFile).Category == globals.CATEGORY_AUDIO && processAudio {
+			f, err = gfs.processAudio(gcs, f.(*file.KazoupGmailFile))
+			if err != nil {
+				gfs.FilesChan <- NewFileMsg(nil, err)
+				return
+			}
+		}
+
+		gfs.FilesChan <- NewFileMsg(f, err)
+	}()
+
 	return gfs.FilesChan
 }

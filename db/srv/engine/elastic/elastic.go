@@ -111,6 +111,8 @@ func (e *elastic) Init(c client.Client) error {
 					topic = globals.DocEnrichTopic
 				case globals.CATEGORY_PICTURE:
 					topic = globals.ImgEnrichTopic
+				case globals.CATEGORY_AUDIO:
+					topic = globals.AudioEnrichTopic
 				default:
 					publishMsg = false
 				}

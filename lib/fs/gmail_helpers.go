@@ -13,6 +13,7 @@ import (
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/image"
 	rossetelib "github.com/kazoup/platform/lib/rossete"
+	sttlib "github.com/kazoup/platform/lib/speechtotext"
 	"github.com/kazoup/platform/lib/tika"
 	"github.com/kennygrant/sanitize"
 	"golang.org/x/net/context"
@@ -253,6 +254,40 @@ func (gfs *GmailFs) processDocument(f *file.KazoupGmailFile) (file.File, error) 
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	return f, nil
+}
+
+// processAudio uploads audio file to GCS and runs async speech to text over it
+func (gfs *GmailFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.KazoupGmailFile) (file.File, error) {
+	// Download file from Box, so connector is globals.Box
+	gmcs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.Gmail)
+	if err != nil {
+		return nil, err
+	}
+
+	rc, err := gmcs.Download(f.Original.MessageId, f.Original.AttachmentId)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := gcs.Upload(rc, globals.AUDIO_BUCKET, f.ID); err != nil {
+		return nil, err
+	}
+
+	stt, err := sttlib.AsyncContent(fmt.Sprintf("gs://%s/%s", globals.AUDIO_BUCKET, f.ID))
+	if err != nil {
+		return nil, err
+	}
+
+	f.Content = stt.Content()
+	if f.OptsKazoupFile == nil {
+		f.OptsKazoupFile = &file.OptsKazoupFile{
+			AudioTimestamp: time.Now(),
+		}
+	} else {
+		f.OptsKazoupFile.AudioTimestamp = time.Now()
 	}
 
 	return f, nil

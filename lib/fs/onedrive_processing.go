@@ -79,5 +79,35 @@ func (ofs *OneDriveFs) ImgEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) ch
 
 // AudioEnrich extracts audio and save it as text
 func (ofs *OneDriveFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+	go func() {
+		var err error
+
+		_, ok := f.(*file.KazoupOneDriveFile)
+		if !ok {
+			ofs.FilesChan <- NewFileMsg(nil, errors.New("Error enriching file (Audio)"))
+			return
+		}
+
+		// OptsKazoupFile.ContentTimestamp and
+		// OptsKazoupFile.CTagsTimestamp are not defined,
+		// Content was never extracted before
+		processAudio := false
+		if f.(*file.KazoupOneDriveFile).OptsKazoupFile == nil {
+			processAudio = true
+		} else {
+			processAudio = f.(*file.KazoupOneDriveFile).OptsKazoupFile.AudioTimestamp.Before(f.(*file.KazoupOneDriveFile).Modified)
+		}
+
+		if f.(*file.KazoupOneDriveFile).Category == globals.CATEGORY_AUDIO && processAudio {
+			f, err = ofs.processAudio(gcs, f.(*file.KazoupOneDriveFile))
+			if err != nil {
+				ofs.FilesChan <- NewFileMsg(nil, err)
+				return
+			}
+		}
+
+		ofs.FilesChan <- NewFileMsg(f, err)
+	}()
+
 	return ofs.FilesChan
 }

@@ -1,4 +1,4 @@
-# Image Enrich
+# Audio Enrich
 
 ## Getting Started
 
@@ -10,4 +10,3 @@
 ```
 $ go run srv/main.go
 ```
-

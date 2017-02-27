@@ -79,5 +79,35 @@ func (sfs *SlackFs) ImgEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan 
 
 // AudioEnrich extracts audio and save it as text
 func (sfs *SlackFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+	go func() {
+		var err error
+
+		_, ok := f.(*file.KazoupSlackFile)
+		if !ok {
+			sfs.FilesChan <- NewFileMsg(nil, errors.New("Error enriching file (Audio)"))
+			return
+		}
+
+		// OptsKazoupFile.ContentTimestamp and
+		// OptsKazoupFile.CTagsTimestamp are not defined,
+		// Content was never extracted before
+		processAudio := false
+		if f.(*file.KazoupSlackFile).OptsKazoupFile == nil {
+			processAudio = true
+		} else {
+			processAudio = f.(*file.KazoupSlackFile).OptsKazoupFile.AudioTimestamp.Before(f.(*file.KazoupSlackFile).Modified)
+		}
+
+		if f.(*file.KazoupSlackFile).Category == globals.CATEGORY_AUDIO && processAudio {
+			f, err = sfs.processAudio(gcs, f.(*file.KazoupSlackFile))
+			if err != nil {
+				sfs.FilesChan <- NewFileMsg(nil, err)
+				return
+			}
+		}
+
+		sfs.FilesChan <- NewFileMsg(f, err)
+	}()
+
 	return sfs.FilesChan
 }
