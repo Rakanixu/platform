@@ -10,9 +10,9 @@ import (
 	config "github.com/kazoup/platform/db/srv/proto/config"
 	db "github.com/kazoup/platform/db/srv/proto/db"
 	subscriber "github.com/kazoup/platform/db/srv/subscriber/elastic"
-	enrich_proto "github.com/kazoup/platform/enrich/srv/proto/enrich"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	enrich_proto "github.com/kazoup/platform/lib/protomsg"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	elib "gopkg.in/olivere/elastic.v5"
@@ -103,12 +103,26 @@ func (e *elastic) Init(c client.Client) error {
 					UserId: kf.Doc.UserId,
 				}
 
-				// Publish EnrichMessage
-				if err := c.Publish(globals.NewSystemContext(), c.NewPublication(globals.EnrichTopic, n)); err != nil {
-					log.Print("Publishing (enrich file) error %s", err)
+				var topic string
+				publishMsg := true
+
+				switch kf.Doc.Category {
+				case globals.CATEGORY_DOCUMENT:
+					topic = globals.DocEnrichTopic
+				case globals.CATEGORY_PICTURE:
+					topic = globals.ImgEnrichTopic
+				default:
+					publishMsg = false
 				}
 
-				time.Sleep(globals.PUBLISHING_DELAY_MS)
+				// Publish EnrichMessage
+				if publishMsg {
+					if err := c.Publish(globals.NewSystemContext(), c.NewPublication(topic, n)); err != nil {
+						log.Print("Publishing (enrich file) error %s", err)
+					}
+
+					time.Sleep(globals.PUBLISHING_DELAY_MS)
+				}
 			}
 		}).
 		Name(fmt.Sprintf("bulkFilesProcessor-%s", rs)).

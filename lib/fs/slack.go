@@ -1,12 +1,8 @@
 package fs
 
 import (
-	"errors"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
-	"github.com/kazoup/platform/lib/file"
-	"github.com/kazoup/platform/lib/globals"
-	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"log"
 )
 
@@ -69,57 +65,6 @@ func (sfs *SlackFs) WalkChannels() (chan ChannelMsg, chan bool) {
 	}()
 
 	return sfs.ChannelsChan, sfs.WalkChannelsRunning
-}
-
-// Enrich
-func (sfs *SlackFs) Enrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
-	go func() {
-		var err error
-
-		_, ok := f.(*file.KazoupSlackFile)
-		if !ok {
-			sfs.FilesChan <- NewFileMsg(nil, errors.New("Error enriching file"))
-			return
-		}
-
-		// OptsKazoupFile.ContentTimestamp and
-		// OptsKazoupFile.CTagsTimestamp are not defined,
-		// Content was never extracted before
-		process := struct {
-			Picture  bool
-			Document bool
-		}{
-			Picture:  false,
-			Document: false,
-		}
-		if f.(*file.KazoupSlackFile).OptsKazoupFile == nil {
-			process.Picture = true
-			process.Document = true
-		} else {
-			process.Picture = f.(*file.KazoupSlackFile).OptsKazoupFile.TagsTimestamp.Before(f.(*file.KazoupSlackFile).Modified)
-			process.Document = f.(*file.KazoupSlackFile).OptsKazoupFile.ContentTimestamp.Before(f.(*file.KazoupSlackFile).Modified)
-		}
-
-		if f.(*file.KazoupSlackFile).Category == globals.CATEGORY_PICTURE && process.Picture {
-			f, err = sfs.processImage(gcs, f.(*file.KazoupSlackFile))
-			if err != nil {
-				sfs.FilesChan <- NewFileMsg(nil, err)
-				return
-			}
-		}
-
-		if f.(*file.KazoupSlackFile).Category == globals.CATEGORY_DOCUMENT && process.Document {
-			f, err = sfs.processDocument(f.(*file.KazoupSlackFile))
-			if err != nil {
-				sfs.FilesChan <- NewFileMsg(nil, err)
-				return
-			}
-		}
-
-		sfs.FilesChan <- NewFileMsg(f, err)
-	}()
-
-	return sfs.FilesChan
 }
 
 // CreateFile belongs to Fs interface

@@ -3,7 +3,6 @@ package fs
 import (
 	"bufio"
 	"bytes"
-	//"github.com/cenkalti/backoff"
 	"github.com/cenkalti/backoff"
 	cs "github.com/kazoup/platform/lib/cloudstorage"
 	"github.com/kazoup/platform/lib/cloudvision"
@@ -11,13 +10,16 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/image"
+	rossetelib "github.com/kazoup/platform/lib/rossete"
 	"github.com/kazoup/platform/lib/tika"
+	"github.com/kennygrant/sanitize"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"google.golang.org/api/drive/v3"
 	"io"
 	"io/ioutil"
 	"log"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -206,6 +208,23 @@ func (gfs *GoogleDriveFs) processDocument(f *file.KazoupGoogleFile) (file.File, 
 		}
 	} else {
 		f.OptsKazoupFile.ContentTimestamp = time.Now()
+	}
+
+	// Apply rossete
+	if len(f.Content) > 0 {
+		nl, err := regexp.Compile("\n")
+		if err != nil {
+			return nil, err
+		}
+		q, err := regexp.Compile("\"")
+		if err != nil {
+			return nil, err
+		}
+
+		f.Entities, err = rossetelib.Entities(q.ReplaceAllString(nl.ReplaceAllString(sanitize.HTML(f.Content), " "), ""))
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return f, nil

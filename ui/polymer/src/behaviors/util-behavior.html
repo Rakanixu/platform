@@ -318,6 +318,9 @@
       isTag: function(tags) {
         return (tags && tags.length && tags.length > 0);
       },
+      isContentEntities: function(entities) {
+        return (entities && entities.length && entities.length > 0);
+      },
       profilePicture: function(url) {
         return (url && url.length) ? url : '/src/static/unknown-pic-profile.gif';
       },
