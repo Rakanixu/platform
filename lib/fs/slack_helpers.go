@@ -217,12 +217,12 @@ func (sfs *SlackFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.KazoupS
 // enrichFile sends the original file to tika and enrich KazoupOneDriveFile with Tika interface
 func (sfs *SlackFs) processDocument(f *file.KazoupSlackFile) (file.File, error) {
 	// Download file from GoogleDrive, so connector is globals.OneDrive
-	scs, err := cs.NewCloudStorageFromEndpoint(sfs.Endpoint, globals.OneDrive)
+	scs, err := cs.NewCloudStorageFromEndpoint(sfs.Endpoint, globals.Slack)
 	if err != nil {
 		return nil, err
 	}
 
-	rc, err := scs.Download(f.Original.ID)
+	rc, err := scs.Download(f.Original.URLPrivateDownload)
 	if err != nil {
 		return nil, err
 	}
