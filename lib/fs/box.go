@@ -11,7 +11,6 @@ import (
 	"github.com/kazoup/platform/lib/box"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
-	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"io"
 	"log"
 	"mime/multipart"
@@ -105,57 +104,6 @@ func (bfs *BoxFs) WalkChannels() (chan ChannelMsg, chan bool) {
 	}()
 
 	return bfs.ChannelsChan, bfs.WalkChannelsRunning
-}
-
-// Enrich extracts content from file and add to File
-func (bfs *BoxFs) Enrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
-	go func() {
-		var err error
-
-		_, ok := f.(*file.KazoupBoxFile)
-		if !ok {
-			bfs.FilesChan <- NewFileMsg(nil, errors.New("Error enriching file"))
-			return
-		}
-
-		// OptsKazoupFile.ContentTimestamp and
-		// OptsKazoupFile.CTagsTimestamp are not defined,
-		// Content was never extracted before
-		process := struct {
-			Picture  bool
-			Document bool
-		}{
-			Picture:  false,
-			Document: false,
-		}
-		if f.(*file.KazoupBoxFile).OptsKazoupFile == nil {
-			process.Picture = true
-			process.Document = true
-		} else {
-			process.Picture = f.(*file.KazoupBoxFile).OptsKazoupFile.TagsTimestamp.Before(f.(*file.KazoupBoxFile).Modified)
-			process.Document = f.(*file.KazoupBoxFile).OptsKazoupFile.ContentTimestamp.Before(f.(*file.KazoupBoxFile).Modified)
-		}
-
-		if f.(*file.KazoupBoxFile).Category == globals.CATEGORY_PICTURE && process.Picture {
-			f, err = bfs.processImage(gcs, f.(*file.KazoupBoxFile))
-			if err != nil {
-				bfs.FilesChan <- NewFileMsg(nil, err)
-				return
-			}
-		}
-
-		if f.(*file.KazoupBoxFile).Category == globals.CATEGORY_DOCUMENT && process.Document {
-			f, err = bfs.processDocument(f.(*file.KazoupBoxFile))
-			if err != nil {
-				bfs.FilesChan <- NewFileMsg(nil, err)
-				return
-			}
-		}
-
-		bfs.FilesChan <- NewFileMsg(f, err)
-	}()
-
-	return bfs.FilesChan
 }
 
 // Create file in box
