@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/kazoup/platform/lib/box"
 	"github.com/kazoup/platform/lib/globals"
+	rossetelib "github.com/kazoup/platform/lib/rossete"
 	"strings"
 )
 
@@ -60,6 +61,14 @@ func (kf *KazoupBoxFile) GetBase64() string {
 	return ""
 }
 
+func (kf *KazoupBoxFile) GetContent() string {
+	return kf.Content
+}
+
 func (kf *KazoupBoxFile) SetHighlight(s string) {
 	kf.Highlight = s
+}
+
+func (kf *KazoupBoxFile) SetEntities(entities *rossetelib.RosseteEntities) {
+	kf.Entities = entities
 }

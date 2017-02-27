@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/kazoup/platform/lib/globals"
+	rossetelib "github.com/kazoup/platform/lib/rossete"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 )
@@ -26,6 +27,8 @@ type File interface {
 	GetExtension() string
 	GetBase64() string
 	SetHighlight(highlight string)
+	GetContent() string
+	SetEntities(entities *rossetelib.RosseteEntities)
 }
 
 func IndexAsync(c client.Client, file File, topic, index string, notify bool) error {

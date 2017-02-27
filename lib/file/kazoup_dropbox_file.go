@@ -2,6 +2,7 @@ package file
 
 import (
 	"github.com/kazoup/platform/lib/dropbox"
+	rossetelib "github.com/kazoup/platform/lib/rossete"
 	"strings"
 )
 
@@ -56,6 +57,14 @@ func (kf *KazoupDropboxFile) GetBase64() string {
 	return ""
 }
 
+func (kf *KazoupDropboxFile) GetContent() string {
+	return kf.Content
+}
+
 func (kf *KazoupDropboxFile) SetHighlight(s string) {
 	kf.Highlight = s
+}
+
+func (kf *KazoupDropboxFile) SetEntities(entities *rossetelib.RosseteEntities) {
+	kf.Entities = entities
 }

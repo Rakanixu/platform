@@ -13,15 +13,12 @@ import (
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/image"
 	"github.com/kazoup/platform/lib/onedrive"
-	rossetelib "github.com/kazoup/platform/lib/rossete"
 	sttlib "github.com/kazoup/platform/lib/speechtotext"
 	"github.com/kazoup/platform/lib/tika"
-	"github.com/kennygrant/sanitize"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"regexp"
 	"sync"
 	"time"
 )
@@ -225,21 +222,21 @@ func (ofs *OneDriveFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.Kazo
 	go func() {
 		defer wg.Done()
 
-		backoff.Retry(func() error {
-			b, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf2)), globals.THUMBNAIL_WIDTH)
-			if err != nil {
-				log.Println("THUMNAIL GENERATION ERROR, SKIPPING", err)
-				// Skip retry
-				return nil
-			}
+		//backoff.Retry(func() error {
+		b, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf2)), globals.THUMBNAIL_WIDTH)
+		if err != nil {
+			log.Println("THUMNAIL GENERATION ERROR, SKIPPING", err)
+			// Skip retry
+			return //nil
+		}
 
-			if err := gcs.Upload(ioutil.NopCloser(b), ofs.Endpoint.Index, f.ID); err != nil {
-				log.Println("THUMNAIL UPLOAD ERROR", err)
-				return err
-			}
+		if err := gcs.Upload(ioutil.NopCloser(b), ofs.Endpoint.Index, f.ID); err != nil {
+			log.Println("THUMNAIL UPLOAD ERROR", err)
+			return //err
+		}
 
-			return nil
-		}, backoff.NewExponentialBackOff())
+		/*			return nil
+		}, backoff.NewExponentialBackOff())*/
 	}()
 
 	wg.Add(1)
@@ -296,23 +293,6 @@ func (ofs *OneDriveFs) processDocument(f *file.KazoupOneDriveFile) (file.File, e
 		}
 	} else {
 		f.OptsKazoupFile.ContentTimestamp = time.Now()
-	}
-
-	// Apply rossete
-	if len(f.Content) > 0 {
-		nl, err := regexp.Compile("\n")
-		if err != nil {
-			return nil, err
-		}
-		q, err := regexp.Compile("\"")
-		if err != nil {
-			return nil, err
-		}
-
-		f.Entities, err = rossetelib.Entities(q.ReplaceAllString(nl.ReplaceAllString(sanitize.HTML(f.Content), " "), ""))
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	return f, nil

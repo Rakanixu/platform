@@ -3,6 +3,7 @@ package file
 import (
 	"fmt"
 	"github.com/kazoup/platform/lib/globals"
+	rossetelib "github.com/kazoup/platform/lib/rossete"
 	"strings"
 )
 
@@ -71,6 +72,14 @@ func (kf *KazoupLocalFile) GetBase64() string {
 	return ""
 }
 
+func (kf *KazoupLocalFile) GetContent() string {
+	return kf.Content
+}
+
 func (kf *KazoupLocalFile) SetHighlight(s string) {
 	kf.Highlight = s
+}
+
+func (kf *KazoupLocalFile) SetEntities(entities *rossetelib.RosseteEntities) {
+	kf.Entities = entities
 }
