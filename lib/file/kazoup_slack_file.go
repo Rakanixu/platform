@@ -1,6 +1,7 @@
 package file
 
 import (
+	rossetelib "github.com/kazoup/platform/lib/rossete"
 	"github.com/kazoup/platform/lib/slack"
 	"strings"
 )
@@ -73,6 +74,14 @@ func (kf *KazoupSlackFile) GetBase64() string {
 	return ""
 }
 
+func (kf *KazoupSlackFile) GetContent() string {
+	return kf.Content
+}
+
 func (kf *KazoupSlackFile) SetHighlight(s string) {
 	kf.Highlight = s
+}
+
+func (kf *KazoupSlackFile) SetEntities(entities *rossetelib.RosseteEntities) {
+	kf.Entities = entities
 }

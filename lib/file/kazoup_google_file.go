@@ -2,6 +2,7 @@ package file
 
 import (
 	"github.com/kazoup/platform/lib/globals"
+	rossetelib "github.com/kazoup/platform/lib/rossete"
 	googledrive "google.golang.org/api/drive/v3"
 	"strings"
 )
@@ -57,6 +58,14 @@ func (kf *KazoupGoogleFile) GetBase64() string {
 	return ""
 }
 
+func (kf *KazoupGoogleFile) GetContent() string {
+	return kf.Content
+}
+
 func (kf *KazoupGoogleFile) SetHighlight(s string) {
 	kf.Highlight = s
+}
+
+func (kf *KazoupGoogleFile) SetEntities(entities *rossetelib.RosseteEntities) {
+	kf.Entities = entities
 }

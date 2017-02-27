@@ -3,6 +3,7 @@ package file
 import (
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/onedrive"
+	rossetelib "github.com/kazoup/platform/lib/rossete"
 	"strings"
 )
 
@@ -57,6 +58,14 @@ func (kf *KazoupOneDriveFile) GetBase64() string {
 	return ""
 }
 
+func (kf *KazoupOneDriveFile) GetContent() string {
+	return kf.Content
+}
+
 func (kf *KazoupOneDriveFile) SetHighlight(s string) {
 	kf.Highlight = s
+}
+
+func (kf *KazoupOneDriveFile) SetEntities(entities *rossetelib.RosseteEntities) {
+	kf.Entities = entities
 }

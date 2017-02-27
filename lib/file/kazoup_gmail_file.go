@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/kazoup/platform/lib/globals"
 	gmail "github.com/kazoup/platform/lib/gmail"
+	rossetelib "github.com/kazoup/platform/lib/rossete"
 	"strings"
 )
 
@@ -60,6 +61,14 @@ func (kf *KazoupGmailFile) GetBase64() string {
 	return kf.Original.Base64
 }
 
+func (kf *KazoupGmailFile) GetContent() string {
+	return kf.Content
+}
+
 func (kf *KazoupGmailFile) SetHighlight(s string) {
 	kf.Highlight = s
+}
+
+func (kf *KazoupGmailFile) SetEntities(entities *rossetelib.RosseteEntities) {
+	kf.Entities = entities
 }
