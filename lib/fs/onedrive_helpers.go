@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/cenkalti/backoff"
 	cs "github.com/kazoup/platform/lib/cloudstorage"
 	"github.com/kazoup/platform/lib/cloudvision"
@@ -13,6 +14,7 @@ import (
 	"github.com/kazoup/platform/lib/image"
 	"github.com/kazoup/platform/lib/onedrive"
 	rossetelib "github.com/kazoup/platform/lib/rossete"
+	sttlib "github.com/kazoup/platform/lib/speechtotext"
 	"github.com/kazoup/platform/lib/tika"
 	"github.com/kennygrant/sanitize"
 	"io"
@@ -311,6 +313,40 @@ func (ofs *OneDriveFs) processDocument(f *file.KazoupOneDriveFile) (file.File, e
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	return f, nil
+}
+
+// processAudio uploads audio file to GCS and runs async speech to text over it
+func (ofs *OneDriveFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.KazoupOneDriveFile) (file.File, error) {
+	// Download file from GoogleDrive, so connector is globals.OneDrive
+	ocs, err := cs.NewCloudStorageFromEndpoint(ofs.Endpoint, globals.OneDrive)
+	if err != nil {
+		return nil, err
+	}
+
+	rc, err := ocs.Download(f.Original.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := gcs.Upload(rc, globals.AUDIO_BUCKET, f.ID); err != nil {
+		return nil, err
+	}
+
+	stt, err := sttlib.AsyncContent(fmt.Sprintf("gs://%s/%s", globals.AUDIO_BUCKET, f.ID))
+	if err != nil {
+		return nil, err
+	}
+
+	f.Content = stt.Content()
+	if f.OptsKazoupFile == nil {
+		f.OptsKazoupFile = &file.OptsKazoupFile{
+			AudioTimestamp: time.Now(),
+		}
+	} else {
+		f.OptsKazoupFile.AudioTimestamp = time.Now()
 	}
 
 	return f, nil

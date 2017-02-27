@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/cenkalti/backoff"
 	cs "github.com/kazoup/platform/lib/cloudstorage"
 	"github.com/kazoup/platform/lib/cloudvision"
@@ -14,6 +15,7 @@ import (
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/image"
 	rossetelib "github.com/kazoup/platform/lib/rossete"
+	sttlib "github.com/kazoup/platform/lib/speechtotext"
 	"github.com/kazoup/platform/lib/tika"
 	"github.com/kennygrant/sanitize"
 	"io"
@@ -237,6 +239,40 @@ func (dfs *DropboxFs) processDocument(f *file.KazoupDropboxFile) (file.File, err
 	return f, nil
 }
 
+// processAudio uploads audio file to GCS and runs async speech to text over it
+func (dfs *DropboxFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.KazoupDropboxFile) (file.File, error) {
+	// Download file from Box, so connector is globals.Box
+	bcs, err := cs.NewCloudStorageFromEndpoint(dfs.Endpoint, globals.Dropbox)
+	if err != nil {
+		return nil, err
+	}
+
+	rc, err := bcs.Download(f.Original.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := gcs.Upload(rc, globals.AUDIO_BUCKET, f.ID); err != nil {
+		return nil, err
+	}
+
+	stt, err := sttlib.AsyncContent(fmt.Sprintf("gs://%s/%s", globals.AUDIO_BUCKET, f.ID))
+	if err != nil {
+		return nil, err
+	}
+
+	f.Content = stt.Content()
+	if f.OptsKazoupFile == nil {
+		f.OptsKazoupFile = &file.OptsKazoupFile{
+			AudioTimestamp: time.Now(),
+		}
+	} else {
+		f.OptsKazoupFile.AudioTimestamp = time.Now()
+	}
+
+	return f, nil
+}
+
 // getNextPage allows pagination while discovering files
 func (dfs *DropboxFs) getNextPage(cursor string) error {
 	// https://www.dropbox.com/developers/documentation/http/documentation#files-list_folder-continue
@@ -390,14 +426,6 @@ func (dfs *DropboxFs) pushFilesToChannel(list *dropbox.FilesListResponse) {
 					}
 				}
 			}
-
-			/*			if err := dfs.generateThumbnail(v, f.ID); err != nil {
-							log.Println(err)
-						}
-
-						if err := dfs.enrichFile(f); err != nil {
-							log.Println(err)
-						}*/
 
 			dfs.FilesChan <- NewFileMsg(f, nil)
 		}

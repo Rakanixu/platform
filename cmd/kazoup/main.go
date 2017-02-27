@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/kardianos/osext"
+	audioenrich "github.com/kazoup/platform/audioenrich"
 	auth "github.com/kazoup/platform/auth"
 	config "github.com/kazoup/platform/config"
 	crawler "github.com/kazoup/platform/crawler"
@@ -40,6 +41,7 @@ func main() {
 	app.Commands = append(app.Commands, crawler.Commands()...)
 	app.Commands = append(app.Commands, docenrich.Commands()...)
 	app.Commands = append(app.Commands, imgenrich.Commands()...)
+	app.Commands = append(app.Commands, audioenrich.Commands()...)
 	app.Commands = append(app.Commands, datasource.Commands()...)
 	app.Commands = append(app.Commands, db.Commands()...)
 	app.Commands = append(app.Commands, media.Commands()...)

@@ -225,6 +225,7 @@ func (bfs *BoxFs) processDocument(f *file.KazoupBoxFile) (file.File, error) {
 	return f, nil
 }
 
+// processAudio uploads audio file to GCS and runs async speech to text over it
 func (bfs *BoxFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.KazoupBoxFile) (file.File, error) {
 	// Download file from Box, so connector is globals.Box
 	bcs, err := cs.NewCloudStorageFromEndpoint(bfs.Endpoint, globals.Box)
