@@ -6,6 +6,7 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	rossetelib "github.com/kazoup/platform/lib/rossete"
 	"strings"
+	"time"
 )
 
 type KazoupBoxFile struct {
@@ -61,8 +62,20 @@ func (kf *KazoupBoxFile) GetBase64() string {
 	return ""
 }
 
+func (kf *KazoupBoxFile) GetModifiedTime() time.Time {
+	return kf.Modified
+}
+
 func (kf *KazoupBoxFile) GetContent() string {
 	return kf.Content
+}
+
+func (kf *KazoupBoxFile) GetOptsTimestamps() *OptsKazoupFile {
+	return kf.OptsKazoupFile
+}
+
+func (kf *KazoupBoxFile) SetOptsTimestamps(optsKazoupFile *OptsKazoupFile) {
+	kf.OptsKazoupFile = optsKazoupFile
 }
 
 func (kf *KazoupBoxFile) SetHighlight(s string) {

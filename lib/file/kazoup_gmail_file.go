@@ -6,6 +6,7 @@ import (
 	gmail "github.com/kazoup/platform/lib/gmail"
 	rossetelib "github.com/kazoup/platform/lib/rossete"
 	"strings"
+	"time"
 )
 
 type KazoupGmailFile struct {
@@ -61,8 +62,20 @@ func (kf *KazoupGmailFile) GetBase64() string {
 	return kf.Original.Base64
 }
 
+func (kf *KazoupGmailFile) GetModifiedTime() time.Time {
+	return kf.Modified
+}
+
 func (kf *KazoupGmailFile) GetContent() string {
 	return kf.Content
+}
+
+func (kf *KazoupGmailFile) GetOptsTimestamps() *OptsKazoupFile {
+	return kf.OptsKazoupFile
+}
+
+func (kf *KazoupGmailFile) SetOptsTimestamps(optsKazoupFile *OptsKazoupFile) {
+	kf.OptsKazoupFile = optsKazoupFile
 }
 
 func (kf *KazoupGmailFile) SetHighlight(s string) {

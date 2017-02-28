@@ -13,6 +13,7 @@ import (
 	"golang.org/x/net/context"
 	"log"
 	"regexp"
+	"time"
 )
 
 type TextAnalyzer struct {
@@ -56,37 +57,57 @@ func processEnrichMsg(c client.Client, m *enrich_proto.EnrichMessage) error {
 		return err
 	}
 
-	// Apply rossete
-	if len(f.GetContent()) > 0 {
-		nl, err := regexp.Compile("\n")
-		if err != nil {
-			return err
-		}
-		q, err := regexp.Compile("\"")
-		if err != nil {
-			return err
-		}
+	processTextAnalyzer := false
+	tm := f.GetOptsTimestamps()
 
-		e, err := rossetelib.Entities(q.ReplaceAllString(nl.ReplaceAllString(sanitize.HTML(f.GetContent()), " "), ""))
-		if err != nil {
-			return err
-		}
-		f.SetEntities(e)
+	if tm == nil {
+		processTextAnalyzer = true
+	} else {
+		processTextAnalyzer = tm.TextAnalyzedTimestamp.Before(f.GetModifiedTime())
 	}
 
-	b, err := json.Marshal(f)
-	if err != nil {
-		return err
-	}
+	if processTextAnalyzer {
+		// Apply rossete
+		if len(f.GetContent()) > 0 {
+			nl, err := regexp.Compile("\n")
+			if err != nil {
+				return err
+			}
+			q, err := regexp.Compile("\"")
+			if err != nil {
+				return err
+			}
 
-	_, err = db_helper.UpdateFromDB(c, globals.NewSystemContext(), &db_proto.UpdateRequest{
-		Index: m.Index,
-		Type:  globals.FileType,
-		Id:    m.Id,
-		Data:  string(b),
-	})
-	if err != nil {
-		return err
+			e, err := rossetelib.Entities(q.ReplaceAllString(nl.ReplaceAllString(sanitize.HTML(f.GetContent()), " "), ""))
+			if err != nil {
+				return err
+			}
+			f.SetEntities(e)
+
+			if tm == nil {
+				f.SetOptsTimestamps(&file.OptsKazoupFile{
+					TextAnalyzedTimestamp: time.Now(),
+				})
+			} else {
+				tm.TextAnalyzedTimestamp = time.Now()
+				f.SetOptsTimestamps(tm)
+			}
+		}
+
+		b, err := json.Marshal(f)
+		if err != nil {
+			return err
+		}
+
+		_, err = db_helper.UpdateFromDB(c, globals.NewSystemContext(), &db_proto.UpdateRequest{
+			Index: m.Index,
+			Type:  globals.FileType,
+			Id:    m.Id,
+			Data:  string(b),
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

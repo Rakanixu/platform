@@ -5,6 +5,7 @@ import (
 	rossetelib "github.com/kazoup/platform/lib/rossete"
 	googledrive "google.golang.org/api/drive/v3"
 	"strings"
+	"time"
 )
 
 type KazoupGoogleFile struct {
@@ -58,8 +59,20 @@ func (kf *KazoupGoogleFile) GetBase64() string {
 	return ""
 }
 
+func (kf *KazoupGoogleFile) GetModifiedTime() time.Time {
+	return kf.Modified
+}
+
 func (kf *KazoupGoogleFile) GetContent() string {
 	return kf.Content
+}
+
+func (kf *KazoupGoogleFile) GetOptsTimestamps() *OptsKazoupFile {
+	return kf.OptsKazoupFile
+}
+
+func (kf *KazoupGoogleFile) SetOptsTimestamps(optsKazoupFile *OptsKazoupFile) {
+	kf.OptsKazoupFile = optsKazoupFile
 }
 
 func (kf *KazoupGoogleFile) SetHighlight(s string) {

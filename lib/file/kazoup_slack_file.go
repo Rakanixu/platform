@@ -4,6 +4,7 @@ import (
 	rossetelib "github.com/kazoup/platform/lib/rossete"
 	"github.com/kazoup/platform/lib/slack"
 	"strings"
+	"time"
 )
 
 type KazoupSlackFile struct {
@@ -74,8 +75,20 @@ func (kf *KazoupSlackFile) GetBase64() string {
 	return ""
 }
 
+func (kf *KazoupSlackFile) GetModifiedTime() time.Time {
+	return kf.Modified
+}
+
 func (kf *KazoupSlackFile) GetContent() string {
 	return kf.Content
+}
+
+func (kf *KazoupSlackFile) GetOptsTimestamps() *OptsKazoupFile {
+	return kf.OptsKazoupFile
+}
+
+func (kf *KazoupSlackFile) SetOptsTimestamps(optsKazoupFile *OptsKazoupFile) {
+	kf.OptsKazoupFile = optsKazoupFile
 }
 
 func (kf *KazoupSlackFile) SetHighlight(s string) {

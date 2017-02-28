@@ -7,6 +7,7 @@ import (
 	rossetelib "github.com/kazoup/platform/lib/rossete"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	"time"
 )
 
 const (
@@ -26,8 +27,11 @@ type File interface {
 	GetURL() string
 	GetExtension() string
 	GetBase64() string
-	SetHighlight(highlight string)
+	GetModifiedTime() time.Time
 	GetContent() string
+	GetOptsTimestamps() *OptsKazoupFile
+	SetOptsTimestamps(optsKazoupFile *OptsKazoupFile)
+	SetHighlight(highlight string)
 	SetEntities(entities *rossetelib.RosseteEntities)
 }
 

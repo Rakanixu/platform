@@ -5,6 +5,7 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	rossetelib "github.com/kazoup/platform/lib/rossete"
 	"strings"
+	"time"
 )
 
 type KazoupLocalFile struct {
@@ -72,8 +73,20 @@ func (kf *KazoupLocalFile) GetBase64() string {
 	return ""
 }
 
+func (kf *KazoupLocalFile) GetModifiedTime() time.Time {
+	return kf.Modified
+}
+
 func (kf *KazoupLocalFile) GetContent() string {
 	return kf.Content
+}
+
+func (kf *KazoupLocalFile) GetOptsTimestamps() *OptsKazoupFile {
+	return kf.OptsKazoupFile
+}
+
+func (kf *KazoupLocalFile) SetOptsTimestamps(optsKazoupFile *OptsKazoupFile) {
+	kf.OptsKazoupFile = optsKazoupFile
 }
 
 func (kf *KazoupLocalFile) SetHighlight(s string) {
