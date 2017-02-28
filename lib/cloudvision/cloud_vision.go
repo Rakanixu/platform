@@ -15,6 +15,7 @@ func Tag(rd io.ReadCloser) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer client.Close()
 
 	image, err := vision.NewImageFromReader(rd)
 	if err != nil {

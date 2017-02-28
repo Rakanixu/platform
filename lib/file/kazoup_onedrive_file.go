@@ -5,6 +5,7 @@ import (
 	"github.com/kazoup/platform/lib/onedrive"
 	rossetelib "github.com/kazoup/platform/lib/rossete"
 	"strings"
+	"time"
 )
 
 type KazoupOneDriveFile struct {
@@ -58,8 +59,20 @@ func (kf *KazoupOneDriveFile) GetBase64() string {
 	return ""
 }
 
+func (kf *KazoupOneDriveFile) GetModifiedTime() time.Time {
+	return kf.Modified
+}
+
 func (kf *KazoupOneDriveFile) GetContent() string {
 	return kf.Content
+}
+
+func (kf *KazoupOneDriveFile) GetOptsTimestamps() *OptsKazoupFile {
+	return kf.OptsKazoupFile
+}
+
+func (kf *KazoupOneDriveFile) SetOptsTimestamps(optsKazoupFile *OptsKazoupFile) {
+	kf.OptsKazoupFile = optsKazoupFile
 }
 
 func (kf *KazoupOneDriveFile) SetHighlight(s string) {

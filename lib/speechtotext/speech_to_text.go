@@ -34,6 +34,7 @@ func AsyncContent(uri string) (SpeechToText, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer client.Close()
 
 	aop, err := client.AsyncRecognize(context.Background(), &speechpb.AsyncRecognizeRequest{
 		Config: &speechpb.RecognitionConfig{

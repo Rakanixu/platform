@@ -79,6 +79,8 @@ func (e *elastic) Init(c client.Client) error {
 	// Bulk Files Processor, used for index After function to
 	e.BulkFilesProcessor, err = e.Client.BulkProcessor().
 		After(func(executionId int64, requests []elib.BulkableRequest, response *elib.BulkResponse, err error) {
+			time.Sleep(globals.PUBLISHING_DELAY_MS)
+
 			for _, req := range requests {
 				type updateBody struct {
 					Doc *file.KazoupFile `json:"doc"`
