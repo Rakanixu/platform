@@ -119,6 +119,14 @@ curl -XPUT localhost:9200/_template/template_file -d '
             "content_timestamp": {
               "type": "date",
               "format": "date_optional_time"
+            },
+            "audio_timestamp": {
+              "type": "date",
+              "format": "date_optional_time"
+            },
+            "text_analyzed_timestamp": {
+              "type": "date",
+              "format": "date_optional_time"
             }
           }
         }

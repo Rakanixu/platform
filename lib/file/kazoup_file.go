@@ -6,10 +6,10 @@ import (
 )
 
 type OptsKazoupFile struct {
-	ContentTimestamp      time.Time `json:"content_timestamp,omitempty"` // Last time content was extracted
-	TagsTimestamp         time.Time `json:"tags_timestamp,omitempty"`    // Last time tags was extracted
-	AudioTimestamp        time.Time `json:"audio_timestamp,omitempty"`   // Last time audio was extracted
-	TextAnalyzedTimestamp time.Time `json:"audio_timestamp,omitempty"`   // Last time text analytics was runned over content
+	ContentTimestamp      time.Time `json:"content_timestamp,omitempty"`       // Last time content was extracted
+	TagsTimestamp         time.Time `json:"tags_timestamp,omitempty"`          // Last time tags was extracted
+	AudioTimestamp        time.Time `json:"audio_timestamp,omitempty"`         // Last time audio was extracted
+	TextAnalyzedTimestamp time.Time `json:"text_analyzed_timestamp,omitempty"` // Last time text analytics was runned over content
 }
 
 // KazoupFile represents all different types
