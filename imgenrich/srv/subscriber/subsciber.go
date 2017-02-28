@@ -30,6 +30,8 @@ func (e *Enrich) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessa
 }
 
 func SyncMessages(e *Enrich) {
+	log.Println("SYNC MESSAGES LISTENER STARTED")
+
 	go func() {
 		for {
 			select {
@@ -40,6 +42,8 @@ func SyncMessages(e *Enrich) {
 			}
 		}
 	}()
+
+	log.Println("BADBADBAD ERROR")
 }
 
 func processEnrichMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m *enrich_proto.EnrichMessage) error {
@@ -49,6 +53,7 @@ func processEnrichMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m *enrich
 		Id:    m.Id,
 	})
 	if err != nil {
+		log.Println("ERROR ", m.Id, m.UserId)
 		return err
 	}
 
@@ -63,6 +68,7 @@ func processEnrichMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m *enrich
 		Id:    f.GetDatasourceID(),
 	})
 	if err != nil {
+		log.Println("ERROR READ DS", f.GetDatasourceID())
 		return err
 	}
 
