@@ -37,6 +37,15 @@
                 font-size: 0.9em;
                 margin-top: -5px;
                 padding-bottom: 0;
+                margin-bottom: 2px;
+            }
+
+            .tags-info {
+                opacity: 0.8;
+                font-size: 1em;
+                margin-top: -5px;
+                padding-bottom: 0;
+                margin-bottom: 4px;
             }
 
             .prepopulated mat-item div.body {
@@ -80,7 +89,6 @@
                 margin: 1px;
                 background: white;
                 cursor: pointer;
-
                 background-image: -webkit-linear-gradient(45deg,#efefef 25%,transparent 25%,transparent 75%,#efefef 75%,#efefef),-webkit-linear-gradient(45deg,#efefef 25%,transparent 25%,transparent 75%,#efefef 75%,#efefef);
                 background-position: 0 0,10px 10px;
                 -webkit-background-size: 21px 21px;
@@ -114,6 +122,31 @@
             .big-video mat-item iron-image {
                 width: 113px;
                 height: 72px;
+            }
+
+            .tags {
+                border-radius: 2px;
+                font-size: 0.7em;
+                padding: 2px 5px;
+                line-height: 1.2em;
+                display: inline-block;
+                position: relative;
+                top: -1px;
+            }
+
+            .public, .red-tag {
+                background-color: #f44336;
+                color: white;
+            }
+
+            .shared, .yellow-tag {
+                background-color: #FFC107;
+                color: black;
+            }
+
+            .private, .green-tag {
+                background-color: #4CAF50;
+                color: white;
             }
         </style>
 
@@ -207,6 +240,10 @@
 
                                             <string-html text="[[item.highlight]]"></string-html>
                                             <p class="meta-info">[[timestampToHumanTime(item.modified)]][[bytesToSize(item.file_size, 'with_comma')]]</p>
+                                            <p class="tags-info">
+                                                <span class$="tags [[item.access]]">[[item.access]]</span>
+                                                <span class="tags red-tag" hidden="[[!sensitiveContent(item.content_category)]]">[[item.content_category]]</span>
+                                            </p>
 
                                             <template is="dom-if" if="[[isVideoPreview(item.category, bigVideoClass)]]" restamp="true">
                                                 <iron-image background$="[[documentType(item)]]"
@@ -236,6 +273,10 @@
 
                                             <string-html text="[[item.highlight]]"></string-html>
                                             <p class="meta-info">[[timestampToHumanTime(item.modified)]][[bytesToSize(item.file_size, 'with_comma')]]</p>
+                                            <p class="tags-info">
+                                                <span class$="tags [[item.access]]">[[item.access]]</span>
+                                                <span class="tags red-tag" hidden="[[!sensitiveContent(item.content_category)]]">[[item.content_category]]</span>
+                                            </p>
 
                                             <file-icon class="primary"
                                                        background$="[[documentType(item)]]"

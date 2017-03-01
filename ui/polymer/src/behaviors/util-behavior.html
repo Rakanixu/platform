@@ -318,6 +318,9 @@
       isTag: function(tags) {
         return (tags && tags.length && tags.length > 0);
       },
+      sensitiveContent: function(contentCategory) {
+        return (contentCategory && contentCategory.length && contentCategory.length > 0);
+      },
       isContentEntities: function(entities) {
         return (entities && entities.length && entities.length > 0);
       },

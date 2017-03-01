@@ -79,6 +79,10 @@ func (kf *KazoupGoogleFile) SetHighlight(s string) {
 	kf.Highlight = s
 }
 
+func (kf *KazoupGoogleFile) SetContentCategory(contentCategory string) {
+	kf.ContentCategory = contentCategory
+}
+
 func (kf *KazoupGoogleFile) SetEntities(entities *rossetelib.RosseteEntities) {
 	kf.Entities = entities
 }

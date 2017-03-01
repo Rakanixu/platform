@@ -13,7 +13,14 @@ import (
 	"golang.org/x/net/context"
 	"log"
 	"regexp"
+	"strings"
 	"time"
+)
+
+const (
+	//https://developer.rosette.com/features-and-functions#-entity-types
+	IDENTIFIER = "IDENTIFIER"
+	PERSON     = "PERSON"
 )
 
 type TextAnalyzer struct {
@@ -85,6 +92,13 @@ func processEnrichMsg(c client.Client, m *enrich_proto.EnrichMessage) error {
 				return err
 			}
 			f.SetEntities(e)
+
+			for _, ent := range e.Entities {
+				if strings.Contains(ent.Type, IDENTIFIER) || strings.Contains(ent.Type, PERSON) {
+					f.SetContentCategory(globals.SENSITIVE)
+					break
+				}
+			}
 
 			if tm == nil {
 				f.SetOptsTimestamps(&file.OptsKazoupFile{
