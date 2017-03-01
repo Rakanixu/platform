@@ -59,37 +59,45 @@ curl -XPUT localhost:9200/_template/template_file -d '
     }
   },
   "mappings" : {
+    "_default_": {
+      "_all": {
+        "type": "keyword",
+        "index": true
+      }
+    },
     "file": {
       "properties": {
         "id": {
-          "type": "string",
-          "index": "not_analyzed"
+          "type": "keyword",
+          "index": true
         },
         "user_id": {
-          "type": "string",
-          "index": "not_analyzed"
+          "type": "keyword",
+          "index": true
         },
         "name":{
-          "type": "string",
+          "type": "text",
           "analyzer": "filename_index",
+          "index": true,
           "fields": {
             "raw": {
-              "type": "string",
-              "index": "not_analyzed"
+              "type": "keyword",
+              "index": true
             }
           }
         },
         "category": {
-          "type": "string",
-          "index": "not_analyzed"
+          "type": "keyword",
+          "index": true
         },
         "file_type": {
-          "type": "string",
-          "index": "not_analyzed"
+          "type": "keyword",
+          "index": true
         },
         "url": {
-          "type": "string",
-          "analyzer": "path_analyzer"
+          "type": "text",
+          "analyzer": "path_analyzer",
+          "index": true
         },
         "is_dir": {
           "type": "boolean"
@@ -100,26 +108,27 @@ curl -XPUT localhost:9200/_template/template_file -d '
         },
         "last_seen": {
           "type": "long",
-          "index": "not_analyzed"
+          "index": true
         },
         "file_size": {
           "type": "long"
         },
         "access": {
-          "type": "string",
-          "index": "not_analyzed"
+          "type": "keyword",
+          "index": true
         },
         "content": {
-          "type": "string",
-          "analyzer": "content_analyzer"
+          "type": "text",
+          "analyzer": "content_analyzer",
+          "index": true
         },
         "content_category": {
-          "type": "string",
-          "index": "not_analyzed"
+          "type": "keyword",
+          "index": true
         },
         "tags": {
-          "type": "string",
-          "index": "not_analyzed"
+          "type": "keyword",
+          "index": true
         },
         "opts_kazoup_file": {
           "type": "nested",
