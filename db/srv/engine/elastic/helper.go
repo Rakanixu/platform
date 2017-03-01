@@ -282,6 +282,7 @@ func (e *ElasticQuery) setSource() string {
 			"depth",
 			"file_type",
 			"last_seen",
+			"access",
 			"datasource_id",
 			"index"
 		],`)
