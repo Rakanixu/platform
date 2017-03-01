@@ -30,9 +30,10 @@ func main() {
 
 	s := &subscriber.TextAnalyzer{
 		Client:        service.Client(),
-		EnrichMsgChan: make(chan *enrich_proto.EnrichMessage, 100000),
+		EnrichMsgChan: make(chan *enrich_proto.EnrichMessage, 1000000),
+		Workers:       40,
 	}
-	subscriber.SyncMessages(s)
+	subscriber.StartWorkers(s)
 
 	// Attach subscriber
 	if err := service.Server().Subscribe(

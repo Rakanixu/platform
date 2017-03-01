@@ -15,9 +15,6 @@ spec:
       - name: nats
         image: kazoup/nats:latest
         imagePullPolicy: Always
-        env:
-        - name: EXTRA
-          value: -DV
         ports:
         - containerPort: 4222
           name: client

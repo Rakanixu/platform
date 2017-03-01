@@ -19,6 +19,7 @@ type Enrich struct {
 	Client             client.Client
 	GoogleCloudStorage *gcslib.GoogleCloudStorage
 	EnrichMsgChan      chan *enrich_proto.EnrichMessage
+	Workers            int
 }
 
 // Enrich subscriber, receive EnrichMessage to get the file and process it
@@ -29,21 +30,20 @@ func (e *Enrich) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessa
 	return nil
 }
 
-func SyncMessages(e *Enrich) {
-	log.Println("SYNC MESSAGES LISTENER STARTED")
-
-	go func() {
-		for {
-			select {
-			case m := <-e.EnrichMsgChan:
-				if err := processEnrichMsg(e.Client, e.GoogleCloudStorage, m); err != nil {
-					log.Println("Error Processing enrich msg (Image)", err)
-				}
-			}
+// queueListener range over EnrichMsgChan channel and process msgs one by one
+func (e *Enrich) queueListener(wID int) {
+	for m := range e.EnrichMsgChan {
+		if err := processEnrichMsg(e.Client, e.GoogleCloudStorage, m); err != nil {
+			log.Println("Error Processing enrich msg (Image) on worker ", wID, err)
 		}
-	}()
+	}
+}
 
-	log.Println("BADBADBAD ERROR")
+func StartWorkers(e *Enrich) {
+	// Start workers
+	for i := 0; i < e.Workers; i++ {
+		go e.queueListener(i)
+	}
 }
 
 func processEnrichMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m *enrich_proto.EnrichMessage) error {
@@ -53,7 +53,6 @@ func processEnrichMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m *enrich
 		Id:    m.Id,
 	})
 	if err != nil {
-		log.Println("ERROR ", m.Id, m.UserId)
 		return err
 	}
 
@@ -68,7 +67,6 @@ func processEnrichMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m *enrich
 		Id:    f.GetDatasourceID(),
 	})
 	if err != nil {
-		log.Println("ERROR READ DS", f.GetDatasourceID())
 		return err
 	}
 

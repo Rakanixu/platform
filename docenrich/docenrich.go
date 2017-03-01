@@ -35,9 +35,10 @@ func srv(ctx *cli.Context) {
 	s := &subscriber.Enrich{
 		Client:             service.Client(),
 		GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
-		EnrichMsgChan:      make(chan *enrich_proto.EnrichMessage, 100000),
+		EnrichMsgChan:      make(chan *enrich_proto.EnrichMessage, 1000000),
+		Workers:            25,
 	}
-	subscriber.SyncMessages(s)
+	subscriber.StartWorkers(s)
 
 	// Attach subscriber
 	if err := service.Server().Subscribe(
