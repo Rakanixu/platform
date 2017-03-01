@@ -134,17 +134,17 @@
                 top: -1px;
             }
 
-            .public, .red-tag {
+            .public, .sensitive {
                 background-color: #f44336;
                 color: white;
             }
 
-            .shared, .yellow-tag {
+            .shared {
                 background-color: #FFC107;
                 color: black;
             }
 
-            .private, .green-tag {
+            .private {
                 background-color: #4CAF50;
                 color: white;
             }
@@ -242,7 +242,7 @@
                                             <p class="meta-info">[[timestampToHumanTime(item.modified)]][[bytesToSize(item.file_size, 'with_comma')]]</p>
                                             <p class="tags-info">
                                                 <span class$="tags [[item.access]]">[[item.access]]</span>
-                                                <span class="tags red-tag" hidden="[[!sensitiveContent(item.content_category)]]">[[item.content_category]]</span>
+                                                <span class$="tags [[item.content_category]]" hidden="[[!sensitiveContent(item.content_category)]]">[[item.content_category]]</span>
                                             </p>
 
                                             <template is="dom-if" if="[[isVideoPreview(item.category, bigVideoClass)]]" restamp="true">
@@ -275,7 +275,7 @@
                                             <p class="meta-info">[[timestampToHumanTime(item.modified)]][[bytesToSize(item.file_size, 'with_comma')]]</p>
                                             <p class="tags-info">
                                                 <span class$="tags [[item.access]]">[[item.access]]</span>
-                                                <span class="tags red-tag" hidden="[[!sensitiveContent(item.content_category)]]">[[item.content_category]]</span>
+                                                <span class$="tags [[item.content_category]]" hidden="[[!sensitiveContent(item.content_category)]]">[[item.content_category]]</span>
                                             </p>
 
                                             <file-icon class="primary"
