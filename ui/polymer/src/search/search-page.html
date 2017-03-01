@@ -169,12 +169,13 @@
                          on-tap="toggleSearch"
                          hidden$="[[searching]]">
                         <div class="title flex">[[title]]</div>
-                        <mat-icon-button icon="mat:search" color="white" on-tap="closeDetails"></mat-icon-button>
+                        <mat-icon-button icon="mat:search" color="white"></mat-icon-button>
                     </div>
 
                     <mat-text-field id="search"
                                     class="flex"
                                     label="Search files"
+                                    on-tap="closeDetails"
                                     on-keyup="searchAsYouType"
                                     hidden$="[[!searching]]"></mat-text-field>
                     <mat-icon-button id="reset"
@@ -737,6 +738,7 @@
                 this.set('queryParams.term', '');
             },
             toggleSearch: function(e, detail) {
+                this.closeDetails();
                 this.$.search.input.value = this.$.filterConverter.getFilterAsObj().term ?
                   this.$.filterConverter.getFilterAsObj().term : '';
                 this.$.search._inputHandler();
