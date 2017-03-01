@@ -83,6 +83,10 @@ curl -XPUT localhost:9200/_template/template_file -d '
           "type": "string",
           "index": "not_analyzed"
         },
+        "file_type": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
         "url": {
           "type": "string",
           "analyzer": "path_analyzer"
@@ -101,9 +105,17 @@ curl -XPUT localhost:9200/_template/template_file -d '
         "file_size": {
           "type": "long"
         },
+        "access": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
         "content": {
           "type": "string",
           "analyzer": "content_analyzer"
+        },
+        "content_category": {
+          "type": "string",
+          "index": "not_analyzed"
         },
         "tags": {
           "type": "string",

@@ -79,6 +79,10 @@ func (kf *KazoupOneDriveFile) SetHighlight(s string) {
 	kf.Highlight = s
 }
 
+func (kf *KazoupOneDriveFile) SetContentCategory(contentCategory string) {
+	kf.ContentCategory = contentCategory
+}
+
 func (kf *KazoupOneDriveFile) SetEntities(entities *rossetelib.RosseteEntities) {
 	kf.Entities = entities
 }

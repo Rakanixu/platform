@@ -69,6 +69,8 @@ const (
 	SPREADSHEET  = "spreadsheet"
 	TEXT         = "text"
 
+	SENSITIVE = "sensitive"
+
 	MS_DOCUMENT     = "application/msword"
 	MS_PRESENTATION = "application/vnd.ms-powerpoint"
 	MS_SPREADSHEET  = "application/vnd.ms-excel"

@@ -78,6 +78,10 @@ func (kf *KazoupDropboxFile) SetHighlight(s string) {
 	kf.Highlight = s
 }
 
+func (kf *KazoupDropboxFile) SetContentCategory(contentCategory string) {
+	kf.ContentCategory = contentCategory
+}
+
 func (kf *KazoupDropboxFile) SetEntities(entities *rossetelib.RosseteEntities) {
 	kf.Entities = entities
 }

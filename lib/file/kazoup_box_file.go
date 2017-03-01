@@ -82,6 +82,10 @@ func (kf *KazoupBoxFile) SetHighlight(s string) {
 	kf.Highlight = s
 }
 
+func (kf *KazoupBoxFile) SetContentCategory(contentCategory string) {
+	kf.ContentCategory = contentCategory
+}
+
 func (kf *KazoupBoxFile) SetEntities(entities *rossetelib.RosseteEntities) {
 	kf.Entities = entities
 }
