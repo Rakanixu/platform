@@ -134,17 +134,17 @@
                 top: -1px;
             }
 
-            .public {
+            .public, .red-tag {
                 background-color: #f44336;
                 color: white;
             }
 
-            .shared {
+            .shared, .yellow-tag {
                 background-color: #FFC107;
                 color: black;
             }
 
-            .private {
+            .private, .green-tag {
                 background-color: #4CAF50;
                 color: white;
             }
@@ -240,7 +240,10 @@
 
                                             <string-html text="[[item.highlight]]"></string-html>
                                             <p class="meta-info">[[timestampToHumanTime(item.modified)]][[bytesToSize(item.file_size, 'with_comma')]]</p>
-                                            <p class="tags-info"><span class$="tags [[item.access]]">[[item.access]]</span></p>
+                                            <p class="tags-info">
+                                                <span class$="tags [[item.access]]">[[item.access]]</span>
+                                                <span class="tags red-tag" hidden="[[!sensitiveContent(item.content_category)]]">[[item.content_category]]</span>
+                                            </p>
 
                                             <template is="dom-if" if="[[isVideoPreview(item.category, bigVideoClass)]]" restamp="true">
                                                 <iron-image background$="[[documentType(item)]]"
@@ -270,7 +273,10 @@
 
                                             <string-html text="[[item.highlight]]"></string-html>
                                             <p class="meta-info">[[timestampToHumanTime(item.modified)]][[bytesToSize(item.file_size, 'with_comma')]]</p>
-                                            <p class="tags-info"><span class$="tags [[item.access]]">[[item.access]]</span></p>
+                                            <p class="tags-info">
+                                                <span class$="tags [[item.access]]">[[item.access]]</span>
+                                                <span class="tags red-tag" hidden="[[!sensitiveContent(item.content_category)]]">[[item.content_category]]</span>
+                                            </p>
 
                                             <file-icon class="primary"
                                                        background$="[[documentType(item)]]"
