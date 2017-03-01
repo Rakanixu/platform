@@ -19,6 +19,7 @@ type Enrich struct {
 	Client             client.Client
 	GoogleCloudStorage *gcslib.GoogleCloudStorage
 	EnrichMsgChan      chan *enrich_proto.EnrichMessage
+	Workers            int
 }
 
 // Enrich subscriber, receive EnrichMessage to get the file and process it
@@ -29,17 +30,18 @@ func (e *Enrich) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessa
 	return nil
 }
 
-func SyncMessages(e *Enrich) {
-	go func() {
-		for {
-			select {
-			case m := <-e.EnrichMsgChan:
-				if err := processEnrichMsg(e.Client, e.GoogleCloudStorage, m); err != nil {
-					log.Println("Error Processing enrich msg (Document)", err)
-				}
-			}
+func (e *Enrich) queueListener(wID int) {
+	for m := range e.EnrichMsgChan {
+		if err := processEnrichMsg(e.Client, e.GoogleCloudStorage, m); err != nil {
+			log.Println("Error Processing enrich msg (Document) on Worker", wID, err)
 		}
-	}()
+	}
+}
+
+func StartWorkers(e *Enrich) {
+	for i := 0; i < e.Workers; i++ {
+		go e.queueListener(i)
+	}
 }
 
 func processEnrichMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m *enrich_proto.EnrichMessage) error {

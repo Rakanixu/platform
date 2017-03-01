@@ -19,6 +19,7 @@ import (
 type TextAnalyzer struct {
 	Client        client.Client
 	EnrichMsgChan chan *enrich_proto.EnrichMessage
+	Workers       int
 }
 
 // Enrich subscriber, receive EnrichMessage to get the file and process it
@@ -29,17 +30,18 @@ func (ta *TextAnalyzer) Enrich(ctx context.Context, enrichmsg *enrich_proto.Enri
 	return nil
 }
 
-func SyncMessages(ta *TextAnalyzer) {
-	go func() {
-		for {
-			select {
-			case m := <-ta.EnrichMsgChan:
-				if err := processEnrichMsg(ta.Client, m); err != nil {
-					log.Println("Error Processing text analyzer", err)
-				}
-			}
+func (ta *TextAnalyzer) queueListener(wID int) {
+	for m := range ta.EnrichMsgChan {
+		if err := processEnrichMsg(ta.Client, m); err != nil {
+			log.Println("Error Processing text analyzer on worker", wID, err)
 		}
-	}()
+	}
+}
+
+func StartWorkers(ta *TextAnalyzer) {
+	for i := 0; i < ta.Workers; i++ {
+		go ta.queueListener(i)
+	}
 }
 
 func processEnrichMsg(c client.Client, m *enrich_proto.EnrichMessage) error {
