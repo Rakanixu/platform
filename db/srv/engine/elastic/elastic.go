@@ -103,6 +103,10 @@ func (e *elastic) Init(c client.Client) error {
 					UserId: kf.Doc.UserId,
 				}
 
+				if err := c.Publish(globals.NewSystemContext(), c.NewPublication(globals.ThumbnailTopic, n)); err != nil {
+					log.Print("Publishing ThumbnailTopic error %s", err)
+				}
+
 				var topic string
 				publishMsg := true
 

@@ -37,6 +37,7 @@ const (
 	ScanTopic                 string = NAMESPACE + ".topic.scan"
 	DocEnrichTopic            string = NAMESPACE + ".topic.docenrich"
 	ImgEnrichTopic            string = NAMESPACE + ".topic.imgenrich"
+	ThumbnailTopic            string = NAMESPACE + ".topic.thumbnail"
 	AudioEnrichTopic          string = NAMESPACE + ".topic.audioenrich"
 	ExtractEntitiesTopic      string = NAMESPACE + ".topic.extractentities"
 	CrawlerStartedTopic       string = NAMESPACE + ".topic.crawlerstarted"

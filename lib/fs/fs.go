@@ -33,9 +33,10 @@ type FsUtils interface {
 }
 
 type FsProcessing interface {
-	DocEnrich(file.File, *gcslib.GoogleCloudStorage) chan FileMsg
-	ImgEnrich(file.File, *gcslib.GoogleCloudStorage) chan FileMsg
+	DocEnrich(file.File) chan FileMsg
+	ImgEnrich(file.File) chan FileMsg
 	AudioEnrich(file.File, *gcslib.GoogleCloudStorage) chan FileMsg
+	Thumbnail(file.File, *gcslib.GoogleCloudStorage) chan FileMsg
 }
 
 // NewFsFromEndpoint constructor from endpoint

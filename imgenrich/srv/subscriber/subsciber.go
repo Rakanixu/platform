@@ -8,7 +8,6 @@ import (
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
-	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	enrich_proto "github.com/kazoup/platform/lib/protomsg"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
@@ -16,10 +15,9 @@ import (
 )
 
 type Enrich struct {
-	Client             client.Client
-	GoogleCloudStorage *gcslib.GoogleCloudStorage
-	EnrichMsgChan      chan *enrich_proto.EnrichMessage
-	Workers            int
+	Client        client.Client
+	EnrichMsgChan chan *enrich_proto.EnrichMessage
+	Workers       int
 }
 
 // Enrich subscriber, receive EnrichMessage to get the file and process it
@@ -33,7 +31,7 @@ func (e *Enrich) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessa
 // queueListener range over EnrichMsgChan channel and process msgs one by one
 func (e *Enrich) queueListener(wID int) {
 	for m := range e.EnrichMsgChan {
-		if err := processEnrichMsg(e.Client, e.GoogleCloudStorage, m); err != nil {
+		if err := processEnrichMsg(e.Client, m); err != nil {
 			log.Println("Error Processing enrich msg (Image) on worker ", wID, err)
 		}
 	}
@@ -46,7 +44,7 @@ func StartWorkers(e *Enrich) {
 	}
 }
 
-func processEnrichMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m *enrich_proto.EnrichMessage) error {
+func processEnrichMsg(c client.Client, m *enrich_proto.EnrichMessage) error {
 	frsp, err := db_helper.ReadFromDB(c, globals.NewSystemContext(), &db_proto.ReadRequest{
 		Index: m.Index,
 		Type:  globals.FileType,
@@ -80,7 +78,7 @@ func processEnrichMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m *enrich
 		return err
 	}
 
-	ch := mfs.ImgEnrich(f, gcs)
+	ch := mfs.ImgEnrich(f)
 	// Block while enriching, we expect only one m
 	fm := <-ch
 	close(ch)
