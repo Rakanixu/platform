@@ -134,17 +134,17 @@
                 top: -1px;
             }
 
-            .public, .red-tag {
+            .public, .sensitive {
                 background-color: #f44336;
                 color: white;
             }
 
-            .shared, .yellow-tag {
+            .shared {
                 background-color: #FFC107;
                 color: black;
             }
 
-            .private, .green-tag {
+            .private {
                 background-color: #4CAF50;
                 color: white;
             }
@@ -169,12 +169,13 @@
                          on-tap="toggleSearch"
                          hidden$="[[searching]]">
                         <div class="title flex">[[title]]</div>
-                        <mat-icon-button icon="mat:search" color="white" on-tap="closeDetails"></mat-icon-button>
+                        <mat-icon-button icon="mat:search" color="white"></mat-icon-button>
                     </div>
 
                     <mat-text-field id="search"
                                     class="flex"
                                     label="Search files"
+                                    on-tap="closeDetails"
                                     on-keyup="searchAsYouType"
                                     hidden$="[[!searching]]"></mat-text-field>
                     <mat-icon-button id="reset"
@@ -242,7 +243,7 @@
                                             <p class="meta-info">[[timestampToHumanTime(item.modified)]][[bytesToSize(item.file_size, 'with_comma')]]</p>
                                             <p class="tags-info">
                                                 <span class$="tags [[item.access]]">[[item.access]]</span>
-                                                <span class="tags red-tag" hidden="[[!sensitiveContent(item.content_category)]]">[[item.content_category]]</span>
+                                                <span class$="tags [[item.content_category]]" hidden="[[!sensitiveContent(item.content_category)]]">[[item.content_category]]</span>
                                             </p>
 
                                             <template is="dom-if" if="[[isVideoPreview(item.category, bigVideoClass)]]" restamp="true">
@@ -275,7 +276,7 @@
                                             <p class="meta-info">[[timestampToHumanTime(item.modified)]][[bytesToSize(item.file_size, 'with_comma')]]</p>
                                             <p class="tags-info">
                                                 <span class$="tags [[item.access]]">[[item.access]]</span>
-                                                <span class="tags red-tag" hidden="[[!sensitiveContent(item.content_category)]]">[[item.content_category]]</span>
+                                                <span class$="tags [[item.content_category]]" hidden="[[!sensitiveContent(item.content_category)]]">[[item.content_category]]</span>
                                             </p>
 
                                             <file-icon class="primary"
@@ -737,6 +738,7 @@
                 this.set('queryParams.term', '');
             },
             toggleSearch: function(e, detail) {
+                this.closeDetails();
                 this.$.search.input.value = this.$.filterConverter.getFilterAsObj().term ?
                   this.$.filterConverter.getFilterAsObj().term : '';
                 this.$.search._inputHandler();
