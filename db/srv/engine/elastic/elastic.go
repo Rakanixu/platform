@@ -293,6 +293,7 @@ func (e *elastic) Search(ctx context.Context, req *db.SearchRequest) (*db.Search
 		FileType:             req.FileType,
 		LastSeen:             req.LastSeen,
 		Access:               req.Access,
+		ContentCategory:      req.ContentCategory,
 		NoKazoupFileOriginal: req.NoKazoupFileOriginal,
 	}
 	query, err := eQuery.Query()

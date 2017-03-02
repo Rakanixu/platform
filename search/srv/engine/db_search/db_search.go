@@ -46,6 +46,7 @@ func (d *dbSearch) Search(ctx context.Context, req *search.SearchRequest, client
 		Type:                 req.Type,
 		FileType:             req.FileType,
 		Access:               req.Access,
+		ContentCategory:      req.ContentCategory,
 		NoKazoupFileOriginal: req.NoKazoupFileOriginal,
 	})
 	if err != nil {

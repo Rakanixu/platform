@@ -23,7 +23,8 @@ message SearchRequest {
   string type = 8;
   string file_type = 9;
   string access = 10;
-  bool no_kazoup_file_original = 11;
+  string content_category = 11;
+  bool no_kazoup_file_original = 12;
 }
 
 message SearchResponse {
