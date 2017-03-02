@@ -60,10 +60,18 @@ curl -XPUT localhost:9200/_template/template_file -d '
   },
   "mappings" : {
     "_default_": {
-      "_all": {
-        "type": "keyword",
-        "index": true
-      }
+      "dynamic_templates": [
+        {
+          "all_text": {
+            "match_mapping_type": "string",
+            "match": "*",
+            "mapping": {
+              "type": "string",
+              "index": "not_analyzed"
+            }
+          }
+        }
+      ]
     },
     "file": {
       "properties": {
@@ -100,7 +108,8 @@ curl -XPUT localhost:9200/_template/template_file -d '
           "index": true
         },
         "is_dir": {
-          "type": "boolean"
+          "type": "boolean",
+          "index": true
         },
         "modified": {
           "type": "date",
