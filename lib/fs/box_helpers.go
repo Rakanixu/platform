@@ -1,8 +1,6 @@
 package fs
 
 import (
-	"bufio"
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/cenkalti/backoff"
@@ -19,7 +17,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"sync"
 	"time"
 )
 
@@ -92,8 +89,8 @@ func (bfs *BoxFs) getMetadataFromFile(id string) error {
 	return nil
 }
 
-// processImage, thumbnail generation, cloud vision processing
-func (bfs *BoxFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.KazoupBoxFile) (file.File, error) {
+// processImage,  cloud vision processing
+func (bfs *BoxFs) processImage(f *file.KazoupBoxFile) (file.File, error) {
 	// Download file from Box, so connector is globals.Box
 	bcs, err := cs.NewCloudStorageFromEndpoint(bfs.Endpoint, globals.Box)
 	if err != nil {
@@ -115,62 +112,75 @@ func (bfs *BoxFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.KazoupBox
 	}
 	defer rc.Close()
 
-	// Split readcloser into two or more for paralel processing
-	var buf1, buf2 bytes.Buffer
-	w := io.MultiWriter(&buf1, &buf2)
-
-	if _, err = io.Copy(w, rc); err != nil {
+	// Resize to optimal size for cloud vision API
+	cvrd, err := image.Thumbnail(rc, globals.CLOUD_VISION_IMG_WIDTH)
+	if err != nil {
+		log.Println("CLOUD VISION ERROR", err)
 		return nil, err
 	}
 
-	var wg sync.WaitGroup
+	if f.Tags, err = cloudvision.Tag(ioutil.NopCloser(cvrd)); err != nil {
+		log.Println("CLOUD VISION ERROR", err)
+		return nil, err
+	}
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
+	if f.OptsKazoupFile == nil {
+		f.OptsKazoupFile = &file.OptsKazoupFile{
+			TagsTimestamp: time.Now(),
+		}
+	} else {
+		f.OptsKazoupFile.TagsTimestamp = time.Now()
+	}
 
-		backoff.Retry(func() error {
-			rd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf2)), globals.THUMBNAIL_WIDTH)
-			if err != nil {
-				log.Println("THUMNAIL GENERATION ERROR, SKIPPING", err)
-				// Skip retry
-				return nil
-			}
+	return f, nil
+}
 
-			if err := gcs.Upload(ioutil.NopCloser(rd), bfs.Endpoint.Index, f.ID); err != nil {
-				log.Println("THUMNAIL UPLOAD ERROR", err)
-				return err
-			}
+// processThumbnail, thumbnail generation
+func (bfs *BoxFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *file.KazoupBoxFile) (file.File, error) {
+	// Download file from Box, so connector is globals.Box
+	bcs, err := cs.NewCloudStorageFromEndpoint(bfs.Endpoint, globals.Box)
+	if err != nil {
+		return nil, err
+	}
 
-			return nil
-		}, backoff.NewExponentialBackOff())
-	}()
+	var rc io.ReadCloser
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		// Resize to optimal size for cloud vision API
-		cvrd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf1)), globals.CLOUD_VISION_IMG_WIDTH)
+	if err := backoff.Retry(func() error {
+		rc, err = bcs.Download(f.Original.ID)
 		if err != nil {
-			log.Println("CLOUD VISION ERROR", err)
-			return
+			return err
 		}
 
-		if f.Tags, err = cloudvision.Tag(ioutil.NopCloser(cvrd)); err != nil {
-			log.Println("CLOUD VISION ERROR", err)
-			return
+		return nil
+	}, backoff.NewExponentialBackOff()); err != nil {
+		log.Println("ERROR DOWNLOADING FILE", err)
+		return nil, err
+	}
+	defer rc.Close()
+
+	backoff.Retry(func() error {
+		rd, err := image.Thumbnail(rc, globals.THUMBNAIL_WIDTH)
+		if err != nil {
+			log.Println("THUMNAIL GENERATION ERROR, SKIPPING", err)
+			// Skip retry
+			return nil
 		}
 
-		if f.OptsKazoupFile == nil {
-			f.OptsKazoupFile = &file.OptsKazoupFile{
-				TagsTimestamp: time.Now(),
-			}
-		} else {
-			f.OptsKazoupFile.TagsTimestamp = time.Now()
+		if err := gcs.Upload(ioutil.NopCloser(rd), bfs.Endpoint.Index, f.ID); err != nil {
+			log.Println("THUMNAIL UPLOAD ERROR", err)
+			return err
 		}
-	}()
 
-	wg.Wait()
+		return nil
+	}, backoff.NewExponentialBackOff())
+
+	if f.OptsKazoupFile == nil {
+		f.OptsKazoupFile = &file.OptsKazoupFile{
+			ThumbnailTimestamp: time.Now(),
+		}
+	} else {
+		f.OptsKazoupFile.ThumbnailTimestamp = time.Now()
+	}
 
 	return f, nil
 }

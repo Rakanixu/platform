@@ -3,7 +3,6 @@ package enrich
 import (
 	"github.com/kazoup/platform/docenrich/srv/subscriber"
 	"github.com/kazoup/platform/lib/globals"
-	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
 	enrich_proto "github.com/kazoup/platform/lib/protomsg"
@@ -30,13 +29,10 @@ func srv(ctx *cli.Context) {
 
 	healthchecks.RegisterBrokerHealthChecks(service, m)
 
-	gcslib.Register()
-
 	s := &subscriber.Enrich{
-		Client:             service.Client(),
-		GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
-		EnrichMsgChan:      make(chan *enrich_proto.EnrichMessage, 1000000),
-		Workers:            25,
+		Client:        service.Client(),
+		EnrichMsgChan: make(chan *enrich_proto.EnrichMessage, 1000000),
+		Workers:       25,
 	}
 	subscriber.StartWorkers(s)
 

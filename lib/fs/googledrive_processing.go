@@ -8,7 +8,7 @@ import (
 )
 
 // DocEnrich extracts content from document and add to File
-func (gfs *GoogleDriveFs) DocEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+func (gfs *GoogleDriveFs) DocEnrich(f file.File) chan FileMsg {
 	go func() {
 		var err error
 
@@ -42,8 +42,8 @@ func (gfs *GoogleDriveFs) DocEnrich(f file.File, gcs *gcslib.GoogleCloudStorage)
 	return gfs.FilesChan
 }
 
-// ImgEnrich extracts tags from image and generate thumbnail
-func (gfs *GoogleDriveFs) ImgEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+// ImgEnrich extracts tags from image
+func (gfs *GoogleDriveFs) ImgEnrich(f file.File) chan FileMsg {
 	go func() {
 		var err error
 
@@ -64,7 +64,7 @@ func (gfs *GoogleDriveFs) ImgEnrich(f file.File, gcs *gcslib.GoogleCloudStorage)
 		}
 
 		if f.(*file.KazoupGoogleFile).Category == globals.CATEGORY_PICTURE && processImg {
-			f, err = gfs.processImage(gcs, f.(*file.KazoupGoogleFile))
+			f, err = gfs.processImage(f.(*file.KazoupGoogleFile))
 			if err != nil {
 				gfs.FilesChan <- NewFileMsg(nil, err)
 				return
@@ -100,6 +100,41 @@ func (gfs *GoogleDriveFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorag
 
 		if f.(*file.KazoupGoogleFile).Category == globals.CATEGORY_AUDIO && processAudio {
 			f, err = gfs.processAudio(gcs, f.(*file.KazoupGoogleFile))
+			if err != nil {
+				gfs.FilesChan <- NewFileMsg(nil, err)
+				return
+			}
+		}
+
+		gfs.FilesChan <- NewFileMsg(f, err)
+	}()
+
+	return gfs.FilesChan
+}
+
+// Thumbnail generate thumbnail
+func (gfs *GoogleDriveFs) Thumbnail(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+	go func() {
+		var err error
+
+		_, ok := f.(*file.KazoupGoogleFile)
+		if !ok {
+			gfs.FilesChan <- NewFileMsg(nil, errors.New("Error enriching file (Img)"))
+			return
+		}
+
+		// OptsKazoupFile.ContentTimestamp and
+		// OptsKazoupFile.TagsTimestamp are not defined,
+		// Content was never extracted before
+		processThumbnail := false
+		if f.(*file.KazoupGoogleFile).OptsKazoupFile == nil {
+			processThumbnail = true
+		} else {
+			processThumbnail = f.(*file.KazoupGoogleFile).OptsKazoupFile.ThumbnailTimestamp.Before(f.(*file.KazoupGoogleFile).Modified)
+		}
+
+		if f.(*file.KazoupGoogleFile).Category == globals.CATEGORY_PICTURE && processThumbnail {
+			f, err = gfs.processThumbnail(gcs, f.(*file.KazoupGoogleFile))
 			if err != nil {
 				gfs.FilesChan <- NewFileMsg(nil, err)
 				return

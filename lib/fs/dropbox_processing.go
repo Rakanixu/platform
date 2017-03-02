@@ -8,7 +8,7 @@ import (
 )
 
 // DocEnrich
-func (dfs *DropboxFs) DocEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+func (dfs *DropboxFs) DocEnrich(f file.File) chan FileMsg {
 	go func() {
 		var err error
 
@@ -43,7 +43,7 @@ func (dfs *DropboxFs) DocEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) cha
 }
 
 // ImgEnrich extracts tags from image and generate thumbnail
-func (dfs *DropboxFs) ImgEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+func (dfs *DropboxFs) ImgEnrich(f file.File) chan FileMsg {
 	go func() {
 		var err error
 
@@ -64,7 +64,7 @@ func (dfs *DropboxFs) ImgEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) cha
 		}
 
 		if f.(*file.KazoupDropboxFile).Category == globals.CATEGORY_PICTURE && processImg {
-			f, err = dfs.processImage(gcs, f.(*file.KazoupDropboxFile))
+			f, err = dfs.processImage(f.(*file.KazoupDropboxFile))
 			if err != nil {
 				dfs.FilesChan <- NewFileMsg(nil, err)
 				return
@@ -100,6 +100,41 @@ func (dfs *DropboxFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) c
 
 		if f.(*file.KazoupDropboxFile).Category == globals.CATEGORY_AUDIO && processAudio {
 			f, err = dfs.processAudio(gcs, f.(*file.KazoupDropboxFile))
+			if err != nil {
+				dfs.FilesChan <- NewFileMsg(nil, err)
+				return
+			}
+		}
+
+		dfs.FilesChan <- NewFileMsg(f, err)
+	}()
+
+	return dfs.FilesChan
+}
+
+// Thumbnail generates thumbnail
+func (dfs *DropboxFs) Thumbnail(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+	go func() {
+		var err error
+
+		_, ok := f.(*file.KazoupDropboxFile)
+		if !ok {
+			dfs.FilesChan <- NewFileMsg(nil, errors.New("Error generating thumbnail file"))
+			return
+		}
+
+		// OptsKazoupFile.ContentTimestamp and
+		// OptsKazoupFile.TagsTimestamp are not defined,
+		// Content was never extracted before
+		processImg := false
+		if f.(*file.KazoupDropboxFile).OptsKazoupFile == nil {
+			processImg = true
+		} else {
+			processImg = f.(*file.KazoupDropboxFile).OptsKazoupFile.ThumbnailTimestamp.Before(f.(*file.KazoupDropboxFile).Modified)
+		}
+
+		if f.(*file.KazoupDropboxFile).Category == globals.CATEGORY_PICTURE && processImg {
+			f, err = dfs.processThumbnail(gcs, f.(*file.KazoupDropboxFile))
 			if err != nil {
 				dfs.FilesChan <- NewFileMsg(nil, err)
 				return

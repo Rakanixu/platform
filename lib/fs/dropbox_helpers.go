@@ -1,7 +1,6 @@
 package fs
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/json"
 	"errors"
@@ -20,7 +19,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"sync"
 	"time"
 )
 
@@ -105,7 +103,7 @@ func (dfs *DropboxFs) getFiles() error {
 }
 
 // processImage, thumbnail generation, cloud vision processing
-func (dfs *DropboxFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.KazoupDropboxFile) (file.File, error) {
+func (dfs *DropboxFs) processImage(f *file.KazoupDropboxFile) (file.File, error) {
 	// Downloads from dropbox, see connector
 	dcs, err := cs.NewCloudStorageFromEndpoint(dfs.Endpoint, globals.Dropbox)
 	if err != nil {
@@ -127,64 +125,26 @@ func (dfs *DropboxFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.Kazou
 	}
 	defer rc.Close()
 
-	// Split readcloser into two or more for paralel processing
-	var buf1, buf2 bytes.Buffer
-	w := io.MultiWriter(&buf1, &buf2)
-
-	if _, err = io.Copy(w, rc); err != nil {
+	// Resize to optimal size for cloud vision API
+	cvrd, err := image.Thumbnail(rc, globals.CLOUD_VISION_IMG_WIDTH)
+	if err != nil {
+		log.Println("CLOUD VISION ERROR", err)
 		return nil, err
 	}
 
-	var wg sync.WaitGroup
+	// Library implements exponential backoff
+	if f.Tags, err = cloudvision.Tag(ioutil.NopCloser(cvrd)); err != nil {
+		log.Println("CLOUD VISION ERROR", err)
+		return nil, err
+	}
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		backoff.Retry(func() error {
-			b, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf2)), globals.THUMBNAIL_WIDTH)
-			if err != nil {
-				log.Println("THUMNAIL GENERATION ERROR, SKIPPING", err)
-				// Skip retry
-				return nil
-			}
-
-			if err := gcs.Upload(ioutil.NopCloser(b), dfs.Endpoint.Index, f.ID); err != nil {
-				log.Println("THUMNAIL UPLOAD ERROR", err)
-				return err
-			}
-
-			return nil
-		}, backoff.NewExponentialBackOff())
-	}()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		// Resize to optimal size for cloud vision API
-		cvrd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf1)), globals.CLOUD_VISION_IMG_WIDTH)
-		if err != nil {
-			log.Println("CLOUD VISION ERROR", err)
-			return
+	if f.OptsKazoupFile == nil {
+		f.OptsKazoupFile = &file.OptsKazoupFile{
+			TagsTimestamp: time.Now(),
 		}
-
-		// Library implements exponential backoff
-		if f.Tags, err = cloudvision.Tag(ioutil.NopCloser(cvrd)); err != nil {
-			log.Println("CLOUD VISION ERROR", err)
-			return
-		}
-
-		if f.OptsKazoupFile == nil {
-			f.OptsKazoupFile = &file.OptsKazoupFile{
-				TagsTimestamp: time.Now(),
-			}
-		} else {
-			f.OptsKazoupFile.TagsTimestamp = time.Now()
-		}
-	}()
-
-	wg.Wait()
+	} else {
+		f.OptsKazoupFile.TagsTimestamp = time.Now()
+	}
 
 	return f, nil
 }
@@ -248,6 +208,56 @@ func (dfs *DropboxFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.Kazou
 		}
 	} else {
 		f.OptsKazoupFile.AudioTimestamp = time.Now()
+	}
+
+	return f, nil
+}
+
+// processThumbnail, thumbnail generation
+func (dfs *DropboxFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *file.KazoupDropboxFile) (file.File, error) {
+	// Downloads from dropbox, see connector
+	dcs, err := cs.NewCloudStorageFromEndpoint(dfs.Endpoint, globals.Dropbox)
+	if err != nil {
+		return nil, err
+	}
+
+	var rc io.ReadCloser
+
+	if err = backoff.Retry(func() error {
+		rc, err = dcs.Download(f.Original.ID)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}, backoff.NewExponentialBackOff()); err != nil {
+		log.Println("ERROR DOWNLOADING FILE", err)
+		return nil, err
+	}
+	defer rc.Close()
+
+	backoff.Retry(func() error {
+		b, err := image.Thumbnail(rc, globals.THUMBNAIL_WIDTH)
+		if err != nil {
+			log.Println("THUMNAIL GENERATION ERROR, SKIPPING", err)
+			// Skip retry
+			return nil
+		}
+
+		if err := gcs.Upload(ioutil.NopCloser(b), dfs.Endpoint.Index, f.ID); err != nil {
+			log.Println("THUMNAIL UPLOAD ERROR", err)
+			return err
+		}
+
+		return nil
+	}, backoff.NewExponentialBackOff())
+
+	if f.OptsKazoupFile == nil {
+		f.OptsKazoupFile = &file.OptsKazoupFile{
+			ThumbnailTimestamp: time.Now(),
+		}
+	} else {
+		f.OptsKazoupFile.ThumbnailTimestamp = time.Now()
 	}
 
 	return f, nil
