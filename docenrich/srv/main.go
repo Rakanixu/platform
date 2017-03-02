@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/kazoup/platform/docenrich/srv/subscriber"
 	"github.com/kazoup/platform/lib/globals"
-	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
 	enrich_proto "github.com/kazoup/platform/lib/protomsg"
