@@ -22,6 +22,7 @@ type ElasticQuery struct {
 	FileType             string
 	LastSeen             int64
 	Access               string
+	ContentCategory      string
 	NoKazoupFileOriginal bool
 }
 
@@ -46,7 +47,8 @@ func (e *ElasticQuery) Query() (string, error) {
 	buffer.WriteString(e.filterUser() + ",")
 	buffer.WriteString(e.filterLastSeen() + ",")
 	buffer.WriteString(e.filterType() + ",")
-	buffer.WriteString(e.filterAccess())
+	buffer.WriteString(e.filterAccess() + ",")
+	buffer.WriteString(e.filterContentCategory())
 	buffer.WriteString(`]}}, "sort":[`)
 	buffer.WriteString(e.defaultSorting())
 	buffer.WriteString(`]`)
@@ -133,6 +135,18 @@ func (e *ElasticQuery) filterAccess() string {
 
 	if len(e.Access) > 0 {
 		buffer.WriteString(`{"term": {"access": "` + e.Access + `"}}`)
+	} else {
+		buffer.WriteString(`{}`)
+	}
+
+	return buffer.String()
+}
+
+func (e *ElasticQuery) filterContentCategory() string {
+	var buffer bytes.Buffer
+
+	if len(e.ContentCategory) > 0 {
+		buffer.WriteString(`{"term": {"content_category": "` + e.ContentCategory + `"}}`)
 	} else {
 		buffer.WriteString(`{}`)
 	}

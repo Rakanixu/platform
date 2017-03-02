@@ -581,6 +581,9 @@
                     if (filters.access) {
                         this.set('title', filters.access);
                     }
+                    if (filters.content_category) {
+                        this.set('title', filters.content_category);
+                    }
 
                     if (filters.category === this.categoriesMap.images) {
                         this.setGridView();

@@ -163,6 +163,12 @@
                 <iron-icon icon="icons:cloud" item-icon></iron-icon>Public
               </paper-icon-item>
 
+              <paper-icon-item on-tap="setPathWithParams"
+                               data-path="/u/search"
+                               data-params$='{"content_category":"[[contentCategoryMap.sensitive]]","index":"[[md5UserId]]","term":""}'>
+                <iron-icon icon="icons:warning" item-icon></iron-icon>Sensitive
+              </paper-icon-item>
+
               <mat-divider></mat-divider>
 
               <paper-icon-item on-tap="showDatasourcesDialog">
