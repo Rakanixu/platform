@@ -130,6 +130,7 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 	}
 }
 
+// quotaHandlerWrapper defines a quota wrapper based on quotaLimit per srv+user_id key
 func quotaHandlerWrapper(fn server.HandlerFunc, limiter *rate.Limiter, srv string, quotaLimit int64) server.HandlerFunc {
 	return func(ctx context.Context, req server.Request, rsp interface{}) error {
 		// Empty wrapper if no quota limit, avoid futher operations
@@ -166,13 +167,7 @@ func quotaHandlerWrapper(fn server.HandlerFunc, limiter *rate.Limiter, srv strin
 			return errors.Unauthorized("Token", err.Error())
 		}
 
-		fmt.Println("CALL TO", fmt.Sprintf("%s%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit)
-
-		rate, reset, allowed := limiter.AllowN(fmt.Sprintf("%s%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, time.Minute, 1)
-		fmt.Println("Current rate: ", rate)
-		fmt.Println("Reset: ", reset)
-		fmt.Println("Allowed: ", allowed)
-
+		_, _, allowed := limiter.AllowN(fmt.Sprintf("%s%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, time.Minute, 1)
 		if !allowed {
 			return errors.Forbidden("User Rate Limit", "User rate limit exceeded.")
 		}
@@ -183,7 +178,7 @@ func quotaHandlerWrapper(fn server.HandlerFunc, limiter *rate.Limiter, srv strin
 	}
 }
 
-// NewQuotaHandlerWrapper returns a quota limit per user wrapper, 24hours
+// NewQuotaHandlerWrapper returns a handler quota limit per user wrapper
 func NewQuotaHandlerWrapper(srvName string, uDayLimit int64) server.HandlerWrapper {
 	ring := redis.NewRing(&redis.RingOptions{
 		Addrs: map[string]string{
@@ -198,14 +193,66 @@ func NewQuotaHandlerWrapper(srvName string, uDayLimit int64) server.HandlerWrapp
 	}
 }
 
-// SubscriberWrapper for auth internal async messages
-func SubscriberWrapper(fn server.SubscriberFunc) server.SubscriberFunc {
+// quotaSubscriberWrapper defines a quota wrapper based on quotaLimit per srv+user_id key
+func quotaSubscriberWrapper(fn server.SubscriberFunc, limiter *rate.Limiter, srv string, quotaLimit int64) server.SubscriberFunc {
 	return func(ctx context.Context, msg server.Publication) error {
-		var f error
+		// Empty wrapper if no quota limit, avoid futher operations
+		if quotaLimit <= 0 {
+			return fn(ctx, msg)
+		}
 
-		f = fn(globals.NewSystemContext(), msg)
+		md, ok := metadata.FromContext(ctx)
+		if !ok {
+			return errors.InternalServerError("QuotaWrapper", "Unable to retrieve metadata")
+		}
 
-		return f
+		if len(md["Authorization"]) == 0 {
+			return errors.Unauthorized("QuotaWrapper", "No Auth header")
+		}
+
+		// We will read claim to know if public user, or paying or whatever
+		token, err := jwt.Parse(md["Authorization"], func(token *jwt.Token) (interface{}, error) {
+			// Don't forget to validate the alg is what you expect:
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			}
+
+			decoded, err := base64.URLEncoding.DecodeString(globals.CLIENT_ID_SECRET)
+			if err != nil {
+				return nil, err
+			}
+
+			return decoded, nil
+		})
+		if err != nil {
+			return errors.Unauthorized("Token", err.Error())
+		}
+
+		_, _, allowed := limiter.AllowN(fmt.Sprintf("%s%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, time.Minute, 1)
+		if !allowed {
+			return errors.Forbidden("User Rate Limit", "User rate limit exceeded.")
+		}
+
+		fmt.Println("")
+		fmt.Println("quotaSubscriberWrapper", srv, quotaLimit, limiter, ctx, msg)
+		fmt.Println("")
+
+		return fn(ctx, msg)
+	}
+}
+
+// NewQuotaSubscriberWrapper returns a subscriber quota limit per user wrapper
+func NewQuotaSubscriberWrapper(srvName string, uDayLimit int64) server.SubscriberWrapper {
+	ring := redis.NewRing(&redis.RingOptions{
+		Addrs: map[string]string{
+			"server1": "redis:6379",
+		},
+	})
+	fallbackLimiter := timerate.NewLimiter(timerate.Every(time.Second), 1000)
+	limiter := rate.NewLimiter(ring, fallbackLimiter)
+
+	return func(fn server.SubscriberFunc) server.SubscriberFunc {
+		return quotaSubscriberWrapper(fn, limiter, srvName, uDayLimit)
 	}
 }
 
@@ -272,7 +319,7 @@ func NewKazoupService(name string, uDayHandlerLimit, uDaySubscriberLimit int64, 
 			micro.RegisterInterval(time.Second*30),
 			//micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...),*/ KazoupClientWrap()),
-			micro.WrapSubscriber(SubscriberWrapper),
+			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn, uDaySubscriberLimit)),
 			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewQuotaHandlerWrapper(sn, uDayHandlerLimit), AuthWrapper),
 			micro.Flags(
 				cli.StringFlag{
@@ -299,8 +346,8 @@ func NewKazoupService(name string, uDayHandlerLimit, uDaySubscriberLimit int64, 
 			micro.RegisterTTL(time.Minute),
 			micro.RegisterInterval(time.Second*30),
 			//micro.Client(NewKazoupClientWithXrayTrace(sess)),
-			micro.WrapSubscriber(SubscriberWrapper),
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...),*/ KazoupClientWrap()),
+			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn, uDaySubscriberLimit)),
 			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewQuotaHandlerWrapper(sn, uDayHandlerLimit), AuthWrapper),
 		)
 	} else {
@@ -311,9 +358,9 @@ func NewKazoupService(name string, uDayHandlerLimit, uDaySubscriberLimit int64, 
 			micro.RegisterTTL(time.Minute),
 			micro.RegisterInterval(time.Second*30),
 			//micro.Client(NewKazoupClientWithXrayTrace(sess)),
-			micro.WrapSubscriber(SubscriberWrapper),
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...), */ monitor.ClientWrapper(m), KazoupClientWrap()),
-			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...),*/ monitor.HandlerWrapper(m), AuthWrapper),
+			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn, uDaySubscriberLimit)),
+			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...),*/ monitor.HandlerWrapper(m), NewQuotaHandlerWrapper(sn, uDayHandlerLimit), AuthWrapper),
 		)
 	}
 
