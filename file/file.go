@@ -2,6 +2,7 @@ package file
 
 import (
 	"github.com/kazoup/platform/file/srv/handler"
+	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
@@ -15,7 +16,7 @@ func srv(ctx *cli.Context) {
 	var m monitor.Monitor
 
 	// New service
-	service := wrappers.NewKazoupService("file", m)
+	service := wrappers.NewKazoupService("file", globals.QUOTA_HANDLER_FILE, globals.QUOTA_SUBS_FILE, m)
 
 	// Monitor for file-srv
 	m = monitor.NewMonitor(

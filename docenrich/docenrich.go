@@ -17,7 +17,7 @@ import (
 func srv(ctx *cli.Context) {
 	var m monitor.Monitor
 
-	service := wrappers.NewKazoupService("docenrich", m)
+	service := wrappers.NewKazoupService("docenrich", globals.QUOTA_HANDLER_DOC_ENRICH, globals.QUOTA_SUBS_DOC_ENRICH, m)
 
 	// enrich-srv monitor
 	m = monitor.NewMonitor(

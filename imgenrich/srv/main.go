@@ -16,7 +16,7 @@ import (
 func main() {
 	var m monitor.Monitor
 
-	service := wrappers.NewKazoupService("imgenrich", m)
+	service := wrappers.NewKazoupService("imgenrich", globals.QUOTA_HANDLER_IMG_ENRICH, globals.QUOTA_SUBS_IMG_ENRICH, m)
 
 	// enrich-srv monitor
 	m = monitor.NewMonitor(

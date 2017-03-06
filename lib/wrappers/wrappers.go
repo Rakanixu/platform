@@ -8,6 +8,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/xray"
 	"github.com/dgrijalva/jwt-go"
+	//"github.com/go-redis/rate"
+	//"github.com/go-redis/redis"
 	kazoup_context "github.com/kazoup/platform/lib/context"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/micro/cli"
@@ -19,6 +21,9 @@ import (
 	"github.com/micro/go-os/monitor"
 	"github.com/micro/go-plugins/wrapper/trace/awsxray"
 	"golang.org/x/net/context"
+	timerate "golang.org/x/time/rate"
+	"gopkg.in/go-redis/rate.v5"
+	"gopkg.in/redis.v5"
 	"os"
 	"time"
 )
@@ -125,6 +130,74 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 	}
 }
 
+func quotaHandlerWrapper(fn server.HandlerFunc, limiter *rate.Limiter, srv string, quotaLimit int64) server.HandlerFunc {
+	return func(ctx context.Context, req server.Request, rsp interface{}) error {
+		// Empty wrapper if no quota limit, avoid futher operations
+		if quotaLimit <= 0 {
+			return fn(ctx, req, rsp)
+		}
+
+		var f error
+
+		md, ok := metadata.FromContext(ctx)
+		if !ok {
+			return errors.InternalServerError("QuotaWrapper", "Unable to retrieve metadata")
+		}
+
+		if len(md["Authorization"]) == 0 {
+			return errors.Unauthorized("QuotaWrapper", "No Auth header")
+		}
+
+		// We will read claim to know if public user, or paying or whatever
+		token, err := jwt.Parse(md["Authorization"], func(token *jwt.Token) (interface{}, error) {
+			// Don't forget to validate the alg is what you expect:
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			}
+
+			decoded, err := base64.URLEncoding.DecodeString(globals.CLIENT_ID_SECRET)
+			if err != nil {
+				return nil, err
+			}
+
+			return decoded, nil
+		})
+		if err != nil {
+			return errors.Unauthorized("Token", err.Error())
+		}
+
+		fmt.Println("CALL TO", fmt.Sprintf("%s%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit)
+
+		rate, reset, allowed := limiter.AllowN(fmt.Sprintf("%s%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, time.Minute, 1)
+		fmt.Println("Current rate: ", rate)
+		fmt.Println("Reset: ", reset)
+		fmt.Println("Allowed: ", allowed)
+
+		if !allowed {
+			return errors.Forbidden("User Rate Limit", "User rate limit exceeded.")
+		}
+
+		f = fn(ctx, req, rsp)
+
+		return f
+	}
+}
+
+// NewQuotaHandlerWrapper returns a quota limit per user wrapper, 24hours
+func NewQuotaHandlerWrapper(srvName string, uDayLimit int64) server.HandlerWrapper {
+	ring := redis.NewRing(&redis.RingOptions{
+		Addrs: map[string]string{
+			"server1": "redis:6379",
+		},
+	})
+	fallbackLimiter := timerate.NewLimiter(timerate.Every(time.Second), 1000)
+	limiter := rate.NewLimiter(ring, fallbackLimiter)
+
+	return func(h server.HandlerFunc) server.HandlerFunc {
+		return quotaHandlerWrapper(h, limiter, srvName, uDayLimit)
+	}
+}
+
 // SubscriberWrapper for auth internal async messages
 func SubscriberWrapper(fn server.SubscriberFunc) server.SubscriberFunc {
 	return func(ctx context.Context, msg server.Publication) error {
@@ -154,7 +227,7 @@ func NewKazoupClientWithXrayTrace(sess *session.Session) client.Client {
 	)
 }
 
-func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
+func NewKazoupService(name string, uDayHandlerLimit, uDaySubscriberLimit int64, mntr ...monitor.Monitor) micro.Service {
 	var m monitor.Monitor
 
 	// Check if monitor available
@@ -200,7 +273,7 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			//micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...),*/ KazoupClientWrap()),
 			micro.WrapSubscriber(SubscriberWrapper),
-			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ AuthWrapper),
+			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewQuotaHandlerWrapper(sn, uDayHandlerLimit), AuthWrapper),
 			micro.Flags(
 				cli.StringFlag{
 					Name:   "elasticsearch_hosts",
@@ -228,7 +301,7 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			//micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapSubscriber(SubscriberWrapper),
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...),*/ KazoupClientWrap()),
-			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ AuthWrapper),
+			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewQuotaHandlerWrapper(sn, uDayHandlerLimit), AuthWrapper),
 		)
 	} else {
 		service = micro.NewService(

@@ -147,6 +147,29 @@ const (
 
 	DISCOVERY_DELAY_MS  = 10 * time.Millisecond
 	PUBLISHING_DELAY_MS = 20 * time.Millisecond
+
+	QUOTA_HANDLER_AUDIO_ENRICH  = 0  // Speech to text handler - no quota
+	QUOTA_SUBS_AUDIO_ENRICH     = 10 // Speech to text - quota per user
+	QUOTA_HANDLER_IMG_ENRICH    = 0  // Cloud vision handler - no quota
+	QUOTA_SUBS_IMG_ENRICH       = 10 // Cloud vision - quota per user
+	QUOTA_HANDLER_TEXT_ANALYZER = 0  // Rossete handler - no quota
+	QUOTA_SUBS_TEXT_ANALYZER    = 10 // Rossete - quota per user
+	QUOTA_HANDLER_DOC_ENRICH    = 0  // Own tika extarction, not limiting
+	QUOTA_SUBS_DOC_ENRICH       = 0  // Own tika extarction, not limiting
+	QUOTA_HANDLER_THUMBNAIL     = 0  // Thumbnail generation handler - no quota
+	QUOTA_SUBS_THUMBNAIL        = 0  // Thumbnail generation subscriber - no quota
+	QUOTA_HANDLER_DATASOURCE    = 0  // Datasource srv handler - no quota
+	QUOTA_SUBS_DATASOURCE       = 0  // Datasource srv subscriber - no quota
+	QUOTA_HANDLER_CRAWLER       = 0  // Crawler srv handler - no quota
+	QUOTA_SUBS_CRAWLER          = 0  // Crawler srv subscriber - no quota
+	QUOTA_HANDLER_DB            = 0  // DB srv handler - no quota
+	QUOTA_SUBS_DB               = 0  // DB srv subscriber - no quota
+	QUOTA_HANDLER_FILE          = 0  // File srv handler - no quota
+	QUOTA_SUBS_FILE             = 0  // file srv subscriber - no quota
+	QUOTA_HANDLER_NOTIFICATION  = 0  // Notification srv handler - no quota
+	QUOTA_SUBS_NOTIFICATION     = 0  // Notification srv subscriber - no quota
+	QUOTA_HANDLER_SEARCH        = 0  // Search srv handler - no quota
+	QUOTA_SUBS_SEARCH           = 0  // Search srv subscriber - no quota
 )
 
 func NewGoogleOautConfig() *oauth2.Config {

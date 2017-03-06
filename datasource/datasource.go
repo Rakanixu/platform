@@ -17,7 +17,7 @@ import (
 func srv(ctx *cli.Context) {
 	var m monitor.Monitor
 
-	service := wrappers.NewKazoupService("datasource", m)
+	service := wrappers.NewKazoupService("datasource", globals.QUOTA_HANDLER_DATASOURCE, globals.QUOTA_SUBS_DATASOURCE, m)
 
 	// datasource-srv monitor
 	m = monitor.NewMonitor(
