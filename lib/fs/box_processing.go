@@ -8,7 +8,7 @@ import (
 )
 
 // DocEnrich extracts content from document and add to File
-func (bfs *BoxFs) DocEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+func (bfs *BoxFs) DocEnrich(f file.File) chan FileMsg {
 	go func() {
 		var err error
 
@@ -43,7 +43,7 @@ func (bfs *BoxFs) DocEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan Fi
 }
 
 // ImgEnrich extracts tags from image and generate thumbnail
-func (bfs *BoxFs) ImgEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+func (bfs *BoxFs) ImgEnrich(f file.File) chan FileMsg {
 	go func() {
 		var err error
 
@@ -64,7 +64,7 @@ func (bfs *BoxFs) ImgEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan Fi
 		}
 
 		if f.(*file.KazoupBoxFile).Category == globals.CATEGORY_PICTURE && processImg {
-			f, err = bfs.processImage(gcs, f.(*file.KazoupBoxFile))
+			f, err = bfs.processImage(f.(*file.KazoupBoxFile))
 			if err != nil {
 				bfs.FilesChan <- NewFileMsg(nil, err)
 				return
@@ -100,6 +100,41 @@ func (bfs *BoxFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan 
 
 		if f.(*file.KazoupBoxFile).Category == globals.CATEGORY_AUDIO && processAudio {
 			f, err = bfs.processAudio(gcs, f.(*file.KazoupBoxFile))
+			if err != nil {
+				bfs.FilesChan <- NewFileMsg(nil, err)
+				return
+			}
+		}
+
+		bfs.FilesChan <- NewFileMsg(f, err)
+	}()
+
+	return bfs.FilesChan
+}
+
+// ImgEnrich extracts tags from image and generate thumbnail
+func (bfs *BoxFs) Thumbnail(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+	go func() {
+		var err error
+
+		_, ok := f.(*file.KazoupBoxFile)
+		if !ok {
+			bfs.FilesChan <- NewFileMsg(nil, errors.New("Error generating thumbnail file"))
+			return
+		}
+
+		// OptsKazoupFile.ContentTimestamp and
+		// OptsKazoupFile.CTagsTimestamp are not defined,
+		// Content was never extracted before
+		processThumb := false
+		if f.(*file.KazoupBoxFile).OptsKazoupFile == nil {
+			processThumb = true
+		} else {
+			processThumb = f.(*file.KazoupBoxFile).OptsKazoupFile.ThumbnailTimestamp.Before(f.(*file.KazoupBoxFile).Modified)
+		}
+
+		if f.(*file.KazoupBoxFile).Category == globals.CATEGORY_PICTURE && processThumb {
+			f, err = bfs.processThumbnail(gcs, f.(*file.KazoupBoxFile))
 			if err != nil {
 				bfs.FilesChan <- NewFileMsg(nil, err)
 				return

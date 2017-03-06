@@ -1,12 +1,13 @@
 package enrich
 
 import (
-	"github.com/kazoup/platform/docenrich/srv/subscriber"
 	"github.com/kazoup/platform/lib/globals"
+	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
 	enrich_proto "github.com/kazoup/platform/lib/protomsg"
 	"github.com/kazoup/platform/lib/wrappers"
+	"github.com/kazoup/platform/thumbnail/srv/subscriber"
 	"github.com/micro/cli"
 	"github.com/micro/go-micro/server"
 	"github.com/micro/go-os/monitor"
@@ -17,7 +18,7 @@ import (
 func srv(ctx *cli.Context) {
 	var m monitor.Monitor
 
-	service := wrappers.NewKazoupService("docenrich", m)
+	service := wrappers.NewKazoupService("thumbnail", m)
 
 	// enrich-srv monitor
 	m = monitor.NewMonitor(
@@ -29,19 +30,22 @@ func srv(ctx *cli.Context) {
 
 	healthchecks.RegisterBrokerHealthChecks(service, m)
 
-	s := &subscriber.Enrich{
-		Client:        service.Client(),
-		EnrichMsgChan: make(chan *enrich_proto.EnrichMessage, 1000000),
-		Workers:       25,
+	gcslib.Register()
+
+	s := &subscriber.Thumbnail{
+		Client:             service.Client(),
+		GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
+		ThumbnailMsgChan:   make(chan *enrich_proto.EnrichMessage, 1000000),
+		Workers:            25,
 	}
 	subscriber.StartWorkers(s)
 
 	// Attach subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
-			globals.DocEnrichTopic,
+			globals.ThumbnailTopic,
 			s,
-			server.SubscriberQueue("docenrich"),
+			server.SubscriberQueue("thumbnail"),
 		),
 	); err != nil {
 		log.Fatal(err)
@@ -52,11 +56,11 @@ func srv(ctx *cli.Context) {
 	}
 }
 
-func docenrichCommands() []cli.Command {
+func thumbnailCommands() []cli.Command {
 	return []cli.Command{
 		{
 			Name:   "srv",
-			Usage:  "Run document enrich service",
+			Usage:  "Run thumbnail service",
 			Action: srv,
 		},
 	}
@@ -64,9 +68,9 @@ func docenrichCommands() []cli.Command {
 func Commands() []cli.Command {
 	return []cli.Command{
 		{
-			Name:        "docenrich",
-			Usage:       "Document Enrich commands",
-			Subcommands: docenrichCommands(),
+			Name:        "thumbnail",
+			Usage:       "Thumbnail commands",
+			Subcommands: thumbnailCommands(),
 		},
 	}
 }

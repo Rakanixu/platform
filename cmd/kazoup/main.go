@@ -25,6 +25,7 @@ import (
 	notification "github.com/kazoup/platform/notification"
 	search "github.com/kazoup/platform/search"
 	textanalyzer "github.com/kazoup/platform/textanalyzer"
+	thumbnail "github.com/kazoup/platform/thumbnail"
 	ui "github.com/kazoup/platform/ui"
 	"github.com/micro/cli"
 	ccli "github.com/micro/cli"
@@ -43,6 +44,7 @@ func main() {
 	app.Commands = append(app.Commands, docenrich.Commands()...)
 	app.Commands = append(app.Commands, imgenrich.Commands()...)
 	app.Commands = append(app.Commands, audioenrich.Commands()...)
+	app.Commands = append(app.Commands, thumbnail.Commands()...)
 	app.Commands = append(app.Commands, textanalyzer.Commands()...)
 	app.Commands = append(app.Commands, datasource.Commands()...)
 	app.Commands = append(app.Commands, db.Commands()...)

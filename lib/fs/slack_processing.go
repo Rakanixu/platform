@@ -8,7 +8,7 @@ import (
 )
 
 // DocEnrich extracts content from document and add to File
-func (sfs *SlackFs) DocEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+func (sfs *SlackFs) DocEnrich(f file.File) chan FileMsg {
 	go func() {
 		var err error
 
@@ -42,8 +42,8 @@ func (sfs *SlackFs) DocEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan 
 	return sfs.FilesChan
 }
 
-// ImgEnrich extracts tags from image and generate thumbnail
-func (sfs *SlackFs) ImgEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+// ImgEnrich extracts tags from image
+func (sfs *SlackFs) ImgEnrich(f file.File) chan FileMsg {
 	go func() {
 		var err error
 
@@ -64,7 +64,7 @@ func (sfs *SlackFs) ImgEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan 
 		}
 
 		if f.(*file.KazoupSlackFile).Category == globals.CATEGORY_PICTURE && processImg {
-			f, err = sfs.processImage(gcs, f.(*file.KazoupSlackFile))
+			f, err = sfs.processImage(f.(*file.KazoupSlackFile))
 			if err != nil {
 				sfs.FilesChan <- NewFileMsg(nil, err)
 				return
@@ -100,6 +100,41 @@ func (sfs *SlackFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) cha
 
 		if f.(*file.KazoupSlackFile).Category == globals.CATEGORY_AUDIO && processAudio {
 			f, err = sfs.processAudio(gcs, f.(*file.KazoupSlackFile))
+			if err != nil {
+				sfs.FilesChan <- NewFileMsg(nil, err)
+				return
+			}
+		}
+
+		sfs.FilesChan <- NewFileMsg(f, err)
+	}()
+
+	return sfs.FilesChan
+}
+
+// Thumbnail generate thumbnail
+func (sfs *SlackFs) Thumbnail(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+	go func() {
+		var err error
+
+		_, ok := f.(*file.KazoupSlackFile)
+		if !ok {
+			sfs.FilesChan <- NewFileMsg(nil, errors.New("Error generating thumbnail file"))
+			return
+		}
+
+		// OptsKazoupFile.ContentTimestamp and
+		// OptsKazoupFile.CTagsTimestamp are not defined,
+		// Content was never extracted before
+		processThumb := false
+		if f.(*file.KazoupSlackFile).OptsKazoupFile == nil {
+			processThumb = true
+		} else {
+			processThumb = f.(*file.KazoupSlackFile).OptsKazoupFile.ThumbnailTimestamp.Before(f.(*file.KazoupSlackFile).Modified)
+		}
+
+		if f.(*file.KazoupSlackFile).Category == globals.CATEGORY_PICTURE && processThumb {
+			f, err = sfs.processThumbnail(gcs, f.(*file.KazoupSlackFile))
 			if err != nil {
 				sfs.FilesChan <- NewFileMsg(nil, err)
 				return

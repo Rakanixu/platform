@@ -8,7 +8,7 @@ import (
 )
 
 // DocEnrich extracts content from document and add to File
-func (ofs *OneDriveFs) DocEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+func (ofs *OneDriveFs) DocEnrich(f file.File) chan FileMsg {
 	go func() {
 		var err error
 
@@ -42,8 +42,8 @@ func (ofs *OneDriveFs) DocEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) ch
 	return ofs.FilesChan
 }
 
-// ImgEnrich extracts tags from image and generate thumbnail
-func (ofs *OneDriveFs) ImgEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+// ImgEnrich extracts tags from image
+func (ofs *OneDriveFs) ImgEnrich(f file.File) chan FileMsg {
 	go func() {
 		var err error
 
@@ -64,7 +64,7 @@ func (ofs *OneDriveFs) ImgEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) ch
 		}
 
 		if f.(*file.KazoupOneDriveFile).Category == globals.CATEGORY_PICTURE && processImg {
-			f, err = ofs.processImage(gcs, f.(*file.KazoupOneDriveFile))
+			f, err = ofs.processImage(f.(*file.KazoupOneDriveFile))
 			if err != nil {
 				ofs.FilesChan <- NewFileMsg(nil, err)
 				return
@@ -100,6 +100,41 @@ func (ofs *OneDriveFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) 
 
 		if f.(*file.KazoupOneDriveFile).Category == globals.CATEGORY_AUDIO && processAudio {
 			f, err = ofs.processAudio(gcs, f.(*file.KazoupOneDriveFile))
+			if err != nil {
+				ofs.FilesChan <- NewFileMsg(nil, err)
+				return
+			}
+		}
+
+		ofs.FilesChan <- NewFileMsg(f, err)
+	}()
+
+	return ofs.FilesChan
+}
+
+// Thumbnail generate thumbnail
+func (ofs *OneDriveFs) Thumbnail(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+	go func() {
+		var err error
+
+		_, ok := f.(*file.KazoupOneDriveFile)
+		if !ok {
+			ofs.FilesChan <- NewFileMsg(nil, errors.New("Error generating thumbnail file"))
+			return
+		}
+
+		// OptsKazoupFile.ContentTimestamp and
+		// OptsKazoupFile.CTagsTimestamp are not defined,
+		// Content was never extracted before
+		processThumbnail := false
+		if f.(*file.KazoupOneDriveFile).OptsKazoupFile == nil {
+			processThumbnail = true
+		} else {
+			processThumbnail = f.(*file.KazoupOneDriveFile).OptsKazoupFile.ThumbnailTimestamp.Before(f.(*file.KazoupOneDriveFile).Modified)
+		}
+
+		if f.(*file.KazoupOneDriveFile).Category == globals.CATEGORY_PICTURE && processThumbnail {
+			f, err = ofs.processThumbnail(gcs, f.(*file.KazoupOneDriveFile))
 			if err != nil {
 				ofs.FilesChan <- NewFileMsg(nil, err)
 				return

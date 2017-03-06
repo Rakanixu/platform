@@ -1,8 +1,6 @@
 package fs
 
 import (
-	"bufio"
-	"bytes"
 	"fmt"
 	"github.com/cenkalti/backoff"
 	cs "github.com/kazoup/platform/lib/cloudstorage"
@@ -20,7 +18,6 @@ import (
 	"io/ioutil"
 	"log"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -85,8 +82,8 @@ func (gfs *GoogleDriveFs) pushFilesToChanForPage(files []*drive.File) error {
 	return nil
 }
 
-// processImage, thumbnail generation, cloud vision processing
-func (gfs *GoogleDriveFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.KazoupGoogleFile) (file.File, error) {
+// processImage, cloud vision processing
+func (gfs *GoogleDriveFs) processImage(f *file.KazoupGoogleFile) (file.File, error) {
 	// Download file from GoogleDrive, so connector is globals.GoogleDrive
 	gdcs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.GoogleDrive)
 	if err != nil {
@@ -110,64 +107,25 @@ func (gfs *GoogleDriveFs) processImage(gcs *gcslib.GoogleCloudStorage, f *file.K
 	}
 	defer rc.Close()
 
-	// Split readcloser into two or more for different processing
-	var buf1, buf2 bytes.Buffer
-	w := io.MultiWriter(&buf1, &buf2)
-
-	if _, err = io.Copy(w, rc); err != nil {
+	// Resize to optimal size for cloud vision API
+	cvrd, err := image.Thumbnail(rc, globals.CLOUD_VISION_IMG_WIDTH)
+	if err != nil {
+		log.Println("CLOUD VISION ERROR", err)
 		return nil, err
 	}
 
-	var wg sync.WaitGroup
+	if f.Tags, err = cloudvision.Tag(ioutil.NopCloser(cvrd)); err != nil {
+		log.Println("CLOUD VISION ERROR", err)
+		return nil, err
+	}
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		backoff.Retry(func() error {
-			// Resize to our thumbnail size
-			rd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf2)), globals.THUMBNAIL_WIDTH)
-			if err != nil {
-				log.Println("THUMNAIL GENERATION ERROR, SKIPPING", err)
-				// Skip retry
-				return nil
-			}
-
-			if err := gcs.Upload(ioutil.NopCloser(rd), gfs.Endpoint.Index, f.ID); err != nil {
-				log.Println("THUMNAIL UPLOAD ERROR", err)
-				return err
-			}
-
-			return nil
-		}, backoff.NewExponentialBackOff())
-	}()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		// Resize to optimal size for cloud vision API
-		cvrd, err := image.Thumbnail(ioutil.NopCloser(bufio.NewReader(&buf1)), globals.CLOUD_VISION_IMG_WIDTH)
-		if err != nil {
-			log.Println("CLOUD VISION ERROR", err)
-			return
+	if f.OptsKazoupFile == nil {
+		f.OptsKazoupFile = &file.OptsKazoupFile{
+			TagsTimestamp: time.Now(),
 		}
-
-		if f.Tags, err = cloudvision.Tag(ioutil.NopCloser(cvrd)); err != nil {
-			log.Println("CLOUD VISION ERROR", err)
-			return
-		}
-
-		if f.OptsKazoupFile == nil {
-			f.OptsKazoupFile = &file.OptsKazoupFile{
-				TagsTimestamp: time.Now(),
-			}
-		} else {
-			f.OptsKazoupFile.TagsTimestamp = time.Now()
-		}
-	}()
-
-	wg.Wait()
+	} else {
+		f.OptsKazoupFile.TagsTimestamp = time.Now()
+	}
 
 	return f, nil
 }
@@ -253,6 +211,58 @@ func (gfs *GoogleDriveFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.K
 		f.OptsKazoupFile.AudioTimestamp = time.Now()
 	}
 
+	return f, nil
+}
+
+// processThumbnail, thumbnail generation
+func (gfs *GoogleDriveFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *file.KazoupGoogleFile) (file.File, error) {
+	// Download file from GoogleDrive, so connector is globals.GoogleDrive
+	gdcs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.GoogleDrive)
+	if err != nil {
+		return nil, err
+	}
+
+	var rc io.ReadCloser
+
+	if err := backoff.Retry(func() error {
+		// Not great, but check implementation for details about variadic params
+		rc, err = gdcs.Download(f.Original.Id, "download", "")
+
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}, backoff.NewExponentialBackOff()); err != nil {
+		log.Println("ERROR DOWNLOADING FILE", err)
+		return nil, err
+	}
+	defer rc.Close()
+
+	backoff.Retry(func() error {
+		// Resize to our thumbnail size
+		rd, err := image.Thumbnail(rc, globals.THUMBNAIL_WIDTH)
+		if err != nil {
+			log.Println("THUMNAIL GENERATION ERROR, SKIPPING", err)
+			// Skip retry
+			return nil
+		}
+
+		if err := gcs.Upload(ioutil.NopCloser(rd), gfs.Endpoint.Index, f.ID); err != nil {
+			log.Println("THUMNAIL UPLOAD ERROR", err)
+			return err
+		}
+
+		return nil
+	}, backoff.NewExponentialBackOff())
+
+	if f.OptsKazoupFile == nil {
+		f.OptsKazoupFile = &file.OptsKazoupFile{
+			ThumbnailTimestamp: time.Now(),
+		}
+	} else {
+		f.OptsKazoupFile.ThumbnailTimestamp = time.Now()
+	}
 	return f, nil
 }
 

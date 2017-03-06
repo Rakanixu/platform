@@ -1,12 +1,13 @@
 package main
 
 import (
-	"github.com/kazoup/platform/imgenrich/srv/subscriber"
 	"github.com/kazoup/platform/lib/globals"
+	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
 	enrich_proto "github.com/kazoup/platform/lib/protomsg"
 	"github.com/kazoup/platform/lib/wrappers"
+	"github.com/kazoup/platform/thumbnail/srv/subscriber"
 	"github.com/micro/go-micro/server"
 	"github.com/micro/go-os/monitor"
 	"log"
@@ -16,7 +17,7 @@ import (
 func main() {
 	var m monitor.Monitor
 
-	service := wrappers.NewKazoupService("imgenrich", m)
+	service := wrappers.NewKazoupService("thumbnail", m)
 
 	// enrich-srv monitor
 	m = monitor.NewMonitor(
@@ -28,19 +29,22 @@ func main() {
 
 	healthchecks.RegisterBrokerHealthChecks(service, m)
 
-	s := &subscriber.Enrich{
-		Client:        service.Client(),
-		EnrichMsgChan: make(chan *enrich_proto.EnrichMessage, 1000000),
-		Workers:       25,
+	gcslib.Register()
+
+	s := &subscriber.Thumbnail{
+		Client:             service.Client(),
+		GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
+		ThumbnailMsgChan:   make(chan *enrich_proto.EnrichMessage, 1000000),
+		Workers:            25,
 	}
 	subscriber.StartWorkers(s)
 
 	// Attach subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
-			globals.ImgEnrichTopic,
+			globals.ThumbnailTopic,
 			s,
-			server.SubscriberQueue("imgenrich"),
+			server.SubscriberQueue("thumbnail"),
 		),
 	); err != nil {
 		log.Fatal(err)
