@@ -9,9 +9,10 @@ service File {
 
 message Quota {
   string name = 1;
-  int64 rate = 2;
-  int64 reset_timestamp = 3;
-  int64 quota = 4;
+  string icon = 2;
+  int64 rate = 3;
+  int64 reset_timestamp = 4;
+  int64 quota = 5;
 }
 
 message ReadRequest {
@@ -19,7 +20,8 @@ message ReadRequest {
 }
 
 message ReadResponse {
-  repeated Quota quota = 1;
+  string time_limit = 1;
+  repeated Quota quota = 2;
 }
 
 message HealthRequest {

@@ -330,6 +330,16 @@
       getGravatarUrl: function(mail) {
         return 'https://www.gravatar.com/avatar/' + md5(mail) + '?d=identicon'
       },
+      getQuotaRate: function(item) {
+        if (item.quota === undefined) {
+          return '';
+        }
+
+        return 'Number of requests: ' + ((item.rate === undefined) ? 0 : item.rate);
+      },
+      getQuota: function(item, measure) {
+        return (item.quota === undefined) ? 'Unlimited' : (item.quota + ' per ' + measure);
+      },
       replaceAll: function(str, search, replacement) {
         return  str.replace(new RegExp(search, 'g'), replacement);
       },

@@ -21,11 +21,16 @@ func init() {
 	limiter = rate.NewLimiter(ring, fallbackLimiter)
 }
 
-// GetQuota returns quota info: rate, resetTimestamp, and quota
-func GetQuota(srvName, uID string) (int64, int64, int64) {
+// GetQuota returns quota info: srvLabel, icon, rate, resetTimestamp, quota, and if was OK
+func GetQuota(srvName, uID string) (string, string, int64, int64, int64, bool) {
+	if globals.SRV_LIMIT_DICTIONARY.M[srvName] == nil {
+		return "", "", 0, 0, 0, false
+	}
 
-	hq := int64(globals.SRV_LIMIT_DICTIONARY.M[srvName]["handler"])
-	sq := int64(globals.SRV_LIMIT_DICTIONARY.M[srvName]["subscriber"])
+	hq := int64(globals.SRV_LIMIT_DICTIONARY.M[srvName]["handler"].(int))
+	sq := int64(globals.SRV_LIMIT_DICTIONARY.M[srvName]["subscriber"].(int))
+	sl := globals.SRV_LIMIT_DICTIONARY.M[srvName]["label"].(string)
+	i := globals.SRV_LIMIT_DICTIONARY.M[srvName]["icon"].(string)
 
 	// Get quota for srv handler
 	rate1, resetTimestamp1, _ := limiter.AllowN(fmt.Sprintf("%s-handler-%s", srvName, uID), hq, globals.QUOTA_TIME_LIMITER, 0)
@@ -33,7 +38,6 @@ func GetQuota(srvName, uID string) (int64, int64, int64) {
 	rate2, resetTimestamp2, _ := limiter.AllowN(fmt.Sprintf("%s-subs-%s", srvName, uID), sq, globals.QUOTA_TIME_LIMITER, 0)
 
 	// Merge info
-
 	var ts int64
 	if resetTimestamp1 > resetTimestamp2 {
 		ts = resetTimestamp1
@@ -41,5 +45,5 @@ func GetQuota(srvName, uID string) (int64, int64, int64) {
 		ts = resetTimestamp2
 	}
 
-	return rate1 + rate2, ts, hq + sq
+	return sl, i, rate1 + rate2, ts, hq + sq, true
 }

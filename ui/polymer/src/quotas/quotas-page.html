@@ -1,0 +1,119 @@
+<dom-module id="quotas-page">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style is="custom-style" include="shared-styles">
+      :host {
+        display: block;
+      }
+
+      .secondary {
+        color: hsla(0, 0%, 0%, 0.54);
+      }
+    </style>
+
+    <template id="datasources" is="dom-repeat" items="[[quotaResults.quota]]" hidden$="[[emptyState.visible]]">
+      <mat-item class="no-ui-action"
+                label="[[item.name]]"
+                description="[[getQuotaRate(item)]]">
+        <mat-avatar class="primary"
+                    icon$="[[item.icon]]">
+        </mat-avatar>
+        <p class="secondary">[[getQuota(item, quotaResults.time_limit)]]</p>
+      </mat-item>
+    </template>
+
+
+    <empty-state id="emptyState"
+                 class="fit"
+                 hidden$="[[!emptyState.visible]]"
+                 header="[[emptyState.header]]"
+                 message="[[emptyState.message]]"></empty-state>
+
+    <paper-toast id="toast" duration="6000" text=""></paper-toast>
+
+    <iron-ajax id="rpcGetQuotas"
+               method="POST"
+               content-type="application/json"
+               url="[[endpoints.endpoint]]"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleQuotas"
+               params="{{rpcGetQuotasParams}}"
+               headers="[[headers]]"></iron-ajax>
+
+  </template>
+
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'quotas-page',
+        behaviors: [
+          UtilBehaviorImp,
+          MapBehaviorImp,
+          EndpointsBehaviorImp
+        ],
+        properties: {
+          rpcGetQuotasParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: window.Endpoints.srvs.quota.srv,
+                method: window.Endpoints.srvs.quota.read,
+                request: {
+
+                }
+              };
+            }
+          },
+          quotaResults: {
+            type: Object,
+            notify: true,
+            value: function() {
+              return {}
+            }
+          },
+          emptyState: {
+            type: Object,
+            notify: true,
+            value: function() {
+              return {
+                visible: false,
+                icon: "icons:build",
+                header: "Upps.",
+                message: "We couldn't retrieve your custom quotas. Please try again later.",
+              };
+            }
+          }
+        },
+        ready: function() {
+          this.getQuotas();
+        },
+        getQuotas: function(e) {
+          this.headers = Auth.getHeaders();
+          this.set('loading', true);
+
+          this.$.rpcGetQuotas.body = this.rpcGetQuotasParams;
+          this.$.rpcGetQuotas.generateRequest();
+        },
+        _handleQuotas: function(e) {
+          this.set('emptyState.visible', false);
+          this.set('loading', false);
+          this.set('quotaResults', e.detail.response);
+        },
+        _handleError: function(e) {
+          this.set('emptyState.visible', true);
+          this.set('loading', false);
+          this.checkUnauthorize(e);
+
+          if (e.detail.request && e.detail.request.response) {
+            this.$.toast.text = e.detail.request.response.detail;
+            this.$.toast.show();
+          }
+        }
+      });
+    }());
+  </script>
+</dom-module>

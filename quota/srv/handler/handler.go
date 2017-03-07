@@ -8,7 +8,7 @@ import (
 	"github.com/micro/go-micro/cmd"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
-	"log"
+	"sort"
 )
 
 // Quota struct
@@ -28,17 +28,26 @@ func (q *Quota) Read(ctx context.Context, req *proto.ReadRequest, rsp *proto.Rea
 		return errors.InternalServerError("com.kazoup.srv.quota.Read", err.Error())
 	}
 
+	var h []*proto.Quota
 	for _, v := range srvs {
-		r, rt, q := quota.GetQuota(v.Name, uID)
-		rsp.Quota = append(rsp.Quota, &proto.Quota{
-			Name:           v.Name,
-			Rate:           r,
-			ResetTimestamp: rt,
-			Quota:          q,
-		})
+		l, i, r, rt, q, ok := quota.GetQuota(v.Name, uID)
+		if ok {
+			h = append(h, &proto.Quota{
+				Name:           l,
+				Icon:           i,
+				Rate:           r,
+				ResetTimestamp: rt,
+				Quota:          q,
+			})
+		}
 	}
 
-	log.Println(rsp.Quota)
+	// Output will be deterministic
+	sort.Sort(sortAlphabetically(h))
+	sort.Sort(sortByRate(h))
+
+	rsp.TimeLimit = globals.QUOTA_TIME_LIMITER_STRING
+	rsp.Quota = h
 
 	return nil
 }
