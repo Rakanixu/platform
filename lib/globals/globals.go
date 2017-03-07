@@ -28,24 +28,34 @@ import (
 const (
 	NAMESPACE                 string = "com.kazoup"
 	DB_SERVICE_NAME           string = NAMESPACE + ".srv.db"
+	SEARCH_SERVICE_NAME       string = NAMESPACE + ".srv.search"
 	DATASOURCE_SERVICE_NAME   string = NAMESPACE + ".srv.datasource"
+	CRAWLER_SERVICE_NAME      string = NAMESPACE + ".srv.crawler"
 	NOTIFICATION_SERVICE_NAME string = NAMESPACE + ".srv.notification"
+	FILE_SERVICE_NAME         string = NAMESPACE + ".srv.file"
+	QUOTA_SERVICE_NAME        string = NAMESPACE + ".srv.quota"
 	MONITOR_SERVICE_NAME      string = NAMESPACE + ".srv.monitor"
-	FilesTopic                string = NAMESPACE + ".topic.files"
-	SlackChannelsTopic        string = NAMESPACE + ".topic.slackchannels"
-	SlackUsersTopic           string = NAMESPACE + ".topic.slackusers"
-	ScanTopic                 string = NAMESPACE + ".topic.scan"
-	DocEnrichTopic            string = NAMESPACE + ".topic.docenrich"
-	ImgEnrichTopic            string = NAMESPACE + ".topic.imgenrich"
-	ThumbnailTopic            string = NAMESPACE + ".topic.thumbnail"
-	AudioEnrichTopic          string = NAMESPACE + ".topic.audioenrich"
-	ExtractEntitiesTopic      string = NAMESPACE + ".topic.extractentities"
-	CrawlerStartedTopic       string = NAMESPACE + ".topic.crawlerstarted"
-	CrawlerFinishedTopic      string = NAMESPACE + ".topic.crawlerfinished"
-	NotificationTopic         string = NAMESPACE + ".topic.notification"
-	NotificationProxyTopic    string = NAMESPACE + ".topic.notificationproxy"
-	DeleteBucketTopic         string = NAMESPACE + ".topic.deletebucket"
-	DeleteFileInBucketTopic   string = NAMESPACE + ".topic.deletefileinbucket"
+	THUMBNAIL_SERVICE_NAME    string = NAMESPACE + ".srv.thumbnail"
+	AUDIOENRICH_SERVICE_NAME  string = NAMESPACE + ".srv.audioenrich"
+	DOCENRICH_SERVICE_NAME    string = NAMESPACE + ".srv.docenrich"
+	IMGENRICH_SERVICE_NAME    string = NAMESPACE + ".srv.imgenrich"
+	TEXTANALYZER_SERVICE_NAME string = NAMESPACE + ".srv.textanalyzer"
+
+	FilesTopic              string = NAMESPACE + ".topic.files"
+	SlackChannelsTopic      string = NAMESPACE + ".topic.slackchannels"
+	SlackUsersTopic         string = NAMESPACE + ".topic.slackusers"
+	ScanTopic               string = NAMESPACE + ".topic.scan"
+	DocEnrichTopic          string = NAMESPACE + ".topic.docenrich"
+	ImgEnrichTopic          string = NAMESPACE + ".topic.imgenrich"
+	ThumbnailTopic          string = NAMESPACE + ".topic.thumbnail"
+	AudioEnrichTopic        string = NAMESPACE + ".topic.audioenrich"
+	ExtractEntitiesTopic    string = NAMESPACE + ".topic.extractentities"
+	CrawlerStartedTopic     string = NAMESPACE + ".topic.crawlerstarted"
+	CrawlerFinishedTopic    string = NAMESPACE + ".topic.crawlerfinished"
+	NotificationTopic       string = NAMESPACE + ".topic.notification"
+	NotificationProxyTopic  string = NAMESPACE + ".topic.notificationproxy"
+	DeleteBucketTopic       string = NAMESPACE + ".topic.deletebucket"
+	DeleteFileInBucketTopic string = NAMESPACE + ".topic.deletefileinbucket"
 
 	IndexDatasources  = "datasources"
 	IndexHelper       = "files_helper"
@@ -148,6 +158,8 @@ const (
 	DISCOVERY_DELAY_MS  = 10 * time.Millisecond
 	PUBLISHING_DELAY_MS = 20 * time.Millisecond
 
+	QUOTA_TIME_LIMITER = time.Hour
+
 	QUOTA_HANDLER_AUDIO_ENRICH  = 0  // Speech to text handler - no quota
 	QUOTA_SUBS_AUDIO_ENRICH     = 10 // Speech to text - quota per user
 	QUOTA_HANDLER_IMG_ENRICH    = 0  // Cloud vision handler - no quota
@@ -170,7 +182,65 @@ const (
 	QUOTA_SUBS_NOTIFICATION     = 0  // Notification srv subscriber - no quota
 	QUOTA_HANDLER_SEARCH        = 0  // Search srv handler - no quota
 	QUOTA_SUBS_SEARCH           = 0  // Search srv subscriber - no quota
+	QUOTA_HANDLER_QUOTA         = 0  // Quota srv handler - no quota
+	QUOTA_SUBS_QUOTA            = 0  // Quota srv subscriber - no quota
 )
+
+// Treat this as a constant basically, do not overwrite or modify
+var SRV_LIMIT_DICTIONARY = struct {
+	M map[string]map[string]int
+}{
+	M: map[string]map[string]int{
+		DB_SERVICE_NAME: map[string]int{
+			"handler":    QUOTA_HANDLER_DB,
+			"subscriber": QUOTA_SUBS_DB,
+		},
+		SEARCH_SERVICE_NAME: map[string]int{
+			"handler":    QUOTA_HANDLER_SEARCH,
+			"subscriber": QUOTA_SUBS_SEARCH,
+		},
+		DATASOURCE_SERVICE_NAME: map[string]int{
+			"handler":    QUOTA_HANDLER_DATASOURCE,
+			"subscriber": QUOTA_SUBS_DATASOURCE,
+		},
+		CRAWLER_SERVICE_NAME: map[string]int{
+			"handler":    QUOTA_HANDLER_CRAWLER,
+			"subscriber": QUOTA_SUBS_CRAWLER,
+		},
+		NOTIFICATION_SERVICE_NAME: map[string]int{
+			"handler":    QUOTA_HANDLER_NOTIFICATION,
+			"subscriber": QUOTA_SUBS_NOTIFICATION,
+		},
+		FILE_SERVICE_NAME: map[string]int{
+			"handler":    QUOTA_HANDLER_FILE,
+			"subscriber": QUOTA_SUBS_FILE,
+		},
+		QUOTA_SERVICE_NAME: map[string]int{
+			"handler":    QUOTA_HANDLER_QUOTA,
+			"subscriber": QUOTA_SUBS_QUOTA,
+		},
+		THUMBNAIL_SERVICE_NAME: map[string]int{
+			"handler":    QUOTA_HANDLER_THUMBNAIL,
+			"subscriber": QUOTA_SUBS_THUMBNAIL,
+		},
+		AUDIOENRICH_SERVICE_NAME: map[string]int{
+			"handler":    QUOTA_HANDLER_DATASOURCE,
+			"subscriber": QUOTA_SUBS_DATASOURCE,
+		},
+		DOCENRICH_SERVICE_NAME: map[string]int{
+			"handler":    QUOTA_HANDLER_DOC_ENRICH,
+			"subscriber": QUOTA_SUBS_DOC_ENRICH,
+		},
+		IMGENRICH_SERVICE_NAME: map[string]int{
+			"handler":    QUOTA_HANDLER_IMG_ENRICH,
+			"subscriber": QUOTA_SUBS_IMG_ENRICH,
+		},
+		TEXTANALYZER_SERVICE_NAME: map[string]int{
+			"handler":    QUOTA_HANDLER_TEXT_ANALYZER,
+			"subscriber": QUOTA_SUBS_TEXT_ANALYZER,
+		},
+	},
+}
 
 func NewGoogleOautConfig() *oauth2.Config {
 	return &oauth2.Config{

@@ -111,7 +111,7 @@ func processEnrichMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m EnrichM
 	}
 
 	// Publish the same message to ExtractEntitiesTopic
-	if err := c.Publish(m.ctx, c.NewPublication(globals.ExtractEntitiesTopic, m)); err != nil {
+	if err := c.Publish(m.ctx, c.NewPublication(globals.ExtractEntitiesTopic, m.msg)); err != nil {
 		return err
 	}
 

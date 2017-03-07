@@ -8,8 +8,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/xray"
 	"github.com/dgrijalva/jwt-go"
-	//"github.com/go-redis/rate"
-	//"github.com/go-redis/redis"
 	kazoup_context "github.com/kazoup/platform/lib/context"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/micro/cli"
@@ -167,7 +165,7 @@ func quotaHandlerWrapper(fn server.HandlerFunc, limiter *rate.Limiter, srv strin
 			return errors.Unauthorized("Token", err.Error())
 		}
 
-		_, _, allowed := limiter.AllowN(fmt.Sprintf("%s-handler-%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, time.Minute, 1)
+		_, _, allowed := limiter.AllowN(fmt.Sprintf("%s-handler-%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, globals.QUOTA_TIME_LIMITER, 1)
 		if !allowed {
 			return errors.Forbidden("User Rate Limit", "User rate limit exceeded.")
 		}
@@ -228,17 +226,13 @@ func quotaSubscriberWrapper(fn server.SubscriberFunc, limiter *rate.Limiter, srv
 			return errors.Unauthorized("Token", err.Error())
 		}
 
-		_, _, allowed := limiter.AllowN(fmt.Sprintf("%s-subs-%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, time.Minute, 1)
+		_, _, allowed := limiter.AllowN(fmt.Sprintf("%s-subs-%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, globals.QUOTA_TIME_LIMITER, 1)
 		if !allowed {
 			// Quota limite reached, but due to subscribers nature, error will be lost.
 			// IDEA: pulbish to notification srv a rate limite message to let user know.
 			log.Println("USER RATE LIMIT (SUBSCRIBER)", fmt.Sprintf("%s%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)))
 			return errors.Forbidden("User Rate Limit", "User rate limit exceeded.")
 		}
-
-		fmt.Println("")
-		fmt.Println("quotaSubscriberWrapper", srv, quotaLimit, limiter, ctx, msg)
-		fmt.Println("")
 
 		return fn(ctx, msg)
 	}

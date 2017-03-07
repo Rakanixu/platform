@@ -14,16 +14,24 @@ import (
 	"log"
 )
 
+type EnrichMsgChan struct {
+	ctx context.Context
+	msg *enrich_proto.EnrichMessage
+}
+
 type Enrich struct {
 	Client        client.Client
-	EnrichMsgChan chan *enrich_proto.EnrichMessage
+	EnrichMsgChan chan EnrichMsgChan
 	Workers       int
 }
 
 // Enrich subscriber, receive EnrichMessage to get the file and process it
 func (e *Enrich) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
 	// Queue internally
-	e.EnrichMsgChan <- enrichmsg
+	e.EnrichMsgChan <- EnrichMsgChan{
+		ctx: ctx,
+		msg: enrichmsg,
+	}
 
 	return nil
 }
@@ -42,11 +50,11 @@ func StartWorkers(e *Enrich) {
 	}
 }
 
-func processEnrichMsg(c client.Client, m *enrich_proto.EnrichMessage) error {
-	frsp, err := db_helper.ReadFromDB(c, globals.NewSystemContext(), &db_proto.ReadRequest{
-		Index: m.Index,
+func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
+	frsp, err := db_helper.ReadFromDB(c, m.ctx, &db_proto.ReadRequest{
+		Index: m.msg.Index,
 		Type:  globals.FileType,
-		Id:    m.Id,
+		Id:    m.msg.Id,
 	})
 	if err != nil {
 		return err
@@ -57,7 +65,7 @@ func processEnrichMsg(c client.Client, m *enrich_proto.EnrichMessage) error {
 		return err
 	}
 
-	drsp, err := db_helper.ReadFromDB(c, globals.NewSystemContext(), &db_proto.ReadRequest{
+	drsp, err := db_helper.ReadFromDB(c, m.ctx, &db_proto.ReadRequest{
 		Index: globals.IndexDatasources,
 		Type:  globals.TypeDatasource,
 		Id:    f.GetDatasourceID(),
@@ -90,10 +98,10 @@ func processEnrichMsg(c client.Client, m *enrich_proto.EnrichMessage) error {
 		return err
 	}
 
-	_, err = db_helper.UpdateFromDB(c, globals.NewSystemContext(), &db_proto.UpdateRequest{
-		Index: m.Index,
+	_, err = db_helper.UpdateFromDB(c, m.ctx, &db_proto.UpdateRequest{
+		Index: m.msg.Index,
 		Type:  globals.FileType,
-		Id:    m.Id,
+		Id:    m.msg.Id,
 		Data:  string(b),
 	})
 	if err != nil {
@@ -101,7 +109,7 @@ func processEnrichMsg(c client.Client, m *enrich_proto.EnrichMessage) error {
 	}
 
 	// Publish the same message to ExtractEntitiesTopic
-	if err := c.Publish(globals.NewSystemContext(), c.NewPublication(globals.ExtractEntitiesTopic, m)); err != nil {
+	if err := c.Publish(m.ctx, c.NewPublication(globals.ExtractEntitiesTopic, m.msg)); err != nil {
 		return err
 	}
 

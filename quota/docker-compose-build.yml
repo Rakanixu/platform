@@ -1,0 +1,6 @@
+quota-srv:
+  command: --registry_address=registry:8500
+  image: kazoup/quota-srv
+  external_links:
+  - consul:registry
+

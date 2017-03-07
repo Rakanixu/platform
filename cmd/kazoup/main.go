@@ -23,6 +23,7 @@ import (
 	media "github.com/kazoup/platform/media"
 	monitor "github.com/kazoup/platform/monitor"
 	notification "github.com/kazoup/platform/notification"
+	quota "github.com/kazoup/platform/quota"
 	search "github.com/kazoup/platform/search"
 	textanalyzer "github.com/kazoup/platform/textanalyzer"
 	thumbnail "github.com/kazoup/platform/thumbnail"
@@ -52,6 +53,7 @@ func main() {
 	app.Commands = append(app.Commands, search.Commands()...)
 	app.Commands = append(app.Commands, file.Commands()...)
 	app.Commands = append(app.Commands, notification.Commands()...)
+	app.Commands = append(app.Commands, quota.Commands()...)
 	app.Commands = append(app.Commands, monitor.Commands()...)
 	app.Commands = append(app.Commands, ui.Commands()...)
 	app.Commands = append(app.Commands, web.Commands()...)
