@@ -10,6 +10,11 @@ import (
 	"log"
 )
 
+type BulkableKazoupRequest struct {
+	context.Context
+	elib.BulkableRequest
+}
+
 func Subscribe(e *model.Elastic) error {
 	// Files
 	go func() {
@@ -30,7 +35,7 @@ func Subscribe(e *model.Elastic) error {
 					}
 
 					// Publish scan topic, crawlers should pick up message
-					if err := v.Client.Publish(globals.NewSystemContext(), v.Client.NewPublication(globals.NotificationTopic, n)); err != nil {
+					if err := v.Client.Publish(v.Ctx, v.Client.NewPublication(globals.NotificationTopic, n)); err != nil {
 						log.Print("Publishing (notify file) error %s", err)
 					}
 				} else {
@@ -41,7 +46,12 @@ func Subscribe(e *model.Elastic) error {
 
 					// Use bulk processor as we will index groups of documents
 					// We need to build the file to be able to update JSON like obj, and not string
-					r := elib.NewBulkUpdateRequest().Index(v.FileMessage.Index).Type(globals.FileType).Id(v.FileMessage.Id).DocAsUpsert(true).Doc(f)
+					// We use helper BulkableKazoupRequest interface to do  not lose context on the after commit function
+					r := BulkableKazoupRequest{
+						v.Ctx,
+						elib.NewBulkUpdateRequest().Index(v.FileMessage.Index).Type(globals.FileType).Id(v.FileMessage.Id).DocAsUpsert(true).Doc(f),
+					}
+
 					e.BulkFilesProcessor.Add(r)
 				}
 			}

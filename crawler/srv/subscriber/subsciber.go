@@ -33,12 +33,12 @@ func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) erro
 	}
 
 	// Update token in DB
-	if err := db_conn.UpdateFileSystemAuth(c.Client, globals.NewSystemContext(), endpoint.Id, auth); err != nil {
+	if err := db_conn.UpdateFileSystemAuth(c.Client, ctx, endpoint.Id, auth); err != nil {
 		return err
 	}
 
 	// Publish crawler started, or is just going to start..
-	if err := c.Client.Publish(context.Background(), c.Client.NewPublication(globals.CrawlerStartedTopic, &crawler_proto.CrawlerStartedMessage{
+	if err := c.Client.Publish(ctx, c.Client.NewPublication(globals.CrawlerStartedTopic, &crawler_proto.CrawlerStartedMessage{
 		UserId:       endpoint.UserId,
 		DatasourceId: endpoint.Id,
 	})); err != nil {
@@ -66,7 +66,7 @@ func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) erro
 				time.Sleep(time.Second * 8)
 
 				// Clear index (files that no longer exists, rename, etc..)
-				if err := globals.ClearIndex(c.Client, endpoint); err != nil {
+				if err := globals.ClearIndex(ctx, c.Client, endpoint); err != nil {
 					log.Println("ERROR clearing index after scan", err)
 				}
 
@@ -74,7 +74,7 @@ func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) erro
 					DatasourceId: endpoint.Id,
 				}
 				// Publish crawling process has finished
-				if err := c.Client.Publish(context.Background(), c.Client.NewPublication(globals.CrawlerFinishedTopic, msg)); err != nil {
+				if err := c.Client.Publish(ctx, c.Client.NewPublication(globals.CrawlerFinishedTopic, msg)); err != nil {
 					//return err
 					log.Println("Error publishin crawler finished", err)
 				}
@@ -88,7 +88,7 @@ func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) erro
 					log.Println("Error discovering file", fc.Error)
 				}
 
-				if err := file.IndexAsync(c.Client, fc.File, globals.FilesTopic, fc.File.GetIndex(), false); err != nil {
+				if err := file.IndexAsync(ctx, c.Client, fc.File, globals.FilesTopic, fc.File.GetIndex(), false); err != nil {
 					log.Println("Error indexing async file", err)
 				}
 
@@ -113,7 +113,7 @@ func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) erro
 					log.Println("Error discovering user", u.Error)
 				}
 
-				if err := c.Client.Publish(context.Background(), c.Client.NewPublication(globals.SlackUsersTopic, u.User)); err != nil {
+				if err := c.Client.Publish(ctx, c.Client.NewPublication(globals.SlackUsersTopic, u.User)); err != nil {
 					log.Println("Error indexing user", err)
 				}
 			}
@@ -136,7 +136,7 @@ func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) erro
 					log.Println("Error discovering channel", ch.Error)
 				}
 
-				if err := c.Client.Publish(context.Background(), c.Client.NewPublication(globals.SlackChannelsTopic, ch.Channel)); err != nil {
+				if err := c.Client.Publish(ctx, c.Client.NewPublication(globals.SlackChannelsTopic, ch.Channel)); err != nil {
 					log.Println("Error indexing channel", err)
 				}
 			}

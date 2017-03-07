@@ -167,7 +167,7 @@ func quotaHandlerWrapper(fn server.HandlerFunc, limiter *rate.Limiter, srv strin
 			return errors.Unauthorized("Token", err.Error())
 		}
 
-		_, _, allowed := limiter.AllowN(fmt.Sprintf("%s%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, time.Minute, 1)
+		_, _, allowed := limiter.AllowN(fmt.Sprintf("%s-handler-%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, time.Minute, 1)
 		if !allowed {
 			return errors.Forbidden("User Rate Limit", "User rate limit exceeded.")
 		}
@@ -228,8 +228,11 @@ func quotaSubscriberWrapper(fn server.SubscriberFunc, limiter *rate.Limiter, srv
 			return errors.Unauthorized("Token", err.Error())
 		}
 
-		_, _, allowed := limiter.AllowN(fmt.Sprintf("%s%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, time.Minute, 1)
+		_, _, allowed := limiter.AllowN(fmt.Sprintf("%s-subs-%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, time.Minute, 1)
 		if !allowed {
+			// Quota limite reached, but due to subscribers nature, error will be lost.
+			// IDEA: pulbish to notification srv a rate limite message to let user know.
+			log.Println("USER RATE LIMIT (SUBSCRIBER)", fmt.Sprintf("%s%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)))
 			return errors.Forbidden("User Rate Limit", "User rate limit exceeded.")
 		}
 

@@ -88,7 +88,7 @@ func HandleGmailCallback(w http.ResponseWriter, r *http.Request) {
 
 	CloseBrowserWindow(w, r)
 
-	if err := PublishNotification(uID); err != nil {
+	if err := PublishNotification(uCtx, uID); err != nil {
 		fmt.Fprintf(w, "Error publishing notification msg %s \n", err.Error())
 	}
 }

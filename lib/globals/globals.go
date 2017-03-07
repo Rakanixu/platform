@@ -379,7 +379,7 @@ func NewUUID() (string, error) {
 // so all records with a LastSeen before will be removed from index
 // file does not exists any more on datasource
 // Also deletes thumbs that does not exists any more on index
-func ClearIndex(c client.Client, e *datasource_proto.Endpoint) error {
+func ClearIndex(ctx context.Context, c client.Client, e *datasource_proto.Endpoint) error {
 	// Clean the index after all messages have been published
 	delReq := &db_proto.DeleteByQueryRequest{
 		Indexes:  []string{e.Index},
@@ -392,7 +392,7 @@ func ClearIndex(c client.Client, e *datasource_proto.Endpoint) error {
 		delReq,
 	)
 	srvRes := &db_proto.DeleteByQueryResponse{}
-	if err := c.Call(NewSystemContext(), srvReq, srvRes); err != nil {
+	if err := c.Call(ctx, srvReq, srvRes); err != nil {
 		log.Printf("Error globals.ClearIndex -  %s", err)
 		return err
 	}

@@ -6,7 +6,6 @@ import (
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
-	enrich_proto "github.com/kazoup/platform/lib/protomsg"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/cli"
 	"github.com/micro/go-micro/server"
@@ -35,7 +34,7 @@ func srv(ctx *cli.Context) {
 	s := &subscriber.Enrich{
 		Client:             service.Client(),
 		GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
-		EnrichMsgChan:      make(chan *enrich_proto.EnrichMessage, 1000000),
+		EnrichMsgChan:      make(chan subscriber.EnrichMsgChan, 1000000),
 		Workers:            20,
 	}
 	subscriber.StartWorkers(s)

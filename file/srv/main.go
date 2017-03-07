@@ -16,7 +16,7 @@ func main() {
 	var m monitor.Monitor
 
 	// New service
-	service := wrappers.NewKazoupService("file", globals.QUOTA_FILE, m)
+	service := wrappers.NewKazoupService("file", globals.QUOTA_HANDLER_FILE, globals.QUOTA_SUBS_FILE, m)
 
 	// Monitor for file-srv
 	m = monitor.NewMonitor(

@@ -95,7 +95,7 @@ func RetrieveUserAndContextFromUUID(uuid string) (string, context.Context, error
 }
 
 //PublishNotification send data source created notification
-func PublishNotification(uID string) error {
+func PublishNotification(ctx context.Context, uID string) error {
 	n := &notification_proto.NotificationMessage{
 		Info:   "Datasource created succesfully",
 		Method: globals.NOTIFY_REFRESH_DATASOURCES,
@@ -104,7 +104,7 @@ func PublishNotification(uID string) error {
 
 	// Publish scan topic, crawlers should pick up message and start scanning
 	return client.DefaultClient.Publish(
-		globals.NewSystemContext(),
+		ctx,
 		client.DefaultClient.NewPublication(globals.NotificationTopic, n),
 	)
 }

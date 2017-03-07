@@ -55,7 +55,7 @@ func (f *File) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.
 	}
 
 	// Index created file
-	if err := file.IndexAsync(f.Client, fmc.File, globals.FilesTopic, fmc.File.GetIndex(), true); err != nil {
+	if err := file.IndexAsync(ctx, f.Client, fmc.File, globals.FilesTopic, fmc.File.GetIndex(), true); err != nil {
 		return err
 	}
 
@@ -123,7 +123,7 @@ func (f *File) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *proto.
 	}
 
 	// Publish notification topic, let client know when to refresh itself
-	if err := f.Client.Publish(globals.NewSystemContext(), f.Client.NewPublication(globals.NotificationTopic, &notification_proto.NotificationMessage{
+	if err := f.Client.Publish(ctx, f.Client.NewPublication(globals.NotificationTopic, &notification_proto.NotificationMessage{
 		Method: globals.NOTIFY_REFRESH_SEARCH,
 		UserId: uId,
 	})); err != nil {
@@ -131,7 +131,7 @@ func (f *File) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *proto.
 	}
 
 	// Publish notification to delete associated resources (thumbnail in our GCS account)
-	if err := f.Client.Publish(globals.NewSystemContext(), f.Client.NewPublication(globals.DeleteFileInBucketTopic, &datasource_proto.DeleteFileInBucketMessage{
+	if err := f.Client.Publish(ctx, f.Client.NewPublication(globals.DeleteFileInBucketTopic, &datasource_proto.DeleteFileInBucketMessage{
 		FileId: req.FileId,
 		Index:  req.Index,
 	})); err != nil {

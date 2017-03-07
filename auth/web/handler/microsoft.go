@@ -106,7 +106,7 @@ func HandleMicrosoftCallback(w http.ResponseWriter, r *http.Request) {
 
 	CloseBrowserWindow(w, r)
 
-	if err := PublishNotification(string(uID)); err != nil {
+	if err := PublishNotification(uCtx, string(uID)); err != nil {
 		fmt.Fprintf(w, "Error publishing notification msg %s \n", err.Error())
 	}
 }
