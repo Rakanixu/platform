@@ -299,7 +299,8 @@ func (e *ElasticQuery) setSource() string {
 			"access",
 			"content_category",
 			"datasource_id",
-			"index"
+			"index",
+			"opts_kazoup_file"
 		],`)
 	}
 

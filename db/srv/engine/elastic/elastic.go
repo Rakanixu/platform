@@ -96,12 +96,6 @@ func (e *elastic) Init(c client.Client) error {
 					json.Unmarshal([]byte(src[1]), &kf)
 				}
 
-				n := &enrich_proto.EnrichMessage{
-					Index:  kf.Doc.Index,
-					Id:     kf.Doc.ID,
-					UserId: kf.Doc.UserId,
-				}
-
 				// Assert type and use the proper context
 				bkr, ok := req.(subscriber.BulkableKazoupRequest)
 				if !ok {
@@ -109,32 +103,14 @@ func (e *elastic) Init(c client.Client) error {
 					return
 				}
 
-				if err := c.Publish(bkr.Context, c.NewPublication(globals.ThumbnailTopic, n)); err != nil {
+				if err := c.Publish(bkr.Context, c.NewPublication(globals.ThumbnailTopic, &enrich_proto.EnrichMessage{
+					Index:  kf.Doc.Index,
+					Id:     kf.Doc.ID,
+					UserId: kf.Doc.UserId,
+				})); err != nil {
 					log.Print("Publishing ThumbnailTopic error %s", err)
 				}
-
-				var topic string
-				publishMsg := true
-
-				switch kf.Doc.Category {
-				case globals.CATEGORY_DOCUMENT:
-					topic = globals.DocEnrichTopic
-				case globals.CATEGORY_PICTURE:
-					topic = globals.ImgEnrichTopic
-				case globals.CATEGORY_AUDIO:
-					topic = globals.AudioEnrichTopic
-				default:
-					publishMsg = false
-				}
-
-				// Publish EnrichMessage
-				if publishMsg {
-					if err := c.Publish(bkr.Context, c.NewPublication(topic, n)); err != nil {
-						log.Print("Publishing (enrich file) error %s", err)
-					}
-
-					time.Sleep(globals.PUBLISHING_DELAY_MS)
-				}
+				time.Sleep(globals.PUBLISHING_DELAY_MS)
 			}
 		}).
 		Name(fmt.Sprintf("bulkFilesProcessor-%s", rs)).
