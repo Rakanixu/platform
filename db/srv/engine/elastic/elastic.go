@@ -31,7 +31,6 @@ func init() {
 			FilesChannel:         make(chan *model.FilesChannel),
 			SlackUsersChannel:    make(chan *crawler.SlackUserMessage),
 			SlackChannelsChannel: make(chan *crawler.SlackChannelMessage),
-			CrawlerFinished:      make(chan *crawler.CrawlerFinishedMessage),
 		},
 	})
 }
@@ -103,7 +102,14 @@ func (e *elastic) Init(c client.Client) error {
 					UserId: kf.Doc.UserId,
 				}
 
-				if err := c.Publish(globals.NewSystemContext(), c.NewPublication(globals.ThumbnailTopic, n)); err != nil {
+				// Assert type and use the proper context
+				bkr, ok := req.(subscriber.BulkableKazoupRequest)
+				if !ok {
+					log.Println("Error BulkableKazoupRequest assertion: %v", bkr)
+					return
+				}
+
+				if err := c.Publish(bkr.Context, c.NewPublication(globals.ThumbnailTopic, n)); err != nil {
 					log.Print("Publishing ThumbnailTopic error %s", err)
 				}
 
@@ -123,11 +129,10 @@ func (e *elastic) Init(c client.Client) error {
 
 				// Publish EnrichMessage
 				if publishMsg {
-					if err := c.Publish(globals.NewSystemContext(), c.NewPublication(topic, n)); err != nil {
+					if err := c.Publish(bkr.Context, c.NewPublication(topic, n)); err != nil {
 						log.Print("Publishing (enrich file) error %s", err)
 					}
 
-					log.Println("ENRICH MSG SENT", topic, n.Id)
 					time.Sleep(globals.PUBLISHING_DELAY_MS)
 				}
 			}
@@ -178,6 +183,7 @@ func (e *elastic) SubscribeFiles(ctx context.Context, c client.Client, msg *craw
 	e.FilesChannel <- &model.FilesChannel{
 		FileMessage: msg,
 		Client:      c,
+		Ctx:         ctx,
 	}
 
 	return nil
@@ -193,13 +199,6 @@ func (e *elastic) SubscribeSlackUsers(ctx context.Context, msg *crawler.SlackUse
 // Subscribe to crawler file messages
 func (e *elastic) SubscribeSlackChannels(ctx context.Context, msg *crawler.SlackChannelMessage) error {
 	e.SlackChannelsChannel <- msg
-
-	return nil
-}
-
-// Subscribe to crawler finished message
-func (e *elastic) SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedMessage) error {
-	e.CrawlerFinished <- msg
 
 	return nil
 }

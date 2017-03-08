@@ -36,7 +36,7 @@ type File interface {
 	SetEntities(entities *rossetelib.RosseteEntities)
 }
 
-func IndexAsync(c client.Client, file File, topic, index string, notify bool) error {
+func IndexAsync(ctx context.Context, c client.Client, file File, topic, index string, notify bool) error {
 	b, err := json.Marshal(file)
 	if err != nil {
 		return err
@@ -50,7 +50,7 @@ func IndexAsync(c client.Client, file File, topic, index string, notify bool) er
 		Data:   string(b),
 	}
 
-	if err := c.Publish(context.Background(), c.NewPublication(topic, msg)); err != nil {
+	if err := c.Publish(ctx, c.NewPublication(topic, msg)); err != nil {
 		return err
 	}
 

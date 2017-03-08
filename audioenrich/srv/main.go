@@ -6,7 +6,6 @@ import (
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
-	enrich_proto "github.com/kazoup/platform/lib/protomsg"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/go-micro/server"
 	"github.com/micro/go-os/monitor"
@@ -17,7 +16,7 @@ import (
 func main() {
 	var m monitor.Monitor
 
-	service := wrappers.NewKazoupService("audioenrich", m)
+	service := wrappers.NewKazoupService("audioenrich", globals.QUOTA_HANDLER_AUDIO_ENRICH, globals.QUOTA_SUBS_AUDIO_ENRICH, m)
 
 	// enrich-srv monitor
 	m = monitor.NewMonitor(
@@ -34,7 +33,7 @@ func main() {
 	s := &subscriber.Enrich{
 		Client:             service.Client(),
 		GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
-		EnrichMsgChan:      make(chan *enrich_proto.EnrichMessage, 1000000),
+		EnrichMsgChan:      make(chan subscriber.EnrichMsgChan, 1000000),
 		Workers:            20,
 	}
 	subscriber.StartWorkers(s)

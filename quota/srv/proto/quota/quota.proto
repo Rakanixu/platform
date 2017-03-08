@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package go.micro.srv.quota;
+
+service File {
+  rpc Read(ReadRequest) returns (ReadResponse) {}  // Read quota per user
+  rpc Health(HealthRequest) returns (HealthResponse) {}
+}
+
+message Quota {
+  string name = 1;
+  string icon = 2;
+  int64 rate = 3;
+  int64 reset_timestamp = 4;
+  int64 quota = 5;
+}
+
+message ReadRequest {
+
+}
+
+message ReadResponse {
+  string time_limit = 1;
+  repeated Quota quota = 2;
+}
+
+message HealthRequest {
+  string type = 1;
+}
+
+message HealthResponse {
+  int64 status = 1;
+  string info = 2;
+}

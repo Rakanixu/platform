@@ -18,7 +18,7 @@ func srv(ctx *cli.Context) {
 	var m monitor.Monitor
 
 	// New Service
-	service := wrappers.NewKazoupService("db", m)
+	service := wrappers.NewKazoupService("db", globals.QUOTA_HANDLER_DB, globals.QUOTA_SUBS_DB, m)
 
 	// db-srv monitor
 	m = monitor.NewMonitor(
@@ -59,12 +59,6 @@ func srv(ctx *cli.Context) {
 	// Attach slack channel indexer subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(globals.SlackChannelsTopic, engine.SubscribeSlackChannels)); err != nil {
-		log.Fatal(err)
-	}
-
-	// Attach crawler finished subscriber
-	if err := service.Server().Subscribe(
-		service.Server().NewSubscriber(globals.CrawlerFinishedTopic, engine.SubscribeCrawlerFinished)); err != nil {
 		log.Fatal(err)
 	}
 

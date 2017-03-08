@@ -5,7 +5,6 @@ import (
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
-	enrich_proto "github.com/kazoup/platform/lib/protomsg"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/kazoup/platform/thumbnail/srv/subscriber"
 	"github.com/micro/go-micro/server"
@@ -17,7 +16,7 @@ import (
 func main() {
 	var m monitor.Monitor
 
-	service := wrappers.NewKazoupService("thumbnail", m)
+	service := wrappers.NewKazoupService("thumbnail", globals.QUOTA_HANDLER_THUMBNAIL, globals.QUOTA_SUBS_THUMBNAIL, m)
 
 	// enrich-srv monitor
 	m = monitor.NewMonitor(
@@ -34,7 +33,7 @@ func main() {
 	s := &subscriber.Thumbnail{
 		Client:             service.Client(),
 		GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
-		ThumbnailMsgChan:   make(chan *enrich_proto.EnrichMessage, 1000000),
+		ThumbnailMsgChan:   make(chan subscriber.ThumbnailMsgChan, 1000000),
 		Workers:            25,
 	}
 	subscriber.StartWorkers(s)

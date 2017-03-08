@@ -42,11 +42,18 @@ elasticsearch-head:
   links:
     - elasticsearch
 
+redis:
+  image: redis:3.2
+  hostname: "redis"
+  ports:
+    - "6379:6379"
+
 tika:
  image: logicalspark/docker-tikaserver
  hostname: "tika"
  ports:
    - "9998:9998"
+
 
 #nats:
 #    image: 'nats:0.9.4'

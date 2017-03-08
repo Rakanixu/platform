@@ -85,7 +85,7 @@ func (ds *DataSource) Delete(ctx context.Context, req *proto.DeleteRequest, rsp 
 	}
 
 	// Publish message to clean async the bucket that stores the thumbnails in GC storage
-	if err := ds.Client.Publish(globals.NewSystemContext(), ds.Client.NewPublication(globals.DeleteBucketTopic, &proto.DeleteBucketMessage{
+	if err := ds.Client.Publish(ctx, ds.Client.NewPublication(globals.DeleteBucketTopic, &proto.DeleteBucketMessage{
 		Endpoint: endpoint,
 	})); err != nil {
 		log.Println("ERROR cleaningthumbs from GCS", err)

@@ -20,7 +20,7 @@ import (
 func srv(ctx *cli.Context) {
 	var m monitor.Monitor
 
-	service := wrappers.NewKazoupService("notification", m)
+	service := wrappers.NewKazoupService("notification", globals.QUOTA_HANDLER_NOTIFICATION, globals.QUOTA_SUBS_NOTIFICATION, m)
 
 	// Monitor for notification-srv
 	m = monitor.NewMonitor(

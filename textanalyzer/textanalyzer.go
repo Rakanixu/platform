@@ -4,7 +4,6 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
-	enrich_proto "github.com/kazoup/platform/lib/protomsg"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/kazoup/platform/textanalyzer/srv/subscriber"
 	"github.com/micro/cli"
@@ -17,7 +16,7 @@ import (
 func srv(ctx *cli.Context) {
 	var m monitor.Monitor
 
-	service := wrappers.NewKazoupService("textanalyzer", m)
+	service := wrappers.NewKazoupService("textanalyzer", globals.QUOTA_HANDLER_TEXT_ANALYZER, globals.QUOTA_SUBS_TEXT_ANALYZER, m)
 
 	// enrich-srv monitor
 	m = monitor.NewMonitor(
@@ -31,7 +30,7 @@ func srv(ctx *cli.Context) {
 
 	s := &subscriber.TextAnalyzer{
 		Client:        service.Client(),
-		EnrichMsgChan: make(chan *enrich_proto.EnrichMessage, 1000000),
+		EnrichMsgChan: make(chan subscriber.EnrichMsgChan, 1000000),
 		Workers:       40,
 	}
 	subscriber.StartWorkers(s)

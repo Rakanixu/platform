@@ -45,7 +45,6 @@ type Subscriber interface {
 	SubscribeFiles(ctx context.Context, c client.Client, msg *crawler.FileMessage) error
 	SubscribeSlackUsers(ctx context.Context, msg *crawler.SlackUserMessage) error
 	SubscribeSlackChannels(ctx context.Context, msg *crawler.SlackChannelMessage) error
-	SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedMessage) error
 }
 
 var (
@@ -74,10 +73,6 @@ func SubscribeSlackUsers(ctx context.Context, msg *crawler.SlackUserMessage) err
 
 func SubscribeSlackChannels(ctx context.Context, msg *crawler.SlackChannelMessage) error {
 	return engine.SubscribeSlackChannels(ctx, msg)
-}
-
-func SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedMessage) error {
-	return engine.SubscribeCrawlerFinished(ctx, msg)
 }
 
 func Create(ctx context.Context, req *db.CreateRequest) (*db.CreateResponse, error) {

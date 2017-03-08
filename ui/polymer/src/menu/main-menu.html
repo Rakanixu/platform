@@ -26,12 +26,14 @@
 <link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
 <link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
-
 <link rel="import" href="../../bower_components/mat-icon/mat-icon.html">
 <link rel="import" href="../../bower_components/mat-icons/mat-icons.html">
 <link rel="import" href="../../bower_components/mat-icons/hardware-icons.html">
 <link rel="import" href="../../bower_components/mat-icons/action-icons.html">
 <link rel="import" href="../../bower_components/mat-icons/image-icons.html">
+<link rel="import" href="../../bower_components/mat-icons/device-icons.html">
+<link rel="import" href="../../bower_components/mat-icons/file-icons.html">
+<link rel="import" href="../../bower_components/mat-icons/editor-icons.html">
 <link rel="import" href="../../bower_components/mat-icon-button/mat-icon-button.html">
 <link rel="import" href="../../bower_components/mat-menu/mat-menu.html">
 <link rel="import" href="../../bower_components/mat-dialog/mat-dialog.html">
@@ -68,6 +70,7 @@
 <link rel="import" href="../../src/filter-converter/filter-converter.html">
 <link rel="import" href="../../src/datasources/datasources-page.html">
 <link rel="import" href="../../src/datasources/add-datasources-dialog.html">
+<link rel="import" href="../../src/quotas/quotas-page.html">
 <link rel="import" href="../../src/detail-view/detail-view.html">
 <link rel="import" href="../../src/string-html/string-html.html">
 <!--
@@ -316,7 +319,9 @@
         showSettingsPage: function(e) {
           this.closeMenu();
           this.set('route.path', this.pagesMap.settings.path);
-          this.set('route.__queryParams', {});
+          this.set('route.__queryParams', {
+            s: 'datasources'
+          });
         },
         showDatasourcesDialog: function(e) {
           this.$.addDatasources.openDatasourceDialog();

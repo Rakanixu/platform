@@ -28,24 +28,34 @@ import (
 const (
 	NAMESPACE                 string = "com.kazoup"
 	DB_SERVICE_NAME           string = NAMESPACE + ".srv.db"
+	SEARCH_SERVICE_NAME       string = NAMESPACE + ".srv.search"
 	DATASOURCE_SERVICE_NAME   string = NAMESPACE + ".srv.datasource"
+	CRAWLER_SERVICE_NAME      string = NAMESPACE + ".srv.crawler"
 	NOTIFICATION_SERVICE_NAME string = NAMESPACE + ".srv.notification"
+	FILE_SERVICE_NAME         string = NAMESPACE + ".srv.file"
+	QUOTA_SERVICE_NAME        string = NAMESPACE + ".srv.quota"
 	MONITOR_SERVICE_NAME      string = NAMESPACE + ".srv.monitor"
-	FilesTopic                string = NAMESPACE + ".topic.files"
-	SlackChannelsTopic        string = NAMESPACE + ".topic.slackchannels"
-	SlackUsersTopic           string = NAMESPACE + ".topic.slackusers"
-	ScanTopic                 string = NAMESPACE + ".topic.scan"
-	DocEnrichTopic            string = NAMESPACE + ".topic.docenrich"
-	ImgEnrichTopic            string = NAMESPACE + ".topic.imgenrich"
-	ThumbnailTopic            string = NAMESPACE + ".topic.thumbnail"
-	AudioEnrichTopic          string = NAMESPACE + ".topic.audioenrich"
-	ExtractEntitiesTopic      string = NAMESPACE + ".topic.extractentities"
-	CrawlerStartedTopic       string = NAMESPACE + ".topic.crawlerstarted"
-	CrawlerFinishedTopic      string = NAMESPACE + ".topic.crawlerfinished"
-	NotificationTopic         string = NAMESPACE + ".topic.notification"
-	NotificationProxyTopic    string = NAMESPACE + ".topic.notificationproxy"
-	DeleteBucketTopic         string = NAMESPACE + ".topic.deletebucket"
-	DeleteFileInBucketTopic   string = NAMESPACE + ".topic.deletefileinbucket"
+	THUMBNAIL_SERVICE_NAME    string = NAMESPACE + ".srv.thumbnail"
+	AUDIOENRICH_SERVICE_NAME  string = NAMESPACE + ".srv.audioenrich"
+	DOCENRICH_SERVICE_NAME    string = NAMESPACE + ".srv.docenrich"
+	IMGENRICH_SERVICE_NAME    string = NAMESPACE + ".srv.imgenrich"
+	TEXTANALYZER_SERVICE_NAME string = NAMESPACE + ".srv.textanalyzer"
+
+	FilesTopic              string = NAMESPACE + ".topic.files"
+	SlackChannelsTopic      string = NAMESPACE + ".topic.slackchannels"
+	SlackUsersTopic         string = NAMESPACE + ".topic.slackusers"
+	ScanTopic               string = NAMESPACE + ".topic.scan"
+	DocEnrichTopic          string = NAMESPACE + ".topic.docenrich"
+	ImgEnrichTopic          string = NAMESPACE + ".topic.imgenrich"
+	ThumbnailTopic          string = NAMESPACE + ".topic.thumbnail"
+	AudioEnrichTopic        string = NAMESPACE + ".topic.audioenrich"
+	ExtractEntitiesTopic    string = NAMESPACE + ".topic.extractentities"
+	CrawlerStartedTopic     string = NAMESPACE + ".topic.crawlerstarted"
+	CrawlerFinishedTopic    string = NAMESPACE + ".topic.crawlerfinished"
+	NotificationTopic       string = NAMESPACE + ".topic.notification"
+	NotificationProxyTopic  string = NAMESPACE + ".topic.notificationproxy"
+	DeleteBucketTopic       string = NAMESPACE + ".topic.deletebucket"
+	DeleteFileInBucketTopic string = NAMESPACE + ".topic.deletefileinbucket"
 
 	IndexDatasources  = "datasources"
 	IndexHelper       = "files_helper"
@@ -147,7 +157,115 @@ const (
 
 	DISCOVERY_DELAY_MS  = 10 * time.Millisecond
 	PUBLISHING_DELAY_MS = 20 * time.Millisecond
+
+	QUOTA_TIME_LIMITER        = time.Hour
+	QUOTA_TIME_LIMITER_STRING = "hour"
+
+	QUOTA_HANDLER_AUDIO_ENRICH  = 0  // Speech to text handler - no quota
+	QUOTA_SUBS_AUDIO_ENRICH     = 10 // Speech to text - quota per user
+	QUOTA_HANDLER_IMG_ENRICH    = 0  // Cloud vision handler - no quota
+	QUOTA_SUBS_IMG_ENRICH       = 10 // Cloud vision - quota per user
+	QUOTA_HANDLER_TEXT_ANALYZER = 0  // Rossete handler - no quota
+	QUOTA_SUBS_TEXT_ANALYZER    = 10 // Rossete - quota per user
+	QUOTA_HANDLER_DOC_ENRICH    = 0  // Own tika extarction, not limiting
+	QUOTA_SUBS_DOC_ENRICH       = 0  // Own tika extarction, not limiting
+	QUOTA_HANDLER_THUMBNAIL     = 0  // Thumbnail generation handler - no quota
+	QUOTA_SUBS_THUMBNAIL        = 0  // Thumbnail generation subscriber - no quota
+	QUOTA_HANDLER_DATASOURCE    = 0  // Datasource srv handler - no quota
+	QUOTA_SUBS_DATASOURCE       = 0  // Datasource srv subscriber - no quota
+	QUOTA_HANDLER_CRAWLER       = 0  // Crawler srv handler - no quota
+	QUOTA_SUBS_CRAWLER          = 0  // Crawler srv subscriber - no quota
+	QUOTA_HANDLER_DB            = 0  // DB srv handler - no quota
+	QUOTA_SUBS_DB               = 0  // DB srv subscriber - no quota
+	QUOTA_HANDLER_FILE          = 0  // File srv handler - no quota
+	QUOTA_SUBS_FILE             = 0  // file srv subscriber - no quota
+	QUOTA_HANDLER_NOTIFICATION  = 0  // Notification srv handler - no quota
+	QUOTA_SUBS_NOTIFICATION     = 0  // Notification srv subscriber - no quota
+	QUOTA_HANDLER_SEARCH        = 0  // Search srv handler - no quota
+	QUOTA_SUBS_SEARCH           = 0  // Search srv subscriber - no quota
+	QUOTA_HANDLER_QUOTA         = 0  // Quota srv handler - no quota
+	QUOTA_SUBS_QUOTA            = 0  // Quota srv subscriber - no quota
 )
+
+// Treat this as a constant basically, do not overwrite or modify
+var SRV_LIMIT_DICTIONARY = struct {
+	M map[string]map[string]interface{}
+}{
+	M: map[string]map[string]interface{}{
+		DB_SERVICE_NAME: map[string]interface{}{
+			"label":      "Database service",
+			"icon":       "device:storage",
+			"handler":    QUOTA_HANDLER_DB,
+			"subscriber": QUOTA_SUBS_DB,
+		},
+		SEARCH_SERVICE_NAME: map[string]interface{}{
+			"label":      "Search service",
+			"icon":       "action:search",
+			"handler":    QUOTA_HANDLER_SEARCH,
+			"subscriber": QUOTA_SUBS_SEARCH,
+		},
+		DATASOURCE_SERVICE_NAME: map[string]interface{}{
+			"label":      "Datasource service",
+			"icon":       "file:cloud-queue",
+			"handler":    QUOTA_HANDLER_DATASOURCE,
+			"subscriber": QUOTA_SUBS_DATASOURCE,
+		},
+		CRAWLER_SERVICE_NAME: map[string]interface{}{
+			"label":      "Discovery service",
+			"icon":       "action:explore",
+			"handler":    QUOTA_HANDLER_CRAWLER,
+			"subscriber": QUOTA_SUBS_CRAWLER,
+		},
+		NOTIFICATION_SERVICE_NAME: map[string]interface{}{
+			"label":      "Notification service",
+			"icon":       "action:announcement",
+			"handler":    QUOTA_HANDLER_NOTIFICATION,
+			"subscriber": QUOTA_SUBS_NOTIFICATION,
+		},
+		FILE_SERVICE_NAME: map[string]interface{}{
+			"label":      "File service",
+			"icon":       "editor:insert-drive-file",
+			"handler":    QUOTA_HANDLER_FILE,
+			"subscriber": QUOTA_SUBS_FILE,
+		},
+		QUOTA_SERVICE_NAME: map[string]interface{}{
+			"label":      "Quota service",
+			"icon":       "action:lock-outline",
+			"handler":    QUOTA_HANDLER_QUOTA,
+			"subscriber": QUOTA_SUBS_QUOTA,
+		},
+		THUMBNAIL_SERVICE_NAME: map[string]interface{}{
+			"label":      "Thumbnail service",
+			"icon":       "image:photo-size-select-actual",
+			"handler":    QUOTA_HANDLER_THUMBNAIL,
+			"subscriber": QUOTA_SUBS_THUMBNAIL,
+		},
+		AUDIOENRICH_SERVICE_NAME: map[string]interface{}{
+			"label":      "Speech to text service",
+			"icon":       "image:audiotrack",
+			"handler":    QUOTA_HANDLER_AUDIO_ENRICH,
+			"subscriber": QUOTA_SUBS_AUDIO_ENRICH,
+		},
+		DOCENRICH_SERVICE_NAME: map[string]interface{}{
+			"label":      "Content extraction service",
+			"icon":       "action:find-in-page",
+			"handler":    QUOTA_HANDLER_DOC_ENRICH,
+			"subscriber": QUOTA_SUBS_DOC_ENRICH,
+		},
+		IMGENRICH_SERVICE_NAME: map[string]interface{}{
+			"label":      "Image content service",
+			"icon":       "image:photo-library",
+			"handler":    QUOTA_HANDLER_IMG_ENRICH,
+			"subscriber": QUOTA_SUBS_IMG_ENRICH,
+		},
+		TEXTANALYZER_SERVICE_NAME: map[string]interface{}{
+			"label":      "Entity extraction service",
+			"icon":       "action:description",
+			"handler":    QUOTA_HANDLER_TEXT_ANALYZER,
+			"subscriber": QUOTA_SUBS_TEXT_ANALYZER,
+		},
+	},
+}
 
 func NewGoogleOautConfig() *oauth2.Config {
 	return &oauth2.Config{
@@ -356,7 +474,7 @@ func NewUUID() (string, error) {
 // so all records with a LastSeen before will be removed from index
 // file does not exists any more on datasource
 // Also deletes thumbs that does not exists any more on index
-func ClearIndex(c client.Client, e *datasource_proto.Endpoint) error {
+func ClearIndex(ctx context.Context, c client.Client, e *datasource_proto.Endpoint) error {
 	// Clean the index after all messages have been published
 	delReq := &db_proto.DeleteByQueryRequest{
 		Indexes:  []string{e.Index},
@@ -369,7 +487,7 @@ func ClearIndex(c client.Client, e *datasource_proto.Endpoint) error {
 		delReq,
 	)
 	srvRes := &db_proto.DeleteByQueryResponse{}
-	if err := c.Call(NewSystemContext(), srvReq, srvRes); err != nil {
+	if err := c.Call(ctx, srvReq, srvRes); err != nil {
 		log.Printf("Error globals.ClearIndex -  %s", err)
 		return err
 	}

@@ -15,17 +15,25 @@ import (
 	"log"
 )
 
+type ThumbnailMsgChan struct {
+	ctx context.Context
+	msg *enrich_proto.EnrichMessage
+}
+
 type Thumbnail struct {
 	Client             client.Client
 	GoogleCloudStorage *gcslib.GoogleCloudStorage
-	ThumbnailMsgChan   chan *enrich_proto.EnrichMessage
+	ThumbnailMsgChan   chan ThumbnailMsgChan
 	Workers            int
 }
 
 // Enrich subscriber, receive EnrichMessage to get the file and process it
 func (e *Thumbnail) Thumbnail(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
 	// Queue internally
-	e.ThumbnailMsgChan <- enrichmsg
+	e.ThumbnailMsgChan <- ThumbnailMsgChan{
+		ctx: ctx,
+		msg: enrichmsg,
+	}
 
 	return nil
 }
@@ -46,11 +54,11 @@ func StartWorkers(e *Thumbnail) {
 	}
 }
 
-func processThumbnailMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m *enrich_proto.EnrichMessage) error {
-	frsp, err := db_helper.ReadFromDB(c, globals.NewSystemContext(), &db_proto.ReadRequest{
-		Index: m.Index,
+func processThumbnailMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m ThumbnailMsgChan) error {
+	frsp, err := db_helper.ReadFromDB(c, m.ctx, &db_proto.ReadRequest{
+		Index: m.msg.Index,
 		Type:  globals.FileType,
-		Id:    m.Id,
+		Id:    m.msg.Id,
 	})
 	if err != nil {
 		return err
@@ -61,7 +69,7 @@ func processThumbnailMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m *enr
 		return err
 	}
 
-	drsp, err := db_helper.ReadFromDB(c, globals.NewSystemContext(), &db_proto.ReadRequest{
+	drsp, err := db_helper.ReadFromDB(c, m.ctx, &db_proto.ReadRequest{
 		Index: globals.IndexDatasources,
 		Type:  globals.TypeDatasource,
 		Id:    f.GetDatasourceID(),
@@ -94,10 +102,10 @@ func processThumbnailMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m *enr
 		return err
 	}
 
-	_, err = db_helper.UpdateFromDB(c, globals.NewSystemContext(), &db_proto.UpdateRequest{
-		Index: m.Index,
+	_, err = db_helper.UpdateFromDB(c, m.ctx, &db_proto.UpdateRequest{
+		Index: m.msg.Index,
 		Type:  globals.FileType,
-		Id:    m.Id,
+		Id:    m.msg.Id,
 		Data:  string(b),
 	})
 	if err != nil {
