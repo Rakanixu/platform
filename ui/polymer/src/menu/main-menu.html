@@ -319,7 +319,9 @@
         showSettingsPage: function(e) {
           this.closeMenu();
           this.set('route.path', this.pagesMap.settings.path);
-          this.set('route.__queryParams', {});
+          this.set('route.__queryParams', {
+            s: 'datasources'
+          });
         },
         showDatasourcesDialog: function(e) {
           this.$.addDatasources.openDatasourceDialog();

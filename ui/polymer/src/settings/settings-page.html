@@ -60,10 +60,17 @@
           <neon-animated-pages id="neonPages"
                                selected="[[selectedTab]]">
             <neon-animatable>
-              <datasources-page id="datasources" datasources-results="{{datasourceResults}}"></datasources-page>
+              <datasources-page id="datasources"
+                                route="{{route}}"
+                                subroute="{{subroute}}"
+                                query-params="{{queryParams}}"
+                                datasources-results="{{datasourceResults}}"></datasources-page>
             </neon-animatable>
             <neon-animatable>
-              <quotas-page id="quotas"></quotas-page>
+              <quotas-page id="quotas"
+                           route="{{route}}"
+                           subroute="{{subroute}}"
+                           query-params="{{queryParams}}"></quotas-page>
             </neon-animatable>
           </neon-animated-pages>
         </div>
@@ -97,7 +104,8 @@
           selectedTab: {
             type: Object,
             notify: false,
-            value: -1
+            value: -1,
+            observer: '_selectedTabChanged'
           }
         },
         observers: [
@@ -105,7 +113,40 @@
         ],
         _route: function(path) {
           if (path === this.pagesMap.settings.subpath) {
-            this.set('selectedTab', 0);
+            if (this.queryParams.s !== undefined) {
+              switch(this.queryParams.s) {
+                case this.pagesMap.datasources.val:
+                  this.set('selectedTab', 0);
+                  break;
+                case this.pagesMap.quotas.val:
+                  this.set('selectedTab', 1);
+                  break;
+
+              }
+            } else {
+              this.set('route.__queryParams', {
+                s: this.pagesMap.datasources.val
+              });
+            }
+
+          }
+        },
+        _selectedTabChanged: function(newVal, oldVal) {
+          switch (newVal) {
+            case 0:
+              this.set('route.__queryParams', {
+                s: this.pagesMap.datasources.val
+              });
+              break;
+            case 1:
+              this.set('route.__queryParams', {
+                s: this.pagesMap.quotas.val
+              });
+              break;
+            default:
+              this.set('route.__queryParams', {
+                s: this.pagesMap.datasources.val
+              });
           }
         }
       });

@@ -82,13 +82,21 @@
               return {
                 visible: false,
                 icon: "icons:build",
-                header: "Upps.",
+                header: "Oops.",
                 message: "We couldn't retrieve your custom quotas. Please try again later.",
               };
             }
           }
         },
-        ready: function() {
+        observers: [
+          '_routeData(queryParams)',
+        ],
+        _routeData: function(queryParams) {
+          if (queryParams.s === this.pagesMap.quotas.val) {
+            this.init();
+          }
+        },
+        init: function() {
           this.getQuotas();
         },
         getQuotas: function(e) {
