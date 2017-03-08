@@ -33,7 +33,7 @@ func srv(ctx *cli.Context) {
 	// Attach handler
 	if err := service.Server().Handle(
 		service.Server().NewHandler(
-			&handler.Enrich{
+			&handler.AudioEnrich{
 				Client: service.Client(),
 			},
 		),

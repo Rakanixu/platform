@@ -10,11 +10,11 @@ import (
 	"log"
 )
 
-type Enrich struct {
+type AudioEnrich struct {
 	Client client.Client
 }
 
-func (e *Enrich) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.CreateResponse) error {
+func (ae *AudioEnrich) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.CreateResponse) error {
 	if len(req.Id) == 0 {
 		return errors.BadRequest("com.kazoup.srv.audioenrich.Create", "id required")
 	}
@@ -34,7 +34,7 @@ func (e *Enrich) Create(ctx context.Context, req *proto.CreateRequest, rsp *prot
 
 	go func() {
 		if req.Type == globals.FileType {
-			if err := e.Client.Publish(ctx, e.Client.NewPublication(globals.AudioEnrichTopic, &enrich_proto.EnrichMessage{
+			if err := ae.Client.Publish(ctx, ae.Client.NewPublication(globals.AudioEnrichTopic, &enrich_proto.EnrichMessage{
 				Index:  req.Index,
 				Id:     req.Id,
 				UserId: uID,
@@ -44,14 +44,14 @@ func (e *Enrich) Create(ctx context.Context, req *proto.CreateRequest, rsp *prot
 		}
 
 		if req.Type == globals.TypeDatasource {
-			ids, err := retrieveFilesNotProcessed(ctx, req.Id, req.Index)
+			ids, err := retrieveAudioFilesNotProcessed(ctx, ae.Client, req.Id, req.Index)
 			if err != nil {
 				log.Println("ERROR retireving audio files not being process yet", err)
 			}
 
 			// Publish msg for all files not being process yet
 			for _, v := range ids {
-				if err := e.Client.Publish(ctx, e.Client.NewPublication(globals.AudioEnrichTopic, &enrich_proto.EnrichMessage{
+				if err := ae.Client.Publish(ctx, ae.Client.NewPublication(globals.AudioEnrichTopic, &enrich_proto.EnrichMessage{
 					Index:  req.Index,
 					Id:     v,
 					UserId: uID,

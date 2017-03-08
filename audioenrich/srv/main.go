@@ -32,7 +32,7 @@ func main() {
 	// Attach handler
 	if err := service.Server().Handle(
 		service.Server().NewHandler(
-			&handler.Enrich{
+			&handler.AudioEnrich{
 				Client: service.Client(),
 			},
 		),
