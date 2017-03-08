@@ -62,12 +62,6 @@ func srv(ctx *cli.Context) {
 		log.Fatal(err)
 	}
 
-	// Attach crawler finished subscriber
-	if err := service.Server().Subscribe(
-		service.Server().NewSubscriber(globals.CrawlerFinishedTopic, engine.SubscribeCrawlerFinished)); err != nil {
-		log.Fatal(err)
-	}
-
 	// Init search engine
 	if err := engine.Init(service.Client()); err != nil {
 		log.Fatal(err)

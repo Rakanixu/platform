@@ -65,11 +65,6 @@ func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) erro
 			case <-filesRunning:
 				time.Sleep(time.Second * 8)
 
-				// Clear index (files that no longer exists, rename, etc..)
-				if err := globals.ClearIndex(ctx, c.Client, endpoint); err != nil {
-					log.Println("ERROR clearing index after scan", err)
-				}
-
 				msg := &crawler.CrawlerFinishedMessage{
 					DatasourceId: endpoint.Id,
 				}

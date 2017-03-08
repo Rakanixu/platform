@@ -20,5 +20,4 @@ type Elastic struct {
 	FilesChannel         chan *FilesChannel
 	SlackUsersChannel    chan *crawler.SlackUserMessage
 	SlackChannelsChannel chan *crawler.SlackChannelMessage
-	CrawlerFinished      chan *crawler.CrawlerFinishedMessage
 }

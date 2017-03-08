@@ -61,12 +61,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Attach crawler finished subscriber
-	if err := service.Server().Subscribe(
-		service.Server().NewSubscriber(globals.CrawlerFinishedTopic, engine.SubscribeCrawlerFinished)); err != nil {
-		log.Fatal(err)
-	}
-
 	// Initialise service
 	service.Init()
 	// Init search engine

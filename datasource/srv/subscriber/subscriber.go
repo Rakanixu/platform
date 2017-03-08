@@ -93,6 +93,11 @@ func (cf *CrawlerFinished) SubscribeCrawlerFinished(ctx context.Context, msg *cr
 		log.Println(err)
 	}
 
+	// Clear index (files that no longer exists, rename, etc..)
+	if err := globals.ClearIndex(ctx, cf.Client, ds); err != nil {
+		log.Println("ERROR clearing index after scan", err)
+	}
+
 	// Publish notification
 	nm := &notification_proto.NotificationMessage{
 		Info:   "Scan finished on " + ds.Url + " datasource.",

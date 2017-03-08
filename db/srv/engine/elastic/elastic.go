@@ -31,7 +31,6 @@ func init() {
 			FilesChannel:         make(chan *model.FilesChannel),
 			SlackUsersChannel:    make(chan *crawler.SlackUserMessage),
 			SlackChannelsChannel: make(chan *crawler.SlackChannelMessage),
-			CrawlerFinished:      make(chan *crawler.CrawlerFinishedMessage),
 		},
 	})
 }
@@ -200,13 +199,6 @@ func (e *elastic) SubscribeSlackUsers(ctx context.Context, msg *crawler.SlackUse
 // Subscribe to crawler file messages
 func (e *elastic) SubscribeSlackChannels(ctx context.Context, msg *crawler.SlackChannelMessage) error {
 	e.SlackChannelsChannel <- msg
-
-	return nil
-}
-
-// Subscribe to crawler finished message
-func (e *elastic) SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedMessage) error {
-	e.CrawlerFinished <- msg
 
 	return nil
 }
