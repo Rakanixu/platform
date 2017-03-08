@@ -6,6 +6,8 @@ import (
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
+	imgenrich_proto "github.com/kazoup/platform/docenrich/srv/proto/docenrich"
+	docenrich_proto "github.com/kazoup/platform/imgenrich/srv/proto/imgenrich"
 	"github.com/kazoup/platform/lib/globals"
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
@@ -112,7 +114,7 @@ func (cf *CrawlerFinished) SubscribeCrawlerFinished(ctx context.Context, msg *cr
 		return err
 	}
 
-	// Call AudioEnrich, DocEnrich, and handlers
+	// Call AudioEnrich to process datasource
 	go func() {
 		areq := cf.Client.NewRequest(
 			globals.AUDIOENRICH_SERVICE_NAME,
@@ -127,6 +129,42 @@ func (cf *CrawlerFinished) SubscribeCrawlerFinished(ctx context.Context, msg *cr
 
 		if err := cf.Client.Call(ctx, areq, arsp); err != nil {
 			log.Println("ERROR Calling AudioEnrich.Create for Datasource", err)
+		}
+	}()
+
+	// Call ImgEnrich to process datasource
+	go func() {
+		areq := cf.Client.NewRequest(
+			globals.IMGENRICH_SERVICE_NAME,
+			"ImgEnrich.Create",
+			&imgenrich_proto.CreateRequest{
+				Type:  globals.TypeDatasource,
+				Index: ds.Index,
+				Id:    ds.Id,
+			},
+		)
+		arsp := &imgenrich_proto.CreateResponse{}
+
+		if err := cf.Client.Call(ctx, areq, arsp); err != nil {
+			log.Println("ERROR Calling ImgEnrich.Create for Datasource", err)
+		}
+	}()
+
+	// Call DocEnrich to process datasource
+	go func() {
+		areq := cf.Client.NewRequest(
+			globals.DOCENRICH_SERVICE_NAME,
+			"DocEnrich.Create",
+			&docenrich_proto.CreateRequest{
+				Type:  globals.TypeDatasource,
+				Index: ds.Index,
+				Id:    ds.Id,
+			},
+		)
+		arsp := &docenrich_proto.CreateResponse{}
+
+		if err := cf.Client.Call(ctx, areq, arsp); err != nil {
+			log.Println("ERROR Calling DocEnrich.Create for Datasource", err)
 		}
 	}()
 
