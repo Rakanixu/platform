@@ -2,6 +2,7 @@ package subscriber
 
 import (
 	"encoding/json"
+	audioenrich_proto "github.com/kazoup/platform/audioenrich/srv/proto/audioenrich"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
@@ -81,7 +82,7 @@ func (cf *CrawlerFinished) SubscribeCrawlerFinished(ctx context.Context, msg *cr
 	ds.LastScan = time.Now().Unix()
 	b, err := json.Marshal(ds)
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 	_, err = c.Update(ctx, &db_proto.UpdateRequest{
 		Index: "datasources",
@@ -110,6 +111,24 @@ func (cf *CrawlerFinished) SubscribeCrawlerFinished(ctx context.Context, msg *cr
 	if err := cf.Client.Publish(ctx, cf.Client.NewPublication(globals.NotificationTopic, nm)); err != nil {
 		return err
 	}
+
+	// Call AudioEnrich, DocEnrich, and handlers
+	go func() {
+		areq := cf.Client.NewRequest(
+			globals.AUDIOENRICH_SERVICE_NAME,
+			"AudioEnrich.Create",
+			&audioenrich_proto.CreateRequest{
+				Type:  globals.TypeDatasource,
+				Index: ds.Index,
+				Id:    ds.Id,
+			},
+		)
+		arsp := &audioenrich_proto.CreateResponse{}
+
+		if err := cf.Client.Call(ctx, areq, arsp); err != nil {
+			log.Println("ERROR Calling AudioEnrich.Create for Datasource", err)
+		}
+	}()
 
 	return nil
 }
