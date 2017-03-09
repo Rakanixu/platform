@@ -93,14 +93,15 @@
           this.headers = Auth.getHeaders();
 
           // Different endpoints for different types of files
+          // Documents will trigger TextAnalayze, because the doc enrichment is free (tika) for all users and not limited
           switch (this.item.category) {
             case this.categoriesMap.audios:
               this.rpcAnalyzeFileParams.service = window.Endpoints.srvs.audioenrich.srv;
               this.rpcAnalyzeFileParams.method = window.Endpoints.srvs.audioenrich.create;
               break;
             case this.categoriesMap.documents:
-              this.rpcAnalyzeFileParams.service = window.Endpoints.srvs.docenrich.srv;
-              this.rpcAnalyzeFileParams.method = window.Endpoints.srvs.docenrich.create;
+              this.rpcAnalyzeFileParams.service = window.Endpoints.srvs.textanalyzer.srv;
+              this.rpcAnalyzeFileParams.method = window.Endpoints.srvs.textanalyzer.create;
               break;
             case this.categoriesMap.images:
               this.rpcAnalyzeFileParams.service = window.Endpoints.srvs.imgenrich.srv;
@@ -108,6 +109,7 @@
               break;
           }
 
+          // TextAnalyzer.Create does not accept type (as only apply to single file), will be just omited by protobufs
           this.rpcAnalyzeFileParams.request.id = this.item.id;
           this.rpcAnalyzeFileParams.request.index = this.item.index;
           this.rpcAnalyzeFileParams.request.type = 'file'; // We always hit the single file analyze from this element

@@ -101,9 +101,9 @@
               srv: 'com.kazoup.srv.imgenrich',
               create: 'ImgEnrich.Create',
             },
-            docenrich: {
-              srv: 'com.kazoup.srv.docenrich',
-              create: 'DocEnrich.Create',
+            textanalyzer: { // This is a bit special, as doc content extraction is free (tika) but not entity extraction (rossete)
+              srv: 'com.kazoup.srv.textanalyzer',
+              create: 'TextAnalyzer.Create',
             },
             audioenrich: {
               srv: 'com.kazoup.srv.audioenrich',

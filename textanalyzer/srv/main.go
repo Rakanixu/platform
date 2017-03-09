@@ -5,6 +5,7 @@ import (
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
+	"github.com/kazoup/platform/textanalyzer/srv/handler"
 	"github.com/kazoup/platform/textanalyzer/srv/subscriber"
 	"github.com/micro/go-micro/server"
 	"github.com/micro/go-os/monitor"
@@ -26,6 +27,16 @@ func main() {
 	defer m.Close()
 
 	healthchecks.RegisterBrokerHealthChecks(service, m)
+
+	if err := service.Server().Handle(
+		service.Server().NewHandler(
+			&handler.TextAnalyzer{
+				Client: service.Client(),
+			},
+		),
+	); err != nil {
+		log.Println(err)
+	}
 
 	s := &subscriber.TextAnalyzer{
 		Client:        service.Client(),

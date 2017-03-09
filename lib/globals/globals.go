@@ -162,7 +162,7 @@ const (
 	QUOTA_TIME_LIMITER_STRING = "hour"
 
 	QUOTA_HANDLER_AUDIO_ENRICH  = 0  // Speech to text handler - no quota
-	QUOTA_SUBS_AUDIO_ENRICH     = 10 // Speech to text - quota per user
+	QUOTA_SUBS_AUDIO_ENRICH     = 5  // Speech to text - quota per user
 	QUOTA_HANDLER_IMG_ENRICH    = 0  // Cloud vision handler - no quota
 	QUOTA_SUBS_IMG_ENRICH       = 10 // Cloud vision - quota per user
 	QUOTA_HANDLER_TEXT_ANALYZER = 0  // Rossete handler - no quota

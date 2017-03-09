@@ -320,7 +320,7 @@
       },
       isAnalyzeFileAvailable: function(file) {
         return ((this.isAudio(file.category) && new Date(file.opts_kazoup_file.audio_timestamp) < new Date(file.modified)) ||
-            (this.isDocument(file.category) && new Date(file.opts_kazoup_file.content_timestamp) < new Date(file.modified)) ||
+            (this.isDocument(file.category) && new Date(file.opts_kazoup_file.text_analyzed_timestamp) < new Date(file.modified)) ||
             (this.isImage(file.category) && new Date(file.opts_kazoup_file.tags_timestamp) < new Date(file.modified)));
       },
       isTag: function(tags) {
