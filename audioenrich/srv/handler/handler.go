@@ -4,6 +4,7 @@ import (
 	proto "github.com/kazoup/platform/audioenrich/srv/proto/audioenrich"
 	"github.com/kazoup/platform/lib/globals"
 	enrich_proto "github.com/kazoup/platform/lib/protomsg"
+	quota_proto "github.com/kazoup/platform/quota/srv/proto/quota"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
@@ -30,6 +31,28 @@ func (ae *AudioEnrich) Create(ctx context.Context, req *proto.CreateRequest, rsp
 	uID, err := globals.ParseUserIdFromContext(ctx)
 	if err != nil {
 		return errors.InternalServerError("com.kazoup.srv.audioenrich.Create", err.Error())
+	}
+
+	// We only want to respond now if the endpoint was hitted for specific file
+	if req.Type == globals.FileType {
+		// Check Quota first
+		qreq := ae.Client.NewRequest(
+			globals.QUOTA_SERVICE_NAME,
+			"Quota.Read",
+			&quota_proto.ReadRequest{
+				Srv: globals.AUDIOENRICH_SERVICE_NAME,
+			},
+		)
+		qrsp := &quota_proto.ReadResponse{}
+		if err := ae.Client.Call(ctx, qreq, qrsp); err != nil {
+			log.Println("Error calling Quota.Read", err)
+		}
+
+		// Quota exceded, respond sync and do not initiate go routines
+		if qrsp.Quota.Rate-qrsp.Quota.Quota > 0 {
+			rsp.Info = "Quota for Speech to text service exceeded."
+			return nil
+		}
 	}
 
 	go func() {

@@ -121,7 +121,12 @@
           if (e.detail.response) {
             this.closeAnalyzeConfirmationDialog();
 
-            this.$.toast.text = 'Analyze task for ' +  this.item.name + ' was scheduled successfully.';
+            var text = 'Analyze task for ' +  this.item.name + ' was scheduled successfully.';;
+            if (e.detail.response.info && e.detail.response.info.length > 0) {
+              text = e.detail.response.info;
+            }
+
+            this.$.toast.text = text;
             this.$.toast.show();
           }
         },

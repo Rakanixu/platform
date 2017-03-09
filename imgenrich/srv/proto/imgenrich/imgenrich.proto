@@ -14,7 +14,7 @@ message CreateRequest {
 }
 
 message CreateResponse {
-
+  string info = 1;
 }
 
 message HealthRequest {
