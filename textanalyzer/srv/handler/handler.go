@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/kazoup/platform/lib/globals"
 	enrich_proto "github.com/kazoup/platform/lib/protomsg"
+	quota_proto "github.com/kazoup/platform/quota/srv/proto/quota"
 	proto "github.com/kazoup/platform/textanalyzer/srv/proto/textanalyzer"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
@@ -27,6 +28,25 @@ func (ta *TextAnalyzer) Create(ctx context.Context, req *proto.CreateRequest, rs
 	uID, err := globals.ParseUserIdFromContext(ctx)
 	if err != nil {
 		return errors.InternalServerError("com.kazoup.srv.textanalyzer.Create", err.Error())
+	}
+
+	// Check Quota first
+	qreq := ta.Client.NewRequest(
+		globals.QUOTA_SERVICE_NAME,
+		"Quota.Read",
+		&quota_proto.ReadRequest{
+			Srv: globals.TEXTANALYZER_SERVICE_NAME,
+		},
+	)
+	qrsp := &quota_proto.ReadResponse{}
+	if err := ta.Client.Call(ctx, qreq, qrsp); err != nil {
+		log.Println("Error calling Quota.Read", err)
+	}
+
+	// Quota exceded, respond sync and do not initiate go routines
+	if qrsp.Quota.Rate-qrsp.Quota.Quota > 0 {
+		rsp.Info = "Quota for Document content extraction service exceeded."
+		return nil
 	}
 
 	go func() {
