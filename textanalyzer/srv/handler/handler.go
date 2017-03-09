@@ -34,6 +34,7 @@ func (ta *TextAnalyzer) Create(ctx context.Context, req *proto.CreateRequest, rs
 			Index:  req.Index,
 			Id:     req.Id,
 			UserId: uID,
+			Notify: true,
 		})); err != nil {
 			log.Println("ERROR publishing ExtractEntitiesTopic message", err)
 		}

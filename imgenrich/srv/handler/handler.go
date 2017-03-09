@@ -38,6 +38,7 @@ func (ie *ImgEnrich) Create(ctx context.Context, req *proto.CreateRequest, rsp *
 				Index:  req.Index,
 				Id:     req.Id,
 				UserId: uID,
+				Notify: true,
 			})); err != nil {
 				log.Println("ERROR publishing ImgEnrichTopic message", err)
 			}

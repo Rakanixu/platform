@@ -1,8 +1,8 @@
 syntax = "proto3";
 
 message EnrichMessage {
-  string endpoint_id = 1;
-  string id = 2;
-  string user_id = 3;
-  string index = 4;
+  string id = 1;
+  string user_id = 2;
+  string index = 3;
+  bool notify = 4;
 }

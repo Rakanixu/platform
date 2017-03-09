@@ -2,6 +2,7 @@ package subscriber
 
 import (
 	"encoding/json"
+	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	db_helper "github.com/kazoup/platform/lib/dbhelper"
@@ -9,6 +10,7 @@ import (
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
 	enrich_proto "github.com/kazoup/platform/lib/protomsg"
+	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"log"
@@ -108,6 +110,17 @@ func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
 	})
 	if err != nil {
 		return err
+	}
+
+	// Publish notification topic if requested
+	if m.msg.Notify {
+		if err := c.Publish(m.ctx, c.NewPublication(globals.NotificationTopic, &notification_proto.NotificationMessage{
+			Method: globals.NOTIFY_REFRESH_SEARCH,
+			UserId: m.msg.UserId,
+			Info:   fmt.Sprintf("Image content extraction for %s finished.", f.GetID()),
+		})); err != nil {
+			log.Print("Publishing NotificationTopic (ImgEnrich) error %s", err)
+		}
 	}
 
 	return nil
