@@ -20,6 +20,10 @@ func (kf *KazoupDropboxFile) GetID() string {
 	return kf.ID
 }
 
+func (kf *KazoupDropboxFile) GetName() string {
+	return kf.Name
+}
+
 func (kf *KazoupDropboxFile) GetUserID() string {
 	return kf.UserId
 }

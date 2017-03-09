@@ -1,6 +1,7 @@
 package enrich
 
 import (
+	"github.com/kazoup/platform/imgenrich/srv/handler"
 	"github.com/kazoup/platform/imgenrich/srv/subscriber"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/healthchecks"
@@ -27,6 +28,17 @@ func srv(ctx *cli.Context) {
 	defer m.Close()
 
 	healthchecks.RegisterBrokerHealthChecks(service, m)
+
+	// Attach handler
+	if err := service.Server().Handle(
+		service.Server().NewHandler(
+			&handler.ImgEnrich{
+				Client: service.Client(),
+			},
+		),
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	s := &subscriber.Enrich{
 		Client:        service.Client(),

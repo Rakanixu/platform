@@ -362,6 +362,10 @@
                     </template>
                     -->
 
+                    <template is="dom-if" if="[[isAnalyzeFileAvailable(item)]]">
+                        <analyze-file item="{{item}}"></analyze-file>
+                    </template>
+
                     <template is="dom-if" if="[[isDeleteFileAvailable(item.file_type)]]">
                         <delete-file item="{{item}}"></delete-file>
                     </template>

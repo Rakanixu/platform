@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/kazoup/platform/audioenrich/srv/handler"
 	"github.com/kazoup/platform/audioenrich/srv/subscriber"
 	"github.com/kazoup/platform/lib/globals"
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
@@ -27,6 +28,17 @@ func main() {
 	defer m.Close()
 
 	healthchecks.RegisterBrokerHealthChecks(service, m)
+
+	// Attach handler
+	if err := service.Server().Handle(
+		service.Server().NewHandler(
+			&handler.AudioEnrich{
+				Client: service.Client(),
+			},
+		),
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	gcslib.Register()
 

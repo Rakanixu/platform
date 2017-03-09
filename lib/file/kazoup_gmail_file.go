@@ -24,6 +24,10 @@ func (kf *KazoupGmailFile) GetID() string {
 	return kf.ID
 }
 
+func (kf *KazoupGmailFile) GetName() string {
+	return kf.Name
+}
+
 func (kf *KazoupGmailFile) GetUserID() string {
 	return kf.UserId
 }

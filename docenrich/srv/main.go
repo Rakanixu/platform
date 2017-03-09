@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/kazoup/platform/docenrich/srv/handler"
 	"github.com/kazoup/platform/docenrich/srv/subscriber"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/healthchecks"
@@ -26,6 +27,17 @@ func main() {
 	defer m.Close()
 
 	healthchecks.RegisterBrokerHealthChecks(service, m)
+
+	// Attach handler
+	if err := service.Server().Handle(
+		service.Server().NewHandler(
+			&handler.DocEnrich{
+				Client: service.Client(),
+			},
+		),
+	); err != nil {
+		log.Fatal(err)
+	}
 
 	s := &subscriber.Enrich{
 		Client:        service.Client(),

@@ -2,8 +2,9 @@ syntax = "proto3";
 
 package go.micro.srv.quota;
 
-service File {
-  rpc Read(ReadRequest) returns (ReadResponse) {}  // Read quota per user
+service QuotaSrv {
+  rpc Read(ReadRequest) returns (ReadResponse) {}        // Read quota per user and service
+  rpc Search(SearchRequest) returns (SearchResponse) {}  // Read quota per user
   rpc Health(HealthRequest) returns (HealthResponse) {}
 }
 
@@ -16,10 +17,19 @@ message Quota {
 }
 
 message ReadRequest {
-
+  string srv = 1;
 }
 
 message ReadResponse {
+  string time_limit = 1;
+  Quota quota = 2;
+}
+
+message SearchRequest {
+
+}
+
+message SearchResponse {
   string time_limit = 1;
   repeated Quota quota = 2;
 }

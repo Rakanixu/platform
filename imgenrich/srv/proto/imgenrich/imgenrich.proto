@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package go.micro.srv.imgenrich;
+
+service ImgEnrich {
+  rpc Create(CreateRequest) returns (CreateResponse) {}
+  rpc Health(HealthRequest) returns (HealthResponse) {}
+}
+
+message CreateRequest {
+  string type = 1;
+  string index = 2;
+  string id = 3;
+}
+
+message CreateResponse {
+  string info = 1;
+}
+
+message HealthRequest {
+  string type = 1;
+}
+
+message HealthResponse {
+  int64 status = 1;
+  string info = 2;
+}

@@ -123,6 +123,9 @@
       isImage: function(category) {
         return (category === this.categoriesMap.images);
       },
+      isDocument: function(category) {
+        return (category === this.categoriesMap.documents);
+      },
       isVideo: function(category){
 	      return (category === this.categoriesMap.videos);
 	    },
@@ -314,6 +317,11 @@
       },
       isDeleteFileAvailable: function(fileType) {
         return this.isBox(fileType) || this.isDropbox(fileType) || this.isOneDrive(fileType) || this.isGoogleDrive(fileType);
+      },
+      isAnalyzeFileAvailable: function(file) {
+        return ((this.isAudio(file.category) && new Date(file.opts_kazoup_file.audio_timestamp) < new Date(file.modified)) ||
+            (this.isDocument(file.category) && new Date(file.opts_kazoup_file.text_analyzed_timestamp) < new Date(file.modified)) ||
+            (this.isImage(file.category) && new Date(file.opts_kazoup_file.tags_timestamp) < new Date(file.modified)));
       },
       isTag: function(tags) {
         return (tags && tags.length && tags.length > 0);
