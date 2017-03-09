@@ -117,7 +117,7 @@ func processEnrichMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m EnrichM
 		if err := c.Publish(m.ctx, c.NewPublication(globals.NotificationTopic, &notification_proto.NotificationMessage{
 			Method: globals.NOTIFY_REFRESH_SEARCH,
 			UserId: m.msg.UserId,
-			Info:   fmt.Sprintf("Speach to text for %s finished.", f.GetID()),
+			Info:   fmt.Sprintf("Speach to text for %s finished.", f.GetName()),
 		})); err != nil {
 			log.Print("Publishing NotificationTopic (AudioEnrich) error %s", err)
 		}

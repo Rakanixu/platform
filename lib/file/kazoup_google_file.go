@@ -21,6 +21,10 @@ func (kf *KazoupGoogleFile) GetID() string {
 	return globals.GetMD5Hash(kf.Original.WebViewLink)
 }
 
+func (kf *KazoupGoogleFile) GetName() string {
+	return kf.Name
+}
+
 func (kf *KazoupGoogleFile) GetUserID() string {
 	return kf.UserId
 }

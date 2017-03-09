@@ -18,6 +18,7 @@ const (
 type File interface {
 	PreviewURL(width, height, mode, quality string) string
 	GetID() string
+	GetName() string
 	GetUserID() string
 	GetIDFromOriginal() string
 	GetIndex() string

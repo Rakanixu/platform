@@ -24,6 +24,10 @@ func (kf *KazoupBoxFile) GetID() string {
 	return kf.ID
 }
 
+func (kf *KazoupBoxFile) GetName() string {
+	return kf.Name
+}
+
 func (kf *KazoupBoxFile) GetUserID() string {
 	return kf.UserId
 }
