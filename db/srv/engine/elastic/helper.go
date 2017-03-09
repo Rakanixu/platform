@@ -105,7 +105,7 @@ func (e *ElasticQuery) filterLastSeen() string {
 	var buffer bytes.Buffer
 
 	if e.LastSeen > 0 {
-		buffer.WriteString(`{"range":{"last_seen":{"lte":`)
+		buffer.WriteString(`{"range":{"last_seen":{"lt":`)
 		buffer.WriteString(strconv.Itoa(int(e.LastSeen)))
 		buffer.WriteString(`}}}`)
 	} else {
