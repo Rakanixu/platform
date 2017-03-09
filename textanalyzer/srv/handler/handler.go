@@ -45,7 +45,7 @@ func (ta *TextAnalyzer) Create(ctx context.Context, req *proto.CreateRequest, rs
 
 	// Quota exceded, respond sync and do not initiate go routines
 	if qrsp.Quota.Rate-qrsp.Quota.Quota > 0 {
-		rsp.Info = "Quota for Document content extraction service exceeded."
+		rsp.Info = "Quota for Entity extraction service exceeded."
 		return nil
 	}
 
