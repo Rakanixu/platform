@@ -1,0 +1,137 @@
+<dom-module id="analyze-file">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style>
+      :host {
+        display: block;
+      }
+
+      mat-dialog {
+        width: 340px;
+      }
+
+      paper-icon-button {
+        color: #fff;
+      }
+    </style>
+
+    <paper-icon-button id="analyze"
+                       on-tap="openAnalyzeConfirmationDialog"
+                       icon="icons:visibility"
+                       color="black"></paper-icon-button>
+
+    <mat-dialog id="analyzeConfirmationDialog" label="">
+      <div>
+        <p>[[analyzeMsg]]</p>
+      </div>
+      <mat-button class="action" label="Analyze" on-tap="analyzeFile"></mat-button>
+      <mat-button class="action" label="Cancel" on-tap="closeAnalyzeConfirmationDialog"></mat-button>
+    </mat-dialog>
+
+
+    <paper-toast id="toast" duration="6000" text=""></paper-toast>
+
+    <iron-ajax id="rpcAnalyzeFile"
+               method="POST"
+               content-type="application/json"
+               url="[[endpoints.endpoint]]"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleAnalyzeFile"
+               params="[[rpcAnalyzeFileParams]]"
+               headers="[[headers]]"></iron-ajax>
+
+  </template>
+
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'analyze-file',
+        behaviors: [
+          EndpointsBehaviorImp,
+          UtilBehaviorImp,
+          MapBehaviorImp
+        ],
+        properties: {
+          item: {
+            type: Object,
+            notify: true,
+            reflectToAttribute: true
+          },
+          analyzeMsg: {
+            type: String,
+            notify: false,
+            value: ''
+          },
+          rpcAnalyzeFileParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: '', // Will change depending on file category
+                method: '',
+                request: {
+                  id: '',     // Datasource ID or File ID
+                  index: '',  // Datasource index or the index the file belongs to
+                  type: ''    // Datasource or File types
+                }
+              };
+            }
+          }
+        },
+        openAnalyzeConfirmationDialog: function(e) {
+          this.set('analyzeMsg', this.item.name + ' will be analyze. \nAre you sure?');
+
+          this.$.analyzeConfirmationDialog.show();
+        },
+        closeAnalyzeConfirmationDialog: function() {
+          this.$.analyzeConfirmationDialog.hide();
+        },
+        analyzeFile: function(e) {
+          this.headers = Auth.getHeaders();
+
+          // Different endpoints for different types of files
+          switch (this.item.category) {
+            case this.categoriesMap.audios:
+              this.rpcAnalyzeFileParams.service = window.Endpoints.srvs.audioenrich.srv;
+              this.rpcAnalyzeFileParams.method = window.Endpoints.srvs.audioenrich.create;
+              break;
+            case this.categoriesMap.documents:
+              this.rpcAnalyzeFileParams.service = window.Endpoints.srvs.docenrich.srv;
+              this.rpcAnalyzeFileParams.method = window.Endpoints.srvs.docenrich.create;
+              break;
+            case this.categoriesMap.images:
+              this.rpcAnalyzeFileParams.service = window.Endpoints.srvs.imgenrich.srv;
+              this.rpcAnalyzeFileParams.method = window.Endpoints.srvs.imgenrich.create;
+              break;
+          }
+
+          this.rpcAnalyzeFileParams.request.id = this.item.id;
+          this.rpcAnalyzeFileParams.request.index = this.item.index;
+          this.rpcAnalyzeFileParams.request.type = 'file'; // We always hit the single file analyze from this element
+
+          this.$.rpcAnalyzeFile.body = this.rpcAnalyzeFileParams;
+          this.$.rpcAnalyzeFile.generateRequest();
+        },
+        _handleAnalyzeFile: function(e) {
+          if (e.detail.response) {
+            this.closeAnalyzeConfirmationDialog();
+
+            this.$.toast.text = 'Analyze task for ' +  this.item.name + ' was scheduled successfully.';
+            this.$.toast.show();
+          }
+        },
+        _handleError: function(e) {
+          this.checkUnauthorize(e);
+
+          if (e.detail.request && e.detail.request.response) {
+            this.$.toast.text = e.detail.request.response.detail;
+            this.$.toast.show();
+          }
+        }
+      });
+    }());
+  </script>
+</dom-module>
