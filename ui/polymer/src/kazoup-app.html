@@ -96,6 +96,19 @@
             quota: {
               srv: 'com.kazoup.srv.quota',
               read: 'Quota.Read',
+              search: 'Quota.Search'
+            },
+            imgenrich: {
+              srv: 'com.kazoup.srv.imgenrich',
+              create: 'ImgEnrich.Create',
+            },
+            textanalyzer: { // This is a bit special, as doc content extraction is free (tika) but not entity extraction (rossete)
+              srv: 'com.kazoup.srv.textanalyzer',
+              create: 'TextAnalyzer.Create',
+            },
+            audioenrich: {
+              srv: 'com.kazoup.srv.audioenrich',
+              create: 'AudioEnrich.Create',
             }
           }
         };

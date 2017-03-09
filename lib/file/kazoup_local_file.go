@@ -35,6 +35,10 @@ func (kf *KazoupLocalFile) GetID() string {
 	return kf.ID
 }
 
+func (kf *KazoupLocalFile) GetName() string {
+	return kf.Name
+}
+
 func (kf *KazoupLocalFile) GetUserID() string {
 	return kf.UserId
 }
