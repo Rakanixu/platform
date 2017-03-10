@@ -29,7 +29,7 @@ func (q *Quota) Read(ctx context.Context, req *proto.ReadRequest, rsp *proto.Rea
 	}
 
 	for _, v := range srvs {
-		l, i, r, rt, q, ok := quota.GetQuota(v.Name, uID)
+		l, i, r, rt, q, ok := quota.GetQuota(ctx, v.Name, uID)
 		if ok {
 			rsp.Quota = &proto.Quota{
 				Name:           l,
@@ -61,7 +61,7 @@ func (q *Quota) Search(ctx context.Context, req *proto.SearchRequest, rsp *proto
 
 	var h []*proto.Quota
 	for _, v := range srvs {
-		l, i, r, rt, q, ok := quota.GetQuota(v.Name, uID)
+		l, i, r, rt, q, ok := quota.GetQuota(ctx, v.Name, uID)
 		if ok {
 			h = append(h, &proto.Quota{
 				Name:           l,

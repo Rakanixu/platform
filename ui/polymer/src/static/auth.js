@@ -36,7 +36,7 @@ window.Auth = (function() {
       grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
       target: '6zIDm8InhbTRp1bL2C4m1TK4Llr4arTy',
       client_id: '5OCJYuTq5Dog960c3lfVEsBlquDX9Ka2',
-      scope: 'openid',
+      scope: 'openid roles',
       api_type: 'app',
       id_token: code
     }, {

@@ -165,6 +165,17 @@ func quotaHandlerWrapper(fn server.HandlerFunc, limiter *rate.Limiter, srv strin
 			return errors.Unauthorized("Token", err.Error())
 		}
 
+		if token.Claims.(jwt.MapClaims)["roles"] == nil {
+			return errors.BadRequest("Roles not found", "Unable to retrieve user roles.")
+		}
+
+		for _, v := range token.Claims.(jwt.MapClaims)["roles"].([]interface{}) {
+			switch v.(string) {
+			case globals.PRODUCT_TYPE_PERSONAL, globals.PRODUCT_TYPE_TEAM, globals.PRODUCT_TYPE_ENTERPRISE:
+				quotaLimit = int64(globals.PRODUCT_QUOTAS.M[v.(string)][srv]["handler"].(int))
+			}
+		}
+
 		_, _, allowed := limiter.AllowN(fmt.Sprintf("%s-handler-%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, globals.QUOTA_TIME_LIMITER, 1)
 		if !allowed {
 			return errors.Forbidden("User Rate Limit", "User rate limit exceeded.")
@@ -224,6 +235,17 @@ func quotaSubscriberWrapper(fn server.SubscriberFunc, limiter *rate.Limiter, srv
 		})
 		if err != nil {
 			return errors.Unauthorized("Token", err.Error())
+		}
+
+		if token.Claims.(jwt.MapClaims)["roles"] == nil {
+			return errors.BadRequest("Roles not found", "Unable to retrieve user roles.")
+		}
+
+		for _, v := range token.Claims.(jwt.MapClaims)["roles"].([]interface{}) {
+			switch v.(string) {
+			case globals.PRODUCT_TYPE_PERSONAL, globals.PRODUCT_TYPE_TEAM, globals.PRODUCT_TYPE_ENTERPRISE:
+				quotaLimit = int64(globals.PRODUCT_QUOTAS.M[v.(string)][srv]["subscriber"].(int))
+			}
 		}
 
 		_, _, allowed := limiter.AllowN(fmt.Sprintf("%s-subs-%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, globals.QUOTA_TIME_LIMITER, 1)

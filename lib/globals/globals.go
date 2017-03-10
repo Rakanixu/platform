@@ -158,9 +158,6 @@ const (
 	DISCOVERY_DELAY_MS  = 10 * time.Millisecond
 	PUBLISHING_DELAY_MS = 20 * time.Millisecond
 
-	QUOTA_TIME_LIMITER        = time.Hour
-	QUOTA_TIME_LIMITER_STRING = "hour"
-
 	QUOTA_HANDLER_AUDIO_ENRICH  = 0  // Speech to text handler - no quota
 	QUOTA_SUBS_AUDIO_ENRICH     = 5  // Speech to text - quota per user
 	QUOTA_HANDLER_IMG_ENRICH    = 0  // Cloud vision handler - no quota
@@ -425,6 +422,46 @@ func ParseUserIdFromContext(ctx context.Context) (string, error) {
 	}
 
 	return id, nil
+}
+
+func ParseRolesFromContext(ctx context.Context) ([]string, error) {
+	md, ok := metadata.FromContext(ctx)
+	if !ok {
+		return []string{}, errors.New("Unable to retrieve metadata")
+	}
+
+	if len(md["Authorization"]) == 0 {
+		return []string{}, errors.New("No Auth header")
+	}
+
+	// We will read claim to know if public user, or paying or whatever
+	token, err := jwt.Parse(md["Authorization"], func(token *jwt.Token) (interface{}, error) {
+		// Don't forget to validate the alg is what you expect:
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+		}
+
+		decoded, err := base64.URLEncoding.DecodeString(CLIENT_ID_SECRET)
+		if err != nil {
+			return nil, err
+		}
+
+		return decoded, nil
+	})
+	if err != nil {
+		return []string{}, err
+	}
+
+	if token.Claims.(jwt.MapClaims)["roles"] == nil {
+		return []string{}, errors.New("Roles not found.")
+	}
+
+	var roles []string
+	for _, v := range token.Claims.(jwt.MapClaims)["roles"].([]interface{}) {
+		roles = append(roles, v.(string))
+	}
+
+	return roles, nil
 }
 
 // ParseJWTToken validates JWT and returns user_id claim
