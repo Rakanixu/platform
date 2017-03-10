@@ -17,7 +17,7 @@ func main() {
 	var m monitor.Monitor
 
 	// New Service
-	service := wrappers.NewKazoupService("db", globals.QUOTA_HANDLER_DB, globals.QUOTA_SUBS_DB, m)
+	service := wrappers.NewKazoupService("db", m)
 
 	// db-srv monitor
 	m = monitor.NewMonitor(

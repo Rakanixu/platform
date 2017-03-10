@@ -17,7 +17,7 @@ import (
 func main() {
 	var m monitor.Monitor
 
-	service := wrappers.NewKazoupService("audioenrich", globals.QUOTA_HANDLER_AUDIO_ENRICH, globals.QUOTA_SUBS_AUDIO_ENRICH, m)
+	service := wrappers.NewKazoupService("audioenrich", m)
 
 	// enrich-srv monitor
 	m = monitor.NewMonitor(

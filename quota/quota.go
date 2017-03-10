@@ -1,7 +1,6 @@
 package quota
 
 import (
-	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
@@ -16,7 +15,7 @@ func srv(ctx *cli.Context) {
 	var m monitor.Monitor
 
 	// New service
-	service := wrappers.NewKazoupService("quota", globals.QUOTA_HANDLER_QUOTA, globals.QUOTA_SUBS_QUOTA, m)
+	service := wrappers.NewKazoupService("quota", m)
 
 	// Monitor for file-srv
 	m = monitor.NewMonitor(

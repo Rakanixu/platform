@@ -158,7 +158,7 @@ const (
 	DISCOVERY_DELAY_MS  = 10 * time.Millisecond
 	PUBLISHING_DELAY_MS = 20 * time.Millisecond
 
-	QUOTA_HANDLER_AUDIO_ENRICH  = 0  // Speech to text handler - no quota
+/*	QUOTA_HANDLER_AUDIO_ENRICH  = 0  // Speech to text handler - no quota
 	QUOTA_SUBS_AUDIO_ENRICH     = 5  // Speech to text - quota per user
 	QUOTA_HANDLER_IMG_ENRICH    = 0  // Cloud vision handler - no quota
 	QUOTA_SUBS_IMG_ENRICH       = 10 // Cloud vision - quota per user
@@ -181,11 +181,11 @@ const (
 	QUOTA_HANDLER_SEARCH        = 0  // Search srv handler - no quota
 	QUOTA_SUBS_SEARCH           = 0  // Search srv subscriber - no quota
 	QUOTA_HANDLER_QUOTA         = 0  // Quota srv handler - no quota
-	QUOTA_SUBS_QUOTA            = 0  // Quota srv subscriber - no quota
+	QUOTA_SUBS_QUOTA            = 0  // Quota srv subscriber - no quota*/
 )
 
 // Treat this as a constant basically, do not overwrite or modify
-var SRV_LIMIT_DICTIONARY = struct {
+/*var SRV_LIMIT_DICTIONARY = struct {
 	M map[string]map[string]interface{}
 }{
 	M: map[string]map[string]interface{}{
@@ -262,7 +262,7 @@ var SRV_LIMIT_DICTIONARY = struct {
 			"subscriber": QUOTA_SUBS_TEXT_ANALYZER,
 		},
 	},
-}
+}*/
 
 func NewGoogleOautConfig() *oauth2.Config {
 	return &oauth2.Config{
