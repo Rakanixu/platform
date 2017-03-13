@@ -86,6 +86,7 @@
 <link rel="import" href="../../src/scheduler/scheduler-client.html">
 <link rel="import" href="../../src/search/search-page.html">
 <link rel="import" href="../../src/settings/settings-page.html">
+<link rel="import" href="../../src/profile/profile-page.html">
 
 <dom-module id="main-menu">
   <template>
@@ -110,8 +111,9 @@
       <!-- Nav Content -->
       <div class="nav" drawer>
         <paper-toolbar class="medium-tall" style="background-image: url([[imports.menuBackground]])">
-          <mat-avatar icon-src="[[profile.picture]]"></mat-avatar>
+          <mat-avatar icon-src="[[profile.picture]]" on-tap="showProfilePage"></mat-avatar>
           <mat-item class="bottom light username"
+                    on-tap="showProfilePage"
                     label="[[profile.name]]"></mat-item>
         </paper-toolbar>
 
@@ -206,6 +208,11 @@
                          query-params="{{queryParams}}"
                          datasource-results="{{datasourceResults}}"
                          name="settings"></settings-page>
+          <profile-page id="profile"
+                         route="{{route}}"
+                         subroute="{{subroute}}"
+                         query-params="{{queryParams}}"
+                         name="profile"></profile-page>
         </iron-pages>
       </div>
 
@@ -279,6 +286,9 @@
               case this.pagesMap.settings.path:
                 this.$.authPages.selected = 1;
                 break;
+              case this.pagesMap.profile.path:
+                this.$.authPages.selected = 2;
+                break;
               default:
                 // Fallback, for example, when /u is hitted
                 this.set('route.path', this.pagesMap.search.path);
@@ -323,6 +333,12 @@
           this.set('route.__queryParams', {
             s: 'datasources'
           });
+        },
+        showProfilePage: function(e) {
+          this.closeMenu();
+          console.log(this.pagesMap.profile.path)
+          this.set('route.path', this.pagesMap.profile.path);
+          this.set('route.__queryParams', {});
         },
         showDatasourcesDialog: function(e) {
           this.$.addDatasources.openDatasourceDialog();

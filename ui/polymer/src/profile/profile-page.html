@@ -1,0 +1,112 @@
+<dom-module id="profile-page">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+
+      paper-header-panel {
+        -webkit-app-region: drag;
+        --paper-header-panel-shadow: {
+          height: 0;
+        }
+      }
+
+      paper-header-panel[drawer] paper-toolbar {
+        --paper-toolbar-background: var(--dark-primary);
+      }
+
+      paper-toolbar mat-text-field {
+        margin-top: 16px;
+      }
+
+      mat-avatar {
+        position: fixed;
+        margin-left: calc(50% - 50px);
+        margin-right: calc(50% - 50px);
+        width: 100px;
+        height: 100px;
+        top: 75px;
+      }
+
+      @media (max-width: 600px) {
+        mat-avatar {
+          top: 58px;
+        }
+      }
+    </style>
+
+    <paper-drawer-panel id="mainDrawerPanel"
+                        responsive-width="99999px"
+                        disable-swipe="true"
+                        right-drawer main>
+      <paper-header-panel id="mainPaperHeaderPanel" class="list-panel main" main>
+
+        <!-- List Toolbar -->
+        <paper-toolbar class="medium-tall">
+          <paper-icon-button icon="menu"
+                             on-tap="openMenu"
+                             hidden$="[[mediaQueryLarge]]"></paper-icon-button>
+
+          <div class="flex horizontal layout">
+            <div class="title flex">Profile</div>
+          </div>
+
+          <paper-progress id="progressBar"
+                          class="middle fit"
+                          hidden$="[[!loading]]"
+                          indeterminate></paper-progress>
+        </paper-toolbar>
+
+        <mat-avatar icon-src="[[profile.picture]]" on-tap="showProfilePage" class="no-ui-action"></mat-avatar>
+
+        <!-- Search results -->
+        <div class="vertical layout" style="height:100%;">
+
+
+        </div>
+      </paper-header-panel>
+    </paper-drawer-panel>
+
+    <paper-toast id="toast" text=""></paper-toast>
+
+    <iron-media-query query="(min-width: 1281px)"
+                      query-matches="{{mediaQueryLarge}}"></iron-media-query>
+
+  </template>
+
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'profile-page',
+        behaviors: [
+          UtilBehaviorImp,
+          MapBehaviorImp
+        ],
+        properties: {
+          loading: {
+            type: Boolean,
+            notify: true,
+            value: false
+          }
+        },
+        observers: [
+          '_route(subroute.path)'
+        ],
+        _route: function(path) {
+          if (path === this.pagesMap.profile.subpath) {
+            this.init();
+          }
+        },
+        init: function() {
+          this.md5UserId = Auth.getMD5UserId();
+          this.headers = Auth.getHeaders();
+          this.profile = Auth.getProfile();
+        }
+      });
+    }());
+  </script>
+</dom-module>

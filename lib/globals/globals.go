@@ -146,123 +146,20 @@ const (
 	SERVER_ADDRESS        = "https://web.kazoup.io"
 	SECURE_SERVER_ADDRESS = "https://web.kazoup.io:8082"
 
-	SYSTEM_TOKEN     = "ajsdIgsnaloHFGis823jsdgyjTGDKijfcjk783JDUYFJyggvwejkxsnmbkjwpoj6483"
-	DB_ACCESS_TOKEN  = "GSjsfduh3jskJHGuiU87y-skjaXXu7hpcMkdKghsojssio_98sushmpPpodvhakasdB"
-	CLIENT_ID_SECRET = "EC1FD9R5t6D3cs9CzPbgJaBJjshoVgrJrTs6U39scYzYF7HYyMlv_mal2IjLLaA9" // Auth0 RPC API client
-	ENCRYTION_KEY_32 = "asjklasd766adfashj22kljasdhyfjkh"
-	ROSETTE_API_KEY  = "c6872fa01aa45d59438d56831bb5b1a2"
+	SYSTEM_TOKEN      = "ajsdIgsnaloHFGis823jsdgyjTGDKijfcjk783JDUYFJyggvwejkxsnmbkjwpoj6483"
+	DB_ACCESS_TOKEN   = "GSjsfduh3jskJHGuiU87y-skjaXXu7hpcMkdKghsojssio_98sushmpPpodvhakasdB"
+	CLIENT_ID_SECRET  = "EC1FD9R5t6D3cs9CzPbgJaBJjshoVgrJrTs6U39scYzYF7HYyMlv_mal2IjLLaA9" // Auth0 RPC API client
+	ENCRYTION_KEY_32  = "asjklasd766adfashj22kljasdhyfjkh"
+	ROSETTE_API_KEY   = "c6872fa01aa45d59438d56831bb5b1a2"
+	STRIPE_SECRET_KEY = "sk_test_udDr3n0RMjGr8vcwiCdNx3ao"
+	STRIPE_PUBLIC_KEY = "pk_test_6z7qNSW5GZsLNyTz2hIrK0q5"
 
 	NOTIFY_REFRESH_DATASOURCES = "refresh-datasources"
 	NOTIFY_REFRESH_SEARCH      = "refresh-search"
 
 	DISCOVERY_DELAY_MS  = 10 * time.Millisecond
 	PUBLISHING_DELAY_MS = 20 * time.Millisecond
-
-/*	QUOTA_HANDLER_AUDIO_ENRICH  = 0  // Speech to text handler - no quota
-	QUOTA_SUBS_AUDIO_ENRICH     = 5  // Speech to text - quota per user
-	QUOTA_HANDLER_IMG_ENRICH    = 0  // Cloud vision handler - no quota
-	QUOTA_SUBS_IMG_ENRICH       = 10 // Cloud vision - quota per user
-	QUOTA_HANDLER_TEXT_ANALYZER = 0  // Rossete handler - no quota
-	QUOTA_SUBS_TEXT_ANALYZER    = 10 // Rossete - quota per user
-	QUOTA_HANDLER_DOC_ENRICH    = 0  // Own tika extarction, not limiting
-	QUOTA_SUBS_DOC_ENRICH       = 0  // Own tika extarction, not limiting
-	QUOTA_HANDLER_THUMBNAIL     = 0  // Thumbnail generation handler - no quota
-	QUOTA_SUBS_THUMBNAIL        = 0  // Thumbnail generation subscriber - no quota
-	QUOTA_HANDLER_DATASOURCE    = 0  // Datasource srv handler - no quota
-	QUOTA_SUBS_DATASOURCE       = 0  // Datasource srv subscriber - no quota
-	QUOTA_HANDLER_CRAWLER       = 0  // Crawler srv handler - no quota
-	QUOTA_SUBS_CRAWLER          = 0  // Crawler srv subscriber - no quota
-	QUOTA_HANDLER_DB            = 0  // DB srv handler - no quota
-	QUOTA_SUBS_DB               = 0  // DB srv subscriber - no quota
-	QUOTA_HANDLER_FILE          = 0  // File srv handler - no quota
-	QUOTA_SUBS_FILE             = 0  // file srv subscriber - no quota
-	QUOTA_HANDLER_NOTIFICATION  = 0  // Notification srv handler - no quota
-	QUOTA_SUBS_NOTIFICATION     = 0  // Notification srv subscriber - no quota
-	QUOTA_HANDLER_SEARCH        = 0  // Search srv handler - no quota
-	QUOTA_SUBS_SEARCH           = 0  // Search srv subscriber - no quota
-	QUOTA_HANDLER_QUOTA         = 0  // Quota srv handler - no quota
-	QUOTA_SUBS_QUOTA            = 0  // Quota srv subscriber - no quota*/
 )
-
-// Treat this as a constant basically, do not overwrite or modify
-/*var SRV_LIMIT_DICTIONARY = struct {
-	M map[string]map[string]interface{}
-}{
-	M: map[string]map[string]interface{}{
-		DB_SERVICE_NAME: map[string]interface{}{
-			"label":      "Database service",
-			"icon":       "device:storage",
-			"handler":    QUOTA_HANDLER_DB,
-			"subscriber": QUOTA_SUBS_DB,
-		},
-		SEARCH_SERVICE_NAME: map[string]interface{}{
-			"label":      "Search service",
-			"icon":       "action:search",
-			"handler":    QUOTA_HANDLER_SEARCH,
-			"subscriber": QUOTA_SUBS_SEARCH,
-		},
-		DATASOURCE_SERVICE_NAME: map[string]interface{}{
-			"label":      "Datasource service",
-			"icon":       "file:cloud-queue",
-			"handler":    QUOTA_HANDLER_DATASOURCE,
-			"subscriber": QUOTA_SUBS_DATASOURCE,
-		},
-		CRAWLER_SERVICE_NAME: map[string]interface{}{
-			"label":      "Discovery service",
-			"icon":       "action:explore",
-			"handler":    QUOTA_HANDLER_CRAWLER,
-			"subscriber": QUOTA_SUBS_CRAWLER,
-		},
-		NOTIFICATION_SERVICE_NAME: map[string]interface{}{
-			"label":      "Notification service",
-			"icon":       "action:announcement",
-			"handler":    QUOTA_HANDLER_NOTIFICATION,
-			"subscriber": QUOTA_SUBS_NOTIFICATION,
-		},
-		FILE_SERVICE_NAME: map[string]interface{}{
-			"label":      "File service",
-			"icon":       "editor:insert-drive-file",
-			"handler":    QUOTA_HANDLER_FILE,
-			"subscriber": QUOTA_SUBS_FILE,
-		},
-		QUOTA_SERVICE_NAME: map[string]interface{}{
-			"label":      "Quota service",
-			"icon":       "action:lock-outline",
-			"handler":    QUOTA_HANDLER_QUOTA,
-			"subscriber": QUOTA_SUBS_QUOTA,
-		},
-		THUMBNAIL_SERVICE_NAME: map[string]interface{}{
-			"label":      "Thumbnail service",
-			"icon":       "image:photo-size-select-actual",
-			"handler":    QUOTA_HANDLER_THUMBNAIL,
-			"subscriber": QUOTA_SUBS_THUMBNAIL,
-		},
-		AUDIOENRICH_SERVICE_NAME: map[string]interface{}{
-			"label":      "Speech to text service",
-			"icon":       "image:audiotrack",
-			"handler":    QUOTA_HANDLER_AUDIO_ENRICH,
-			"subscriber": QUOTA_SUBS_AUDIO_ENRICH,
-		},
-		DOCENRICH_SERVICE_NAME: map[string]interface{}{
-			"label":      "Content extraction service",
-			"icon":       "action:find-in-page",
-			"handler":    QUOTA_HANDLER_DOC_ENRICH,
-			"subscriber": QUOTA_SUBS_DOC_ENRICH,
-		},
-		IMGENRICH_SERVICE_NAME: map[string]interface{}{
-			"label":      "Image content service",
-			"icon":       "image:photo-library",
-			"handler":    QUOTA_HANDLER_IMG_ENRICH,
-			"subscriber": QUOTA_SUBS_IMG_ENRICH,
-		},
-		TEXTANALYZER_SERVICE_NAME: map[string]interface{}{
-			"label":      "Entity extraction service",
-			"icon":       "action:description",
-			"handler":    QUOTA_HANDLER_TEXT_ANALYZER,
-			"subscriber": QUOTA_SUBS_TEXT_ANALYZER,
-		},
-	},
-}*/
 
 func NewGoogleOautConfig() *oauth2.Config {
 	return &oauth2.Config{
