@@ -34,6 +34,7 @@ const (
 	NOTIFICATION_SERVICE_NAME string = NAMESPACE + ".srv.notification"
 	FILE_SERVICE_NAME         string = NAMESPACE + ".srv.file"
 	QUOTA_SERVICE_NAME        string = NAMESPACE + ".srv.quota"
+	PROFILE_SERVICE_NAME      string = NAMESPACE + ".srv.profile"
 	MONITOR_SERVICE_NAME      string = NAMESPACE + ".srv.monitor"
 	THUMBNAIL_SERVICE_NAME    string = NAMESPACE + ".srv.thumbnail"
 	AUDIOENRICH_SERVICE_NAME  string = NAMESPACE + ".srv.audioenrich"

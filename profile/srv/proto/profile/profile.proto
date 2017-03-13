@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package go.micro.srv.profile;
+
+service ProfileSrv {
+  rpc Read(ReadRequest) returns (ReadResponse) {}
+  rpc Update(UpdateRequest) returns (UpdateResponse) {}
+  rpc Delete(DeleteRequest) returns (DeleteResponse) {}
+  rpc Health(HealthRequest) returns (HealthResponse) {}
+}
+
+message Profile {
+  string email = 1;
+  string profile = 2;
+}
+
+message ReadRequest {
+  string stripe_id = 1;
+}
+
+message ReadResponse {
+  Profile profile = 1;
+}
+
+message UpdateRequest {
+
+}
+
+message UpdateResponse {
+
+}
+
+message DeleteRequest {
+
+}
+
+message DeleteResponse {
+
+}
+
+message HealthRequest {
+  string type = 1;
+}
+
+message HealthResponse {
+  int64 status = 1;
+  string info = 2;
+}

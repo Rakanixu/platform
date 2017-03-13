@@ -58,6 +58,12 @@ var PRODUCT_QUOTAS = struct {
 				"handler":    0,
 				"subscriber": 0,
 			},
+			PROFILE_SERVICE_NAME: map[string]interface{}{
+				"label":      "Profile service",
+				"icon":       "image:photo",
+				"handler":    0,
+				"subscriber": 0,
+			},
 			THUMBNAIL_SERVICE_NAME: map[string]interface{}{
 				"label":      "Thumbnail service",
 				"icon":       "image:photo-size-select-actual",
@@ -129,6 +135,12 @@ var PRODUCT_QUOTAS = struct {
 			QUOTA_SERVICE_NAME: map[string]interface{}{
 				"label":      "Quota service",
 				"icon":       "action:lock-outline",
+				"handler":    0,
+				"subscriber": 0,
+			},
+			PROFILE_SERVICE_NAME: map[string]interface{}{
+				"label":      "Profile service",
+				"icon":       "image:photo",
 				"handler":    0,
 				"subscriber": 0,
 			},
