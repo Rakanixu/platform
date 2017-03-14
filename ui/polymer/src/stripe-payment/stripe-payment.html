@@ -13,7 +13,17 @@
       }
 
     </style>
+
     <paper-button on-tap="openStripeForm">Upgrade</paper-button>
+
+    <iron-ajax id="saveCard"
+               method="GET"
+               content-type="application/json"
+               url="[[endpoints.endpoint]]/profile/saveCard"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleSaveCard"
+               headers="[[headers]]"></iron-ajax>
 
   </template>
 
@@ -23,23 +33,29 @@
     (function() {
       Polymer({
         is: 'stripe-payment',
-        behaviors: [],
+        behaviors: [
+          MapBehaviorImp,
+          EndpointsBehaviorImp
+        ],
         properties: {
 
         },
         ready: function() {
+          var that = this;
+
           this.stripe = StripeCheckout.configure({
             key: 'pk_test_6z7qNSW5GZsLNyTz2hIrK0q5',
             image: 'https://app.kazoup.io/src/static/kazoup-logo-small.png',
             locale: 'auto',
             token: function(token) {
-              debugger;
+              that.$.saveCard.params = token;
+              that.$.saveCard.generateRequest();
               // You can access the token ID with `token.id`.
               // Get the token ID to your server-side code for use.
             }
           });
         },
-        openStripeForm: function() {
+        openStripeForm: function(e) {
           this.stripe.open({
             name: 'Kazoup',
             description: 'Upgrade to Team plan',
@@ -48,6 +64,17 @@
             amount: 999
           });
           e.preventDefault();
+        },
+        _handleSaveCard: function(e) {
+          console.log(e);
+        },
+        _handleError: function(e) {
+          this.checkUnauthorize(e);
+
+          if (e.detail.request && e.detail.request.response) {
+            this.$.toast.text = e.detail.request.response.detail;
+            this.$.toast.show();
+          }
         }
       });
     }());
