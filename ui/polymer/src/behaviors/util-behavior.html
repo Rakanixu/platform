@@ -348,6 +348,9 @@
       getQuota: function(item, measure) {
         return (item.quota === undefined) ? 'Unlimited' : (item.quota + ' per ' + measure);
       },
+      formatAmount: function(amount) {
+        return amount / 100;
+      },
       replaceAll: function(str, search, replacement) {
         return  str.replace(new RegExp(search, 'g'), replacement);
       },

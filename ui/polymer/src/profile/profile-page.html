@@ -1,0 +1,224 @@
+<dom-module id="profile-page">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+
+      paper-header-panel {
+        -webkit-app-region: drag;
+        --paper-header-panel-shadow: {
+          height: 0;
+        }
+      }
+
+      paper-header-panel[drawer] paper-toolbar {
+        --paper-toolbar-background: var(--dark-primary);
+      }
+
+      paper-toolbar mat-text-field {
+        margin-top: 16px;
+      }
+
+      mat-avatar {
+        position: fixed;
+        margin-left: calc(50% - 50px);
+        margin-right: calc(50% - 50px);
+        width: 100px;
+        height: 100px;
+        top: 75px;
+      }
+
+      mat-item,
+      stripe-payment-upgrade,
+      stripe-payment-downgrade {
+        text-align: center;
+      }
+
+      .profile {
+        margin-top: 55px;
+      }
+
+      @media (max-width: 600px) {
+        mat-avatar {
+          top: 58px;
+        }
+      }
+    </style>
+
+    <paper-drawer-panel id="mainDrawerPanel"
+                        responsive-width="99999px"
+                        disable-swipe="true"
+                        right-drawer main>
+      <paper-header-panel id="mainPaperHeaderPanel" class="list-panel main" main>
+
+        <!-- List Toolbar -->
+        <paper-toolbar class="medium-tall">
+          <paper-icon-button icon="menu"
+                             on-tap="openMenu"
+                             hidden$="[[mediaQueryLarge]]"></paper-icon-button>
+
+          <div class="flex horizontal layout">
+            <div class="title flex">Profile</div>
+          </div>
+
+          <paper-progress id="progressBar"
+                          class="middle fit"
+                          hidden$="[[!loading]]"
+                          indeterminate></paper-progress>
+        </paper-toolbar>
+
+        <mat-avatar icon-src="[[profile.picture]]" on-tap="showProfilePage" class="no-ui-action"></mat-avatar>
+
+        <!-- Search results -->
+        <div class="vertical layout" style="height:100%;">
+          <div class="profile">
+            <mat-item class="no-ui-action"
+                      label="[[profile.name]]"
+                      description="[[profile.email]]"></mat-item>
+            <mat-item class="no-ui-action"
+                      label="[[customerPlan.name]]"
+                      description$="[[formatAmount(customerPlan.amount)]] [[customerPlan.currency]] / [[customerPlan.interval]]"></mat-item>
+
+            <stripe-payment-upgrade id="stripeUpgrade" sub-id="[[subId]]" hidden$="[[!showUpgrade]]"></stripe-payment-upgrade>
+            <stripe-payment-downgrade id="stripeDowngrade" sub-id="[[subId]]" hidden$="[[!showDowngrade]]"></stripe-payment-downgrade>
+          </div>
+        </div>
+      </paper-header-panel>
+    </paper-drawer-panel>
+
+    <iron-ajax id="rpcGerProfile"
+               method="POST"
+               content-type="application/json"
+               url="[[endpoints.endpoint]]"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleGetProfile"
+               params="{{rpcGetProfileParams}}"
+               headers="[[headers]]"></iron-ajax>
+
+    <paper-toast id="toast" text=""></paper-toast>
+
+    <iron-media-query query="(min-width: 1281px)"
+                      query-matches="{{mediaQueryLarge}}"></iron-media-query>
+
+  </template>
+
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'profile-page',
+        behaviors: [
+          UtilBehaviorImp,
+          MapBehaviorImp,
+          EndpointsBehaviorImp
+        ],
+        properties: {
+          loading: {
+            type: Boolean,
+            notify: true,
+            value: false
+          },
+          customerPlan: {
+            type: Object,
+            notify: true,
+            value: function() {
+              return {};
+            }
+          },
+          subId: {
+            type: String,
+            notify: true,
+            value: ''
+          },
+          showUpgrade: {
+            type: Boolean,
+            notify: true,
+            value: false
+          },
+          showDowngrade: {
+            type: Boolean,
+            notify: true,
+            value: false
+          },
+          rpcGetProfileParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: window.Endpoints.srvs.profile.srv,
+                method: window.Endpoints.srvs.profile.read,
+                request: {
+                  stripe_id: ''
+                }
+              };
+            }
+          },
+        },
+        observers: [
+          '_route(subroute.path)'
+        ],
+        _route: function(path) {
+          if (path === this.pagesMap.profile.subpath) {
+            this._init();
+          }
+        },
+        ready: function() {
+          this.$.stripeUpgrade.addEventListener('reloadProfile', this._init.bind(this));
+          this.$.stripeDowngrade.addEventListener('reloadProfile', this._init.bind(this));
+          this.$.stripeUpgrade.addEventListener('showMsg', this._showMsg.bind(this));
+          this.$.stripeDowngrade.addEventListener('showMsg', this._showMsg.bind(this));
+        },
+        _init: function() {
+          this.set('loading', true);
+          this.md5UserId = Auth.getMD5UserId();
+          this.headers = Auth.getHeaders();
+          this.profile = Auth.getProfile();
+
+          this.rpcGetProfileParams.request.stripe_id = this.profile.app_metadata.stripeId;
+          this.$.rpcGerProfile.body = this.rpcGetProfileParams;
+          this.$.rpcGerProfile.generateRequest();
+        },
+        _showMsg: function(e, detail) {
+          this.$.toast.text = e.detail.msg;
+          this.$.toast.show();
+        },
+        _handleGetProfile: function(e) {
+          this.set('loading', false);
+
+          if (e.detail.response && e.detail.response.profile && e.detail.response.profile.profile) {
+            var p = JSON.parse(e.detail.response.profile.profile);
+
+            this.set('customerPlan', p.subscriptions.data[0].plan);
+            this.set('subId', p.subscriptions.data[0].id);
+
+            switch (this.customerPlan.id) {
+              case "team":
+                this.set('showDowngrade', true);
+                this.set('showUpgrade', false);
+                break;
+              case "personal":
+                this.set('showDowngrade', false);
+                this.set('showUpgrade', true);
+                break;
+              case "enterprise":
+                break;
+            }
+          }
+        },
+        _handleError: function(e) {
+          this.set('loading', false);
+          this.checkUnauthorize(e);
+
+          if (e.detail.request && e.detail.request.response) {
+            this.$.toast.text = e.detail.request.response.detail;
+            this.$.toast.show();
+          }
+        }
+      });
+    }());
+  </script>
+</dom-module>

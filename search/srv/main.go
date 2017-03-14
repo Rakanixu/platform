@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
@@ -17,7 +16,7 @@ func main() {
 	var m monitor.Monitor
 
 	// New Service
-	service := wrappers.NewKazoupService("search", globals.QUOTA_HANDLER_SEARCH, globals.QUOTA_SUBS_SEARCH, m)
+	service := wrappers.NewKazoupService("search", m)
 
 	// Monitor for search-srv
 	m = monitor.NewMonitor(

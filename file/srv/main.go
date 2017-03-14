@@ -1,14 +1,12 @@
 package main
 
 import (
-	"log"
-
 	"github.com/kazoup/platform/file/srv/handler"
-	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/go-os/monitor"
+	"log"
 	"time"
 )
 
@@ -16,7 +14,7 @@ func main() {
 	var m monitor.Monitor
 
 	// New service
-	service := wrappers.NewKazoupService("file", globals.QUOTA_HANDLER_FILE, globals.QUOTA_SUBS_FILE, m)
+	service := wrappers.NewKazoupService("file", m)
 
 	// Monitor for file-srv
 	m = monitor.NewMonitor(

@@ -20,7 +20,7 @@ func srv(ctx *cli.Context) {
 
 	var m monitor.Monitor
 
-	service := wrappers.NewKazoupService("crawler", globals.QUOTA_HANDLER_CRAWLER, globals.QUOTA_SUBS_CRAWLER, m)
+	service := wrappers.NewKazoupService("crawler", m)
 
 	// crawler-srv monitor
 	m = monitor.NewMonitor(

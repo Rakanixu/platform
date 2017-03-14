@@ -129,13 +129,8 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 }
 
 // quotaHandlerWrapper defines a quota wrapper based on quotaLimit per srv+user_id key
-func quotaHandlerWrapper(fn server.HandlerFunc, limiter *rate.Limiter, srv string, quotaLimit int64) server.HandlerFunc {
+func quotaHandlerWrapper(fn server.HandlerFunc, limiter *rate.Limiter, srv string) server.HandlerFunc {
 	return func(ctx context.Context, req server.Request, rsp interface{}) error {
-		// Empty wrapper if no quota limit, avoid futher operations
-		if quotaLimit <= 0 {
-			return fn(ctx, req, rsp)
-		}
-
 		var f error
 
 		md, ok := metadata.FromContext(ctx)
@@ -165,6 +160,22 @@ func quotaHandlerWrapper(fn server.HandlerFunc, limiter *rate.Limiter, srv strin
 			return errors.Unauthorized("Token", err.Error())
 		}
 
+		if token.Claims.(jwt.MapClaims)["roles"] == nil {
+			return errors.BadRequest("Roles not found", "Unable to retrieve user roles.")
+		}
+
+		var quotaLimit int64
+		for _, v := range token.Claims.(jwt.MapClaims)["roles"].([]interface{}) {
+			switch v.(string) {
+			case globals.PRODUCT_TYPE_PERSONAL, globals.PRODUCT_TYPE_TEAM, globals.PRODUCT_TYPE_ENTERPRISE:
+				quotaLimit = int64(globals.PRODUCT_QUOTAS.M[v.(string)][srv]["handler"].(int))
+			}
+		}
+
+		if quotaLimit <= 0 {
+			return fn(ctx, req, rsp)
+		}
+
 		_, _, allowed := limiter.AllowN(fmt.Sprintf("%s-handler-%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, globals.QUOTA_TIME_LIMITER, 1)
 		if !allowed {
 			return errors.Forbidden("User Rate Limit", "User rate limit exceeded.")
@@ -177,7 +188,7 @@ func quotaHandlerWrapper(fn server.HandlerFunc, limiter *rate.Limiter, srv strin
 }
 
 // NewQuotaHandlerWrapper returns a handler quota limit per user wrapper
-func NewQuotaHandlerWrapper(srvName string, uDayLimit int64) server.HandlerWrapper {
+func NewQuotaHandlerWrapper(srvName string) server.HandlerWrapper {
 	ring := redis.NewRing(&redis.RingOptions{
 		Addrs: map[string]string{
 			"server1": "redis:6379",
@@ -187,18 +198,13 @@ func NewQuotaHandlerWrapper(srvName string, uDayLimit int64) server.HandlerWrapp
 	limiter := rate.NewLimiter(ring, fallbackLimiter)
 
 	return func(h server.HandlerFunc) server.HandlerFunc {
-		return quotaHandlerWrapper(h, limiter, srvName, uDayLimit)
+		return quotaHandlerWrapper(h, limiter, srvName)
 	}
 }
 
 // quotaSubscriberWrapper defines a quota wrapper based on quotaLimit per srv+user_id key
-func quotaSubscriberWrapper(fn server.SubscriberFunc, limiter *rate.Limiter, srv string, quotaLimit int64) server.SubscriberFunc {
+func quotaSubscriberWrapper(fn server.SubscriberFunc, limiter *rate.Limiter, srv string) server.SubscriberFunc {
 	return func(ctx context.Context, msg server.Publication) error {
-		// Empty wrapper if no quota limit, avoid futher operations
-		if quotaLimit <= 0 {
-			return fn(ctx, msg)
-		}
-
 		md, ok := metadata.FromContext(ctx)
 		if !ok {
 			return errors.InternalServerError("QuotaWrapper", "Unable to retrieve metadata")
@@ -226,6 +232,22 @@ func quotaSubscriberWrapper(fn server.SubscriberFunc, limiter *rate.Limiter, srv
 			return errors.Unauthorized("Token", err.Error())
 		}
 
+		if token.Claims.(jwt.MapClaims)["roles"] == nil {
+			return errors.BadRequest("Roles not found", "Unable to retrieve user roles.")
+		}
+
+		var quotaLimit int64
+		for _, v := range token.Claims.(jwt.MapClaims)["roles"].([]interface{}) {
+			switch v.(string) {
+			case globals.PRODUCT_TYPE_PERSONAL, globals.PRODUCT_TYPE_TEAM, globals.PRODUCT_TYPE_ENTERPRISE:
+				quotaLimit = int64(globals.PRODUCT_QUOTAS.M[v.(string)][srv]["subscriber"].(int))
+			}
+		}
+
+		if quotaLimit <= 0 {
+			return fn(ctx, msg)
+		}
+
 		_, _, allowed := limiter.AllowN(fmt.Sprintf("%s-subs-%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, globals.QUOTA_TIME_LIMITER, 1)
 		if !allowed {
 			// Quota limite reached, but due to subscribers nature, error will be lost.
@@ -239,7 +261,7 @@ func quotaSubscriberWrapper(fn server.SubscriberFunc, limiter *rate.Limiter, srv
 }
 
 // NewQuotaSubscriberWrapper returns a subscriber quota limit per user wrapper
-func NewQuotaSubscriberWrapper(srvName string, uDayLimit int64) server.SubscriberWrapper {
+func NewQuotaSubscriberWrapper(srvName string) server.SubscriberWrapper {
 	ring := redis.NewRing(&redis.RingOptions{
 		Addrs: map[string]string{
 			"server1": "redis:6379",
@@ -249,7 +271,7 @@ func NewQuotaSubscriberWrapper(srvName string, uDayLimit int64) server.Subscribe
 	limiter := rate.NewLimiter(ring, fallbackLimiter)
 
 	return func(fn server.SubscriberFunc) server.SubscriberFunc {
-		return quotaSubscriberWrapper(fn, limiter, srvName, uDayLimit)
+		return quotaSubscriberWrapper(fn, limiter, srvName)
 	}
 }
 
@@ -271,7 +293,7 @@ func NewKazoupClientWithXrayTrace(sess *session.Session) client.Client {
 	)
 }
 
-func NewKazoupService(name string, uDayHandlerLimit, uDaySubscriberLimit int64, mntr ...monitor.Monitor) micro.Service {
+func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 	var m monitor.Monitor
 
 	// Check if monitor available
@@ -316,8 +338,8 @@ func NewKazoupService(name string, uDayHandlerLimit, uDaySubscriberLimit int64, 
 			micro.RegisterInterval(time.Second*30),
 			//micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...),*/ KazoupClientWrap()),
-			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn, uDaySubscriberLimit)),
-			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewQuotaHandlerWrapper(sn, uDayHandlerLimit), AuthWrapper),
+			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn)),
+			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewQuotaHandlerWrapper(sn), AuthWrapper),
 			micro.Flags(
 				cli.StringFlag{
 					Name:   "elasticsearch_hosts",
@@ -344,8 +366,8 @@ func NewKazoupService(name string, uDayHandlerLimit, uDaySubscriberLimit int64, 
 			micro.RegisterInterval(time.Second*30),
 			//micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...),*/ KazoupClientWrap()),
-			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn, uDaySubscriberLimit)),
-			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewQuotaHandlerWrapper(sn, uDayHandlerLimit), AuthWrapper),
+			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn)),
+			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewQuotaHandlerWrapper(sn), AuthWrapper),
 		)
 	} else {
 		service = micro.NewService(
@@ -356,8 +378,8 @@ func NewKazoupService(name string, uDayHandlerLimit, uDaySubscriberLimit int64, 
 			micro.RegisterInterval(time.Second*30),
 			//micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...), */ monitor.ClientWrapper(m), KazoupClientWrap()),
-			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn, uDaySubscriberLimit)),
-			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...),*/ monitor.HandlerWrapper(m), NewQuotaHandlerWrapper(sn, uDayHandlerLimit), AuthWrapper),
+			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn)),
+			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...),*/ monitor.HandlerWrapper(m), NewQuotaHandlerWrapper(sn), AuthWrapper),
 		)
 	}
 

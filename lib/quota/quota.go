@@ -3,6 +3,7 @@ package quota
 import (
 	"fmt"
 	"github.com/kazoup/platform/lib/globals"
+	"golang.org/x/net/context"
 	timerate "golang.org/x/time/rate"
 	"gopkg.in/go-redis/rate.v5"
 	"gopkg.in/redis.v5"
@@ -22,15 +23,32 @@ func init() {
 }
 
 // GetQuota returns quota info: srvLabel, icon, rate, resetTimestamp, quota, and if was OK
-func GetQuota(srvName, uID string) (string, string, int64, int64, int64, bool) {
-	if globals.SRV_LIMIT_DICTIONARY.M[srvName] == nil {
+func GetQuota(ctx context.Context, srvName, uID string) (string, string, int64, int64, int64, bool) {
+	r, err := globals.ParseRolesFromContext(ctx)
+	if err != nil {
 		return "", "", 0, 0, 0, false
 	}
 
-	hq := int64(globals.SRV_LIMIT_DICTIONARY.M[srvName]["handler"].(int))
-	sq := int64(globals.SRV_LIMIT_DICTIONARY.M[srvName]["subscriber"].(int))
-	sl := globals.SRV_LIMIT_DICTIONARY.M[srvName]["label"].(string)
-	i := globals.SRV_LIMIT_DICTIONARY.M[srvName]["icon"].(string)
+	var product string
+	for _, v := range r {
+		switch v {
+		case globals.PRODUCT_TYPE_PERSONAL, globals.PRODUCT_TYPE_TEAM, globals.PRODUCT_TYPE_ENTERPRISE:
+			product = v
+		}
+	}
+
+	if globals.PRODUCT_QUOTAS.M[product] == nil {
+		return "", "", 0, 0, 0, false
+	}
+
+	if globals.PRODUCT_QUOTAS.M[product][srvName] == nil {
+		return "", "", 0, 0, 0, false
+	}
+
+	hq := int64(globals.PRODUCT_QUOTAS.M[product][srvName]["handler"].(int))
+	sq := int64(globals.PRODUCT_QUOTAS.M[product][srvName]["subscriber"].(int))
+	sl := globals.PRODUCT_QUOTAS.M[product][srvName]["label"].(string)
+	i := globals.PRODUCT_QUOTAS.M[product][srvName]["icon"].(string)
 
 	// Get quota for srv handler
 	rate1, resetTimestamp1, _ := limiter.AllowN(fmt.Sprintf("%s-handler-%s", srvName, uID), hq, globals.QUOTA_TIME_LIMITER, 0)

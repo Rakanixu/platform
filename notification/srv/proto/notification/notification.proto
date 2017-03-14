@@ -16,6 +16,7 @@ message NotificationMessage {
 
 message StreamRequest {
   string user_id = 1;
+  string token = 2;
 }
 
 message StreamResponse {

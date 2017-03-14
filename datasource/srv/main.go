@@ -16,7 +16,7 @@ import (
 func main() {
 	var m monitor.Monitor
 
-	service := wrappers.NewKazoupService("datasource", globals.QUOTA_HANDLER_DATASOURCE, globals.QUOTA_SUBS_DATASOURCE, m)
+	service := wrappers.NewKazoupService("datasource", m)
 
 	// datasource-srv monitor
 	m = monitor.NewMonitor(

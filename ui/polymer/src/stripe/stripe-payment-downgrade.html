@@ -1,0 +1,84 @@
+<dom-module id="stripe-payment-downgrade">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+
+      paper-button {
+        margin-top: 7px;
+        background-color: #F44336;
+      }
+
+    </style>
+
+    <paper-button on-tap="downgrade">Unsubscribe</paper-button>
+
+    <iron-ajax id="rpcDowngradeSubscription"
+               method="POST"
+               content-type="application/json"
+               url="[[endpoints.endpoint]]"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleDowngradeSubscription"
+               headers="[[headers]]"></iron-ajax>
+  </template>
+
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'stripe-payment-downgrade',
+        behaviors: [
+          MapBehaviorImp,
+          EndpointsBehaviorImp
+        ],
+        properties: {
+          rpcDowngradeSubscriptionParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: window.Endpoints.srvs.profile.srv,
+                method: window.Endpoints.srvs.profile.updateSubscription,
+                request: {
+                  stripe_id: '',
+                  sub_id: '',
+                  upgrade_subscription: false
+                }
+              };
+            }
+          }
+        },
+        ready: function() {
+          this.headers = Auth.getHeaders();
+          this.profile = Auth.getProfile();
+        },
+        downgrade: function(e) {
+          this.rpcDowngradeSubscriptionParams.request.stripe_id = this.profile.app_metadata.stripeId;
+          this.rpcDowngradeSubscriptionParams.request.sub_id = this.subId;
+
+          this.$.rpcDowngradeSubscription.body = this.rpcDowngradeSubscriptionParams;
+          this.$.rpcDowngradeSubscription.generateRequest();
+        },
+        _handleDowngradeSubscription: function(e) {
+          this.fire('reloadProfile', {});
+          this.fire('showMsg', {
+            msg: "Subcription charge will no longer recur."
+          });
+        },
+        _handleError: function(e) {
+          this.checkUnauthorize(e);
+
+          if (e.detail.request && e.detail.request.response) {
+            this.fire('showMsg', {
+              msg: e.detail.request.response.detail
+            });
+          }
+        }
+      });
+    }());
+  </script>
+</dom-module>

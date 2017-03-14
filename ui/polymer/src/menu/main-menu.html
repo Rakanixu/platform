@@ -73,6 +73,8 @@
 <link rel="import" href="../../src/quotas/quotas-page.html">
 <link rel="import" href="../../src/detail-view/detail-view.html">
 <link rel="import" href="../../src/string-html/string-html.html">
+<link rel="import" href="../../src/stripe/stripe-payment-upgrade.html">
+<link rel="import" href="../../src/stripe/stripe-payment-downgrade.html">
 <!--
 <link rel="import" href="../../src/file-actions/share-slack-file.html">
 <link rel="import" href="../../src/file-actions/share-google-drive-file.html">
@@ -86,6 +88,7 @@
 <link rel="import" href="../../src/scheduler/scheduler-client.html">
 <link rel="import" href="../../src/search/search-page.html">
 <link rel="import" href="../../src/settings/settings-page.html">
+<link rel="import" href="../../src/profile/profile-page.html">
 
 <dom-module id="main-menu">
   <template>
@@ -114,6 +117,16 @@
           <mat-item class="bottom light username"
                     label="[[profile.name]]"></mat-item>
         </paper-toolbar>
+        <!--
+        UNCOMMENT WHEN CHARGING USERS IN REAL, FOR NOW YOU NEED TO NOW URL TO GO TO TEST PAYMENT; IT IS FINE IF STILL DICOVER,
+        EVERYTHING IS SET TO USE TESTING ENVIRNONMENTS
+        <paper-toolbar class="medium-tall" style="background-image: url([[imports.menuBackground]])">
+          <mat-avatar icon-src="[[profile.picture]]" on-tap="showProfilePage"></mat-avatar>
+          <mat-item class="bottom light username"
+                    on-tap="showProfilePage"
+                    label="[[profile.name]]"></mat-item>
+        </paper-toolbar>
+        -->
 
         <div style="height:calc(100% - 128px); overflow-y:auto;">
           <div class="menu-content">
@@ -206,6 +219,11 @@
                          query-params="{{queryParams}}"
                          datasource-results="{{datasourceResults}}"
                          name="settings"></settings-page>
+          <profile-page id="profile"
+                         route="{{route}}"
+                         subroute="{{subroute}}"
+                         query-params="{{queryParams}}"
+                         name="profile"></profile-page>
         </iron-pages>
       </div>
 
@@ -279,6 +297,9 @@
               case this.pagesMap.settings.path:
                 this.$.authPages.selected = 1;
                 break;
+              case this.pagesMap.profile.path:
+                this.$.authPages.selected = 2;
+                break;
               default:
                 // Fallback, for example, when /u is hitted
                 this.set('route.path', this.pagesMap.search.path);
@@ -323,6 +344,12 @@
           this.set('route.__queryParams', {
             s: 'datasources'
           });
+        },
+        showProfilePage: function(e) {
+          this.closeMenu();
+
+          this.set('route.path', this.pagesMap.profile.path);
+          this.set('route.__queryParams', {});
         },
         showDatasourcesDialog: function(e) {
           this.$.addDatasources.openDatasourceDialog();

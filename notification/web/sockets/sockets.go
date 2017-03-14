@@ -33,7 +33,12 @@ func Stream(ws *websocket.Conn) {
 		&proto.StreamRequest{},
 	)
 
-	stream, err := client.DefaultClient.Stream(globals.NewSystemContext(), sreq)
+	if m["token"] == nil {
+		fmt.Println("ERROR receiving jwt_token from client", "jwt_token not found")
+		return
+	}
+
+	stream, err := client.DefaultClient.Stream(globals.NewContextFromJWT(m["token"].(string)), sreq)
 	if err != nil {
 		fmt.Println("ERROR opening stream for notifications", err)
 		return
