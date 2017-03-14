@@ -60,7 +60,6 @@
           }.bind(this), 3000);*/
         },
         _onMessage: function(e) {
-          // Check for user ID message is for, right now we are broadcasting from notification srv
           if (e.detail.user_id === Auth.getUserId()) {
             if (e.detail.info && e.detail.info.length) {
               this.$.toast.text = e.detail.info;
@@ -84,7 +83,8 @@
           // Get connected state from server and send UserId
           } else if (e.detail.connected) {
             this.$.socket.send({
-              user_id: Auth.getUserId()
+              user_id: Auth.getUserId(),
+              token: Auth.getJWT()
             });
           }
         },
