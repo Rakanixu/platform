@@ -3,6 +3,7 @@ syntax = "proto3";
 package go.micro.srv.profile;
 
 service ProfileSrv {
+  rpc Create(CreateRequest) returns (CreateResponse) {}
   rpc Read(ReadRequest) returns (ReadResponse) {}
   rpc Update(UpdateRequest) returns (UpdateResponse) {}
   rpc Delete(DeleteRequest) returns (DeleteResponse) {}
@@ -12,6 +13,14 @@ service ProfileSrv {
 message Profile {
   string email = 1;
   string profile = 2;
+}
+
+message CreateRequest {
+
+}
+
+message CreateResponse {
+
 }
 
 message ReadRequest {

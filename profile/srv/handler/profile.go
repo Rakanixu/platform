@@ -16,7 +16,7 @@ type Profile struct {
 // Read Profile handler
 func (p *Profile) Read(ctx context.Context, req *proto.ReadRequest, rsp *proto.ReadResponse) error {
 	if len(req.StripeId) == 0 {
-		return errors.InternalServerError("com.kazoup.srv.profile.Read", "stripe_id required")
+		return errors.InternalServerError("com.kazoup.srv.profile.Profile.Read", "stripe_id required")
 	}
 
 	m, pf, err := slib.GetCustomer(req.StripeId)

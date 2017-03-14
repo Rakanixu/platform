@@ -1,0 +1,104 @@
+<script src="https://checkout.stripe.com/checkout.js"></script>
+<dom-module id="stripe-payment-upgrade">
+  <template>
+    <style include="iron-flex iron-flex-alignment"></style>
+    <style include="shared-styles">
+      :host {
+        display: block;
+      }
+
+      paper-button {
+        margin-top: 7px;
+        background-color: #4CAF50;
+      }
+
+    </style>
+
+    <paper-button on-tap="openStripeForm">Subscribe</paper-button>
+
+    <iron-ajax id="rpcUpgradeSubscription"
+               method="POST"
+               content-type="application/json"
+               url="[[endpoints.endpoint]]"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleUpgradeSubscription"
+               headers="[[headers]]"></iron-ajax>
+  </template>
+  <script>
+    'use strict';
+
+    (function() {
+      Polymer({
+        is: 'stripe-payment-upgrade',
+        behaviors: [
+          MapBehaviorImp,
+          EndpointsBehaviorImp
+        ],
+        properties: {
+          rpcUpgradeSubscriptionParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: window.Endpoints.srvs.profile.srv,
+                method: window.Endpoints.srvs.profile.updateSubscription,
+                request: {
+                  stripe_id: '',
+                  checkout_token_id: '',
+                  sub_id: '',
+                  upgrade_subscription: true
+                }
+              };
+            }
+          }
+        },
+        ready: function() {
+          var that = this;
+
+          this.headers = Auth.getHeaders();
+          this.profile = Auth.getProfile();
+
+          this.stripe = StripeCheckout.configure({
+            key: 'pk_test_6z7qNSW5GZsLNyTz2hIrK0q5',
+            image: 'https://app.kazoup.io/src/static/kazoup-logo-small.png',
+            locale: 'auto',
+            token: function(token) {
+              that.rpcUpgradeSubscriptionParams.request.stripe_id = that.profile.app_metadata.stripeId;
+              that.rpcUpgradeSubscriptionParams.request.checkout_token_id = token.id;
+              that.rpcUpgradeSubscriptionParams.request.sub_id = that.subId;
+
+              that.$.rpcUpgradeSubscription.body = that.rpcUpgradeSubscriptionParams;
+              that.$.rpcUpgradeSubscription.generateRequest();
+            }
+          });
+        },
+        openStripeForm: function(e) {
+          this.stripe.open({
+            name: 'Kazoup',
+            description: 'Upgrade to Team plan',
+            zipCode: true,
+            currency: 'gbp',
+            amount: 999
+          });
+          e.preventDefault();
+        },
+        _handleUpgradeSubscription: function(e) {
+          this.fire('reloadProfile', {});
+          this.fire('showMsg', {
+            msg: "Succesfully subscribed to Kazoup Team plan."
+          });
+        },
+        _handleError: function(e) {
+          this.checkUnauthorize(e);
+
+          if (e.detail.request && e.detail.request.response) {
+            this.fire('showMsg', {
+              msg: e.detail.request.response.detail
+            });
+          }
+        }
+      });
+    }());
+  </script>
+</dom-module>

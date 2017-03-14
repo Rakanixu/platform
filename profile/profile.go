@@ -35,6 +35,13 @@ func srv(ctx *cli.Context) {
 		}),
 	)
 
+	// New service handler
+	service.Server().Handle(
+		service.Server().NewHandler(&handler.Subscription{
+			Client: service.Client(),
+		}),
+	)
+
 	// Run service
 	if err := service.Run(); err != nil {
 		log.Fatal(err)

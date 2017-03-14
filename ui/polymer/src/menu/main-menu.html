@@ -73,7 +73,8 @@
 <link rel="import" href="../../src/quotas/quotas-page.html">
 <link rel="import" href="../../src/detail-view/detail-view.html">
 <link rel="import" href="../../src/string-html/string-html.html">
-<link rel="import" href="../../src/stripe-payment/stripe-payment.html">
+<link rel="import" href="../../src/stripe/stripe-payment-upgrade.html">
+<link rel="import" href="../../src/stripe/stripe-payment-downgrade.html">
 <!--
 <link rel="import" href="../../src/file-actions/share-slack-file.html">
 <link rel="import" href="../../src/file-actions/share-google-drive-file.html">
@@ -337,7 +338,7 @@
         },
         showProfilePage: function(e) {
           this.closeMenu();
-          console.log(this.pagesMap.profile.path)
+
           this.set('route.path', this.pagesMap.profile.path);
           this.set('route.__queryParams', {});
         },

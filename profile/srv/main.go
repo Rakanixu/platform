@@ -34,6 +34,13 @@ func main() {
 		}),
 	)
 
+	// New service handler
+	service.Server().Handle(
+		service.Server().NewHandler(&handler.Subscription{
+			Client: service.Client(),
+		}),
+	)
+
 	// Init service
 	service.Init()
 

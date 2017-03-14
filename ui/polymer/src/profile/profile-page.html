@@ -31,7 +31,8 @@
       }
 
       mat-item,
-      stripe-payment {
+      stripe-payment-upgrade,
+      stripe-payment-downgrade {
         text-align: center;
       }
 
@@ -78,15 +79,14 @@
                       description="[[profile.email]]"></mat-item>
             <mat-item class="no-ui-action"
                       label="[[customerPlan.name]]"
-                      description$="[[customerPlan.amount]] [[customerPlan.currency]] / [[customerPlan.interval]]"></mat-item>
+                      description$="[[formatAmount(customerPlan.amount)]] [[customerPlan.currency]] / [[customerPlan.interval]]"></mat-item>
 
-            <stripe-payment></stripe-payment>
+            <stripe-payment-upgrade id="stripeUpgrade" sub-id="[[subId]]" hidden$="[[!showUpgrade]]"></stripe-payment-upgrade>
+            <stripe-payment-downgrade id="stripeDowngrade" sub-id="[[subId]]" hidden$="[[!showDowngrade]]"></stripe-payment-downgrade>
           </div>
         </div>
       </paper-header-panel>
     </paper-drawer-panel>
-
-
 
     <iron-ajax id="rpcGerProfile"
                method="POST"
@@ -129,6 +129,21 @@
               return {};
             }
           },
+          subId: {
+            type: String,
+            notify: true,
+            value: ''
+          },
+          showUpgrade: {
+            type: Boolean,
+            notify: true,
+            value: false
+          },
+          showDowngrade: {
+            type: Boolean,
+            notify: true,
+            value: false
+          },
           rpcGetProfileParams: {
             type: Object,
             notify: false,
@@ -148,10 +163,16 @@
         ],
         _route: function(path) {
           if (path === this.pagesMap.profile.subpath) {
-            this.init();
+            this._init();
           }
         },
-        init: function() {
+        ready: function() {
+          this.$.stripeUpgrade.addEventListener('reloadProfile', this._init.bind(this));
+          this.$.stripeDowngrade.addEventListener('reloadProfile', this._init.bind(this));
+          this.$.stripeUpgrade.addEventListener('showMsg', this._showMsg.bind(this));
+          this.$.stripeDowngrade.addEventListener('showMsg', this._showMsg.bind(this));
+        },
+        _init: function() {
           this.set('loading', true);
           this.md5UserId = Auth.getMD5UserId();
           this.headers = Auth.getHeaders();
@@ -161,6 +182,10 @@
           this.$.rpcGerProfile.body = this.rpcGetProfileParams;
           this.$.rpcGerProfile.generateRequest();
         },
+        _showMsg: function(e, detail) {
+          this.$.toast.text = e.detail.msg;
+          this.$.toast.show();
+        },
         _handleGetProfile: function(e) {
           this.set('loading', false);
 
@@ -168,6 +193,20 @@
             var p = JSON.parse(e.detail.response.profile.profile);
 
             this.set('customerPlan', p.subscriptions.data[0].plan);
+            this.set('subId', p.subscriptions.data[0].id);
+
+            switch (this.customerPlan.id) {
+              case "team":
+                this.set('showDowngrade', true);
+                this.set('showUpgrade', false);
+                break;
+              case "personal":
+                this.set('showDowngrade', false);
+                this.set('showUpgrade', true);
+                break;
+              case "enterprise":
+                break;
+            }
           }
         },
         _handleError: function(e) {

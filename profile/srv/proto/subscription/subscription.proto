@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package go.micro.srv.profile;
+
+service SubscriptionSrv {
+    rpc Update(UpdateSubRequest) returns (UpdateSubResponse) {} // Update subscription
+}
+
+message UpdateSubRequest {
+    string stripe_id = 1;
+    string checkout_token_id = 2;
+    string sub_id = 3;
+    bool upgrade_subscription = 4;
+}
+
+message UpdateSubResponse {
+
+}
