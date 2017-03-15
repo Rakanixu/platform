@@ -198,16 +198,6 @@ func ScanDataSource(ctx context.Context, c client.Client, endpoint *datasource_p
 		return err
 	}
 
-	// Publish scan topic, crawlers should pick up message and start scanning
-	msg := c.NewPublication(
-		globals.ScanTopic,
-		endpoint,
-	)
-
-	if err := c.Publish(ctx, msg); err != nil {
-		return err
-	}
-
 	return nil
 }
 

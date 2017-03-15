@@ -8,7 +8,7 @@ import (
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	text "github.com/kazoup/platform/lib/normalization/text"
-	enrich_proto "github.com/kazoup/platform/lib/protomsg"
+	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
 	rossetelib "github.com/kazoup/platform/lib/rossete"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/client"

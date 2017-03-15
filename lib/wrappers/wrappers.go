@@ -2,6 +2,7 @@ package wrappers
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/aws/aws-sdk-go/aws"
@@ -10,6 +11,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	kazoup_context "github.com/kazoup/platform/lib/context"
 	"github.com/kazoup/platform/lib/globals"
+	announce "github.com/kazoup/platform/lib/protomsg/announce"
 	"github.com/micro/cli"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/client"
@@ -38,13 +40,34 @@ func KazoupClientWrap() client.Wrapper {
 }
 
 // Call will set X-Kazoup-Token with DB_ACCESS_TOKEN value in every internal request
-// Add here whatever is needed to add
+// After every call, we will publish an announcment to say what happened
 func (kcw *kazoupClientWrapper) Call(ctx context.Context, req client.Request, rsp interface{}, opts ...client.CallOption) error {
 	md, _ := metadata.FromContext(ctx)
 	md["X-Kazoup-Token"] = globals.DB_ACCESS_TOKEN
 	ctx = metadata.NewContext(ctx, md)
 
-	return kcw.Client.Call(ctx, req, rsp, opts...)
+	// Execute the call
+	if err := kcw.Client.Call(ctx, req, rsp, opts...); err != nil {
+		return err
+	}
+
+	b, err := json.Marshal(req.Request())
+	if err != nil {
+		return err
+	}
+
+	// Publish annuncment after handler was called
+	if err := kcw.Client.Publish(ctx, kcw.Client.NewPublication(
+		globals.AnnounceTopic,
+		&announce.AnnounceMessage{
+			Handler: fmt.Sprintf("%s.%s", req.Service(), req.Method()),
+			Data:    string(b),
+		},
+	)); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // NewHandlerWrapper wraps a service within the handler so it can be accessed by the handler itself.

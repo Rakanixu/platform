@@ -43,6 +43,9 @@ const (
 	TEXTANALYZER_SERVICE_NAME      string = NAMESPACE + ".srv.textanalyzer"
 	SENTIMENTANALYZER_SERVICE_NAME string = NAMESPACE + ".srv.sentimentanalyzer"
 
+	HANDLER_DB_CREATE              = DB_SERVICE_NAME + ".create"
+	HANDLER_DB_DELETE              = DB_SERVICE_NAME + ".delete"
+	AnnounceTopic           string = NAMESPACE + ".topic.announce"
 	FilesTopic              string = NAMESPACE + ".topic.files"
 	SlackChannelsTopic      string = NAMESPACE + ".topic.slackchannels"
 	SlackUsersTopic         string = NAMESPACE + ".topic.slackusers"

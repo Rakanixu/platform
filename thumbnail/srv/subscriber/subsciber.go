@@ -9,7 +9,7 @@ import (
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
-	enrich_proto "github.com/kazoup/platform/lib/protomsg"
+	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"log"

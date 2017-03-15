@@ -13,7 +13,7 @@ import (
 	subscriber "github.com/kazoup/platform/db/srv/subscriber/elastic"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
-	enrich_proto "github.com/kazoup/platform/lib/protomsg"
+	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	elib "gopkg.in/olivere/elastic.v5"
