@@ -46,10 +46,12 @@ func (kcw *kazoupClientWrapper) Call(ctx context.Context, req client.Request, rs
 	md["X-Kazoup-Token"] = globals.DB_ACCESS_TOKEN
 	ctx = metadata.NewContext(ctx, md)
 
+	//log.Println("BEFORE CALL", req.Service(), req.Method())
 	// Execute the call
 	if err := kcw.Client.Call(ctx, req, rsp, opts...); err != nil {
 		return err
 	}
+	/*log.Println("AFTER CALL", req.Service(), req.Method())
 
 	b, err := json.Marshal(req.Request())
 	if err != nil {
@@ -66,9 +68,22 @@ func (kcw *kazoupClientWrapper) Call(ctx context.Context, req client.Request, rs
 	)); err != nil {
 		return err
 	}
+	log.Println("AFTER PUBLISH", req.Service(), req.Method())*/
 
 	return nil
 }
+
+// KazoupClientWrap wraps client
+/*func KazoupCalltWrap() client.CallWrapper {
+	return func(fn client.CallFunc) client.CallFunc {
+		return func(ctx context.Context, addr string, req client.Request, rsp interface{}, opts client.CallOptions) error {
+			log.Println("WRAPCALL THINGY ..", ctx, addr, req, rsp)
+
+			return fn(ctx, addr, req, rsp, opts)
+		}
+	}
+
+}*/
 
 // NewHandlerWrapper wraps a service within the handler so it can be accessed by the handler itself.
 func NewHandlerWrapper(service micro.Service) server.HandlerWrapper {
@@ -154,8 +169,6 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 // quotaHandlerWrapper defines a quota wrapper based on quotaLimit per srv+user_id key
 func quotaHandlerWrapper(fn server.HandlerFunc, limiter *rate.Limiter, srv string) server.HandlerFunc {
 	return func(ctx context.Context, req server.Request, rsp interface{}) error {
-		var f error
-
 		md, ok := metadata.FromContext(ctx)
 		if !ok {
 			return errors.InternalServerError("QuotaWrapper", "Unable to retrieve metadata")
@@ -195,18 +208,14 @@ func quotaHandlerWrapper(fn server.HandlerFunc, limiter *rate.Limiter, srv strin
 			}
 		}
 
-		if quotaLimit <= 0 {
-			return fn(ctx, req, rsp)
+		if quotaLimit > 0 {
+			_, _, allowed := limiter.AllowN(fmt.Sprintf("%s-handler-%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, globals.QUOTA_TIME_LIMITER, 1)
+			if !allowed {
+				return errors.Forbidden("User Rate Limit", "User rate limit exceeded.")
+			}
 		}
 
-		_, _, allowed := limiter.AllowN(fmt.Sprintf("%s-handler-%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, globals.QUOTA_TIME_LIMITER, 1)
-		if !allowed {
-			return errors.Forbidden("User Rate Limit", "User rate limit exceeded.")
-		}
-
-		f = fn(ctx, req, rsp)
-
-		return f
+		return fn(ctx, req, rsp)
 	}
 }
 
@@ -298,6 +307,40 @@ func NewQuotaSubscriberWrapper(srvName string) server.SubscriberWrapper {
 	}
 }
 
+func afterHandlerWrapper(fn server.HandlerFunc, c client.Client) server.HandlerFunc {
+	return func(ctx context.Context, req server.Request, rsp interface{}) error {
+		if err := fn(ctx, req, rsp); err != nil {
+			return err
+		}
+
+		defer func() {
+			b, err := json.Marshal(req.Request())
+			if err != nil {
+				log.Println("ERROR afterHandlerWrapper", err)
+			}
+
+			// Publish annuncment after handler was called
+			if err := c.Publish(ctx, c.NewPublication(
+				globals.AnnounceTopic,
+				&announce.AnnounceMessage{
+					Handler: fmt.Sprintf("%s.%s", req.Service(), req.Method()),
+					Data:    string(b),
+				},
+			)); err != nil {
+				log.Println("ERROR afterHandlerWrapper publishing announcement", err)
+			}
+		}()
+
+		return nil
+	}
+}
+
+func NewAfterHandlerWrapper() server.HandlerWrapper {
+	return func(h server.HandlerFunc) server.HandlerFunc {
+		return afterHandlerWrapper(h, NewKazoupClient())
+	}
+}
+
 func NewKazoupClient() client.Client {
 	return client.NewClient()
 }
@@ -362,7 +405,8 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			//micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...),*/ KazoupClientWrap()),
 			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn)),
-			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewQuotaHandlerWrapper(sn), AuthWrapper),
+			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewAfterHandlerWrapper(), NewQuotaHandlerWrapper(sn), AuthWrapper),
+			//micro.WrapCall(KazoupCalltWrap()),
 			micro.Flags(
 				cli.StringFlag{
 					Name:   "elasticsearch_hosts",
@@ -390,7 +434,8 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			//micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...),*/ KazoupClientWrap()),
 			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn)),
-			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewQuotaHandlerWrapper(sn), AuthWrapper),
+			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewAfterHandlerWrapper(), NewQuotaHandlerWrapper(sn), AuthWrapper),
+			//micro.WrapCall(KazoupCalltWrap()),
 		)
 	} else {
 		service = micro.NewService(
@@ -402,7 +447,8 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			//micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...), */ monitor.ClientWrapper(m), KazoupClientWrap()),
 			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn)),
-			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...),*/ monitor.HandlerWrapper(m), NewQuotaHandlerWrapper(sn), AuthWrapper),
+			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...),*/ NewAfterHandlerWrapper(), monitor.HandlerWrapper(m), NewQuotaHandlerWrapper(sn), AuthWrapper),
+			//micro.WrapCall(KazoupCalltWrap()),
 		)
 	}
 

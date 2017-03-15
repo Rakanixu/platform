@@ -46,6 +46,10 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 		return errors.BadRequest("go.micro.srv.datasource.eng.Validate", err.Error())
 	}
 
+	// Request will be available on After handler wrapper
+	// Update req data with the last values
+	req.Endpoint = endpoint
+
 	if err := eng.Save(ctx, ds.Client, endpoint, endpoint.Id); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource.eng.Save", err.Error())
 	}
