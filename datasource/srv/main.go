@@ -33,6 +33,15 @@ func main() {
 
 	// Attach crawler started subscriber
 	if err := service.Server().Subscribe(
+		service.Server().NewSubscriber(globals.AnnounceTopic, &subscriber.Announce{
+			Client: service.Client(),
+			Broker: service.Server().Options().Broker,
+		})); err != nil {
+		log.Fatal(err)
+	}
+
+	// Attach crawler started subscriber
+	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(globals.CrawlerStartedTopic, &subscriber.CrawlerStarted{
 			Client: service.Client(),
 			Broker: service.Server().Options().Broker,

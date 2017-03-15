@@ -43,8 +43,12 @@ const (
 	TEXTANALYZER_SERVICE_NAME      string = NAMESPACE + ".srv.textanalyzer"
 	SENTIMENTANALYZER_SERVICE_NAME string = NAMESPACE + ".srv.sentimentanalyzer"
 
-	HANDLER_DB_CREATE              = DB_SERVICE_NAME + ".create"
-	HANDLER_DB_DELETE              = DB_SERVICE_NAME + ".delete"
+	HANDLER_DATASOURCE_CREATE  = DATASOURCE_SERVICE_NAME + ".DataSource.create"
+	HANDLER_DATASOURCE_DELETE  = DATASOURCE_SERVICE_NAME + ".DataSource.Delete"
+	HANDLER_DATASOURCE_SEARCH  = DATASOURCE_SERVICE_NAME + ".DataSource.Search"
+	HANDLER_DATASOURCE_SCAN    = DATASOURCE_SERVICE_NAME + ".DataSource.Scan"
+	HANDLER_DATASOURCE_SCANALL = DATASOURCE_SERVICE_NAME + ".DataSource.ScanAll"
+
 	AnnounceTopic           string = NAMESPACE + ".topic.announce"
 	FilesTopic              string = NAMESPACE + ".topic.files"
 	SlackChannelsTopic      string = NAMESPACE + ".topic.slackchannels"
