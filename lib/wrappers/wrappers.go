@@ -46,44 +46,8 @@ func (kcw *kazoupClientWrapper) Call(ctx context.Context, req client.Request, rs
 	md["X-Kazoup-Token"] = globals.DB_ACCESS_TOKEN
 	ctx = metadata.NewContext(ctx, md)
 
-	//log.Println("BEFORE CALL", req.Service(), req.Method())
-	// Execute the call
-	if err := kcw.Client.Call(ctx, req, rsp, opts...); err != nil {
-		return err
-	}
-	/*log.Println("AFTER CALL", req.Service(), req.Method())
-
-	b, err := json.Marshal(req.Request())
-	if err != nil {
-		return err
-	}
-
-	// Publish annuncment after handler was called
-	if err := kcw.Client.Publish(ctx, kcw.Client.NewPublication(
-		globals.AnnounceTopic,
-		&announce.AnnounceMessage{
-			Handler: fmt.Sprintf("%s.%s", req.Service(), req.Method()),
-			Data:    string(b),
-		},
-	)); err != nil {
-		return err
-	}
-	log.Println("AFTER PUBLISH", req.Service(), req.Method())*/
-
-	return nil
+	return kcw.Client.Call(ctx, req, rsp, opts...)
 }
-
-// KazoupClientWrap wraps client
-/*func KazoupCalltWrap() client.CallWrapper {
-	return func(fn client.CallFunc) client.CallFunc {
-		return func(ctx context.Context, addr string, req client.Request, rsp interface{}, opts client.CallOptions) error {
-			log.Println("WRAPCALL THINGY ..", ctx, addr, req, rsp)
-
-			return fn(ctx, addr, req, rsp, opts)
-		}
-	}
-
-}*/
 
 // NewHandlerWrapper wraps a service within the handler so it can be accessed by the handler itself.
 func NewHandlerWrapper(service micro.Service) server.HandlerWrapper {
@@ -276,16 +240,14 @@ func quotaSubscriberWrapper(fn server.SubscriberFunc, limiter *rate.Limiter, srv
 			}
 		}
 
-		if quotaLimit <= 0 {
-			return fn(ctx, msg)
-		}
-
-		_, _, allowed := limiter.AllowN(fmt.Sprintf("%s-subs-%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, globals.QUOTA_TIME_LIMITER, 1)
-		if !allowed {
-			// Quota limite reached, but due to subscribers nature, error will be lost.
-			// IDEA: pulbish to notification srv a rate limite message to let user know.
-			log.Println("USER RATE LIMIT (SUBSCRIBER)", fmt.Sprintf("%s%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)))
-			return errors.Forbidden("User Rate Limit", "User rate limit exceeded.")
+		if quotaLimit > 0 {
+			_, _, allowed := limiter.AllowN(fmt.Sprintf("%s-subs-%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, globals.QUOTA_TIME_LIMITER, 1)
+			if !allowed {
+				// Quota limite reached, but due to subscribers nature, error will be lost.
+				// IDEA: pulbish to notification srv a rate limite message to let user know.
+				log.Println("USER RATE LIMIT (SUBSCRIBER)", fmt.Sprintf("%s%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)))
+				return errors.Forbidden("User Rate Limit", "User rate limit exceeded.")
+			}
 		}
 
 		return fn(ctx, msg)
@@ -406,7 +368,6 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...),*/ KazoupClientWrap()),
 			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn)),
 			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewAfterHandlerWrapper(), NewQuotaHandlerWrapper(sn), AuthWrapper),
-			//micro.WrapCall(KazoupCalltWrap()),
 			micro.Flags(
 				cli.StringFlag{
 					Name:   "elasticsearch_hosts",
@@ -435,7 +396,6 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...),*/ KazoupClientWrap()),
 			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn)),
 			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewAfterHandlerWrapper(), NewQuotaHandlerWrapper(sn), AuthWrapper),
-			//micro.WrapCall(KazoupCalltWrap()),
 		)
 	} else {
 		service = micro.NewService(
@@ -448,7 +408,6 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...), */ monitor.ClientWrapper(m), KazoupClientWrap()),
 			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn)),
 			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...),*/ NewAfterHandlerWrapper(), monitor.HandlerWrapper(m), NewQuotaHandlerWrapper(sn), AuthWrapper),
-			//micro.WrapCall(KazoupCalltWrap()),
 		)
 	}
 
