@@ -62,11 +62,6 @@ func (ds *DataSource) Create(ctx context.Context, req *proto.CreateRequest, rsp 
 		return errors.InternalServerError("GoogleCloudStorage", err.Error())
 	}
 
-	// Scan created datasource
-	if err := eng.Scan(ctx, ds.Client); err != nil {
-		return errors.InternalServerError("go.micro.srv.datasource.eng.Scan", err.Error())
-	}
-
 	return nil
 }
 
@@ -122,49 +117,21 @@ func (ds *DataSource) Scan(ctx context.Context, req *proto.ScanRequest, rsp *pro
 		return errors.BadRequest("go.micro.srv.datasource", "id required")
 	}
 
-	// Read datasource
-	endpoint, err := engine.ReadDataSource(ctx, ds.Client, req.Id)
+	// Read datasource, acts as pre validation before After Handler
+	_, err := engine.ReadDataSource(ctx, ds.Client, req.Id)
 	if err != nil {
 		return err
-	}
-
-	// Instantiate an engine given datasource
-	eng, err := engine.NewDataSourceEngine(endpoint)
-	if err != nil {
-		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
-	}
-
-	// Start scan
-	if err := eng.Scan(ctx, ds.Client); err != nil {
-		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 
 	return nil
 }
 
-// ScanAll datasources handler, will publish to scan topic
+// ScanAll datasources handler
 // If req.DatasourcesId not empty, those specific datasources will be scanned
 // If req.DatasourcesId empty, all user datasources will be scanned
 func (ds *DataSource) ScanAll(ctx context.Context, req *proto.ScanAllRequest, rsp *proto.ScanAllResponse) error {
-	if len(req.DatasourcesId) > 0 {
-		// Scan all datasources specified on request
-		for _, v := range req.DatasourcesId {
-			if err := ds.Scan(ctx, &proto.ScanRequest{Id: v}, &proto.ScanResponse{}); err != nil {
-				log.Println("ERROR starting scan for ", v, err)
-			}
-		}
-	} else {
-		// Scan all datasources for given user
-		uID, err := globals.ParseUserIdFromContext(ctx)
-		if err != nil {
-			return err
-		}
-
-		if err := engine.ScanAllDatasources(ctx, ds.Client, uID); err != nil {
-			return errors.InternalServerError("go.micro.srv.datasource.ScanAll", err.Error())
-		}
-	}
-
+	// Aknowledge
+	// After handler will check action had happened
 	return nil
 }
 

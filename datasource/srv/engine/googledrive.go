@@ -33,11 +33,6 @@ func (g *Googledrive) Delete(ctx context.Context, c client.Client) error {
 	return DeleteDataSource(ctx, c, &g.Endpoint)
 }
 
-// Scan google drive data source
-func (g *Googledrive) Scan(ctx context.Context, c client.Client) error {
-	return ScanDataSource(ctx, c, &g.Endpoint)
-}
-
 // CreateIndeWithAlias creates a index for google drive datasource
 func (g *Googledrive) CreateIndexWithAlias(ctx context.Context, c client.Client) error {
 	return CreateIndexWithAlias(ctx, c, &g.Endpoint)

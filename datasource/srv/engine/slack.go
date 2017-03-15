@@ -33,11 +33,6 @@ func (s *Slack) Delete(ctx context.Context, c client.Client) error {
 	return DeleteDataSource(ctx, c, &s.Endpoint)
 }
 
-// Scan slack data source
-func (s *Slack) Scan(ctx context.Context, c client.Client) error {
-	return ScanDataSource(ctx, c, &s.Endpoint)
-}
-
 // CreateIndeWithAlias creates a index for local datasource
 func (s *Slack) CreateIndexWithAlias(ctx context.Context, c client.Client) error {
 	return CreateIndexWithAlias(ctx, c, &s.Endpoint)
