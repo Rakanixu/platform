@@ -35,6 +35,7 @@ type File interface {
 	SetHighlight(highlight string)
 	SetContentCategory(contentCategory string)
 	SetEntities(entities *rossetelib.RosseteEntities)
+	SetSentiment(sentiment *rossetelib.RosseteSentiment)
 }
 
 func IndexAsync(ctx context.Context, c client.Client, file File, topic, index string, notify bool) error {

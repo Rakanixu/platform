@@ -3,6 +3,7 @@ package elastic
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/cenkalti/backoff"
 	"github.com/kazoup/gabs"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/kazoup/platform/db/srv/engine"
@@ -204,13 +205,38 @@ func (e *elastic) Read(ctx context.Context, req *db.ReadRequest) (*db.ReadRespon
 
 // Update record
 func (e *elastic) Update(ctx context.Context, req *db.UpdateRequest) (*db.UpdateResponse, error) {
-	// Udate library from library is meant to do updates when data is known
-	_, err := e.Create(ctx, &db.CreateRequest{
-		Index: req.Index,
-		Type:  req.Type,
-		Id:    req.Id,
-		Data:  req.Data,
-	})
+	var err error
+	// FIXME: When working with files, a update can happen in paralel trigerring 409 on ES
+	// Backoff will helps us, ES library only accepts interface (as object) and not strings to do parcial updates,
+	// so we have to unmarshal the data string into a file, then do the Update
+	// We do not have this issue with datasources..
+	if req.Type == globals.FileType {
+		d, err := engine.TypeFactory(req.Type, req.Data)
+		if err != nil {
+			return &db.UpdateResponse{}, err
+		}
+
+		bo := backoff.NewExponentialBackOff()
+		bo.InitialInterval = 100 * time.Millisecond
+		bo.MaxInterval = time.Second
+		bo.MaxElapsedTime = time.Second * 3
+
+		if err = backoff.Retry(func() error {
+			_, err = e.Client.Update().Index(req.Index).Type(req.Type).Id(req.Id).Doc(d).Do(ctx)
+
+			return err
+		}, bo); err != nil {
+			log.Println("ERROR DB.UPDATE BACKOFF", err)
+			return &db.UpdateResponse{}, err
+		}
+	} else {
+		_, err = e.Create(ctx, &db.CreateRequest{
+			Index: req.Index,
+			Type:  req.Type,
+			Id:    req.Id,
+			Data:  req.Data,
+		})
+	}
 
 	return &db.UpdateResponse{}, err
 }

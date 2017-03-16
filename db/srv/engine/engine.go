@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"encoding/json"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	config "github.com/kazoup/platform/db/srv/proto/config"
@@ -8,6 +9,7 @@ import (
 	"github.com/kazoup/platform/lib/file"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	"log"
 )
 
 const (
@@ -136,7 +138,14 @@ func TypeFactory(typ string, data string) (interface{}, error) {
 		}
 		return file, nil
 	case Datasource:
-		return &datasource_proto.Endpoint{}, nil
+		var e *datasource_proto.Endpoint
+		if err := json.Unmarshal([]byte(data), &e); err != nil {
+			return nil, err
+		}
+
+		log.Println("CRAWLER_RUNING", e.CrawlerRunning)
+
+		return e, nil
 	}
 
 	return nil, nil

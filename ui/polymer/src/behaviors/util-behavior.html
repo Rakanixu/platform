@@ -320,7 +320,9 @@
       },
       isAnalyzeFileAvailable: function(file) {
         return ((this.isAudio(file.category) && new Date(file.opts_kazoup_file.audio_timestamp) < new Date(file.modified)) ||
+            (this.isAudio(file.category) && new Date(file.opts_kazoup_file.sentiment_analyzed_timestamp) < new Date(file.modified)) ||
             (this.isDocument(file.category) && new Date(file.opts_kazoup_file.text_analyzed_timestamp) < new Date(file.modified)) ||
+            (this.isDocument(file.category) && new Date(file.opts_kazoup_file.sentiment_analyzed_timestamp) < new Date(file.modified)) ||
             (this.isImage(file.category) && new Date(file.opts_kazoup_file.tags_timestamp) < new Date(file.modified)));
       },
       isTag: function(tags) {
@@ -331,6 +333,9 @@
       },
       isContentEntities: function(entities) {
         return (entities && entities.length && entities.length > 0);
+      },
+      isSentiment: function(sentiment) {
+        return (sentiment !== undefined && sentiment.icon !== "");
       },
       profilePicture: function(url) {
         return (url && url.length) ? url : '/src/static/unknown-pic-profile.gif';
