@@ -319,6 +319,10 @@
         return this.isBox(fileType) || this.isDropbox(fileType) || this.isOneDrive(fileType) || this.isGoogleDrive(fileType);
       },
       isAnalyzeFileAvailable: function(file) {
+        if (file.opts_kazoup_file === undefined) {
+          return true;
+        }
+
         return ((this.isAudio(file.category) && new Date(file.opts_kazoup_file.audio_timestamp) < new Date(file.modified)) ||
             (this.isAudio(file.category) && new Date(file.opts_kazoup_file.sentiment_analyzed_timestamp) < new Date(file.modified)) ||
             (this.isDocument(file.category) && new Date(file.opts_kazoup_file.text_analyzed_timestamp) < new Date(file.modified)) ||

@@ -9,7 +9,6 @@ import (
 	"github.com/kazoup/platform/lib/file"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
-	"log"
 )
 
 const (
@@ -142,8 +141,6 @@ func TypeFactory(typ string, data string) (interface{}, error) {
 		if err := json.Unmarshal([]byte(data), &e); err != nil {
 			return nil, err
 		}
-
-		log.Println("CRAWLER_RUNING", e.CrawlerRunning)
 
 		return e, nil
 	}
