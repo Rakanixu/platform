@@ -93,3 +93,7 @@ func (kf *KazoupBoxFile) SetContentCategory(contentCategory string) {
 func (kf *KazoupBoxFile) SetEntities(entities *rossetelib.RosseteEntities) {
 	kf.Entities = entities
 }
+
+func (kf *KazoupBoxFile) SetSentiment(sentiment *rossetelib.RosseteSentiment) {
+	kf.Sentiment = sentiment
+}

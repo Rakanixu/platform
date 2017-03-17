@@ -90,3 +90,7 @@ func (kf *KazoupGoogleFile) SetContentCategory(contentCategory string) {
 func (kf *KazoupGoogleFile) SetEntities(entities *rossetelib.RosseteEntities) {
 	kf.Entities = entities
 }
+
+func (kf *KazoupGoogleFile) SetSentiment(sentiment *rossetelib.RosseteSentiment) {
+	kf.Sentiment = sentiment
+}

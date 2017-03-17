@@ -94,6 +94,12 @@ var PRODUCT_QUOTAS = struct {
 				"handler":    0,
 				"subscriber": 10,
 			},
+			SENTIMENTANALYZER_SERVICE_NAME: map[string]interface{}{
+				"label":      "Sentiment extraction service",
+				"icon":       "action:description",
+				"handler":    0,
+				"subscriber": 10,
+			},
 		},
 		PRODUCT_TYPE_TEAM: map[string]map[string]interface{}{
 			DB_SERVICE_NAME: map[string]interface{}{
@@ -170,6 +176,12 @@ var PRODUCT_QUOTAS = struct {
 			},
 			TEXTANALYZER_SERVICE_NAME: map[string]interface{}{
 				"label":      "Entity extraction service",
+				"icon":       "action:description",
+				"handler":    0,
+				"subscriber": 50,
+			},
+			SENTIMENTANALYZER_SERVICE_NAME: map[string]interface{}{
+				"label":      "Sentiment extraction service",
 				"icon":       "action:description",
 				"handler":    0,
 				"subscriber": 50,

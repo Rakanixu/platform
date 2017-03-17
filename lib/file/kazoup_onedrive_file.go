@@ -90,3 +90,7 @@ func (kf *KazoupOneDriveFile) SetContentCategory(contentCategory string) {
 func (kf *KazoupOneDriveFile) SetEntities(entities *rossetelib.RosseteEntities) {
 	kf.Entities = entities
 }
+
+func (kf *KazoupOneDriveFile) SetSentiment(sentiment *rossetelib.RosseteSentiment) {
+	kf.Sentiment = sentiment
+}

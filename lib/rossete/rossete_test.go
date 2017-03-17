@@ -11,3 +11,11 @@ func TestEntities(t *testing.T) {
 		t.Errorf("Error retrieveing entities: %v", err)
 	}
 }
+
+func TestSentiment(t *testing.T) {
+	text := "Bill Murray will appear in new Ghostbusters film: Dr. Peter Venkman was spotted filming a cameo in Boston $12"
+	_, err := Sentiment(text)
+	if err != nil {
+		t.Errorf("Error retrieveing entities: %v", err)
+	}
+}

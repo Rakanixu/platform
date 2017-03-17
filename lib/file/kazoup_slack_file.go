@@ -106,3 +106,7 @@ func (kf *KazoupSlackFile) SetContentCategory(contentCategory string) {
 func (kf *KazoupSlackFile) SetEntities(entities *rossetelib.RosseteEntities) {
 	kf.Entities = entities
 }
+
+func (kf *KazoupSlackFile) SetSentiment(sentiment *rossetelib.RosseteSentiment) {
+	kf.Sentiment = sentiment
+}

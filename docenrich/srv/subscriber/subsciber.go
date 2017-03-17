@@ -126,5 +126,10 @@ func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
 		return err
 	}
 
+	// Publish the same message to SentimentEnrichTopic
+	if err := c.Publish(m.ctx, c.NewPublication(globals.SentimentEnrichTopic, m.msg)); err != nil {
+		return err
+	}
+
 	return nil
 }

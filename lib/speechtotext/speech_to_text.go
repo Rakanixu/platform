@@ -1,17 +1,17 @@
 package speechtotext
 
 import (
+	"bytes"
 	speech "cloud.google.com/go/speech/apiv1beta1"
-	//"azul3d.org/audio.v1"
 	"fmt"
-	"github.com/youpy/go-wav"
+	"github.com/golang/protobuf/proto"
+	normalize_text "github.com/kazoup/platform/lib/normalization/text"
 	"golang.org/x/net/context"
 	speechpb "google.golang.org/genproto/googleapis/cloud/speech/v1beta1"
 	longrunningpb "google.golang.org/genproto/googleapis/longrunning"
 	"io"
 	"io/ioutil"
 	"log"
-	"os"
 	"sync"
 	"time"
 )
@@ -38,8 +38,9 @@ func AsyncContent(uri string) (SpeechToText, error) {
 
 	aop, err := client.AsyncRecognize(context.Background(), &speechpb.AsyncRecognizeRequest{
 		Config: &speechpb.RecognitionConfig{
-			Encoding:   speechpb.RecognitionConfig_FLAC,
-			SampleRate: 16000,
+			Encoding:     speechpb.RecognitionConfig_LINEAR16,
+			SampleRate:   8000,
+			LanguageCode: "en-GB",
 		},
 		Audio: &speechpb.RecognitionAudio{
 			AudioSource: &speechpb.RecognitionAudio_Uri{
@@ -75,9 +76,31 @@ func AsyncContent(uri string) (SpeechToText, error) {
 		if op.GetError() != nil {
 			log.Println("Error extracting audio content: %v", err)
 		}
-
 		if op.GetResponse() != nil {
-			sttc.AudioContent = string(op.GetResponse().Value)
+			var res speechpb.AsyncRecognizeResponse
+			if err := proto.Unmarshal(op.GetResponse().Value, &res); err != nil {
+				log.Println("Error unmarshalling speech to text response: %v", err)
+			}
+
+			var buffer bytes.Buffer
+			for _, result := range res.Results {
+				for _, alt := range result.Alternatives {
+					n, err := normalize_text.Normalize(alt.Transcript)
+					if err != nil {
+						log.Println("Error normalizing audio content: %v", err)
+					}
+					_, err = buffer.WriteString(n)
+					if err != nil {
+						log.Println("Error concatenating audio content transcripts: %v", err)
+					}
+					_, err = buffer.WriteString(" ")
+					if err != nil {
+						log.Println("Error concatenating audio content transcripts: %v", err)
+					}
+				}
+			}
+
+			sttc.AudioContent = buffer.String()
 		}
 
 		wg.Done()
@@ -88,7 +111,6 @@ func AsyncContent(uri string) (SpeechToText, error) {
 	return sttc, nil
 }
 
-// ummm
 func Content(rc io.ReadCloser) (SpeechToText, error) {
 	defer rc.Close()
 
@@ -115,9 +137,6 @@ func Content(rc io.ReadCloser) (SpeechToText, error) {
 		},
 	})
 
-	log.Println("----", resp)
-	log.Println("ERR", err)
-
 	// Prints the results.
 	for _, result := range resp.Results {
 		for _, alt := range result.Alternatives {
@@ -126,25 +145,4 @@ func Content(rc io.ReadCloser) (SpeechToText, error) {
 	}
 
 	return nil, nil
-}
-
-func Wav(rc *os.File) {
-	defer rc.Close()
-	/*	infile_path := flag.String("infile", "", "wav file to read")
-		flag.Parse()
-
-		file, _ := os.Open(*infile_path)*/
-	reader := wav.NewReader(rc)
-
-	for {
-		samples, err := reader.ReadSamples()
-		if err == io.EOF {
-			break
-		}
-
-		for _, sample := range samples {
-			fmt.Printf("L/R: %d/%d\n", reader.IntValue(sample, 0), reader.IntValue(sample, 1))
-		}
-	}
-
 }

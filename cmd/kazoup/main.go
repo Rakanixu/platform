@@ -26,6 +26,7 @@ import (
 	profile "github.com/kazoup/platform/profile"
 	quota "github.com/kazoup/platform/quota"
 	search "github.com/kazoup/platform/search"
+	sentimentanalyzer "github.com/kazoup/platform/sentimentanalyzer"
 	textanalyzer "github.com/kazoup/platform/textanalyzer"
 	thumbnail "github.com/kazoup/platform/thumbnail"
 	ui "github.com/kazoup/platform/ui"
@@ -48,6 +49,7 @@ func main() {
 	app.Commands = append(app.Commands, audioenrich.Commands()...)
 	app.Commands = append(app.Commands, thumbnail.Commands()...)
 	app.Commands = append(app.Commands, textanalyzer.Commands()...)
+	app.Commands = append(app.Commands, sentimentanalyzer.Commands()...)
 	app.Commands = append(app.Commands, datasource.Commands()...)
 	app.Commands = append(app.Commands, db.Commands()...)
 	app.Commands = append(app.Commands, media.Commands()...)

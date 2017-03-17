@@ -1,9 +1,16 @@
 package speechtotext
 
 import (
-	"os"
 	"testing"
 )
+
+func TestAsyncContent(t *testing.T) {
+	// This file may not be in GCS
+	_, err := AsyncContent("gs://kazoup-audio-bucket/2e60baae5504c6ada1f1f7a561758cd0")
+	if err != nil {
+		t.Fatalf("Failed with error: %v", err)
+	}
+}
 
 func TestContent(t *testing.T) {
 	/*	f, err := os.Open("test01.flac")
@@ -16,13 +23,4 @@ func TestContent(t *testing.T) {
 			t.Fatalf("Failed with error: %v", err)
 		}*/
 
-}
-
-func TestWav(t *testing.T) {
-	f, err := os.Open("test01.wav")
-	if err != nil {
-		t.Fatal("Error reading test file")
-	}
-
-	Wav(f)
 }

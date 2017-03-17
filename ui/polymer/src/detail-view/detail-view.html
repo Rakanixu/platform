@@ -71,6 +71,11 @@
         box-shadow:-1px -1px 2px #004977;
       }
 
+      .sentiment-icon {
+        width: 40px;
+        height: 40px;
+      }
+
       iron-image {
         background-image: -webkit-linear-gradient(45deg,#efefef 25%,transparent 25%,transparent 75%,#efefef 75%,#efefef),-webkit-linear-gradient(45deg,#efefef 25%,transparent 25%,transparent 75%,#efefef 75%,#efefef);
         background-position: 0 0,10px 10px;
@@ -140,6 +145,15 @@
             </li>
           </template>
         </ul>
+      </mat-item>
+    </template>
+
+    <template is="dom-if" if="[[isSentiment(item.sentiment)]]" restamp="true">
+      <mat-item label="Sentiment"
+                class="no-ui-action overflow-visible"
+                tabindex="-1">
+        <iron-icon class="sentiment-icon"
+                   icon="kazoup:[[item.sentiment.icon]]"></iron-icon>
       </mat-item>
     </template>
 
@@ -593,6 +607,12 @@
             this.set('item.original', doc.original);
             this.set('item.tags', doc.tags);
             this.set('item.entities', (doc.entities && doc.entities.entities) ? doc.entities.entities : []);
+            if (doc.sentiment && doc.sentiment.document) {
+              this.set('item.sentiment', {
+                icon: doc.sentiment.document.label,
+                confidence: doc.sentiment.document.confidence
+              });
+            }
 
             switch(this.item.file_type) {
               case 'slack':

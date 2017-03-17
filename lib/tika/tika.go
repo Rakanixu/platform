@@ -2,6 +2,7 @@ package tika
 
 import (
 	"encoding/json"
+	normalize_text "github.com/kazoup/platform/lib/normalization/text"
 	"github.com/pkg/errors"
 	"io"
 	"io/ioutil"
@@ -48,6 +49,11 @@ func ExtractContent(rc io.ReadCloser) (Tika, error) {
 
 	if len(tc) == 0 {
 		return nil, errors.New("No result")
+	}
+
+	tc[0].XTIKAContent, err = normalize_text.Normalize(tc[0].XTIKAContent)
+	if err != nil {
+		return nil, err
 	}
 
 	return tc[0], nil
