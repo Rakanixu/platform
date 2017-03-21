@@ -22,7 +22,7 @@ func (sfs *SlackFs) DocEnrich(f file.File) chan FileMsg {
 		// OptsKazoupFile.CTagsTimestamp are not defined,
 		// Content was never extracted before
 		processDoc := false
-		if f.(*file.KazoupSlackFile).OptsKazoupFile == nil {
+		if f.(*file.KazoupSlackFile).OptsKazoupFile == nil || f.(*file.KazoupSlackFile).OptsKazoupFile.ContentTimestamp == nil {
 			processDoc = true
 		} else {
 			processDoc = f.(*file.KazoupSlackFile).OptsKazoupFile.ContentTimestamp.Before(f.(*file.KazoupSlackFile).Modified)
@@ -57,7 +57,7 @@ func (sfs *SlackFs) ImgEnrich(f file.File) chan FileMsg {
 		// OptsKazoupFile.CTagsTimestamp are not defined,
 		// Content was never extracted before
 		processImg := false
-		if f.(*file.KazoupSlackFile).OptsKazoupFile == nil {
+		if f.(*file.KazoupSlackFile).OptsKazoupFile == nil || f.(*file.KazoupSlackFile).OptsKazoupFile.TagsTimestamp == nil {
 			processImg = true
 		} else {
 			processImg = f.(*file.KazoupSlackFile).OptsKazoupFile.TagsTimestamp.Before(f.(*file.KazoupSlackFile).Modified)
@@ -92,7 +92,7 @@ func (sfs *SlackFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) cha
 		// OptsKazoupFile.CTagsTimestamp are not defined,
 		// Content was never extracted before
 		processAudio := false
-		if f.(*file.KazoupSlackFile).OptsKazoupFile == nil {
+		if f.(*file.KazoupSlackFile).OptsKazoupFile == nil || f.(*file.KazoupSlackFile).OptsKazoupFile.AudioTimestamp == nil {
 			processAudio = true
 		} else {
 			processAudio = f.(*file.KazoupSlackFile).OptsKazoupFile.AudioTimestamp.Before(f.(*file.KazoupSlackFile).Modified)
@@ -127,7 +127,7 @@ func (sfs *SlackFs) Thumbnail(f file.File, gcs *gcslib.GoogleCloudStorage) chan 
 		// OptsKazoupFile.CTagsTimestamp are not defined,
 		// Content was never extracted before
 		processThumb := false
-		if f.(*file.KazoupSlackFile).OptsKazoupFile == nil {
+		if f.(*file.KazoupSlackFile).OptsKazoupFile == nil || f.(*file.KazoupSlackFile).OptsKazoupFile.ThumbnailTimestamp == nil {
 			processThumb = true
 		} else {
 			processThumb = f.(*file.KazoupSlackFile).OptsKazoupFile.ThumbnailTimestamp.Before(f.(*file.KazoupSlackFile).Modified)

@@ -22,7 +22,7 @@ func (dfs *DropboxFs) DocEnrich(f file.File) chan FileMsg {
 		// OptsKazoupFile.TagsTimestamp are not defined,
 		// Content was never extracted before
 		processDoc := false
-		if f.(*file.KazoupDropboxFile).OptsKazoupFile == nil {
+		if f.(*file.KazoupDropboxFile).OptsKazoupFile == nil || f.(*file.KazoupDropboxFile).OptsKazoupFile.ContentTimestamp == nil {
 			processDoc = true
 		} else {
 			processDoc = f.(*file.KazoupDropboxFile).OptsKazoupFile.ContentTimestamp.Before(f.(*file.KazoupDropboxFile).Modified)
@@ -57,7 +57,7 @@ func (dfs *DropboxFs) ImgEnrich(f file.File) chan FileMsg {
 		// OptsKazoupFile.TagsTimestamp are not defined,
 		// Content was never extracted before
 		processImg := false
-		if f.(*file.KazoupDropboxFile).OptsKazoupFile == nil {
+		if f.(*file.KazoupDropboxFile).OptsKazoupFile == nil || f.(*file.KazoupDropboxFile).OptsKazoupFile.TagsTimestamp == nil {
 			processImg = true
 		} else {
 			processImg = f.(*file.KazoupDropboxFile).OptsKazoupFile.TagsTimestamp.Before(f.(*file.KazoupDropboxFile).Modified)
@@ -92,7 +92,7 @@ func (dfs *DropboxFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) c
 		// OptsKazoupFile.CTagsTimestamp are not defined,
 		// Content was never extracted before
 		processAudio := false
-		if f.(*file.KazoupDropboxFile).OptsKazoupFile == nil {
+		if f.(*file.KazoupDropboxFile).OptsKazoupFile == nil || f.(*file.KazoupDropboxFile).OptsKazoupFile.AudioTimestamp == nil {
 			processAudio = true
 		} else {
 			processAudio = f.(*file.KazoupDropboxFile).OptsKazoupFile.AudioTimestamp.Before(f.(*file.KazoupDropboxFile).Modified)
@@ -127,7 +127,7 @@ func (dfs *DropboxFs) Thumbnail(f file.File, gcs *gcslib.GoogleCloudStorage) cha
 		// OptsKazoupFile.TagsTimestamp are not defined,
 		// Content was never extracted before
 		processImg := false
-		if f.(*file.KazoupDropboxFile).OptsKazoupFile == nil {
+		if f.(*file.KazoupDropboxFile).OptsKazoupFile == nil || f.(*file.KazoupDropboxFile).OptsKazoupFile.ThumbnailTimestamp == nil {
 			processImg = true
 		} else {
 			processImg = f.(*file.KazoupDropboxFile).OptsKazoupFile.ThumbnailTimestamp.Before(f.(*file.KazoupDropboxFile).Modified)

@@ -217,8 +217,8 @@ func (e *elastic) Update(ctx context.Context, req *db.UpdateRequest) (*db.Update
 		}
 
 		bo := backoff.NewExponentialBackOff()
-		bo.InitialInterval = 100 * time.Millisecond
-		bo.MaxInterval = time.Second
+		bo.InitialInterval = 200 * time.Millisecond
+		bo.MaxInterval = time.Second * 2
 		bo.MaxElapsedTime = time.Second * 3
 
 		if err = backoff.Retry(func() error {
@@ -226,7 +226,6 @@ func (e *elastic) Update(ctx context.Context, req *db.UpdateRequest) (*db.Update
 
 			return err
 		}, bo); err != nil {
-			log.Println("ERROR DB.UPDATE BACKOFF", err)
 			return &db.UpdateResponse{}, err
 		}
 	} else {

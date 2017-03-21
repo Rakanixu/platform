@@ -161,12 +161,13 @@ func (sfs *SlackFs) processImage(f *file.KazoupSlackFile) (file.File, error) {
 		return nil, err
 	}
 
+	n := time.Now()
 	if f.OptsKazoupFile == nil {
 		f.OptsKazoupFile = &file.OptsKazoupFile{
-			TagsTimestamp: time.Now(),
+			TagsTimestamp: &n,
 		}
 	} else {
-		f.OptsKazoupFile.TagsTimestamp = time.Now()
+		f.OptsKazoupFile.TagsTimestamp = &n
 	}
 
 	return f, nil
@@ -191,12 +192,14 @@ func (sfs *SlackFs) processDocument(f *file.KazoupSlackFile) (file.File, error) 
 	}
 
 	f.Content = t.Content()
+
+	n := time.Now()
 	if f.OptsKazoupFile == nil {
 		f.OptsKazoupFile = &file.OptsKazoupFile{
-			ContentTimestamp: time.Now(),
+			ContentTimestamp: &n,
 		}
 	} else {
-		f.OptsKazoupFile.ContentTimestamp = time.Now()
+		f.OptsKazoupFile.ContentTimestamp = &n
 	}
 
 	return f, nil
@@ -225,12 +228,14 @@ func (sfs *SlackFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.KazoupS
 	}
 
 	f.Content = stt.Content()
+
+	n := time.Now()
 	if f.OptsKazoupFile == nil {
 		f.OptsKazoupFile = &file.OptsKazoupFile{
-			AudioTimestamp: time.Now(),
+			AudioTimestamp: &n,
 		}
 	} else {
-		f.OptsKazoupFile.AudioTimestamp = time.Now()
+		f.OptsKazoupFile.AudioTimestamp = &n
 	}
 
 	return f, nil
@@ -276,12 +281,13 @@ func (sfs *SlackFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *file.Kaz
 		return nil
 	}, backoff.NewExponentialBackOff())
 
+	n := time.Now()
 	if f.OptsKazoupFile == nil {
 		f.OptsKazoupFile = &file.OptsKazoupFile{
-			ThumbnailTimestamp: time.Now(),
+			ThumbnailTimestamp: &n,
 		}
 	} else {
-		f.OptsKazoupFile.ThumbnailTimestamp = time.Now()
+		f.OptsKazoupFile.ThumbnailTimestamp = &n
 	}
 
 	return f, nil

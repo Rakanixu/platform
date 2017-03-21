@@ -78,7 +78,7 @@ func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
 	processTextAnalyzer := false
 	tm := f.GetOptsTimestamps()
 
-	if tm == nil {
+	if tm == nil || tm.TextAnalyzedTimestamp == nil {
 		processTextAnalyzer = true
 	} else {
 		processTextAnalyzer = tm.TextAnalyzedTimestamp.Before(f.GetModifiedTime())
@@ -115,12 +115,13 @@ func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
 				}
 			}
 
+			n := time.Now()
 			if tm == nil {
 				f.SetOptsTimestamps(&file.OptsKazoupFile{
-					TextAnalyzedTimestamp: time.Now(),
+					TextAnalyzedTimestamp: &n,
 				})
 			} else {
-				tm.TextAnalyzedTimestamp = time.Now()
+				tm.TextAnalyzedTimestamp = &n
 				f.SetOptsTimestamps(tm)
 			}
 		}

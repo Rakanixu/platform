@@ -53,7 +53,7 @@ func retrieveFiles(ctx context.Context, c client.Client, ids []string, index str
 	}
 
 	for _, v := range r {
-		if v.OptsKazoupFile == nil || v.OptsKazoupFile.ContentTimestamp.Before(v.Modified) {
+		if v.OptsKazoupFile == nil || v.OptsKazoupFile.ContentTimestamp == nil || v.OptsKazoupFile.ContentTimestamp.Before(v.Modified) {
 			ids = append(ids, v.ID)
 		}
 	}

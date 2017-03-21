@@ -71,7 +71,7 @@ func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
 	sentimentTextAnalyzer := false
 	tm := f.GetOptsTimestamps()
 
-	if tm == nil {
+	if tm == nil || tm.SentimentAnalyzedTimestamp == nil {
 		sentimentTextAnalyzer = true
 	} else {
 		sentimentTextAnalyzer = tm.SentimentAnalyzedTimestamp.Before(f.GetModifiedTime())
@@ -101,12 +101,13 @@ func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
 			}
 			f.SetSentiment(s)
 
+			n := time.Now()
 			if tm == nil {
 				f.SetOptsTimestamps(&file.OptsKazoupFile{
-					SentimentAnalyzedTimestamp: time.Now(),
+					SentimentAnalyzedTimestamp: &n,
 				})
 			} else {
-				tm.SentimentAnalyzedTimestamp = time.Now()
+				tm.SentimentAnalyzedTimestamp = &n
 				f.SetOptsTimestamps(tm)
 			}
 
