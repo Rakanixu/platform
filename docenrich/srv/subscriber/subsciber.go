@@ -123,11 +123,13 @@ func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
 
 	// Publish the same message to ExtractEntitiesTopic
 	if err := c.Publish(m.ctx, c.NewPublication(globals.ExtractEntitiesTopic, m.msg)); err != nil {
+		log.Println("Error publishing ExtractEntitiesTopic", err)
 		return err
 	}
 
 	// Publish the same message to SentimentEnrichTopic
 	if err := c.Publish(m.ctx, c.NewPublication(globals.SentimentEnrichTopic, m.msg)); err != nil {
+		log.Println("Error publishing SentimentEnrichTopic", err)
 		return err
 	}
 

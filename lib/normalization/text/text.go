@@ -4,14 +4,10 @@ import (
 	"bytes"
 	"golang.org/x/text/transform"
 	"io"
+	"regexp"
 	"strings"
 	"unicode/utf8"
 )
-
-type skipper struct {
-	pos int
-	cnt int
-}
 
 func NormalizeBytes(b []byte) (string, error) {
 	skipped := transform.NewReader(bytes.NewReader(b), newSkipper(5))
@@ -35,6 +31,38 @@ func Normalize(s string) (string, error) {
 	}
 
 	return buf.String(), nil
+}
+
+func ReplaceTabs(s string) (string, error) {
+	t, err := regexp.Compile("\t")
+	if err != nil {
+		return "", err
+	}
+
+	return t.ReplaceAllString(s, " "), nil
+}
+
+func ReplaceNewLines(s string) (string, error) {
+	nl, err := regexp.Compile("\n")
+	if err != nil {
+		return "", err
+	}
+
+	return nl.ReplaceAllString(s, " "), nil
+}
+
+func ReplaceDoubleQuotes(s string) (string, error) {
+	q, err := regexp.Compile("\"")
+	if err != nil {
+		return "", err
+	}
+
+	return q.ReplaceAllString(s, "'"), nil
+}
+
+type skipper struct {
+	pos int
+	cnt int
 }
 
 // NewSkipper creates a text transformer which will remove the rune at pos

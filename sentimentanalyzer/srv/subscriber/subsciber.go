@@ -7,14 +7,13 @@ import (
 	db_helper "github.com/kazoup/platform/lib/dbhelper"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	text "github.com/kazoup/platform/lib/normalization/text"
 	enrich_proto "github.com/kazoup/platform/lib/protomsg"
 	rossetelib "github.com/kazoup/platform/lib/rossete"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
-	"github.com/kennygrant/sanitize"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"log"
-	"regexp"
 	"time"
 )
 
@@ -81,16 +80,22 @@ func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
 	if sentimentTextAnalyzer {
 		// Apply rossete sentiment
 		if len(f.GetContent()) > 0 {
-			nl, err := regexp.Compile("\n")
+			// Sanitaze content
+			// We do not save sanitazed because if we want to display, it maintains some format
+			t, err := text.ReplaceDoubleQuotes(f.GetContent())
 			if err != nil {
 				return err
 			}
-			q, err := regexp.Compile("\"")
+			t, err = text.ReplaceTabs(t)
+			if err != nil {
+				return err
+			}
+			t, err = text.ReplaceNewLines(t)
 			if err != nil {
 				return err
 			}
 
-			s, err := rossetelib.Sentiment(q.ReplaceAllString(nl.ReplaceAllString(sanitize.HTML(f.GetContent()), " "), ""))
+			s, err := rossetelib.Sentiment(t)
 			if err != nil {
 				return err
 			}
