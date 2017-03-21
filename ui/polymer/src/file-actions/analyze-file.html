@@ -41,6 +41,17 @@
                params="[[rpcAnalyzeFileParams]]"
                headers="[[headers]]"></iron-ajax>
 
+    <iron-ajax id="rpcSentiment"
+               method="POST"
+               content-type="application/json"
+               url="[[endpoints.endpoint]]"
+               handle-as="json"
+               on-error="_handleError"
+               on-response="_handleSentiment"
+               params="[[rpcSentimentParams]]"
+               headers="[[headers]]"></iron-ajax>
+
+
   </template>
 
   <script>
@@ -79,6 +90,21 @@
                 }
               };
             }
+          },
+          rpcSentimentParams: {
+            type: Object,
+            notify: false,
+            value: function() {
+              return {
+                service: window.Endpoints.srvs.sentimentanalyzer.srv,
+                method: window.Endpoints.srvs.sentimentanalyzer.create,
+                request: {
+                  id: '',       // Datasource ID or File ID
+                  index: '',    // Datasource index or the index the file belongs to
+                  type: 'file'  // Datasource or File types
+                }
+              };
+            }
           }
         },
         openAnalyzeConfirmationDialog: function(e) {
@@ -114,14 +140,34 @@
           this.rpcAnalyzeFileParams.request.index = this.item.index;
           this.rpcAnalyzeFileParams.request.type = 'file'; // We always hit the single file analyze from this element
 
+          // SentimentAnalyzer.Create does not accept type (as only apply to single file), will be just omited by protobufs
+          this.rpcSentimentParams.request.id = this.item.id;
+          this.rpcSentimentParams.request.index = this.item.index;
+
           this.$.rpcAnalyzeFile.body = this.rpcAnalyzeFileParams;
           this.$.rpcAnalyzeFile.generateRequest();
+
+          this.$.rpcSentiment.body = this.rpcSentimentParams;
+          this.$.rpcSentiment.generateRequest();
         },
         _handleAnalyzeFile: function(e) {
           if (e.detail.response) {
             this.closeAnalyzeConfirmationDialog();
 
-            var text = 'Analyze task for ' +  this.item.name + ' was scheduled successfully.';;
+            var text = 'Analyze task for ' +  this.item.name + ' was scheduled successfully.';
+            if (e.detail.response.info && e.detail.response.info.length > 0) {
+              text = e.detail.response.info;
+            }
+
+            this.$.toast.text = text;
+            this.$.toast.show();
+          }
+        },
+        _handleSentiment: function(e) {
+          if (e.detail.response) {
+            this.closeAnalyzeConfirmationDialog();
+
+            var text = 'Analyze task for ' +  this.item.name + ' was scheduled successfully.';
             if (e.detail.response.info && e.detail.response.info.length > 0) {
               text = e.detail.response.info;
             }

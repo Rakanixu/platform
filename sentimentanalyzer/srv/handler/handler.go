@@ -50,7 +50,7 @@ func (sa *SentimentAnalyzer) Create(ctx context.Context, req *proto.CreateReques
 	}
 
 	go func() {
-		if err := sa.Client.Publish(ctx, sa.Client.NewPublication(globals.ExtractEntitiesTopic, &enrich_proto.EnrichMessage{
+		if err := sa.Client.Publish(ctx, sa.Client.NewPublication(globals.SentimentEnrichTopic, &enrich_proto.EnrichMessage{
 			Index:  req.Index,
 			Id:     req.Id,
 			UserId: uID,

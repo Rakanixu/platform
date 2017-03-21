@@ -241,7 +241,7 @@ func (ofs *OneDriveFs) processDocument(f *file.KazoupOneDriveFile) (file.File, e
 		return nil, err
 	}
 
-	t, err := tika.ExtractContent(rc)
+	t, err := tika.ExtractPlainContent(rc)
 	if err != nil {
 		return nil, err
 	}

@@ -1,0 +1,46 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: sentimentanalyzer-srv
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  template:
+    metadata:
+      labels:
+        app: sentimentanalyzer-srv
+    spec:
+      containers:
+      - name: sentimentanalyzer-srv
+        command: [
+                  "/srv",
+                  "--registry=kubernetes",
+                  "--server_address=0.0.0.0:9090",
+                  "--broker=nats",
+                  "--broker_address=nats:4222",
+                  "--transport=tcp",
+                  ]
+        image: eu.gcr.io/desktop-1470249894548/sentimentanalyzer-srv:latest
+        env:
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value:  "/google-cloud-service-account/google-cloud-service-account.json"
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9090
+          name: sanalyzer-port
+        - containerPort: 10001
+          name: broker-port
+        volumeMounts:
+        - name: google-cloud-service-account
+          mountPath: "/google-cloud-service-account"
+          readOnly: true
+        - name: aws-credentials
+          mountPath: "/root/.aws"
+          readOnly: true
+      volumes:
+      - name: google-cloud-service-account
+        secret:
+          secretName: "google-cloud-service-account"
+      - name: aws-credentials
+        secret:
+          secretName: "aws-credentials"

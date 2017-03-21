@@ -19,7 +19,7 @@ find * -type d -maxdepth 1 -print | while read dir; do
 
  	
 	# push docker image
-	sudo /opt/google-cloud-sdk/bin/gcloud docker push eu.gcr.io/${PROJECT_NAME}/$IMAGE
+	sudo /opt/google-cloud-sdk/bin/gcloud docker -- push eu.gcr.io/${PROJECT_NAME}/$IMAGE
 	if [ $? -ne 0 ]; then
    		 echo "Could not push the image"
       exit 1;
