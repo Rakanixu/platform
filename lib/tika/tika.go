@@ -80,8 +80,13 @@ func ExtractPlainContent(rc io.ReadCloser) (Tika, error) {
 		return nil, err
 	}
 
+	c, err := normalize_text.NormalizeBytes(b)
+	if err != nil {
+		return nil, err
+	}
+
 	t := &TikaContent{
-		XTIKAContent: string(b),
+		XTIKAContent: c,
 	}
 
 	return t, nil

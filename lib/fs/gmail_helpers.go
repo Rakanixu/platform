@@ -181,7 +181,7 @@ func (gfs *GmailFs) processDocument(f *file.KazoupGmailFile) (file.File, error) 
 		return nil, err
 	}
 
-	t, err := tika.ExtractContent(rc)
+	t, err := tika.ExtractPlainContent(rc)
 	if err != nil {
 		return nil, err
 	}

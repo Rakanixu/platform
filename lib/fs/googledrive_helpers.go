@@ -153,7 +153,7 @@ func (gfs *GoogleDriveFs) processDocument(f *file.KazoupGoogleFile) (file.File, 
 		return nil, err
 	}
 
-	t, err := tika.ExtractContent(rc)
+	t, err := tika.ExtractPlainContent(rc)
 	if err != nil {
 		return nil, err
 	}
