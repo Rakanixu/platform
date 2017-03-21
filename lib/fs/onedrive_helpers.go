@@ -217,12 +217,13 @@ func (ofs *OneDriveFs) processImage(f *file.KazoupOneDriveFile) (file.File, erro
 		return nil, err
 	}
 
+	n := time.Now()
 	if f.OptsKazoupFile == nil {
 		f.OptsKazoupFile = &file.OptsKazoupFile{
-			TagsTimestamp: time.Now(),
+			TagsTimestamp: &n,
 		}
 	} else {
-		f.OptsKazoupFile.TagsTimestamp = time.Now()
+		f.OptsKazoupFile.TagsTimestamp = &n
 	}
 
 	return f, nil
@@ -247,12 +248,14 @@ func (ofs *OneDriveFs) processDocument(f *file.KazoupOneDriveFile) (file.File, e
 	}
 
 	f.Content = t.Content()
+
+	n := time.Now()
 	if f.OptsKazoupFile == nil {
 		f.OptsKazoupFile = &file.OptsKazoupFile{
-			ContentTimestamp: time.Now(),
+			ContentTimestamp: &n,
 		}
 	} else {
-		f.OptsKazoupFile.ContentTimestamp = time.Now()
+		f.OptsKazoupFile.ContentTimestamp = &n
 	}
 
 	return f, nil
@@ -281,12 +284,14 @@ func (ofs *OneDriveFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.Kazo
 	}
 
 	f.Content = stt.Content()
+
+	n := time.Now()
 	if f.OptsKazoupFile == nil {
 		f.OptsKazoupFile = &file.OptsKazoupFile{
-			AudioTimestamp: time.Now(),
+			AudioTimestamp: &n,
 		}
 	} else {
-		f.OptsKazoupFile.AudioTimestamp = time.Now()
+		f.OptsKazoupFile.AudioTimestamp = &n
 	}
 
 	return f, nil
@@ -331,12 +336,13 @@ func (ofs *OneDriveFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *file.
 		return nil
 	}, backoff.NewExponentialBackOff())
 
+	n := time.Now()
 	if f.OptsKazoupFile == nil {
 		f.OptsKazoupFile = &file.OptsKazoupFile{
-			ThumbnailTimestamp: time.Now(),
+			ThumbnailTimestamp: &n,
 		}
 	} else {
-		f.OptsKazoupFile.ThumbnailTimestamp = time.Now()
+		f.OptsKazoupFile.ThumbnailTimestamp = &n
 	}
 
 	return f, nil

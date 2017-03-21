@@ -22,7 +22,7 @@ func (gfs *GmailFs) DocEnrich(f file.File) chan FileMsg {
 		// OptsKazoupFile.CTagsTimestamp are not defined,
 		// Content was never extracted before
 		processDoc := false
-		if f.(*file.KazoupGmailFile).OptsKazoupFile == nil {
+		if f.(*file.KazoupGmailFile).OptsKazoupFile == nil || f.(*file.KazoupGmailFile).OptsKazoupFile.ContentTimestamp == nil {
 			processDoc = true
 		} else {
 			processDoc = f.(*file.KazoupGmailFile).OptsKazoupFile.ContentTimestamp.Before(f.(*file.KazoupGmailFile).Modified)
@@ -57,7 +57,7 @@ func (gfs *GmailFs) ImgEnrich(f file.File) chan FileMsg {
 		// OptsKazoupFile.CTagsTimestamp are not defined,
 		// Content was never extracted before
 		processImg := false
-		if f.(*file.KazoupGmailFile).OptsKazoupFile == nil {
+		if f.(*file.KazoupGmailFile).OptsKazoupFile == nil || f.(*file.KazoupGmailFile).OptsKazoupFile.TagsTimestamp == nil {
 			processImg = true
 		} else {
 			processImg = f.(*file.KazoupGmailFile).OptsKazoupFile.TagsTimestamp.Before(f.(*file.KazoupGmailFile).Modified)
@@ -92,7 +92,7 @@ func (gfs *GmailFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) cha
 		// OptsKazoupFile.CTagsTimestamp are not defined,
 		// Content was never extracted before
 		processAudio := false
-		if f.(*file.KazoupGmailFile).OptsKazoupFile == nil {
+		if f.(*file.KazoupGmailFile).OptsKazoupFile == nil || f.(*file.KazoupGmailFile).OptsKazoupFile.AudioTimestamp == nil {
 			processAudio = true
 		} else {
 			processAudio = f.(*file.KazoupGmailFile).OptsKazoupFile.AudioTimestamp.Before(f.(*file.KazoupGmailFile).Modified)
@@ -127,7 +127,7 @@ func (gfs *GmailFs) Thumbnail(f file.File, gcs *gcslib.GoogleCloudStorage) chan 
 		// OptsKazoupFile.CTagsTimestamp are not defined,
 		// Content was never extracted before
 		processThumbnail := false
-		if f.(*file.KazoupGmailFile).OptsKazoupFile == nil {
+		if f.(*file.KazoupGmailFile).OptsKazoupFile == nil || f.(*file.KazoupGmailFile).OptsKazoupFile.ThumbnailTimestamp == nil {
 			processThumbnail = true
 		} else {
 			processThumbnail = f.(*file.KazoupGmailFile).OptsKazoupFile.ThumbnailTimestamp.Before(f.(*file.KazoupGmailFile).Modified)

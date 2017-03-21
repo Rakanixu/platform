@@ -22,7 +22,7 @@ func (gfs *GoogleDriveFs) DocEnrich(f file.File) chan FileMsg {
 		// OptsKazoupFile.TagsTimestamp are not defined,
 		// Content was never extracted before
 		processDoc := false
-		if f.(*file.KazoupGoogleFile).OptsKazoupFile == nil {
+		if f.(*file.KazoupGoogleFile).OptsKazoupFile == nil || f.(*file.KazoupGoogleFile).OptsKazoupFile.ContentTimestamp == nil {
 			processDoc = true
 		} else {
 			processDoc = f.(*file.KazoupGoogleFile).OptsKazoupFile.ContentTimestamp.Before(f.(*file.KazoupGoogleFile).Modified)
@@ -57,7 +57,7 @@ func (gfs *GoogleDriveFs) ImgEnrich(f file.File) chan FileMsg {
 		// OptsKazoupFile.TagsTimestamp are not defined,
 		// Content was never extracted before
 		processImg := false
-		if f.(*file.KazoupGoogleFile).OptsKazoupFile == nil {
+		if f.(*file.KazoupGoogleFile).OptsKazoupFile == nil || f.(*file.KazoupGoogleFile).OptsKazoupFile.TagsTimestamp == nil {
 			processImg = true
 		} else {
 			processImg = f.(*file.KazoupGoogleFile).OptsKazoupFile.TagsTimestamp.Before(f.(*file.KazoupGoogleFile).Modified)
@@ -92,7 +92,7 @@ func (gfs *GoogleDriveFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorag
 		// OptsKazoupFile.CTagsTimestamp are not defined,
 		// Content was never extracted before
 		processAudio := false
-		if f.(*file.KazoupGoogleFile).OptsKazoupFile == nil {
+		if f.(*file.KazoupGoogleFile).OptsKazoupFile == nil || f.(*file.KazoupGoogleFile).OptsKazoupFile.AudioTimestamp == nil {
 			processAudio = true
 		} else {
 			processAudio = f.(*file.KazoupGoogleFile).OptsKazoupFile.AudioTimestamp.Before(f.(*file.KazoupGoogleFile).Modified)
@@ -127,7 +127,7 @@ func (gfs *GoogleDriveFs) Thumbnail(f file.File, gcs *gcslib.GoogleCloudStorage)
 		// OptsKazoupFile.TagsTimestamp are not defined,
 		// Content was never extracted before
 		processThumbnail := false
-		if f.(*file.KazoupGoogleFile).OptsKazoupFile == nil {
+		if f.(*file.KazoupGoogleFile).OptsKazoupFile == nil || f.(*file.KazoupGoogleFile).OptsKazoupFile.ThumbnailTimestamp == nil {
 			processThumbnail = true
 		} else {
 			processThumbnail = f.(*file.KazoupGoogleFile).OptsKazoupFile.ThumbnailTimestamp.Before(f.(*file.KazoupGoogleFile).Modified)

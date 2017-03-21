@@ -124,12 +124,13 @@ func (bfs *BoxFs) processImage(f *file.KazoupBoxFile) (file.File, error) {
 		return nil, err
 	}
 
+	n := time.Now()
 	if f.OptsKazoupFile == nil {
 		f.OptsKazoupFile = &file.OptsKazoupFile{
-			TagsTimestamp: time.Now(),
+			TagsTimestamp: &n,
 		}
 	} else {
-		f.OptsKazoupFile.TagsTimestamp = time.Now()
+		f.OptsKazoupFile.TagsTimestamp = &n
 	}
 
 	return f, nil
@@ -174,12 +175,13 @@ func (bfs *BoxFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *file.Kazou
 		return nil
 	}, backoff.NewExponentialBackOff())
 
+	n := time.Now()
 	if f.OptsKazoupFile == nil {
 		f.OptsKazoupFile = &file.OptsKazoupFile{
-			ThumbnailTimestamp: time.Now(),
+			ThumbnailTimestamp: &n,
 		}
 	} else {
-		f.OptsKazoupFile.ThumbnailTimestamp = time.Now()
+		f.OptsKazoupFile.ThumbnailTimestamp = &n
 	}
 
 	return f, nil
@@ -204,12 +206,14 @@ func (bfs *BoxFs) processDocument(f *file.KazoupBoxFile) (file.File, error) {
 	}
 
 	f.Content = t.Content()
+
+	n := time.Now()
 	if f.OptsKazoupFile == nil {
 		f.OptsKazoupFile = &file.OptsKazoupFile{
-			ContentTimestamp: time.Now(),
+			ContentTimestamp: &n,
 		}
 	} else {
-		f.OptsKazoupFile.ContentTimestamp = time.Now()
+		f.OptsKazoupFile.ContentTimestamp = &n
 	}
 
 	return f, nil
@@ -238,12 +242,14 @@ func (bfs *BoxFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.KazoupBox
 	}
 
 	f.Content = stt.Content()
+
+	n := time.Now()
 	if f.OptsKazoupFile == nil {
 		f.OptsKazoupFile = &file.OptsKazoupFile{
-			AudioTimestamp: time.Now(),
+			AudioTimestamp: &n,
 		}
 	} else {
-		f.OptsKazoupFile.AudioTimestamp = time.Now()
+		f.OptsKazoupFile.AudioTimestamp = &n
 	}
 
 	return f, nil

@@ -22,7 +22,7 @@ func (ofs *OneDriveFs) DocEnrich(f file.File) chan FileMsg {
 		// OptsKazoupFile.CTagsTimestamp are not defined,
 		// Content was never extracted before
 		processDoc := false
-		if f.(*file.KazoupOneDriveFile).OptsKazoupFile == nil {
+		if f.(*file.KazoupOneDriveFile).OptsKazoupFile == nil || f.(*file.KazoupOneDriveFile).OptsKazoupFile.ContentTimestamp == nil {
 			processDoc = true
 		} else {
 			processDoc = f.(*file.KazoupOneDriveFile).OptsKazoupFile.ContentTimestamp.Before(f.(*file.KazoupOneDriveFile).Modified)
@@ -57,7 +57,7 @@ func (ofs *OneDriveFs) ImgEnrich(f file.File) chan FileMsg {
 		// OptsKazoupFile.CTagsTimestamp are not defined,
 		// Content was never extracted before
 		processImg := false
-		if f.(*file.KazoupOneDriveFile).OptsKazoupFile == nil {
+		if f.(*file.KazoupOneDriveFile).OptsKazoupFile == nil || f.(*file.KazoupOneDriveFile).OptsKazoupFile.TagsTimestamp == nil {
 			processImg = true
 		} else {
 			processImg = f.(*file.KazoupOneDriveFile).OptsKazoupFile.TagsTimestamp.Before(f.(*file.KazoupOneDriveFile).Modified)
@@ -92,7 +92,7 @@ func (ofs *OneDriveFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) 
 		// OptsKazoupFile.CTagsTimestamp are not defined,
 		// Content was never extracted before
 		processAudio := false
-		if f.(*file.KazoupOneDriveFile).OptsKazoupFile == nil {
+		if f.(*file.KazoupOneDriveFile).OptsKazoupFile == nil || f.(*file.KazoupOneDriveFile).OptsKazoupFile.AudioTimestamp == nil {
 			processAudio = true
 		} else {
 			processAudio = f.(*file.KazoupOneDriveFile).OptsKazoupFile.AudioTimestamp.Before(f.(*file.KazoupOneDriveFile).Modified)
@@ -127,7 +127,7 @@ func (ofs *OneDriveFs) Thumbnail(f file.File, gcs *gcslib.GoogleCloudStorage) ch
 		// OptsKazoupFile.CTagsTimestamp are not defined,
 		// Content was never extracted before
 		processThumbnail := false
-		if f.(*file.KazoupOneDriveFile).OptsKazoupFile == nil {
+		if f.(*file.KazoupOneDriveFile).OptsKazoupFile == nil || f.(*file.KazoupOneDriveFile).OptsKazoupFile.ThumbnailTimestamp == nil {
 			processThumbnail = true
 		} else {
 			processThumbnail = f.(*file.KazoupOneDriveFile).OptsKazoupFile.ThumbnailTimestamp.Before(f.(*file.KazoupOneDriveFile).Modified)

@@ -7,14 +7,13 @@ import (
 	db_helper "github.com/kazoup/platform/lib/dbhelper"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	text "github.com/kazoup/platform/lib/normalization/text"
 	enrich_proto "github.com/kazoup/platform/lib/protomsg"
 	rossetelib "github.com/kazoup/platform/lib/rossete"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
-	"github.com/kennygrant/sanitize"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"log"
-	"regexp"
 	"strings"
 	"time"
 )
@@ -79,7 +78,7 @@ func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
 	processTextAnalyzer := false
 	tm := f.GetOptsTimestamps()
 
-	if tm == nil {
+	if tm == nil || tm.TextAnalyzedTimestamp == nil {
 		processTextAnalyzer = true
 	} else {
 		processTextAnalyzer = tm.TextAnalyzedTimestamp.Before(f.GetModifiedTime())
@@ -88,16 +87,22 @@ func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
 	if processTextAnalyzer {
 		// Apply rossete
 		if len(f.GetContent()) > 0 {
-			nl, err := regexp.Compile("\n")
+			// Sanitaze content
+			// We do not save sanitazed because if we want to display, it maintains some format
+			t, err := text.ReplaceDoubleQuotes(f.GetContent())
 			if err != nil {
 				return err
 			}
-			q, err := regexp.Compile("\"")
+			t, err = text.ReplaceTabs(t)
+			if err != nil {
+				return err
+			}
+			t, err = text.ReplaceNewLines(t)
 			if err != nil {
 				return err
 			}
 
-			e, err := rossetelib.Entities(q.ReplaceAllString(nl.ReplaceAllString(sanitize.HTML(f.GetContent()), " "), ""))
+			e, err := rossetelib.Entities(t)
 			if err != nil {
 				return err
 			}
@@ -110,12 +115,13 @@ func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
 				}
 			}
 
+			n := time.Now()
 			if tm == nil {
 				f.SetOptsTimestamps(&file.OptsKazoupFile{
-					TextAnalyzedTimestamp: time.Now(),
+					TextAnalyzedTimestamp: &n,
 				})
 			} else {
-				tm.TextAnalyzedTimestamp = time.Now()
+				tm.TextAnalyzedTimestamp = &n
 				f.SetOptsTimestamps(tm)
 			}
 		}

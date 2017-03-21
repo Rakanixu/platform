@@ -22,7 +22,7 @@ func (bfs *BoxFs) DocEnrich(f file.File) chan FileMsg {
 		// OptsKazoupFile.CTagsTimestamp are not defined,
 		// Content was never extracted before
 		processDoc := false
-		if f.(*file.KazoupBoxFile).OptsKazoupFile == nil {
+		if f.(*file.KazoupBoxFile).OptsKazoupFile == nil || f.(*file.KazoupBoxFile).OptsKazoupFile.ContentTimestamp == nil {
 			processDoc = true
 		} else {
 			processDoc = f.(*file.KazoupBoxFile).OptsKazoupFile.ContentTimestamp.Before(f.(*file.KazoupBoxFile).Modified)
@@ -57,7 +57,7 @@ func (bfs *BoxFs) ImgEnrich(f file.File) chan FileMsg {
 		// OptsKazoupFile.CTagsTimestamp are not defined,
 		// Content was never extracted before
 		processImg := false
-		if f.(*file.KazoupBoxFile).OptsKazoupFile == nil {
+		if f.(*file.KazoupBoxFile).OptsKazoupFile == nil || f.(*file.KazoupBoxFile).OptsKazoupFile.TagsTimestamp == nil {
 			processImg = true
 		} else {
 			processImg = f.(*file.KazoupBoxFile).OptsKazoupFile.TagsTimestamp.Before(f.(*file.KazoupBoxFile).Modified)
@@ -92,7 +92,7 @@ func (bfs *BoxFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan 
 		// OptsKazoupFile.CTagsTimestamp are not defined,
 		// Content was never extracted before
 		processAudio := false
-		if f.(*file.KazoupBoxFile).OptsKazoupFile == nil {
+		if f.(*file.KazoupBoxFile).OptsKazoupFile == nil || f.(*file.KazoupBoxFile).OptsKazoupFile.AudioTimestamp == nil {
 			processAudio = true
 		} else {
 			processAudio = f.(*file.KazoupBoxFile).OptsKazoupFile.AudioTimestamp.Before(f.(*file.KazoupBoxFile).Modified)
@@ -127,7 +127,7 @@ func (bfs *BoxFs) Thumbnail(f file.File, gcs *gcslib.GoogleCloudStorage) chan Fi
 		// OptsKazoupFile.CTagsTimestamp are not defined,
 		// Content was never extracted before
 		processThumb := false
-		if f.(*file.KazoupBoxFile).OptsKazoupFile == nil {
+		if f.(*file.KazoupBoxFile).OptsKazoupFile == nil || f.(*file.KazoupBoxFile).OptsKazoupFile.ThumbnailTimestamp == nil {
 			processThumb = true
 		} else {
 			processThumb = f.(*file.KazoupBoxFile).OptsKazoupFile.ThumbnailTimestamp.Before(f.(*file.KazoupBoxFile).Modified)
