@@ -35,6 +35,19 @@ func srv(ctx *cli.Context) {
 	// Attach subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
+			globals.AnnounceTopic,
+			&subscriber.AnnounceCrawler{
+				Client: service.Client(),
+				Broker: service.Server().Options().Broker,
+			},
+		),
+	); err != nil {
+		log.Fatal(err)
+	}
+
+	// Attach subscriber
+	if err := service.Server().Subscribe(
+		service.Server().NewSubscriber(
 			globals.ScanTopic,
 			&subscriber.Crawler{
 				Client: service.Client(),

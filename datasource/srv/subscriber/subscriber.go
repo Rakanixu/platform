@@ -2,14 +2,11 @@ package subscriber
 
 import (
 	"encoding/json"
-	audioenrich_proto "github.com/kazoup/platform/audioenrich/srv/proto/audioenrich"
-	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
-	imgenrich_proto "github.com/kazoup/platform/docenrich/srv/proto/docenrich"
-	docenrich_proto "github.com/kazoup/platform/imgenrich/srv/proto/imgenrich"
 	"github.com/kazoup/platform/lib/globals"
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
+	crawler_msg "github.com/kazoup/platform/lib/protomsg/crawler"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/broker"
 	"github.com/micro/go-micro/client"
@@ -18,52 +15,13 @@ import (
 	"time"
 )
 
-type CrawlerStarted struct {
-	Client client.Client
-	Broker broker.Broker
-}
-
-// SubscribeCrawlerStarted receives CrawlerStartedMessage and publish to NotificationTopic
-func (cs *CrawlerStarted) SubscribeCrawlerStarted(ctx context.Context, msg *crawler.CrawlerStartedMessage) error {
-	var ds *proto.Endpoint
-
-	c := db_proto.NewDBClient(globals.DB_SERVICE_NAME, cs.Client)
-	rsp, err := c.Read(ctx, &db_proto.ReadRequest{
-		Index: "datasources",
-		Type:  "datasource",
-		Id:    msg.DatasourceId,
-	})
-	if err != nil {
-		return err
-	}
-
-	if err := json.Unmarshal([]byte(rsp.Result), &ds); err != nil {
-		return err
-	}
-
-	// Publish notification
-	nm := &notification_proto.NotificationMessage{
-		Info:   "Scan started on " + ds.Url + " datasource.",
-		Method: globals.NOTIFY_REFRESH_DATASOURCES,
-		UserId: msg.UserId,
-		Data:   rsp.Result,
-	}
-
-	// Publish notification
-	if err := cs.Client.Publish(ctx, cs.Client.NewPublication(globals.NotificationTopic, nm)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 type CrawlerFinished struct {
 	Client client.Client
 	Broker broker.Broker
 }
 
 // SubscribeCrawlerFinished sets last scan timestamp for the datasource after being scanned and updates crawler state
-func (cf *CrawlerFinished) SubscribeCrawlerFinished(ctx context.Context, msg *crawler.CrawlerFinishedMessage) error {
+func (cf *CrawlerFinished) SubscribeCrawlerFinished(ctx context.Context, msg *crawler_msg.CrawlerFinishedMessage) error {
 	var ds *proto.Endpoint
 
 	c := db_proto.NewDBClient(globals.DB_SERVICE_NAME, cf.Client)
@@ -113,60 +71,6 @@ func (cf *CrawlerFinished) SubscribeCrawlerFinished(ctx context.Context, msg *cr
 	if err := cf.Client.Publish(ctx, cf.Client.NewPublication(globals.NotificationTopic, nm)); err != nil {
 		return err
 	}
-
-	// Call AudioEnrich to process datasource
-	go func() {
-		areq := cf.Client.NewRequest(
-			globals.AUDIOENRICH_SERVICE_NAME,
-			"AudioEnrich.Create",
-			&audioenrich_proto.CreateRequest{
-				Type:  globals.TypeDatasource,
-				Index: ds.Index,
-				Id:    ds.Id,
-			},
-		)
-		arsp := &audioenrich_proto.CreateResponse{}
-
-		if err := cf.Client.Call(ctx, areq, arsp); err != nil {
-			log.Println("ERROR Calling AudioEnrich.Create for Datasource", err)
-		}
-	}()
-
-	// Call ImgEnrich to process datasource
-	go func() {
-		areq := cf.Client.NewRequest(
-			globals.IMGENRICH_SERVICE_NAME,
-			"ImgEnrich.Create",
-			&imgenrich_proto.CreateRequest{
-				Type:  globals.TypeDatasource,
-				Index: ds.Index,
-				Id:    ds.Id,
-			},
-		)
-		arsp := &imgenrich_proto.CreateResponse{}
-
-		if err := cf.Client.Call(ctx, areq, arsp); err != nil {
-			log.Println("ERROR Calling ImgEnrich.Create for Datasource", err)
-		}
-	}()
-
-	// Call DocEnrich to process datasource
-	go func() {
-		areq := cf.Client.NewRequest(
-			globals.DOCENRICH_SERVICE_NAME,
-			"DocEnrich.Create",
-			&docenrich_proto.CreateRequest{
-				Type:  globals.TypeDatasource,
-				Index: ds.Index,
-				Id:    ds.Id,
-			},
-		)
-		arsp := &docenrich_proto.CreateResponse{}
-
-		if err := cf.Client.Call(ctx, areq, arsp); err != nil {
-			log.Println("ERROR Calling DocEnrich.Create for Datasource", err)
-		}
-	}()
 
 	return nil
 }

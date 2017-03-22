@@ -60,7 +60,6 @@ const (
 	AudioEnrichTopic        string = NAMESPACE + ".topic.audioenrich"
 	SentimentEnrichTopic    string = NAMESPACE + ".topic.sentiment"
 	ExtractEntitiesTopic    string = NAMESPACE + ".topic.extractentities"
-	CrawlerStartedTopic     string = NAMESPACE + ".topic.crawlerstarted"
 	CrawlerFinishedTopic    string = NAMESPACE + ".topic.crawlerfinished"
 	NotificationTopic       string = NAMESPACE + ".topic.notification"
 	NotificationProxyTopic  string = NAMESPACE + ".topic.notificationproxy"

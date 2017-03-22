@@ -201,6 +201,12 @@ func NewQuotaHandlerWrapper(srvName string) server.HandlerWrapper {
 // quotaSubscriberWrapper defines a quota wrapper based on quotaLimit per srv+user_id key
 func quotaSubscriberWrapper(fn server.SubscriberFunc, limiter *rate.Limiter, srv string) server.SubscriberFunc {
 	return func(ctx context.Context, msg server.Publication) error {
+		// On announcements just do not apply quota subscriber
+		// This is really important as quota counter will be increase when a quated srv listen to global announcements
+		if msg.Topic() == globals.AnnounceTopic {
+			return fn(ctx, msg)
+		}
+
 		md, ok := metadata.FromContext(ctx)
 		if !ok {
 			return errors.InternalServerError("QuotaWrapper", "Unable to retrieve metadata")
@@ -303,6 +309,45 @@ func NewAfterHandlerWrapper() server.HandlerWrapper {
 	}
 }
 
+// quotaSubscriberWrapper defines a quota wrapper based on quotaLimit per srv+user_id key
+func afterSubscriberWrapper(fn server.SubscriberFunc, c client.Client) server.SubscriberFunc {
+	return func(ctx context.Context, msg server.Publication) error {
+		if err := fn(ctx, msg); err != nil {
+			return err
+		}
+
+		// Announce if topic is not an announcement, we do not want to announce that an announcement was announce..
+		if msg.Topic() != globals.AnnounceTopic {
+			defer func() {
+				b, err := json.Marshal(msg.Message())
+				if err != nil {
+					log.Println("ERROR afterHandlerWrapper", err)
+				}
+
+				// Publish annauncement after subscriber was called
+				if err := c.Publish(ctx, c.NewPublication(
+					globals.AnnounceTopic,
+					&announce.AnnounceMessage{
+						Handler: msg.Topic(),
+						Data:    string(b),
+					},
+				)); err != nil {
+					log.Println("ERROR afterSubscriberWrapper publishing announcement", err)
+				}
+			}()
+		}
+
+		return nil
+	}
+}
+
+// NewQuotaSubscriberWrapper returns a subscriber quota limit per user wrapper
+func NewAfterSubscriberWrapper() server.SubscriberWrapper {
+	return func(fn server.SubscriberFunc) server.SubscriberFunc {
+		return afterSubscriberWrapper(fn, NewKazoupClient())
+	}
+}
+
 func NewKazoupClient() client.Client {
 	return client.NewClient()
 }
@@ -366,7 +411,7 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			micro.RegisterInterval(time.Second*30),
 			//micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...),*/ KazoupClientWrap()),
-			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn)),
+			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn), NewAfterSubscriberWrapper()),
 			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewAfterHandlerWrapper(), NewQuotaHandlerWrapper(sn), AuthWrapper),
 			micro.Flags(
 				cli.StringFlag{
@@ -394,8 +439,8 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			micro.RegisterInterval(time.Second*30),
 			//micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...),*/ KazoupClientWrap()),
-			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn)),
-			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewAfterHandlerWrapper(), NewQuotaHandlerWrapper(sn), AuthWrapper),
+			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn), NewAfterSubscriberWrapper()),
+			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewQuotaHandlerWrapper(sn), NewAfterHandlerWrapper(), AuthWrapper),
 		)
 	} else {
 		service = micro.NewService(
@@ -406,8 +451,8 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			micro.RegisterInterval(time.Second*30),
 			//micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...), */ monitor.ClientWrapper(m), KazoupClientWrap()),
-			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn)),
-			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...),*/ NewAfterHandlerWrapper(), monitor.HandlerWrapper(m), NewQuotaHandlerWrapper(sn), AuthWrapper),
+			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn), NewAfterSubscriberWrapper()),
+			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...),*/ NewQuotaHandlerWrapper(sn), monitor.HandlerWrapper(m), NewAfterHandlerWrapper(), AuthWrapper),
 		)
 	}
 

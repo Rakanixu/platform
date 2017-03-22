@@ -19,12 +19,3 @@ message SlackChannelMessage {
   string index = 2;
   string data = 3;
 }
-
-message CrawlerStartedMessage {
-    string datasource_id = 1;
-    string user_id = 2;
-}
-
-message CrawlerFinishedMessage {
-  string datasource_id = 1;
-}
