@@ -80,6 +80,7 @@ func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
 	if sentimentTextAnalyzer {
 		// Apply rossete sentiment
 		if len(f.GetContent()) > 0 {
+
 			// Sanitaze content
 			// We do not save sanitazed because if we want to display, it maintains some format
 			t, err := text.ReplaceDoubleQuotes(f.GetContent())

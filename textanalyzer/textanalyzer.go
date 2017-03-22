@@ -57,6 +57,20 @@ func srv(ctx *cli.Context) {
 		log.Fatal(err)
 	}
 
+	// Attach subscriber
+	if err := service.Server().Subscribe(
+		service.Server().NewSubscriber(
+			globals.AnnounceDoneTopic,
+			&subscriber.AnnounceTextAnalyzer{
+				Client: service.Client(),
+				Broker: service.Server().Options().Broker,
+			},
+			server.SubscriberQueue("announce-textanalyzer"),
+		),
+	); err != nil {
+		log.Fatal(err)
+	}
+
 	if err := service.Run(); err != nil {
 		log.Fatalf("%v", err)
 	}

@@ -9,6 +9,7 @@ import (
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/cli"
+	"github.com/micro/go-micro/server"
 	"github.com/micro/go-os/monitor"
 	"log"
 	"time"
@@ -34,10 +35,14 @@ func srv(ctx *cli.Context) {
 
 	// Attach crawler started subscriber
 	if err := service.Server().Subscribe(
-		service.Server().NewSubscriber(globals.AnnounceTopic, &subscriber.Announce{
-			Client: service.Client(),
-			Broker: service.Server().Options().Broker,
-		})); err != nil {
+		service.Server().NewSubscriber(
+			globals.AnnounceTopic,
+			&subscriber.Announce{
+				Client: service.Client(),
+				Broker: service.Server().Options().Broker,
+			},
+			server.SubscriberQueue("announce-datasource"),
+		)); err != nil {
 		log.Fatal(err)
 	}
 

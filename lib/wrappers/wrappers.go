@@ -11,7 +11,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	kazoup_context "github.com/kazoup/platform/lib/context"
 	"github.com/kazoup/platform/lib/globals"
-	announce "github.com/kazoup/platform/lib/protomsg/announce"
+	announce_msg "github.com/kazoup/platform/lib/protomsg/announce"
 	"github.com/micro/cli"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/client"
@@ -290,7 +290,7 @@ func afterHandlerWrapper(fn server.HandlerFunc, c client.Client) server.HandlerF
 			// Publish annuncment after handler was called
 			if err := c.Publish(ctx, c.NewPublication(
 				globals.AnnounceTopic,
-				&announce.AnnounceMessage{
+				&announce_msg.AnnounceMessage{
 					Handler: fmt.Sprintf("%s.%s", req.Service(), req.Method()),
 					Data:    string(b),
 				},
@@ -327,7 +327,7 @@ func afterSubscriberWrapper(fn server.SubscriberFunc, c client.Client) server.Su
 				// Publish annauncement after subscriber was called
 				if err := c.Publish(ctx, c.NewPublication(
 					globals.AnnounceTopic,
-					&announce.AnnounceMessage{
+					&announce_msg.AnnounceMessage{
 						Handler: msg.Topic(),
 						Data:    string(b),
 					},

@@ -9,6 +9,7 @@ import (
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
+	announce_msg "github.com/kazoup/platform/lib/protomsg/announce"
 	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/client"
@@ -121,6 +122,20 @@ func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
 		})); err != nil {
 			log.Print("Publishing NotificationTopic (ImgEnrich) error %s", err)
 		}
+	}
+
+	bm, err := json.Marshal(m.msg)
+	if err != nil {
+		return err
+	}
+
+	// Because of the nature of the queuing, when we publish AnnounceTopic, the task may not be done, but will be eventually
+	// For the subscribers that implement its own queue, we need to use AnnounceDoneTopic.
+	if err := c.Publish(m.ctx, c.NewPublication(globals.AnnounceDoneTopic, &announce_msg.AnnounceMessage{
+		Handler: globals.ImgEnrichTopic,
+		Data:    string(bm),
+	})); err != nil {
+		log.Print("Error Publishing AnnounceDoneTopic %s", err)
 	}
 
 	return nil

@@ -222,7 +222,7 @@ func (e *elastic) Update(ctx context.Context, req *db.UpdateRequest) (*db.Update
 		bo.MaxElapsedTime = time.Second * 3
 
 		if err = backoff.Retry(func() error {
-			_, err = e.Client.Update().Index(req.Index).Type(req.Type).Id(req.Id).Doc(d).Do(ctx)
+			_, err = e.Client.Update().Index(req.Index).Type(req.Type).Id(req.Id).Doc(d).RetryOnConflict(3).Refresh("wait_for").Do(ctx)
 
 			return err
 		}, bo); err != nil {

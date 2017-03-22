@@ -8,6 +8,7 @@ import (
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/cli"
+	"github.com/micro/go-micro/server"
 	"github.com/micro/go-os/monitor"
 	"log"
 	"time"
@@ -40,6 +41,7 @@ func srv(ctx *cli.Context) {
 				Client: service.Client(),
 				Broker: service.Server().Options().Broker,
 			},
+			server.SubscriberQueue("announce-crawler"),
 		),
 	); err != nil {
 		log.Fatal(err)
@@ -52,6 +54,7 @@ func srv(ctx *cli.Context) {
 			&subscriber.Crawler{
 				Client: service.Client(),
 			},
+			server.SubscriberQueue("crawler"),
 		),
 	); err != nil {
 		log.Fatal(err)

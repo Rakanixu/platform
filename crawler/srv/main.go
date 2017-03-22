@@ -7,6 +7,7 @@ import (
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
+	"github.com/micro/go-micro/server"
 	"github.com/micro/go-os/monitor"
 	"log"
 	"time"
@@ -39,6 +40,7 @@ func main() {
 				Client: service.Client(),
 				Broker: service.Server().Options().Broker,
 			},
+			server.SubscriberQueue("announce-crawler"),
 		),
 	); err != nil {
 		log.Fatal(err)
@@ -51,6 +53,7 @@ func main() {
 			&subscriber.Crawler{
 				Client: service.Client(),
 			},
+			server.SubscriberQueue("crawler"),
 		),
 	); err != nil {
 		log.Fatal(err)

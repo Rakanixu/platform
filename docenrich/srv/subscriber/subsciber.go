@@ -9,6 +9,7 @@ import (
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
+	announce_msg "github.com/kazoup/platform/lib/protomsg/announce"
 	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/client"
@@ -121,16 +122,18 @@ func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
 		}
 	}
 
-	// Publish the same message to ExtractEntitiesTopic
-	if err := c.Publish(m.ctx, c.NewPublication(globals.ExtractEntitiesTopic, m.msg)); err != nil {
-		log.Println("Error publishing ExtractEntitiesTopic", err)
+	bm, err := json.Marshal(m.msg)
+	if err != nil {
 		return err
 	}
 
-	// Publish the same message to SentimentEnrichTopic
-	if err := c.Publish(m.ctx, c.NewPublication(globals.SentimentEnrichTopic, m.msg)); err != nil {
-		log.Println("Error publishing SentimentEnrichTopic", err)
-		return err
+	// Because of the nature of the queuing, when we publish AnnounceTopic, the task may not be done, but will be eventually
+	// For the subscribers that implement its own queue, we need to use AnnounceDoneTopic.
+	if err := c.Publish(m.ctx, c.NewPublication(globals.AnnounceDoneTopic, &announce_msg.AnnounceMessage{
+		Handler: globals.DocEnrichTopic,
+		Data:    string(bm),
+	})); err != nil {
+		log.Print("Error Publishing AnnounceDoneTopic %s", err)
 	}
 
 	return nil

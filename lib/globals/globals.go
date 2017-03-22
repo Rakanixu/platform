@@ -50,6 +50,7 @@ const (
 	HANDLER_DATASOURCE_SCANALL = DATASOURCE_SERVICE_NAME + ".DataSource.ScanAll"
 
 	AnnounceTopic           string = NAMESPACE + ".topic.announce"
+	AnnounceDoneTopic       string = NAMESPACE + ".topic.done.announce"
 	FilesTopic              string = NAMESPACE + ".topic.files"
 	SlackChannelsTopic      string = NAMESPACE + ".topic.slackchannels"
 	SlackUsersTopic         string = NAMESPACE + ".topic.slackusers"
