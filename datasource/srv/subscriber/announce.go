@@ -7,29 +7,66 @@ import (
 	db_helper "github.com/kazoup/platform/lib/dbhelper"
 	"github.com/kazoup/platform/lib/globals"
 	announce_msg "github.com/kazoup/platform/lib/protomsg/announce"
+	deletebucket_msg "github.com/kazoup/platform/lib/protomsg/deletebucket"
 	"github.com/micro/go-micro/broker"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
-	"log"
 )
 
-type Announce struct {
+type AnnounceDatasource struct {
 	Client client.Client
 	Broker broker.Broker
 }
 
-// Subscriber subscribes to all platform announcment
-// Scan have to be trigger as a reaction to creation or scan request
-// Scans have to be trigger as a reaction of scan all request
-func (a *Announce) Subscriber(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
-	var es []*proto.Endpoint
+// OnDatasourceCreate
+func (a *AnnounceDatasource) OnDatasourceCreate(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
+	// Trigger scan on datasource creation
+	if globals.HANDLER_DATASOURCE_CREATE == msg.Handler {
+		var r proto.CreateRequest
+		if err := json.Unmarshal([]byte(msg.Data), &r); err != nil {
+			return err
+		}
+
+		if err := a.Client.Publish(ctx, a.Client.NewPublication(
+			globals.ScanTopic,
+			r.Endpoint,
+		)); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// OnDatasourceDelete
+func (a *AnnounceDatasource) OnDatasourceDelete(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
+	// Trigger bucket deletion for datasource
+	if globals.HANDLER_DATASOURCE_DELETE == msg.Handler {
+		var r proto.DeleteRequest
+		if err := json.Unmarshal([]byte(msg.Data), &r); err != nil {
+			return err
+		}
+
+		if err := a.Client.Publish(ctx, a.Client.NewPublication(
+			globals.DeleteBucketTopic,
+			&deletebucket_msg.DeleteBucketMsg{
+				Index: r.Index,
+			},
+		)); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// OnDatasourceScan, trigger scan
+func (a *AnnounceDatasource) OnDatasourceScan(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
 	var e *proto.Endpoint
-	react := false
 
 	if globals.HANDLER_DATASOURCE_SCAN == msg.Handler {
 		var r proto.ScanRequest
 		if err := json.Unmarshal([]byte(msg.Data), &r); err != nil {
-			log.Println(err)
 			return err
 		}
 
@@ -46,21 +83,21 @@ func (a *Announce) Subscriber(ctx context.Context, msg *announce_msg.AnnounceMes
 			return err
 		}
 
-		es = append(es, e)
-
-		react = true
-	}
-
-	if globals.HANDLER_DATASOURCE_CREATE == msg.Handler {
-		var r proto.CreateRequest
-		if err := json.Unmarshal([]byte(msg.Data), &r); err != nil {
+		if err := a.Client.Publish(ctx, a.Client.NewPublication(
+			globals.ScanTopic,
+			e,
+		)); err != nil {
 			return err
 		}
-
-		es = append(es, r.Endpoint)
-
-		react = true
 	}
+
+	return nil
+}
+
+// OnDatasourceScanAll trigger scans
+func (a *AnnounceDatasource) OnDatasourceScanAll(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
+	var es []*proto.Endpoint
+	var e *proto.Endpoint
 
 	if globals.HANDLER_DATASOURCE_SCANALL == msg.Handler {
 		var r proto.ScanAllRequest
@@ -102,10 +139,6 @@ func (a *Announce) Subscriber(ctx context.Context, msg *announce_msg.AnnounceMes
 			}
 		}
 
-		react = true
-	}
-
-	if react {
 		for _, v := range es {
 			if err := a.Client.Publish(ctx, a.Client.NewPublication(
 				globals.ScanTopic,

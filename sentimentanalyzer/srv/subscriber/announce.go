@@ -8,7 +8,6 @@ import (
 	"github.com/micro/go-micro/broker"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
-	"log"
 )
 
 type AnnounceSentimentAnalyzer struct {

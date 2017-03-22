@@ -3,12 +3,10 @@ package handler
 import (
 	"github.com/kazoup/platform/datasource/srv/engine"
 	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	"github.com/kazoup/platform/lib/globals"
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
-	"log"
 )
 
 // DataSource struct
@@ -83,12 +81,9 @@ func (ds *DataSource) Delete(ctx context.Context, req *proto.DeleteRequest, rsp 
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 
-	// Publish message to clean async the bucket that stores the thumbnails in GC storage
-	if err := ds.Client.Publish(ctx, ds.Client.NewPublication(globals.DeleteBucketTopic, &proto.DeleteBucketMessage{
-		Endpoint: endpoint,
-	})); err != nil {
-		log.Println("ERROR cleaningthumbs from GCS", err)
-	}
+	// Request will be available on After handler wrapper
+	// Update req data with the last values
+	req.Index = endpoint.Index
 
 	// Delete datasource
 	if err := eng.Delete(ctx, ds.Client); err != nil {

@@ -7,6 +7,7 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	crawler_msg "github.com/kazoup/platform/lib/protomsg/crawler"
+	deletebucket_msg "github.com/kazoup/platform/lib/protomsg/deletebucket"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/broker"
 	"github.com/micro/go-micro/client"
@@ -82,8 +83,8 @@ type DeleteBucket struct {
 }
 
 // SubscribeDeleteBucket subscribes to DeleteBucket Message to clean un a bicket in GC storage
-func (db *DeleteBucket) SubscribeDeleteBucket(ctx context.Context, msg *proto.DeleteBucketMessage) error {
-	return db.GoogleCloudStorage.DeleteBucket(msg.Endpoint.Index)
+func (db *DeleteBucket) SubscribeDeleteBucket(ctx context.Context, msg *deletebucket_msg.DeleteBucketMsg) error {
+	return db.GoogleCloudStorage.DeleteBucket(msg.Index)
 }
 
 type DeleteFileInBucket struct {
