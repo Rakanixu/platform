@@ -341,7 +341,6 @@
           case this.categoriesMap.audios:
             isAnalyzable = ((new Date(file.opts_kazoup_file.audio_timestamp) < new Date(file.modified) || file.opts_kazoup_file.audio_timestamp === undefined) ||
             (new Date(file.opts_kazoup_file.sentiment_analyzed_timestamp) < new Date(file.modified) || file.opts_kazoup_file.sentiment_analyzed_timestamp === undefined));
-
             break;
         }
 
