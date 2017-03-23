@@ -121,7 +121,7 @@ func processThumbnailMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m Thum
 	// Because of the nature of the queuing, when we publish AnnounceTopic, the task may not be done, but will be eventually
 	// For the subscribers that implement its own queue, we need to use AnnounceDoneTopic.
 	if err := c.Publish(m.ctx, c.NewPublication(globals.AnnounceDoneTopic, &announce_msg.AnnounceMessage{
-		Handler: globals.DocEnrichTopic,
+		Handler: globals.ImgEnrichTopic,
 		Data:    string(bm),
 	})); err != nil {
 		log.Print("Error Publishing AnnounceDoneTopic %s", err)
