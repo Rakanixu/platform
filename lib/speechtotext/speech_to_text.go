@@ -66,6 +66,7 @@ func AsyncContent(uri string) (SpeechToText, error) {
 			})
 			if err != nil {
 				log.Println("Error polling audio content: %v", err)
+				return
 			}
 			if op.Done {
 				break

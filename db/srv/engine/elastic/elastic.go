@@ -117,9 +117,9 @@ func (e *elastic) Init(c client.Client) error {
 		}).
 		Name(fmt.Sprintf("bulkFilesProcessor-%s", rs)).
 		Workers(3).
-		BulkActions(100).               // commit if # requests >= 100
-		BulkSize(2 << 20).              // commit if size of requests >= 2 MB, probably to big, btw other constrains will be hit before
-		FlushInterval(5 * time.Second). // commit every 5s, notification message can be send and until 5s later is not really finished
+		BulkActions(500).               // commit if # requests >= 500
+		BulkSize(10 << 20).             // commit if size of requests >= 10 MB, probably to big, btw other constrains will be hit before
+		FlushInterval(6 * time.Second). // commit every 5s, notification message can be send and until 5s later is not really finished
 		Do(context.Background())
 	if err != nil {
 		return err
