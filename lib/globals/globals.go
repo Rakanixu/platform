@@ -171,8 +171,7 @@ const (
 	NOTIFY_REFRESH_DATASOURCES = "refresh-datasources"
 	NOTIFY_REFRESH_SEARCH      = "refresh-search"
 
-	DISCOVERY_DELAY_MS  = 10 * time.Millisecond
-	PUBLISHING_DELAY_MS = 20 * time.Millisecond
+	DISCOVERY_DELAY_MS = 10 * time.Millisecond
 )
 
 func NewGoogleOautConfig() *oauth2.Config {
