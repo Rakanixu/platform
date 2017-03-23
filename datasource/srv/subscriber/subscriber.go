@@ -8,6 +8,7 @@ import (
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	crawler_msg "github.com/kazoup/platform/lib/protomsg/crawler"
 	deletebucket_msg "github.com/kazoup/platform/lib/protomsg/deletebucket"
+	deletefilebucket_msg "github.com/kazoup/platform/lib/protomsg/deletefileinbucket"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/broker"
 	"github.com/micro/go-micro/client"
@@ -94,6 +95,6 @@ type DeleteFileInBucket struct {
 }
 
 // SubscribeCleanBucket subscribes to DCleanBucket Message to remove thumbs not longer related with document in index
-func (dfb *DeleteFileInBucket) SubscribeDeleteFileInBucket(ctx context.Context, msg *proto.DeleteFileInBucketMessage) error {
+func (dfb *DeleteFileInBucket) SubscribeDeleteFileInBucket(ctx context.Context, msg *deletefilebucket_msg.DeleteFileInBucketMsg) error {
 	return dfb.GoogleCloudStorage.Delete(msg.Index, msg.FileId)
 }

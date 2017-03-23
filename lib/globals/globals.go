@@ -49,6 +49,9 @@ const (
 	HANDLER_DATASOURCE_SCAN    = DATASOURCE_SERVICE_NAME + ".DataSource.Scan"
 	HANDLER_DATASOURCE_SCANALL = DATASOURCE_SERVICE_NAME + ".DataSource.ScanAll"
 
+	HANDLER_FILE_CREATE = FILE_SERVICE_NAME + ".File.Create"
+	HANDLER_FILE_DELETE = FILE_SERVICE_NAME + ".File.Delete"
+
 	AnnounceTopic           string = NAMESPACE + ".topic.announce"
 	AnnounceDoneTopic       string = NAMESPACE + ".topic.done.announce"
 	FilesTopic              string = NAMESPACE + ".topic.files"

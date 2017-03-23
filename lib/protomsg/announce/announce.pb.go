@@ -9,12 +9,14 @@ It is generated from these files:
 	github.com/kazoup/platform/lib/protomsg/announce/announce.proto
 	github.com/kazoup/platform/lib/protomsg/crawler/crawler.proto
 	github.com/kazoup/platform/lib/protomsg/deletebucket/deletebucket.proto
+	github.com/kazoup/platform/lib/protomsg/deletefileinbucket/deletefileinbucket.proto
 	github.com/kazoup/platform/lib/protomsg/enrich/enrich.proto
 
 It has these top-level messages:
 	AnnounceMessage
 	CrawlerFinishedMessage
 	DeleteBucketMsg
+	DeleteFileInBucketMsg
 	EnrichMessage
 */
 package message

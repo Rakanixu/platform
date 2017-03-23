@@ -23,17 +23,17 @@ type EnrichMessage struct {
 func (m *EnrichMessage) Reset()                    { *m = EnrichMessage{} }
 func (m *EnrichMessage) String() string            { return proto.CompactTextString(m) }
 func (*EnrichMessage) ProtoMessage()               {}
-func (*EnrichMessage) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{0} }
+func (*EnrichMessage) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{0} }
 
 func init() {
 	proto.RegisterType((*EnrichMessage)(nil), "message.EnrichMessage")
 }
 
 func init() {
-	proto.RegisterFile("github.com/kazoup/platform/lib/protomsg/enrich/enrich.proto", fileDescriptor3)
+	proto.RegisterFile("github.com/kazoup/platform/lib/protomsg/enrich/enrich.proto", fileDescriptor4)
 }
 
-var fileDescriptor3 = []byte{
+var fileDescriptor4 = []byte{
 	// 166 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xe2, 0xb2, 0x4e, 0xcf, 0x2c, 0xc9,
 	0x28, 0x4d, 0xd2, 0x4b, 0xce, 0xcf, 0xd5, 0xcf, 0x4e, 0xac, 0xca, 0x2f, 0x2d, 0xd0, 0x2f, 0xc8,

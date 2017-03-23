@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	proto "github.com/kazoup/platform/file/srv/proto/file"
 	db_conn "github.com/kazoup/platform/lib/dbhelper"
@@ -128,14 +127,6 @@ func (f *File) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *proto.
 		UserId: uId,
 	})); err != nil {
 		log.Print("Publishing (notify file) error %s", err)
-	}
-
-	// Publish notification to delete associated resources (thumbnail in our GCS account)
-	if err := f.Client.Publish(ctx, f.Client.NewPublication(globals.DeleteFileInBucketTopic, &datasource_proto.DeleteFileInBucketMessage{
-		FileId: req.FileId,
-		Index:  req.Index,
-	})); err != nil {
-		log.Println("ERROR cleaning thumbnail", err)
 	}
 
 	return nil

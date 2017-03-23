@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package message;
+
+message DeleteFileInBucketMsg {
+    string file_id = 1;
+    string index = 2;
+}
+

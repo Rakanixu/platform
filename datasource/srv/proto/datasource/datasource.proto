@@ -86,8 +86,3 @@ message Token {
   string refresh_token = 3;
   int64 expiry = 4;
 }
-
-message DeleteFileInBucketMessage {
-  string file_id = 1;
-  string index = 2;
-}
