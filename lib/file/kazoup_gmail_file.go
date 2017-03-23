@@ -86,8 +86,8 @@ func (kf *KazoupGmailFile) SetHighlight(s string) {
 	kf.Highlight = s
 }
 
-func (kf *KazoupGmailFile) SetContentCategory(contentCategory string) {
-	kf.ContentCategory = contentCategory
+func (kf *KazoupGmailFile) SetContentCategory(c *KazoupCategorization) {
+	kf.KazoupCategorization = c
 }
 
 func (kf *KazoupGmailFile) SetEntities(entities *rossetelib.RosseteEntities) {

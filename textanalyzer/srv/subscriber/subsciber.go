@@ -110,7 +110,10 @@ func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
 
 			for _, ent := range e.Entities {
 				if strings.Contains(ent.Type, IDENTIFIER) || strings.Contains(ent.Type, PERSON) {
-					f.SetContentCategory(globals.SENSITIVE)
+					s := globals.SENSITIVE
+					f.SetContentCategory(&file.KazoupCategorization{
+						ContentCategory: &s,
+					})
 					break
 				}
 			}
