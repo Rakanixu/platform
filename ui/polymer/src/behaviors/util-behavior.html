@@ -319,15 +319,33 @@
         return this.isBox(fileType) || this.isDropbox(fileType) || this.isOneDrive(fileType) || this.isGoogleDrive(fileType);
       },
       isAnalyzeFileAvailable: function(file) {
+        var isAnalyzable = false;
+
         if (file.opts_kazoup_file === undefined) {
-          return true;
+          file.opts_kazoup_file = {
+            text_analyzed_timestamp: 0,
+            sentiment_analyzed_timestamp: 0,
+            tags_timestamp: 0,
+            audio_timestamp: 0
+          };
         }
 
-        return ((this.isAudio(file.category) && new Date(file.opts_kazoup_file.audio_timestamp) < new Date(file.modified)) ||
-            (this.isAudio(file.category) && new Date(file.opts_kazoup_file.sentiment_analyzed_timestamp) < new Date(file.modified)) ||
-            (this.isDocument(file.category) && new Date(file.opts_kazoup_file.text_analyzed_timestamp) < new Date(file.modified)) ||
-            (this.isDocument(file.category) && new Date(file.opts_kazoup_file.sentiment_analyzed_timestamp) < new Date(file.modified)) ||
-            (this.isImage(file.category) && new Date(file.opts_kazoup_file.tags_timestamp) < new Date(file.modified)));
+        switch (file.category) {
+          case this.categoriesMap.documents:
+            isAnalyzable = ((new Date(file.opts_kazoup_file.text_analyzed_timestamp) < new Date(file.modified) || file.opts_kazoup_file.text_analyzed_timestamp === undefined) ||
+            (new Date(file.opts_kazoup_file.sentiment_analyzed_timestamp) < new Date(file.modified) || file.opts_kazoup_file.sentiment_analyzed_timestamp === undefined));
+            break;
+          case this.categoriesMap.images:
+            isAnalyzable = (new Date(file.opts_kazoup_file.tags_timestamp) < new Date(file.modified) || file.opts_kazoup_file.tags_timestamp === undefined);
+            break;
+          case this.categoriesMap.audios:
+            isAnalyzable = ((new Date(file.opts_kazoup_file.audio_timestamp) < new Date(file.modified) || file.opts_kazoup_file.audio_timestamp === undefined) ||
+            (new Date(file.opts_kazoup_file.sentiment_analyzed_timestamp) < new Date(file.modified) || file.opts_kazoup_file.sentiment_analyzed_timestamp === undefined));
+
+            break;
+        }
+
+        return isAnalyzable;
       },
       isTag: function(tags) {
         return (tags && tags.length && tags.length > 0);

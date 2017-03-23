@@ -104,7 +104,8 @@ func (e *elastic) Init(c client.Client) error {
 					return
 				}
 
-				if kf.Doc.OptsKazoupFile == nil || kf.Doc.OptsKazoupFile.ThumbnailTimestamp == nil {
+				if kf.Doc.Category == globals.CATEGORY_PICTURE &&
+					(kf.Doc.OptsKazoupFile == nil || kf.Doc.OptsKazoupFile.ThumbnailTimestamp == nil) {
 					if err := c.Publish(bkr.Context, c.NewPublication(globals.ThumbnailTopic, &enrich_proto.EnrichMessage{
 						Index:  kf.Doc.Index,
 						Id:     kf.Doc.ID,
