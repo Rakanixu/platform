@@ -9,11 +9,9 @@ import (
 	crawler_msg "github.com/kazoup/platform/lib/protomsg/crawler"
 	deletebucket_msg "github.com/kazoup/platform/lib/protomsg/deletebucket"
 	deletefilebucket_msg "github.com/kazoup/platform/lib/protomsg/deletefileinbucket"
-	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/broker"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
-	"log"
 	"time"
 )
 
@@ -28,8 +26,8 @@ func (cf *CrawlerFinished) SubscribeCrawlerFinished(ctx context.Context, msg *cr
 
 	c := db_proto.NewDBClient(globals.DB_SERVICE_NAME, cf.Client)
 	rsp, err := c.Read(ctx, &db_proto.ReadRequest{
-		Index: "datasources",
-		Type:  "datasource",
+		Index: globals.IndexDatasources,
+		Type:  globals.TypeDatasource,
 		Id:    msg.DatasourceId,
 	})
 	if err != nil {
@@ -47,30 +45,17 @@ func (cf *CrawlerFinished) SubscribeCrawlerFinished(ctx context.Context, msg *cr
 		return err
 	}
 	_, err = c.Update(ctx, &db_proto.UpdateRequest{
-		Index: "datasources",
-		Type:  "datasource",
+		Index: globals.IndexDatasources,
+		Type:  globals.TypeDatasource,
 		Id:    msg.DatasourceId,
 		Data:  string(b),
 	})
 	if err != nil {
-		log.Println(err)
+		return err
 	}
 
 	// Clear index (files that no longer exists, rename, etc..)
 	if err := globals.ClearIndex(ctx, cf.Client, ds); err != nil {
-		log.Println("ERROR clearing index after scan", err)
-	}
-
-	// Publish notification
-	nm := &notification_proto.NotificationMessage{
-		Info:   "Scan finished on " + ds.Url + " datasource.",
-		Method: globals.NOTIFY_REFRESH_DATASOURCES,
-		UserId: ds.UserId,
-		Data:   string(b),
-	}
-
-	// Publish notification
-	if err := cf.Client.Publish(ctx, cf.Client.NewPublication(globals.NotificationTopic, nm)); err != nil {
 		return err
 	}
 

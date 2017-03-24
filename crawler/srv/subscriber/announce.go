@@ -16,9 +16,9 @@ type AnnounceCrawler struct {
 	Broker broker.Broker
 }
 
-// OnCrawlerFinished reacts to CrawlerFinished
-func (a *AnnounceCrawler) OnCrawlerFinished(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
-	// After a crawler has finished, we want to notify user
+// OnScanFinished
+func (a *AnnounceCrawler) OnScanFinished(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
+	// After a scan finishes, we want to procced with post scan steeps
 	if globals.ScanTopic == msg.Handler {
 		var e *datasource_proto.Endpoint
 		if err := json.Unmarshal([]byte(msg.Data), &e); err != nil {
