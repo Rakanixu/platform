@@ -20,7 +20,7 @@ type AnnounceAudioEnrich struct {
 // OnCrawlerFinished reacts to CrawlerFinished
 func (a *AnnounceAudioEnrich) OnCrawlerFinished(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
 	// After a crawler has finished, we want enrich crawled audio files
-	if globals.ScanTopic == msg.Handler {
+	if globals.DiscoverTopic == msg.Handler {
 		var e *datasource_proto.Endpoint
 		if err := json.Unmarshal([]byte(msg.Data), &e); err != nil {
 			return err

@@ -22,43 +22,6 @@ type AnnounceDoneNotification struct {
 	Broker broker.Broker
 }
 
-//OnCrawlerFinished
-func (a *AnnounceDoneNotification) OnCrawlerFinished(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
-	// After a crawler finishes, we want to notify user
-	if globals.CrawlerFinishedTopic == msg.Handler {
-		var m *cawler_msg.CrawlerFinishedMessage
-		if err := json.Unmarshal([]byte(msg.Data), &m); err != nil {
-			return err
-		}
-
-		rsp, err := db_helper.ReadFromDB(a.Client, ctx, &db_proto.ReadRequest{
-			Index: globals.IndexDatasources,
-			Type:  globals.TypeDatasource,
-			Id:    m.DatasourceId,
-		})
-		if err != nil {
-			return err
-		}
-
-		var e *datasource_proto.Endpoint
-		if err := json.Unmarshal([]byte(rsp.Result), &e); err != nil {
-			return err
-		}
-
-		// Publish notification
-		if err := a.Client.Publish(ctx, a.Client.NewPublication(globals.NotificationTopic, &notification_proto.NotificationMessage{
-			Info:   "Scan finished on " + e.Url + " datasource.",
-			Method: globals.NOTIFY_REFRESH_DATASOURCES,
-			UserId: e.UserId,
-			Data:   rsp.Result,
-		})); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 // OnDocEnrich
 func (a *AnnounceDoneNotification) OnDocEnrich(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
 	// Notify that document enrichment happened
@@ -183,6 +146,43 @@ func (a *AnnounceDoneNotification) OnEntitiesExtraction(ctx context.Context, msg
 type AnnounceNotification struct {
 	Client client.Client
 	Broker broker.Broker
+}
+
+//OnCrawlerFinished
+func (a *AnnounceNotification) OnCrawlerFinished(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
+	// After a crawler finishes, we want to notify user
+	if globals.CrawlerFinishedTopic == msg.Handler {
+		var m *cawler_msg.CrawlerFinishedMessage
+		if err := json.Unmarshal([]byte(msg.Data), &m); err != nil {
+			return err
+		}
+
+		rsp, err := db_helper.ReadFromDB(a.Client, ctx, &db_proto.ReadRequest{
+			Index: globals.IndexDatasources,
+			Type:  globals.TypeDatasource,
+			Id:    m.DatasourceId,
+		})
+		if err != nil {
+			return err
+		}
+
+		var e *datasource_proto.Endpoint
+		if err := json.Unmarshal([]byte(rsp.Result), &e); err != nil {
+			return err
+		}
+
+		// Publish notification
+		if err := a.Client.Publish(ctx, a.Client.NewPublication(globals.NotificationTopic, &notification_proto.NotificationMessage{
+			Info:   "Scan finished on " + e.Url + " datasource.",
+			Method: globals.NOTIFY_REFRESH_DATASOURCES,
+			UserId: e.UserId,
+			Data:   rsp.Result,
+		})); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // OnFileDeleted

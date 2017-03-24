@@ -49,7 +49,7 @@ func main() {
 	// Attach subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
-			globals.ScanTopic,
+			globals.DiscoverTopic,
 			&subscriber.Crawler{
 				Client: service.Client(),
 			},

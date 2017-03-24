@@ -57,7 +57,7 @@ const (
 	FilesTopic              string = NAMESPACE + ".topic.files"
 	SlackChannelsTopic      string = NAMESPACE + ".topic.slackchannels"
 	SlackUsersTopic         string = NAMESPACE + ".topic.slackusers"
-	ScanTopic               string = NAMESPACE + ".topic.scan"
+	DiscoverTopic           string = NAMESPACE + ".topic.discover.files"
 	DocEnrichTopic          string = NAMESPACE + ".topic.docenrich"
 	ImgEnrichTopic          string = NAMESPACE + ".topic.imgenrich"
 	ThumbnailTopic          string = NAMESPACE + ".topic.thumbnail"

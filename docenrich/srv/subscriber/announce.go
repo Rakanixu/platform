@@ -20,7 +20,7 @@ type AnnounceDocEnrich struct {
 // OnCrawlerFinished reacts to CrawlerFinished
 func (a *AnnounceDocEnrich) OnCrawlerFinished(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
 	// After a crawler has finished, we want enrich crawled document files
-	if globals.ScanTopic == msg.Handler {
+	if globals.DiscoverTopic == msg.Handler {
 		var e *datasource_proto.Endpoint
 		if err := json.Unmarshal([]byte(msg.Data), &e); err != nil {
 			return err

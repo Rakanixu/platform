@@ -28,7 +28,7 @@ func (a *AnnounceDatasource) OnDatasourceCreate(ctx context.Context, msg *announ
 		}
 
 		if err := a.Client.Publish(ctx, a.Client.NewPublication(
-			globals.ScanTopic,
+			globals.DiscoverTopic,
 			r.Endpoint,
 		)); err != nil {
 			return err
@@ -84,7 +84,7 @@ func (a *AnnounceDatasource) OnDatasourceScan(ctx context.Context, msg *announce
 		}
 
 		if err := a.Client.Publish(ctx, a.Client.NewPublication(
-			globals.ScanTopic,
+			globals.DiscoverTopic,
 			e,
 		)); err != nil {
 			return err
@@ -141,7 +141,7 @@ func (a *AnnounceDatasource) OnDatasourceScanAll(ctx context.Context, msg *annou
 
 		for _, v := range es {
 			if err := a.Client.Publish(ctx, a.Client.NewPublication(
-				globals.ScanTopic,
+				globals.DiscoverTopic,
 				v,
 			)); err != nil {
 				return err
