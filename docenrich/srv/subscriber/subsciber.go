@@ -2,7 +2,6 @@ package subscriber
 
 import (
 	"encoding/json"
-	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	db_helper "github.com/kazoup/platform/lib/dbhelper"
@@ -11,7 +10,6 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	announce_msg "github.com/kazoup/platform/lib/protomsg/announce"
 	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
-	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"log"
@@ -111,17 +109,7 @@ func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
 		return err
 	}
 
-	// Publish notification topic if requested
-	if m.msg.Notify {
-		if err := c.Publish(m.ctx, c.NewPublication(globals.NotificationTopic, &notification_proto.NotificationMessage{
-			Method: globals.NOTIFY_REFRESH_SEARCH,
-			UserId: m.msg.UserId,
-			Info:   fmt.Sprintf("Document content extraction for %s finished.", f.GetName()),
-		})); err != nil {
-			log.Print("Publishing NotificationTopic (DocEnrich) error %s", err)
-		}
-	}
-
+	m.msg.FileName = f.GetName()
 	bm, err := json.Marshal(m.msg)
 	if err != nil {
 		return err

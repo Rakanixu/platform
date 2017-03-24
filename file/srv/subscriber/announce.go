@@ -6,6 +6,7 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	announce_msg "github.com/kazoup/platform/lib/protomsg/announce"
 	deletefile_msg "github.com/kazoup/platform/lib/protomsg/deletefileinbucket"
+	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/broker"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
@@ -25,10 +26,24 @@ func (a *AnnounceFile) OnFileDeleted(ctx context.Context, msg *announce_msg.Anno
 			return err
 		}
 
+		// Get userId
+		uId, err := globals.ParseUserIdFromContext(ctx)
+		if err != nil {
+			return err
+		}
+
 		// Trigger deletion for associated resources (thumbnail in our GCS account)
 		if err := a.Client.Publish(ctx, a.Client.NewPublication(globals.DeleteFileInBucketTopic, &deletefile_msg.DeleteFileInBucketMsg{
 			FileId: r.FileId,
 			Index:  r.Index,
+		})); err != nil {
+			return err
+		}
+
+		// Publish notification
+		if err := a.Client.Publish(ctx, a.Client.NewPublication(globals.NotificationTopic, &notification_proto.NotificationMessage{
+			Method: globals.NOTIFY_REFRESH_SEARCH,
+			UserId: uId,
 		})); err != nil {
 			return err
 		}

@@ -46,6 +46,19 @@ func srv(ctx *cli.Context) {
 		log.Fatal(err)
 	}
 
+	// React to tasks done, notify user about them
+	if err := service.Server().Subscribe(
+		service.Server().NewSubscriber(
+			globals.AnnounceDoneTopic,
+			&subscriber.AnnounceNotification{
+				Client: service.Client(),
+				Broker: service.Server().Options().Broker,
+			},
+		),
+	); err != nil {
+		log.Fatal(err)
+	}
+
 	// Notification handler instantiate with service server
 	// It will allow to subscribe to topics and then stream actions back to clients
 	if err := service.Server().Handle(

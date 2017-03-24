@@ -80,13 +80,13 @@ func (l *LogWrapper) Call(ctx context.Context, req client.Request, rsp interface
 	return l.Client.Call(ctx, req, rsp, opts...)
 }
 
-func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
+func AuthHandlerWrapper(fn server.HandlerFunc) server.HandlerFunc {
 	return func(ctx context.Context, req server.Request, rsp interface{}) error {
 		var f error
 
 		md, ok := metadata.FromContext(ctx)
 		if !ok {
-			return errors.InternalServerError("AuthWrapper", "Unable to retrieve metadata")
+			return errors.InternalServerError("AuthHandlerWrapper", "Unable to retrieve metadata")
 		}
 
 		if len(md["Authorization"]) == 0 {
@@ -125,6 +125,56 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 		}
 
 		f = fn(ctx, req, rsp)
+
+		return f
+	}
+}
+
+func AuthSubscriberWrapper(fn server.SubscriberFunc) server.SubscriberFunc {
+	return func(ctx context.Context, msg server.Publication) error {
+		var f error
+
+		md, ok := metadata.FromContext(ctx)
+		if !ok {
+			return errors.InternalServerError("AuthSubscriberWrapper", "Unable to retrieve metadata")
+		}
+
+		if len(md["Authorization"]) == 0 {
+			return errors.Unauthorized("", "Authorization required")
+		}
+
+		// Authentication
+		if md["Authorization"] != globals.SYSTEM_TOKEN {
+			token, err := jwt.Parse(md["Authorization"], func(token *jwt.Token) (interface{}, error) {
+				// Don't forget to validate the alg is what you expect:
+				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+					return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+				}
+
+				decoded, err := base64.URLEncoding.DecodeString(globals.CLIENT_ID_SECRET)
+				if err != nil {
+					return nil, err
+				}
+
+				return decoded, nil
+			})
+
+			if err != nil {
+				return errors.Unauthorized("Token", err.Error())
+			}
+
+			if !token.Valid {
+				return errors.Unauthorized("", "Invalid token")
+			}
+
+			ctx = context.WithValue(
+				ctx,
+				kazoup_context.UserIdCtxKey{},
+				kazoup_context.UserIdCtxValue(token.Claims.(jwt.MapClaims)["sub"].(string)),
+			)
+		}
+
+		f = fn(ctx, msg)
 
 		return f
 	}
@@ -411,8 +461,8 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			micro.RegisterInterval(time.Second*30),
 			//micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...),*/ KazoupClientWrap()),
-			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn), NewAfterSubscriberWrapper()),
-			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewAfterHandlerWrapper(), NewQuotaHandlerWrapper(sn), AuthWrapper),
+			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn), NewAfterSubscriberWrapper(), AuthSubscriberWrapper),
+			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewAfterHandlerWrapper(), NewQuotaHandlerWrapper(sn), AuthHandlerWrapper),
 			micro.Flags(
 				cli.StringFlag{
 					Name:   "elasticsearch_hosts",
@@ -439,8 +489,8 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			micro.RegisterInterval(time.Second*30),
 			//micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...),*/ KazoupClientWrap()),
-			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn), NewAfterSubscriberWrapper()),
-			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewQuotaHandlerWrapper(sn), NewAfterHandlerWrapper(), AuthWrapper),
+			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn), NewAfterSubscriberWrapper(), AuthSubscriberWrapper),
+			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewQuotaHandlerWrapper(sn), NewAfterHandlerWrapper(), AuthHandlerWrapper),
 		)
 	} else {
 		service = micro.NewService(
@@ -451,8 +501,8 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			micro.RegisterInterval(time.Second*30),
 			//micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...), */ monitor.ClientWrapper(m), KazoupClientWrap()),
-			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn), NewAfterSubscriberWrapper()),
-			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...),*/ NewQuotaHandlerWrapper(sn), monitor.HandlerWrapper(m), NewAfterHandlerWrapper(), AuthWrapper),
+			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn), NewAfterSubscriberWrapper(), AuthSubscriberWrapper),
+			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...),*/ NewQuotaHandlerWrapper(sn), monitor.HandlerWrapper(m), NewAfterHandlerWrapper(), AuthHandlerWrapper),
 		)
 	}
 

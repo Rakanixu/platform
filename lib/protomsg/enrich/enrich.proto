@@ -6,5 +6,6 @@ message EnrichMessage {
   string id = 1;
   string user_id = 2;
   string index = 3;
-  bool notify = 4;
+  string file_name = 4;
+  bool notify = 5;
 }

@@ -2,15 +2,14 @@ package subscriber
 
 import (
 	"encoding/json"
-	"fmt"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	db_helper "github.com/kazoup/platform/lib/dbhelper"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	text "github.com/kazoup/platform/lib/normalization/text"
+	announce_msg "github.com/kazoup/platform/lib/protomsg/announce"
 	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
 	rossetelib "github.com/kazoup/platform/lib/rossete"
-	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"log"
@@ -144,15 +143,19 @@ func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
 			return err
 		}
 
-		// Publish notification topic if requested
-		if m.msg.Notify {
-			if err := c.Publish(m.ctx, c.NewPublication(globals.NotificationTopic, &notification_proto.NotificationMessage{
-				Method: globals.NOTIFY_REFRESH_SEARCH,
-				UserId: m.msg.UserId,
-				Info:   fmt.Sprintf("Entity extraction for %s finished.", f.GetName()),
-			})); err != nil {
-				log.Print("Publishing NotificationTopic (ImgEnrich) error %s", err)
-			}
+		m.msg.FileName = f.GetName()
+		bm, err := json.Marshal(m.msg)
+		if err != nil {
+			return err
+		}
+
+		// Because of the nature of the queuing, when we publish AnnounceTopic, the task may not be done, but will be eventually
+		// For the subscribers that implement its own queue, we need to use AnnounceDoneTopic.
+		if err := c.Publish(m.ctx, c.NewPublication(globals.AnnounceDoneTopic, &announce_msg.AnnounceMessage{
+			Handler: globals.ExtractEntitiesTopic,
+			Data:    string(bm),
+		})); err != nil {
+			return err
 		}
 	}
 

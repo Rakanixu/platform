@@ -74,7 +74,7 @@ var PRODUCT_QUOTAS = struct {
 				"label":      "Speech to text service",
 				"icon":       "image:audiotrack",
 				"handler":    0,
-				"subscriber": 3,
+				"subscriber": 1,
 			},
 			DOCENRICH_SERVICE_NAME: map[string]interface{}{
 				"label":      "Content extraction service",
