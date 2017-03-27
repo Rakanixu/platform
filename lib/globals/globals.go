@@ -53,7 +53,6 @@ const (
 	HANDLER_FILE_DELETE = FILE_SERVICE_NAME + ".File.Delete"
 
 	AnnounceTopic           string = NAMESPACE + ".topic.announce"
-	AnnounceDoneTopic       string = NAMESPACE + ".topic.done.announce"
 	FilesTopic              string = NAMESPACE + ".topic.files"
 	SlackChannelsTopic      string = NAMESPACE + ".topic.slackchannels"
 	SlackUsersTopic         string = NAMESPACE + ".topic.slackusers"

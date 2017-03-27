@@ -59,7 +59,7 @@ func main() {
 	// Attach subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
-			globals.AnnounceDoneTopic,
+			globals.AnnounceTopic,
 			&subscriber.AnnounceTextAnalyzer{
 				Client: service.Client(),
 				Broker: service.Server().Options().Broker,

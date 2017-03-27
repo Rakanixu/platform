@@ -9,7 +9,6 @@ import (
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
-	announce_msg "github.com/kazoup/platform/lib/protomsg/announce"
 	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
@@ -17,8 +16,9 @@ import (
 )
 
 type ThumbnailMsgChan struct {
-	ctx context.Context
-	msg *enrich_proto.EnrichMessage
+	ctx  context.Context
+	msg  *enrich_proto.EnrichMessage
+	done chan bool
 }
 
 type Thumbnail struct {
@@ -30,11 +30,15 @@ type Thumbnail struct {
 
 // Enrich subscriber, receive EnrichMessage to get the file and process it
 func (e *Thumbnail) Thumbnail(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
-	// Queue internally
-	e.ThumbnailMsgChan <- ThumbnailMsgChan{
-		ctx: ctx,
-		msg: enrichmsg,
+	c := ThumbnailMsgChan{
+		ctx:  ctx,
+		msg:  enrichmsg,
+		done: make(chan bool),
 	}
+	// Queue internally
+	e.ThumbnailMsgChan <- c
+
+	<-c.done
 
 	return nil
 }
@@ -113,19 +117,7 @@ func processThumbnailMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m Thum
 		return err
 	}
 
-	bm, err := json.Marshal(m.msg)
-	if err != nil {
-		return err
-	}
-
-	// Because of the nature of the queuing, when we publish AnnounceTopic, the task may not be done, but will be eventually
-	// For the subscribers that implement its own queue, we need to use AnnounceDoneTopic.
-	if err := c.Publish(m.ctx, c.NewPublication(globals.AnnounceDoneTopic, &announce_msg.AnnounceMessage{
-		Handler: globals.ImgEnrichTopic,
-		Data:    string(bm),
-	})); err != nil {
-		log.Print("Error Publishing AnnounceDoneTopic %s", err)
-	}
+	m.done <- true
 
 	return nil
 }

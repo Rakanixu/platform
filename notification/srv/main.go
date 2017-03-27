@@ -45,20 +45,6 @@ func main() {
 	// React to tasks done, notify user about them
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
-			globals.AnnounceDoneTopic,
-			&subscriber.AnnounceDoneNotification{
-				Client: service.Client(),
-				Broker: service.Server().Options().Broker,
-			},
-			server.SubscriberQueue("announcedone-notification"),
-		),
-	); err != nil {
-		log.Fatal(err)
-	}
-
-	// React to tasks done, notify user about them
-	if err := service.Server().Subscribe(
-		service.Server().NewSubscriber(
 			globals.AnnounceTopic,
 			&subscriber.AnnounceNotification{
 				Client: service.Client(),

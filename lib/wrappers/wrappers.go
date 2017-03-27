@@ -253,7 +253,7 @@ func quotaSubscriberWrapper(fn server.SubscriberFunc, limiter *rate.Limiter, srv
 	return func(ctx context.Context, msg server.Publication) error {
 		// On announcements just do not apply quota subscriber
 		// This is really important as quota counter will be increase when a quated srv listen to global announcements
-		if msg.Topic() == globals.AnnounceTopic || msg.Topic() == globals.AnnounceDoneTopic {
+		if msg.Topic() == globals.AnnounceTopic {
 			return fn(ctx, msg)
 		}
 
@@ -367,7 +367,7 @@ func afterSubscriberWrapper(fn server.SubscriberFunc, c client.Client) server.Su
 		}
 
 		// Announce if topic is not an announcement, we do not want to announce that an announcement was announce..
-		if !(msg.Topic() == globals.AnnounceTopic || msg.Topic() == globals.AnnounceDoneTopic) {
+		if !(msg.Topic() == globals.AnnounceTopic) {
 			defer func() {
 				b, err := json.Marshal(msg.Message())
 				if err != nil {

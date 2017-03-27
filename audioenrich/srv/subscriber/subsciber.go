@@ -9,7 +9,6 @@ import (
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
-	announce_msg "github.com/kazoup/platform/lib/protomsg/announce"
 	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
@@ -17,8 +16,9 @@ import (
 )
 
 type EnrichMsgChan struct {
-	msg *enrich_proto.EnrichMessage
-	ctx context.Context
+	msg  *enrich_proto.EnrichMessage
+	ctx  context.Context
+	done chan bool
 }
 
 type Enrich struct {
@@ -30,11 +30,13 @@ type Enrich struct {
 
 // Enrich subscriber, receive EnrichMessage to get the file and process it
 func (e *Enrich) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
-	// Queue internally
-	e.EnrichMsgChan <- EnrichMsgChan{
-		msg: enrichmsg,
-		ctx: ctx,
+	c := EnrichMsgChan{
+		msg:  enrichmsg,
+		ctx:  ctx,
+		done: make(chan bool),
 	}
+	// Queue internally
+	e.EnrichMsgChan <- c
 
 	return nil
 }
@@ -112,19 +114,8 @@ func processEnrichMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m EnrichM
 	}
 
 	m.msg.FileName = f.GetName()
-	bm, err := json.Marshal(m.msg)
-	if err != nil {
-		return err
-	}
 
-	// Because of the nature of the queuing, when we publish AnnounceTopic, the task may not be done, but will be eventually
-	// For the subscribers that implement its own queue, we need to use AnnounceDoneTopic.
-	if err := c.Publish(m.ctx, c.NewPublication(globals.AnnounceDoneTopic, &announce_msg.AnnounceMessage{
-		Handler: globals.AudioEnrichTopic,
-		Data:    string(bm),
-	})); err != nil {
-		log.Print("Error Publishing AnnounceDoneTopic %s", err)
-	}
+	m.done <- true
 
 	return nil
 }

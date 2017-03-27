@@ -7,7 +7,6 @@ import (
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	text "github.com/kazoup/platform/lib/normalization/text"
-	announce_msg "github.com/kazoup/platform/lib/protomsg/announce"
 	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
 	rossetelib "github.com/kazoup/platform/lib/rossete"
 	"github.com/micro/go-micro/client"
@@ -24,8 +23,9 @@ const (
 )
 
 type EnrichMsgChan struct {
-	ctx context.Context
-	msg *enrich_proto.EnrichMessage
+	ctx  context.Context
+	msg  *enrich_proto.EnrichMessage
+	done chan bool
 }
 
 type TextAnalyzer struct {
@@ -36,11 +36,15 @@ type TextAnalyzer struct {
 
 // Enrich subscriber, receive EnrichMessage to get the file and process it
 func (ta *TextAnalyzer) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
-	// Queue internally
-	ta.EnrichMsgChan <- EnrichMsgChan{
-		ctx: ctx,
-		msg: enrichmsg,
+	c := EnrichMsgChan{
+		ctx:  ctx,
+		msg:  enrichmsg,
+		done: make(chan bool),
 	}
+	// Queue internally
+	ta.EnrichMsgChan <- c
+
+	<-c.done
 
 	return nil
 }
@@ -144,20 +148,9 @@ func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
 		}
 
 		m.msg.FileName = f.GetName()
-		bm, err := json.Marshal(m.msg)
-		if err != nil {
-			return err
-		}
-
-		// Because of the nature of the queuing, when we publish AnnounceTopic, the task may not be done, but will be eventually
-		// For the subscribers that implement its own queue, we need to use AnnounceDoneTopic.
-		if err := c.Publish(m.ctx, c.NewPublication(globals.AnnounceDoneTopic, &announce_msg.AnnounceMessage{
-			Handler: globals.ExtractEntitiesTopic,
-			Data:    string(bm),
-		})); err != nil {
-			return err
-		}
 	}
+
+	m.done <- true
 
 	return nil
 }

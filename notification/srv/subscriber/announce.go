@@ -17,13 +17,13 @@ import (
 	"golang.org/x/net/context"
 )
 
-type AnnounceDoneNotification struct {
+type AnnounceNotification struct {
 	Client client.Client
 	Broker broker.Broker
 }
 
 // OnDocEnrich
-func (a *AnnounceDoneNotification) OnDocEnrich(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
+func (a *AnnounceNotification) OnDocEnrich(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
 	// Notify that document enrichment happened
 	if globals.DocEnrichTopic == msg.Handler {
 		var m *enrich_msg.EnrichMessage
@@ -47,7 +47,7 @@ func (a *AnnounceDoneNotification) OnDocEnrich(ctx context.Context, msg *announc
 }
 
 // OnImgEnrich
-func (a *AnnounceDoneNotification) OnImgEnrich(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
+func (a *AnnounceNotification) OnImgEnrich(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
 	// Notify that image enrichment happened
 	if globals.ImgEnrichTopic == msg.Handler {
 		var m *enrich_msg.EnrichMessage
@@ -71,7 +71,7 @@ func (a *AnnounceDoneNotification) OnImgEnrich(ctx context.Context, msg *announc
 }
 
 // OnAudioEnrich
-func (a *AnnounceDoneNotification) OnAudioEnrich(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
+func (a *AnnounceNotification) OnAudioEnrich(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
 	// Notify that audio enrichment happened
 	if globals.AudioEnrichTopic == msg.Handler {
 		var m *enrich_msg.EnrichMessage
@@ -95,7 +95,7 @@ func (a *AnnounceDoneNotification) OnAudioEnrich(ctx context.Context, msg *annou
 }
 
 // OnSentimentExtraction
-func (a *AnnounceDoneNotification) OnSentimentExtraction(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
+func (a *AnnounceNotification) OnSentimentExtraction(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
 	// Notify that sentiment extraction happened
 	if globals.SentimentEnrichTopic == msg.Handler {
 		var m *enrich_msg.EnrichMessage
@@ -119,7 +119,7 @@ func (a *AnnounceDoneNotification) OnSentimentExtraction(ctx context.Context, ms
 }
 
 // OnSentimentExtraction
-func (a *AnnounceDoneNotification) OnEntitiesExtraction(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
+func (a *AnnounceNotification) OnEntitiesExtraction(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
 	// Notify that entities extraction happened
 	if globals.ExtractEntitiesTopic == msg.Handler {
 		var m *enrich_msg.EnrichMessage
@@ -141,11 +141,6 @@ func (a *AnnounceDoneNotification) OnEntitiesExtraction(ctx context.Context, msg
 	}
 
 	return nil
-}
-
-type AnnounceNotification struct {
-	Client client.Client
-	Broker broker.Broker
 }
 
 //OnCrawlerFinished
