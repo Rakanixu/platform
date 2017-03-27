@@ -38,6 +38,8 @@ func (e *Enrich) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessa
 	// Queue internally
 	e.EnrichMsgChan <- c
 
+	<-c.done
+
 	return nil
 }
 
