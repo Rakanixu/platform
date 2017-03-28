@@ -43,17 +43,26 @@ const (
 	TEXTANALYZER_SERVICE_NAME      string = NAMESPACE + ".srv.textanalyzer"
 	SENTIMENTANALYZER_SERVICE_NAME string = NAMESPACE + ".srv.sentimentanalyzer"
 
+	HANDLER_DATASOURCE_CREATE  = DATASOURCE_SERVICE_NAME + ".DataSource.Create"
+	HANDLER_DATASOURCE_DELETE  = DATASOURCE_SERVICE_NAME + ".DataSource.Delete"
+	HANDLER_DATASOURCE_SEARCH  = DATASOURCE_SERVICE_NAME + ".DataSource.Search"
+	HANDLER_DATASOURCE_SCAN    = DATASOURCE_SERVICE_NAME + ".DataSource.Scan"
+	HANDLER_DATASOURCE_SCANALL = DATASOURCE_SERVICE_NAME + ".DataSource.ScanAll"
+
+	HANDLER_FILE_CREATE = FILE_SERVICE_NAME + ".File.Create"
+	HANDLER_FILE_DELETE = FILE_SERVICE_NAME + ".File.Delete"
+
+	AnnounceTopic           string = NAMESPACE + ".topic.announce"
 	FilesTopic              string = NAMESPACE + ".topic.files"
 	SlackChannelsTopic      string = NAMESPACE + ".topic.slackchannels"
 	SlackUsersTopic         string = NAMESPACE + ".topic.slackusers"
-	ScanTopic               string = NAMESPACE + ".topic.scan"
+	DiscoverTopic           string = NAMESPACE + ".topic.discover.files"
 	DocEnrichTopic          string = NAMESPACE + ".topic.docenrich"
 	ImgEnrichTopic          string = NAMESPACE + ".topic.imgenrich"
 	ThumbnailTopic          string = NAMESPACE + ".topic.thumbnail"
 	AudioEnrichTopic        string = NAMESPACE + ".topic.audioenrich"
 	SentimentEnrichTopic    string = NAMESPACE + ".topic.sentiment"
 	ExtractEntitiesTopic    string = NAMESPACE + ".topic.extractentities"
-	CrawlerStartedTopic     string = NAMESPACE + ".topic.crawlerstarted"
 	CrawlerFinishedTopic    string = NAMESPACE + ".topic.crawlerfinished"
 	NotificationTopic       string = NAMESPACE + ".topic.notification"
 	NotificationProxyTopic  string = NAMESPACE + ".topic.notificationproxy"
@@ -161,8 +170,7 @@ const (
 	NOTIFY_REFRESH_DATASOURCES = "refresh-datasources"
 	NOTIFY_REFRESH_SEARCH      = "refresh-search"
 
-	DISCOVERY_DELAY_MS  = 10 * time.Millisecond
-	PUBLISHING_DELAY_MS = 20 * time.Millisecond
+	DISCOVERY_DELAY_MS = 10 * time.Millisecond
 )
 
 func NewGoogleOautConfig() *oauth2.Config {

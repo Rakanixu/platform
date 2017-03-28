@@ -1,13 +1,14 @@
 package subscriber
 
 import (
-	"github.com/kazoup/platform/crawler/srv/proto/crawler"
-	crawler_proto "github.com/kazoup/platform/crawler/srv/proto/crawler"
+	"encoding/json"
 	datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	db_conn "github.com/kazoup/platform/lib/dbhelper"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
+	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"log"
@@ -32,15 +33,32 @@ func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) erro
 		return err
 	}
 
-	// Update token in DB
-	if err := db_conn.UpdateFileSystemAuth(c.Client, ctx, endpoint.Id, auth); err != nil {
+	// Set time for starting scan, crawler running  and update datasource
+	endpoint.Token = auth
+	endpoint.CrawlerRunning = true
+	endpoint.LastScanStarted = time.Now().Unix()
+	b, err := json.Marshal(endpoint)
+	if err != nil {
 		return err
 	}
 
-	// Publish crawler started, or is just going to start..
-	if err := c.Client.Publish(ctx, c.Client.NewPublication(globals.CrawlerStartedTopic, &crawler_proto.CrawlerStartedMessage{
-		UserId:       endpoint.UserId,
-		DatasourceId: endpoint.Id,
+	// Update token in DB
+	_, err = db_conn.UpdateFromDB(c.Client, ctx, &db_proto.UpdateRequest{
+		Index: "datasources",
+		Type:  "datasource",
+		Id:    endpoint.Id,
+		Data:  string(b),
+	})
+	if err != nil {
+		return err
+	}
+
+	// Publish notification
+	if err := c.Client.Publish(ctx, c.Client.NewPublication(globals.NotificationTopic, &notification_proto.NotificationMessage{
+		Info:   "Scan started on " + endpoint.Url + " datasource.",
+		Method: globals.NOTIFY_REFRESH_DATASOURCES,
+		UserId: endpoint.UserId,
+		Data:   string(b),
 	})); err != nil {
 		return err
 	}
@@ -64,15 +82,6 @@ func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) erro
 			// Channel receives signal cralwer has finished
 			case <-filesRunning:
 				time.Sleep(time.Second * 8)
-
-				msg := &crawler.CrawlerFinishedMessage{
-					DatasourceId: endpoint.Id,
-				}
-				// Publish crawling process has finished
-				if err := c.Client.Publish(ctx, c.Client.NewPublication(globals.CrawlerFinishedTopic, msg)); err != nil {
-					//return err
-					log.Println("Error publishin crawler finished", err)
-				}
 				close(filesChan)
 				close(filesRunning)
 				wg.Done()

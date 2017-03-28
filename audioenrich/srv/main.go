@@ -61,6 +61,20 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Attach subscriber
+	if err := service.Server().Subscribe(
+		service.Server().NewSubscriber(
+			globals.AnnounceTopic,
+			&subscriber.AnnounceAudioEnrich{
+				Client: service.Client(),
+				Broker: service.Server().Options().Broker,
+			},
+			server.SubscriberQueue("announce-audioenrich"),
+		),
+	); err != nil {
+		log.Fatal(err)
+	}
+
 	// Init service
 	service.Init()
 

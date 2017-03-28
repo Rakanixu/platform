@@ -2,7 +2,6 @@ package subscriber
 
 import (
 	"encoding/json"
-	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	db_helper "github.com/kazoup/platform/lib/dbhelper"
@@ -10,16 +9,16 @@ import (
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
-	enrich_proto "github.com/kazoup/platform/lib/protomsg"
-	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
+	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"log"
 )
 
 type EnrichMsgChan struct {
-	msg *enrich_proto.EnrichMessage
-	ctx context.Context
+	msg  *enrich_proto.EnrichMessage
+	ctx  context.Context
+	done chan bool
 }
 
 type Enrich struct {
@@ -31,11 +30,15 @@ type Enrich struct {
 
 // Enrich subscriber, receive EnrichMessage to get the file and process it
 func (e *Enrich) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
-	// Queue internally
-	e.EnrichMsgChan <- EnrichMsgChan{
-		msg: enrichmsg,
-		ctx: ctx,
+	c := EnrichMsgChan{
+		msg:  enrichmsg,
+		ctx:  ctx,
+		done: make(chan bool),
 	}
+	// Queue internally
+	e.EnrichMsgChan <- c
+
+	<-c.done
 
 	return nil
 }
@@ -112,26 +115,9 @@ func processEnrichMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m EnrichM
 		return err
 	}
 
-	// Publish notification topic if requested
-	if m.msg.Notify {
-		if err := c.Publish(m.ctx, c.NewPublication(globals.NotificationTopic, &notification_proto.NotificationMessage{
-			Method: globals.NOTIFY_REFRESH_SEARCH,
-			UserId: m.msg.UserId,
-			Info:   fmt.Sprintf("Speach to text for %s finished.", f.GetName()),
-		})); err != nil {
-			log.Print("Publishing NotificationTopic (AudioEnrich) error %s", err)
-		}
-	}
+	m.msg.FileName = f.GetName()
 
-	// Publish the same message to ExtractEntitiesTopic
-	if err := c.Publish(m.ctx, c.NewPublication(globals.ExtractEntitiesTopic, m.msg)); err != nil {
-		return err
-	}
-
-	// Publish the same message to SentimentEnrichTopic
-	if err := c.Publish(m.ctx, c.NewPublication(globals.SentimentEnrichTopic, m.msg)); err != nil {
-		return err
-	}
+	m.done <- true
 
 	return nil
 }

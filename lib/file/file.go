@@ -33,7 +33,7 @@ type File interface {
 	GetOptsTimestamps() *OptsKazoupFile
 	SetOptsTimestamps(optsKazoupFile *OptsKazoupFile)
 	SetHighlight(highlight string)
-	SetContentCategory(contentCategory string)
+	SetContentCategory(kazoupCategorization *KazoupCategorization)
 	SetEntities(entities *rossetelib.RosseteEntities)
 	SetSentiment(sentiment *rossetelib.RosseteSentiment)
 }

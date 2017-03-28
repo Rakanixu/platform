@@ -32,6 +32,7 @@ message CreateResponse {
 
 message DeleteRequest {
   string id = 1;
+  string index = 2;
 }
 
 message DeleteResponse {
@@ -84,13 +85,4 @@ message Token {
   string token_type = 2;
   string refresh_token = 3;
   int64 expiry = 4;
-}
-
-message DeleteBucketMessage {
-  Endpoint endpoint = 1;
-}
-
-message DeleteFileInBucketMessage {
-  string file_id = 1;
-  string index = 2;
 }

@@ -99,8 +99,8 @@ func (kf *KazoupSlackFile) SetHighlight(s string) {
 	kf.Highlight = s
 }
 
-func (kf *KazoupSlackFile) SetContentCategory(contentCategory string) {
-	kf.ContentCategory = contentCategory
+func (kf *KazoupSlackFile) SetContentCategory(c *KazoupCategorization) {
+	kf.KazoupCategorization = c
 }
 
 func (kf *KazoupSlackFile) SetEntities(entities *rossetelib.RosseteEntities) {
