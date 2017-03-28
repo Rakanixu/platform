@@ -49,35 +49,62 @@ func (kcw *kazoupClientWrapper) Call(ctx context.Context, req client.Request, rs
 	return kcw.Client.Call(ctx, req, rsp, opts...)
 }
 
-// NewHandlerWrapper wraps a service within the handler so it can be accessed by the handler itself.
-func NewHandlerWrapper(service micro.Service) server.HandlerWrapper {
-	return func(h server.HandlerFunc) server.HandlerFunc {
-		return func(ctx context.Context, req server.Request, rsp interface{}) error {
-			ctx = micro.NewContext(ctx, service)
-			return h(ctx, req, rsp)
-		}
-	}
-}
-
-// log wrapper logs every time a request is made
-type LogWrapper struct {
+type logWrapper struct {
 	client.Client
 }
 
-// Implements client.Wrapper as logWrapper
-func LogWrap(c client.Client) client.Client {
-	return &LogWrapper{c}
+// LogHandlerWrapper returns a HandlerWrappers that logs all requests
+func LogHandlerWrapper() server.HandlerWrapper {
+	return func(h server.HandlerFunc) server.HandlerFunc {
+		return logHandlerWrapper(h)
+	}
 }
 
-func (l *LogWrapper) Call(ctx context.Context, req client.Request, rsp interface{}, opts ...client.CallOption) error {
-	md, _ := metadata.FromContext(ctx)
-	log.WithFields(log.Fields{
-		"from":    md["X-Micro-From-Service"],
-		"service": req.Service(),
-		"method":  req.Method(),
-		"request": req.Request(),
-	}).Info("Service call")
-	return l.Client.Call(ctx, req, rsp, opts...)
+func logHandlerWrapper(fn server.HandlerFunc) server.HandlerFunc {
+	return func(ctx context.Context, req server.Request, rsp interface{}) error {
+		var err error
+		err = fn(ctx, req, rsp)
+
+		if err != nil {
+			log.WithFields(log.Fields{
+				"service": req.Service(),
+				"handler": req.Method(),
+			}).Error(err.Error())
+		} else {
+			log.WithFields(log.Fields{
+				"service": req.Service(),
+				"handler": req.Method(),
+			}).Info("OK")
+		}
+
+		return err
+	}
+}
+
+// LogHandlerWrapper returns a HandlerWrappers that logs all requests
+func LogSubscriberWrapper() server.SubscriberWrapper {
+	return func(h server.SubscriberFunc) server.SubscriberFunc {
+		return logSubscriberWrapper(h)
+	}
+}
+
+func logSubscriberWrapper(fn server.SubscriberFunc) server.SubscriberFunc {
+	return func(ctx context.Context, msg server.Publication) error {
+		var err error
+		err = fn(ctx, msg)
+
+		if err != nil {
+			log.WithFields(log.Fields{
+				"topic": msg.Topic(),
+			}).Error(err.Error())
+		} /* else {
+			log.WithFields(log.Fields{
+				"topic": msg.Topic(),
+			}).Info("OK")
+		}*/
+
+		return err
+	}
 }
 
 func AuthHandlerWrapper(fn server.HandlerFunc) server.HandlerFunc {
@@ -299,9 +326,6 @@ func quotaSubscriberWrapper(fn server.SubscriberFunc, limiter *rate.Limiter, srv
 		if quotaLimit > 0 {
 			_, _, allowed := limiter.AllowN(fmt.Sprintf("%s-subs-%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, globals.QUOTA_TIME_LIMITER, 1)
 			if !allowed {
-				// Quota limite reached, but due to subscribers nature, error will be lost.
-				// IDEA: pulbish to notification srv a rate limite message to let user know.
-				log.Println("USER RATE LIMIT (SUBSCRIBER)", fmt.Sprintf("%s%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)))
 				return errors.Forbidden("User Rate Limit", "User rate limit exceeded.")
 			}
 		}
@@ -461,8 +485,8 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			micro.RegisterInterval(time.Second*30),
 			//micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...),*/ KazoupClientWrap()),
-			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn), NewAfterSubscriberWrapper(), AuthSubscriberWrapper),
-			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewAfterHandlerWrapper(), NewQuotaHandlerWrapper(sn), AuthHandlerWrapper),
+			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn), NewAfterSubscriberWrapper(), AuthSubscriberWrapper, LogSubscriberWrapper()),
+			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewAfterHandlerWrapper(), NewQuotaHandlerWrapper(sn), AuthHandlerWrapper, LogHandlerWrapper()),
 			micro.Flags(
 				cli.StringFlag{
 					Name:   "elasticsearch_hosts",
@@ -489,8 +513,8 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			micro.RegisterInterval(time.Second*30),
 			//micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...),*/ KazoupClientWrap()),
-			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn), NewAfterSubscriberWrapper(), AuthSubscriberWrapper),
-			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewQuotaHandlerWrapper(sn), NewAfterHandlerWrapper(), AuthHandlerWrapper),
+			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn), NewAfterSubscriberWrapper(), AuthSubscriberWrapper, LogSubscriberWrapper()),
+			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewQuotaHandlerWrapper(sn), NewAfterHandlerWrapper(), AuthHandlerWrapper, LogHandlerWrapper()),
 		)
 	} else {
 		service = micro.NewService(
@@ -501,8 +525,8 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			micro.RegisterInterval(time.Second*30),
 			//micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...), */ monitor.ClientWrapper(m), KazoupClientWrap()),
-			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn), NewAfterSubscriberWrapper(), AuthSubscriberWrapper),
-			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...),*/ NewQuotaHandlerWrapper(sn), monitor.HandlerWrapper(m), NewAfterHandlerWrapper(), AuthHandlerWrapper),
+			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn), NewAfterSubscriberWrapper(), AuthSubscriberWrapper, LogSubscriberWrapper()),
+			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...),*/ NewQuotaHandlerWrapper(sn), monitor.HandlerWrapper(m), NewAfterHandlerWrapper(), AuthHandlerWrapper, LogHandlerWrapper()),
 		)
 	}
 
