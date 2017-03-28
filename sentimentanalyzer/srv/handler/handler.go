@@ -2,7 +2,7 @@ package handler
 
 import (
 	"github.com/kazoup/platform/lib/globals"
-	enrich_proto "github.com/kazoup/platform/lib/protomsg"
+	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
 	quota_proto "github.com/kazoup/platform/quota/srv/proto/quota"
 	proto "github.com/kazoup/platform/sentimentanalyzer/srv/proto/sentimentanalyzer"
 	"github.com/micro/go-micro/client"

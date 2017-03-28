@@ -9,6 +9,7 @@ import (
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/cli"
+	"github.com/micro/go-micro/server"
 	"github.com/micro/go-os/monitor"
 	"log"
 	"time"
@@ -34,39 +35,55 @@ func srv(ctx *cli.Context) {
 
 	// Attach crawler started subscriber
 	if err := service.Server().Subscribe(
-		service.Server().NewSubscriber(globals.CrawlerStartedTopic, &subscriber.CrawlerStarted{
-			Client: service.Client(),
-			Broker: service.Server().Options().Broker,
-		})); err != nil {
+		service.Server().NewSubscriber(
+			globals.AnnounceTopic,
+			&subscriber.AnnounceDatasource{
+				Client: service.Client(),
+				Broker: service.Server().Options().Broker,
+			},
+			server.SubscriberQueue("announce-datasource"),
+		)); err != nil {
 		log.Fatal(err)
 	}
 
 	// Attach crawler finished subscriber
 	if err := service.Server().Subscribe(
-		service.Server().NewSubscriber(globals.CrawlerFinishedTopic, &subscriber.CrawlerFinished{
-			Client: service.Client(),
-			Broker: service.Server().Options().Broker,
-		})); err != nil {
+		service.Server().NewSubscriber(
+			globals.CrawlerFinishedTopic,
+			&subscriber.CrawlerFinished{
+				Client: service.Client(),
+				Broker: service.Server().Options().Broker,
+			},
+			server.SubscriberQueue("crawlerfinished"),
+		)); err != nil {
 		log.Fatal(err)
 	}
 
 	// Attach delete bucket subscriber
 	if err := service.Server().Subscribe(
-		service.Server().NewSubscriber(globals.DeleteBucketTopic, &subscriber.DeleteBucket{
-			Client:             service.Client(),
-			Broker:             service.Server().Options().Broker,
-			GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
-		})); err != nil {
+		service.Server().NewSubscriber(
+			globals.DeleteBucketTopic,
+			&subscriber.DeleteBucket{
+				Client:             service.Client(),
+				Broker:             service.Server().Options().Broker,
+				GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
+			},
+			server.SubscriberQueue("deletebucket"),
+		)); err != nil {
 		log.Fatal(err)
 	}
 
 	// Attach clean bucket subscriber
 	if err := service.Server().Subscribe(
-		service.Server().NewSubscriber(globals.DeleteFileInBucketTopic, &subscriber.DeleteFileInBucket{
-			Client:             service.Client(),
-			Broker:             service.Server().Options().Broker,
-			GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
-		})); err != nil {
+		service.Server().NewSubscriber(
+			globals.DeleteFileInBucketTopic,
+			&subscriber.DeleteFileInBucket{
+				Client:             service.Client(),
+				Broker:             service.Server().Options().Broker,
+				GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
+			},
+			server.SubscriberQueue("deletefileinbucket"),
+		)); err != nil {
 		log.Fatal(err)
 	}
 
@@ -77,6 +94,7 @@ func srv(ctx *cli.Context) {
 			GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
 		}),
 	)
+
 	if err := service.Run(); err != nil {
 		log.Fatalf("%v", err)
 	}

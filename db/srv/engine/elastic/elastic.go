@@ -13,7 +13,7 @@ import (
 	subscriber "github.com/kazoup/platform/db/srv/subscriber/elastic"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
-	enrich_proto "github.com/kazoup/platform/lib/protomsg"
+	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	elib "gopkg.in/olivere/elastic.v5"
@@ -104,21 +104,23 @@ func (e *elastic) Init(c client.Client) error {
 					return
 				}
 
-				if err := c.Publish(bkr.Context, c.NewPublication(globals.ThumbnailTopic, &enrich_proto.EnrichMessage{
-					Index:  kf.Doc.Index,
-					Id:     kf.Doc.ID,
-					UserId: kf.Doc.UserId,
-				})); err != nil {
-					log.Print("Publishing ThumbnailTopic error %s", err)
+				if kf.Doc.Category == globals.CATEGORY_PICTURE &&
+					(kf.Doc.OptsKazoupFile == nil || kf.Doc.OptsKazoupFile.ThumbnailTimestamp == nil) {
+					if err := c.Publish(bkr.Context, c.NewPublication(globals.ThumbnailTopic, &enrich_proto.EnrichMessage{
+						Index:  kf.Doc.Index,
+						Id:     kf.Doc.ID,
+						UserId: kf.Doc.UserId,
+					})); err != nil {
+						log.Print("Publishing ThumbnailTopic error %s", err)
+					}
 				}
-				time.Sleep(globals.PUBLISHING_DELAY_MS)
 			}
 		}).
 		Name(fmt.Sprintf("bulkFilesProcessor-%s", rs)).
 		Workers(3).
-		BulkActions(100).               // commit if # requests >= 100
-		BulkSize(2 << 20).              // commit if size of requests >= 2 MB, probably to big, btw other constrains will be hit before
-		FlushInterval(5 * time.Second). // commit every 5s, notification message can be send and until 5s later is not really finished
+		BulkActions(500).               // commit if # requests >= 500
+		BulkSize(10 << 20).             // commit if size of requests >= 10 MB, probably to big, btw other constrains will be hit before
+		FlushInterval(6 * time.Second). // commit every 5s, notification message can be send and until 5s later is not really finished
 		Do(context.Background())
 	if err != nil {
 		return err
@@ -222,7 +224,7 @@ func (e *elastic) Update(ctx context.Context, req *db.UpdateRequest) (*db.Update
 		bo.MaxElapsedTime = time.Second * 3
 
 		if err = backoff.Retry(func() error {
-			_, err = e.Client.Update().Index(req.Index).Type(req.Type).Id(req.Id).Doc(d).Do(ctx)
+			_, err = e.Client.Update().Index(req.Index).Type(req.Type).Id(req.Id).Doc(d).RetryOnConflict(3).Refresh("wait_for").Do(ctx)
 
 			return err
 		}, bo); err != nil {

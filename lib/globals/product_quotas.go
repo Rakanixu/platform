@@ -74,7 +74,7 @@ var PRODUCT_QUOTAS = struct {
 				"label":      "Speech to text service",
 				"icon":       "image:audiotrack",
 				"handler":    0,
-				"subscriber": 3,
+				"subscriber": 1,
 			},
 			DOCENRICH_SERVICE_NAME: map[string]interface{}{
 				"label":      "Content extraction service",
@@ -96,7 +96,7 @@ var PRODUCT_QUOTAS = struct {
 			},
 			SENTIMENTANALYZER_SERVICE_NAME: map[string]interface{}{
 				"label":      "Sentiment extraction service",
-				"icon":       "action:description",
+				"icon":       "social:mood",
 				"handler":    0,
 				"subscriber": 10,
 			},
@@ -182,7 +182,7 @@ var PRODUCT_QUOTAS = struct {
 			},
 			SENTIMENTANALYZER_SERVICE_NAME: map[string]interface{}{
 				"label":      "Sentiment extraction service",
-				"icon":       "action:description",
+				"icon":       "social:mood",
 				"handler":    0,
 				"subscriber": 50,
 			},

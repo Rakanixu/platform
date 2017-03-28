@@ -40,6 +40,7 @@
                on-response="_handleAnalyzeFile"
                params="[[rpcAnalyzeFileParams]]"
                headers="[[headers]]"></iron-ajax>
+<!--
 
     <iron-ajax id="rpcSentiment"
                method="POST"
@@ -50,6 +51,7 @@
                on-response="_handleSentiment"
                params="[[rpcSentimentParams]]"
                headers="[[headers]]"></iron-ajax>
+-->
 
 
   </template>
@@ -90,7 +92,7 @@
                 }
               };
             }
-          },
+          }/*,
           rpcSentimentParams: {
             type: Object,
             notify: false,
@@ -105,7 +107,7 @@
                 }
               };
             }
-          }
+          }*/
         },
         openAnalyzeConfirmationDialog: function(e) {
           this.set('analyzeMsg', this.item.name + ' will be analyze. \nAre you sure?');
@@ -141,14 +143,14 @@
           this.rpcAnalyzeFileParams.request.type = 'file'; // We always hit the single file analyze from this element
 
           // SentimentAnalyzer.Create does not accept type (as only apply to single file), will be just omited by protobufs
-          this.rpcSentimentParams.request.id = this.item.id;
-          this.rpcSentimentParams.request.index = this.item.index;
+/*          this.rpcSentimentParams.request.id = this.item.id;
+          this.rpcSentimentParams.request.index = this.item.index;*/
 
           this.$.rpcAnalyzeFile.body = this.rpcAnalyzeFileParams;
           this.$.rpcAnalyzeFile.generateRequest();
 
-          this.$.rpcSentiment.body = this.rpcSentimentParams;
-          this.$.rpcSentiment.generateRequest();
+/*          this.$.rpcSentiment.body = this.rpcSentimentParams;
+          this.$.rpcSentiment.generateRequest();*/
         },
         _handleAnalyzeFile: function(e) {
           if (e.detail.response) {
@@ -163,7 +165,7 @@
             this.$.toast.show();
           }
         },
-        _handleSentiment: function(e) {
+/*        _handleSentiment: function(e) {
           if (e.detail.response) {
             this.closeAnalyzeConfirmationDialog();
 
@@ -175,7 +177,7 @@
             this.$.toast.text = text;
             this.$.toast.show();
           }
-        },
+        },*/
         _handleError: function(e) {
           this.checkUnauthorize(e);
 

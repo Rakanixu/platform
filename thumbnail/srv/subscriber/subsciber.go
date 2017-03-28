@@ -9,15 +9,16 @@ import (
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
-	enrich_proto "github.com/kazoup/platform/lib/protomsg"
+	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"log"
 )
 
 type ThumbnailMsgChan struct {
-	ctx context.Context
-	msg *enrich_proto.EnrichMessage
+	ctx  context.Context
+	msg  *enrich_proto.EnrichMessage
+	done chan bool
 }
 
 type Thumbnail struct {
@@ -29,11 +30,15 @@ type Thumbnail struct {
 
 // Enrich subscriber, receive EnrichMessage to get the file and process it
 func (e *Thumbnail) Thumbnail(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
-	// Queue internally
-	e.ThumbnailMsgChan <- ThumbnailMsgChan{
-		ctx: ctx,
-		msg: enrichmsg,
+	c := ThumbnailMsgChan{
+		ctx:  ctx,
+		msg:  enrichmsg,
+		done: make(chan bool),
 	}
+	// Queue internally
+	e.ThumbnailMsgChan <- c
+
+	<-c.done
 
 	return nil
 }
@@ -111,6 +116,8 @@ func processThumbnailMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m Thum
 	if err != nil {
 		return err
 	}
+
+	m.done <- true
 
 	return nil
 }
