@@ -3,7 +3,7 @@ package handler
 import (
 	proto "github.com/kazoup/platform/docenrich/srv/proto/docenrich"
 	"github.com/kazoup/platform/lib/globals"
-	enrich_proto "github.com/kazoup/platform/lib/protomsg"
+	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
 	quota_proto "github.com/kazoup/platform/quota/srv/proto/quota"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"

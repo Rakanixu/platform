@@ -243,7 +243,8 @@
                                             <p class="meta-info">[[timestampToHumanTime(item.modified)]][[bytesToSize(item.file_size, 'with_comma')]]</p>
                                             <p class="tags-info">
                                                 <span class$="tags [[item.access]]">[[item.access]]</span>
-                                                <span class$="tags [[item.content_category]]" hidden="[[!sensitiveContent(item.content_category)]]">[[item.content_category]]</span>
+                                                <span class$="tags [[item.kazoup_categorization.content_category]]"
+                                                      hidden="[[!sensitiveContent(item.kazoup_categorization)]]">[[item.kazoup_categorization.content_category]]</span>
                                             </p>
 
                                             <template is="dom-if" if="[[isVideoPreview(item.category, bigVideoClass)]]" restamp="true">
@@ -276,7 +277,8 @@
                                             <p class="meta-info">[[timestampToHumanTime(item.modified)]][[bytesToSize(item.file_size, 'with_comma')]]</p>
                                             <p class="tags-info">
                                                 <span class$="tags [[item.access]]">[[item.access]]</span>
-                                                <span class$="tags [[item.content_category]]" hidden="[[!sensitiveContent(item.content_category)]]">[[item.content_category]]</span>
+                                                <span class$="tags [[item.kazoup_categorization.content_category]]"
+                                                      hidden="[[!sensitiveContent(item.kazoup_categorization)]]">[[item.kazoup_categorization.content_category]]</span>
                                             </p>
 
                                             <file-icon class="primary"

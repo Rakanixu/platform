@@ -2,6 +2,7 @@ package wrappers
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/aws/aws-sdk-go/aws"
@@ -10,6 +11,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	kazoup_context "github.com/kazoup/platform/lib/context"
 	"github.com/kazoup/platform/lib/globals"
+	announce_msg "github.com/kazoup/platform/lib/protomsg/announce"
 	"github.com/micro/cli"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/client"
@@ -38,7 +40,7 @@ func KazoupClientWrap() client.Wrapper {
 }
 
 // Call will set X-Kazoup-Token with DB_ACCESS_TOKEN value in every internal request
-// Add here whatever is needed to add
+// After every call, we will publish an announcment to say what happened
 func (kcw *kazoupClientWrapper) Call(ctx context.Context, req client.Request, rsp interface{}, opts ...client.CallOption) error {
 	md, _ := metadata.FromContext(ctx)
 	md["X-Kazoup-Token"] = globals.DB_ACCESS_TOKEN
@@ -47,44 +49,71 @@ func (kcw *kazoupClientWrapper) Call(ctx context.Context, req client.Request, rs
 	return kcw.Client.Call(ctx, req, rsp, opts...)
 }
 
-// NewHandlerWrapper wraps a service within the handler so it can be accessed by the handler itself.
-func NewHandlerWrapper(service micro.Service) server.HandlerWrapper {
-	return func(h server.HandlerFunc) server.HandlerFunc {
-		return func(ctx context.Context, req server.Request, rsp interface{}) error {
-			ctx = micro.NewContext(ctx, service)
-			return h(ctx, req, rsp)
-		}
-	}
-}
-
-// log wrapper logs every time a request is made
-type LogWrapper struct {
+type logWrapper struct {
 	client.Client
 }
 
-// Implements client.Wrapper as logWrapper
-func LogWrap(c client.Client) client.Client {
-	return &LogWrapper{c}
+// LogHandlerWrapper returns a HandlerWrappers that logs all requests
+func LogHandlerWrapper() server.HandlerWrapper {
+	return func(h server.HandlerFunc) server.HandlerFunc {
+		return logHandlerWrapper(h)
+	}
 }
 
-func (l *LogWrapper) Call(ctx context.Context, req client.Request, rsp interface{}, opts ...client.CallOption) error {
-	md, _ := metadata.FromContext(ctx)
-	log.WithFields(log.Fields{
-		"from":    md["X-Micro-From-Service"],
-		"service": req.Service(),
-		"method":  req.Method(),
-		"request": req.Request(),
-	}).Info("Service call")
-	return l.Client.Call(ctx, req, rsp, opts...)
+func logHandlerWrapper(fn server.HandlerFunc) server.HandlerFunc {
+	return func(ctx context.Context, req server.Request, rsp interface{}) error {
+		var err error
+		err = fn(ctx, req, rsp)
+
+		if err != nil {
+			log.WithFields(log.Fields{
+				"service": req.Service(),
+				"handler": req.Method(),
+			}).Error(err.Error())
+		} else {
+			log.WithFields(log.Fields{
+				"service": req.Service(),
+				"handler": req.Method(),
+			}).Info("OK")
+		}
+
+		return err
+	}
 }
 
-func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
+// LogHandlerWrapper returns a HandlerWrappers that logs all requests
+func LogSubscriberWrapper() server.SubscriberWrapper {
+	return func(h server.SubscriberFunc) server.SubscriberFunc {
+		return logSubscriberWrapper(h)
+	}
+}
+
+func logSubscriberWrapper(fn server.SubscriberFunc) server.SubscriberFunc {
+	return func(ctx context.Context, msg server.Publication) error {
+		var err error
+		err = fn(ctx, msg)
+
+		if err != nil {
+			log.WithFields(log.Fields{
+				"topic": msg.Topic(),
+			}).Error(err.Error())
+		} /* else {
+			log.WithFields(log.Fields{
+				"topic": msg.Topic(),
+			}).Info("OK")
+		}*/
+
+		return err
+	}
+}
+
+func AuthHandlerWrapper(fn server.HandlerFunc) server.HandlerFunc {
 	return func(ctx context.Context, req server.Request, rsp interface{}) error {
 		var f error
 
 		md, ok := metadata.FromContext(ctx)
 		if !ok {
-			return errors.InternalServerError("AuthWrapper", "Unable to retrieve metadata")
+			return errors.InternalServerError("AuthHandlerWrapper", "Unable to retrieve metadata")
 		}
 
 		if len(md["Authorization"]) == 0 {
@@ -128,11 +157,59 @@ func AuthWrapper(fn server.HandlerFunc) server.HandlerFunc {
 	}
 }
 
+func AuthSubscriberWrapper(fn server.SubscriberFunc) server.SubscriberFunc {
+	return func(ctx context.Context, msg server.Publication) error {
+		var f error
+
+		md, ok := metadata.FromContext(ctx)
+		if !ok {
+			return errors.InternalServerError("AuthSubscriberWrapper", "Unable to retrieve metadata")
+		}
+
+		if len(md["Authorization"]) == 0 {
+			return errors.Unauthorized("", "Authorization required")
+		}
+
+		// Authentication
+		if md["Authorization"] != globals.SYSTEM_TOKEN {
+			token, err := jwt.Parse(md["Authorization"], func(token *jwt.Token) (interface{}, error) {
+				// Don't forget to validate the alg is what you expect:
+				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+					return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+				}
+
+				decoded, err := base64.URLEncoding.DecodeString(globals.CLIENT_ID_SECRET)
+				if err != nil {
+					return nil, err
+				}
+
+				return decoded, nil
+			})
+
+			if err != nil {
+				return errors.Unauthorized("Token", err.Error())
+			}
+
+			if !token.Valid {
+				return errors.Unauthorized("", "Invalid token")
+			}
+
+			ctx = context.WithValue(
+				ctx,
+				kazoup_context.UserIdCtxKey{},
+				kazoup_context.UserIdCtxValue(token.Claims.(jwt.MapClaims)["sub"].(string)),
+			)
+		}
+
+		f = fn(ctx, msg)
+
+		return f
+	}
+}
+
 // quotaHandlerWrapper defines a quota wrapper based on quotaLimit per srv+user_id key
 func quotaHandlerWrapper(fn server.HandlerFunc, limiter *rate.Limiter, srv string) server.HandlerFunc {
 	return func(ctx context.Context, req server.Request, rsp interface{}) error {
-		var f error
-
 		md, ok := metadata.FromContext(ctx)
 		if !ok {
 			return errors.InternalServerError("QuotaWrapper", "Unable to retrieve metadata")
@@ -172,18 +249,14 @@ func quotaHandlerWrapper(fn server.HandlerFunc, limiter *rate.Limiter, srv strin
 			}
 		}
 
-		if quotaLimit <= 0 {
-			return fn(ctx, req, rsp)
+		if quotaLimit > 0 {
+			_, _, allowed := limiter.AllowN(fmt.Sprintf("%s-handler-%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, globals.QUOTA_TIME_LIMITER, 1)
+			if !allowed {
+				return errors.Forbidden("User Rate Limit", "User rate limit exceeded.")
+			}
 		}
 
-		_, _, allowed := limiter.AllowN(fmt.Sprintf("%s-handler-%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, globals.QUOTA_TIME_LIMITER, 1)
-		if !allowed {
-			return errors.Forbidden("User Rate Limit", "User rate limit exceeded.")
-		}
-
-		f = fn(ctx, req, rsp)
-
-		return f
+		return fn(ctx, req, rsp)
 	}
 }
 
@@ -205,6 +278,12 @@ func NewQuotaHandlerWrapper(srvName string) server.HandlerWrapper {
 // quotaSubscriberWrapper defines a quota wrapper based on quotaLimit per srv+user_id key
 func quotaSubscriberWrapper(fn server.SubscriberFunc, limiter *rate.Limiter, srv string) server.SubscriberFunc {
 	return func(ctx context.Context, msg server.Publication) error {
+		// On announcements just do not apply quota subscriber
+		// This is really important as quota counter will be increase when a quated srv listen to global announcements
+		if msg.Topic() == globals.AnnounceTopic {
+			return fn(ctx, msg)
+		}
+
 		md, ok := metadata.FromContext(ctx)
 		if !ok {
 			return errors.InternalServerError("QuotaWrapper", "Unable to retrieve metadata")
@@ -244,16 +323,11 @@ func quotaSubscriberWrapper(fn server.SubscriberFunc, limiter *rate.Limiter, srv
 			}
 		}
 
-		if quotaLimit <= 0 {
-			return fn(ctx, msg)
-		}
-
-		_, _, allowed := limiter.AllowN(fmt.Sprintf("%s-subs-%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, globals.QUOTA_TIME_LIMITER, 1)
-		if !allowed {
-			// Quota limite reached, but due to subscribers nature, error will be lost.
-			// IDEA: pulbish to notification srv a rate limite message to let user know.
-			log.Println("USER RATE LIMIT (SUBSCRIBER)", fmt.Sprintf("%s%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)))
-			return errors.Forbidden("User Rate Limit", "User rate limit exceeded.")
+		if quotaLimit > 0 {
+			_, _, allowed := limiter.AllowN(fmt.Sprintf("%s-subs-%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, globals.QUOTA_TIME_LIMITER, 1)
+			if !allowed {
+				return errors.Forbidden("User Rate Limit", "User rate limit exceeded.")
+			}
 		}
 
 		return fn(ctx, msg)
@@ -272,6 +346,79 @@ func NewQuotaSubscriberWrapper(srvName string) server.SubscriberWrapper {
 
 	return func(fn server.SubscriberFunc) server.SubscriberFunc {
 		return quotaSubscriberWrapper(fn, limiter, srvName)
+	}
+}
+
+func afterHandlerWrapper(fn server.HandlerFunc, c client.Client) server.HandlerFunc {
+	return func(ctx context.Context, req server.Request, rsp interface{}) error {
+		if err := fn(ctx, req, rsp); err != nil {
+			return err
+		}
+
+		defer func() {
+			b, err := json.Marshal(req.Request())
+			if err != nil {
+				log.Println("ERROR afterHandlerWrapper", err)
+			}
+
+			// Publish annuncment after handler was called
+			if err := c.Publish(ctx, c.NewPublication(
+				globals.AnnounceTopic,
+				&announce_msg.AnnounceMessage{
+					Handler: fmt.Sprintf("%s.%s", req.Service(), req.Method()),
+					Data:    string(b),
+				},
+			)); err != nil {
+				log.Println("ERROR afterHandlerWrapper publishing announcement", err)
+			}
+		}()
+
+		return nil
+	}
+}
+
+func NewAfterHandlerWrapper() server.HandlerWrapper {
+	return func(h server.HandlerFunc) server.HandlerFunc {
+		return afterHandlerWrapper(h, NewKazoupClient())
+	}
+}
+
+// quotaSubscriberWrapper defines a quota wrapper based on quotaLimit per srv+user_id key
+func afterSubscriberWrapper(fn server.SubscriberFunc, c client.Client) server.SubscriberFunc {
+	return func(ctx context.Context, msg server.Publication) error {
+		if err := fn(ctx, msg); err != nil {
+			return err
+		}
+
+		// Announce if topic is not an announcement, we do not want to announce that an announcement was announce..
+		if !(msg.Topic() == globals.AnnounceTopic) {
+			defer func() {
+				b, err := json.Marshal(msg.Message())
+				if err != nil {
+					log.Println("ERROR afterHandlerWrapper", err)
+				}
+
+				// Publish annauncement after subscriber was called
+				if err := c.Publish(ctx, c.NewPublication(
+					globals.AnnounceTopic,
+					&announce_msg.AnnounceMessage{
+						Handler: msg.Topic(),
+						Data:    string(b),
+					},
+				)); err != nil {
+					log.Println("ERROR afterSubscriberWrapper publishing announcement", err)
+				}
+			}()
+		}
+
+		return nil
+	}
+}
+
+// NewQuotaSubscriberWrapper returns a subscriber quota limit per user wrapper
+func NewAfterSubscriberWrapper() server.SubscriberWrapper {
+	return func(fn server.SubscriberFunc) server.SubscriberFunc {
+		return afterSubscriberWrapper(fn, NewKazoupClient())
 	}
 }
 
@@ -338,8 +485,8 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			micro.RegisterInterval(time.Second*30),
 			//micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...),*/ KazoupClientWrap()),
-			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn)),
-			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewQuotaHandlerWrapper(sn), AuthWrapper),
+			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn), NewAfterSubscriberWrapper(), AuthSubscriberWrapper, LogSubscriberWrapper()),
+			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewAfterHandlerWrapper(), NewQuotaHandlerWrapper(sn), AuthHandlerWrapper, LogHandlerWrapper()),
 			micro.Flags(
 				cli.StringFlag{
 					Name:   "elasticsearch_hosts",
@@ -366,8 +513,8 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			micro.RegisterInterval(time.Second*30),
 			//micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...),*/ KazoupClientWrap()),
-			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn)),
-			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewQuotaHandlerWrapper(sn), AuthWrapper),
+			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn), NewAfterSubscriberWrapper(), AuthSubscriberWrapper, LogSubscriberWrapper()),
+			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...), */ NewQuotaHandlerWrapper(sn), NewAfterHandlerWrapper(), AuthHandlerWrapper, LogHandlerWrapper()),
 		)
 	} else {
 		service = micro.NewService(
@@ -378,8 +525,8 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			micro.RegisterInterval(time.Second*30),
 			//micro.Client(NewKazoupClientWithXrayTrace(sess)),
 			micro.WrapClient( /*awsxray.NewClientWrapper(opts...), */ monitor.ClientWrapper(m), KazoupClientWrap()),
-			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn)),
-			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...),*/ monitor.HandlerWrapper(m), NewQuotaHandlerWrapper(sn), AuthWrapper),
+			micro.WrapSubscriber(NewQuotaSubscriberWrapper(sn), NewAfterSubscriberWrapper(), AuthSubscriberWrapper, LogSubscriberWrapper()),
+			micro.WrapHandler( /*awsxray.NewHandlerWrapper(opts...),*/ NewQuotaHandlerWrapper(sn), monitor.HandlerWrapper(m), NewAfterHandlerWrapper(), AuthHandlerWrapper, LogHandlerWrapper()),
 		)
 	}
 

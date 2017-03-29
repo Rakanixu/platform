@@ -2,15 +2,13 @@ package subscriber
 
 import (
 	"encoding/json"
-	"fmt"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	db_helper "github.com/kazoup/platform/lib/dbhelper"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	text "github.com/kazoup/platform/lib/normalization/text"
-	enrich_proto "github.com/kazoup/platform/lib/protomsg"
+	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
 	rossetelib "github.com/kazoup/platform/lib/rossete"
-	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"log"
@@ -18,8 +16,9 @@ import (
 )
 
 type EnrichMsgChan struct {
-	ctx context.Context
-	msg *enrich_proto.EnrichMessage
+	ctx  context.Context
+	msg  *enrich_proto.EnrichMessage
+	done chan bool
 }
 
 type SentimentAnalyzer struct {
@@ -30,11 +29,15 @@ type SentimentAnalyzer struct {
 
 // Enrich subscriber, receive EnrichMessage to get the file and process it
 func (sa *SentimentAnalyzer) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
-	// Queue internally
-	sa.EnrichMsgChan <- EnrichMsgChan{
-		ctx: ctx,
-		msg: enrichmsg,
+	c := EnrichMsgChan{
+		ctx:  ctx,
+		msg:  enrichmsg,
+		done: make(chan bool),
 	}
+	// Queue internally
+	sa.EnrichMsgChan <- c
+
+	<-c.done
 
 	return nil
 }
@@ -80,6 +83,7 @@ func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
 	if sentimentTextAnalyzer {
 		// Apply rossete sentiment
 		if len(f.GetContent()) > 0 {
+
 			// Sanitaze content
 			// We do not save sanitazed because if we want to display, it maintains some format
 			t, err := text.ReplaceDoubleQuotes(f.GetContent())
@@ -128,17 +132,10 @@ func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
 			}
 		}
 
-		// Publish notification topic if requested
-		if m.msg.Notify {
-			if err := c.Publish(m.ctx, c.NewPublication(globals.NotificationTopic, &notification_proto.NotificationMessage{
-				Method: globals.NOTIFY_REFRESH_SEARCH,
-				UserId: m.msg.UserId,
-				Info:   fmt.Sprintf("Sentiment extraction for %s finished.", f.GetName()),
-			})); err != nil {
-				log.Print("Publishing NotificationTopic (SentimentAnalyzer) error %s", err)
-			}
-		}
+		m.msg.FileName = f.GetName()
 	}
+
+	m.done <- true
 
 	return nil
 }

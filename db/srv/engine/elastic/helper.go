@@ -3,6 +3,7 @@ package elastic
 import (
 	"bytes"
 	"github.com/kazoup/platform/lib/globals"
+	"log"
 	"strconv"
 )
 
@@ -54,6 +55,8 @@ func (e *ElasticQuery) Query() (string, error) {
 	buffer.WriteString(`]`)
 	buffer.WriteString(e.contentHighlight())
 	buffer.WriteString(`}`)
+
+	log.Println("QUERY", buffer.String())
 
 	return buffer.String(), nil
 }
@@ -146,7 +149,7 @@ func (e *ElasticQuery) filterContentCategory() string {
 	var buffer bytes.Buffer
 
 	if len(e.ContentCategory) > 0 {
-		buffer.WriteString(`{"term": {"content_category": "` + e.ContentCategory + `"}}`)
+		buffer.WriteString(`{"term": {"kazoup_categorization.content_category": "` + e.ContentCategory + `"}}`)
 	} else {
 		buffer.WriteString(`{}`)
 	}
@@ -300,7 +303,8 @@ func (e *ElasticQuery) setSource() string {
 			"content_category",
 			"datasource_id",
 			"index",
-			"opts_kazoup_file"
+			"opts_kazoup_file",
+			"kazoup_categorization"
 		],`)
 	}
 

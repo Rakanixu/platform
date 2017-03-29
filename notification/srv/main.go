@@ -7,6 +7,7 @@ import (
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/kazoup/platform/notification/srv/handler"
 	"github.com/kazoup/platform/notification/srv/subscriber"
+	"github.com/micro/go-micro/server"
 	"github.com/micro/go-os/monitor"
 	"log"
 	"time"
@@ -36,6 +37,20 @@ func main() {
 				Server: service.Server(),
 				Client: service.Client(),
 			},
+		),
+	); err != nil {
+		log.Fatal(err)
+	}
+
+	// React to tasks done, notify user about them
+	if err := service.Server().Subscribe(
+		service.Server().NewSubscriber(
+			globals.AnnounceTopic,
+			&subscriber.AnnounceNotification{
+				Client: service.Client(),
+				Broker: service.Server().Options().Broker,
+			},
+			server.SubscriberQueue("announce-notification"),
 		),
 	); err != nil {
 		log.Fatal(err)

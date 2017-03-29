@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package message;
+
+message CrawlerFinishedMessage {
+    string datasource_id = 1;
+}

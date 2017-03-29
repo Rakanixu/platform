@@ -10,6 +10,7 @@ import (
 	web_handler "github.com/kazoup/platform/notification/web/handler"
 	"github.com/kazoup/platform/notification/web/sockets"
 	"github.com/micro/cli"
+	"github.com/micro/go-micro/server"
 	"github.com/micro/go-os/monitor"
 	microweb "github.com/micro/go-web"
 	"golang.org/x/net/websocket"
@@ -41,6 +42,20 @@ func srv(ctx *cli.Context) {
 				Client: service.Client(),
 				Server: service.Server(),
 			},
+		),
+	); err != nil {
+		log.Fatal(err)
+	}
+
+	// React to tasks done, notify user about them
+	if err := service.Server().Subscribe(
+		service.Server().NewSubscriber(
+			globals.AnnounceTopic,
+			&subscriber.AnnounceNotification{
+				Client: service.Client(),
+				Broker: service.Server().Options().Broker,
+			},
+			server.SubscriberQueue("announce-notification"),
 		),
 	); err != nil {
 		log.Fatal(err)

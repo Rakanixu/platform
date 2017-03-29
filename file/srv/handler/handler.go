@@ -2,17 +2,14 @@ package handler
 
 import (
 	"encoding/json"
-	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	proto "github.com/kazoup/platform/file/srv/proto/file"
 	db_conn "github.com/kazoup/platform/lib/dbhelper"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
-	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
-	"log"
 )
 
 // File struct
@@ -72,17 +69,10 @@ func (f *File) Create(ctx context.Context, req *proto.CreateRequest, rsp *proto.
 
 // Delete File handler
 func (f *File) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *proto.DeleteResponse) error {
-	var uId string
 	var err error
 
 	if len(req.DatasourceId) == 0 {
 		return errors.BadRequest("com.kazoup.srv.file", "datasource_id required")
-	}
-
-	// Get userId
-	uId, err = globals.ParseUserIdFromContext(ctx)
-	if err != nil {
-		return err
 	}
 
 	// Instantiate file system
@@ -120,22 +110,6 @@ func (f *File) Delete(ctx context.Context, req *proto.DeleteRequest, rsp *proto.
 	})
 	if err != nil {
 		return err
-	}
-
-	// Publish notification topic, let client know when to refresh itself
-	if err := f.Client.Publish(ctx, f.Client.NewPublication(globals.NotificationTopic, &notification_proto.NotificationMessage{
-		Method: globals.NOTIFY_REFRESH_SEARCH,
-		UserId: uId,
-	})); err != nil {
-		log.Print("Publishing (notify file) error %s", err)
-	}
-
-	// Publish notification to delete associated resources (thumbnail in our GCS account)
-	if err := f.Client.Publish(ctx, f.Client.NewPublication(globals.DeleteFileInBucketTopic, &datasource_proto.DeleteFileInBucketMessage{
-		FileId: req.FileId,
-		Index:  req.Index,
-	})); err != nil {
-		log.Println("ERROR cleaning thumbnail", err)
 	}
 
 	return nil

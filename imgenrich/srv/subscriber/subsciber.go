@@ -2,23 +2,22 @@ package subscriber
 
 import (
 	"encoding/json"
-	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	db_helper "github.com/kazoup/platform/lib/dbhelper"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
-	enrich_proto "github.com/kazoup/platform/lib/protomsg"
-	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
+	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
 	"log"
 )
 
 type EnrichMsgChan struct {
-	ctx context.Context
-	msg *enrich_proto.EnrichMessage
+	ctx  context.Context
+	msg  *enrich_proto.EnrichMessage
+	done chan bool
 }
 
 type Enrich struct {
@@ -29,11 +28,16 @@ type Enrich struct {
 
 // Enrich subscriber, receive EnrichMessage to get the file and process it
 func (e *Enrich) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
-	// Queue internally
-	e.EnrichMsgChan <- EnrichMsgChan{
-		ctx: ctx,
-		msg: enrichmsg,
+	c := EnrichMsgChan{
+		ctx:  ctx,
+		msg:  enrichmsg,
+		done: make(chan bool),
 	}
+
+	// Queue internally
+	e.EnrichMsgChan <- c
+
+	<-c.done
 
 	return nil
 }
@@ -112,16 +116,9 @@ func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
 		return err
 	}
 
-	// Publish notification topic if requested
-	if m.msg.Notify {
-		if err := c.Publish(m.ctx, c.NewPublication(globals.NotificationTopic, &notification_proto.NotificationMessage{
-			Method: globals.NOTIFY_REFRESH_SEARCH,
-			UserId: m.msg.UserId,
-			Info:   fmt.Sprintf("Image content extraction for %s finished.", f.GetName()),
-		})); err != nil {
-			log.Print("Publishing NotificationTopic (ImgEnrich) error %s", err)
-		}
-	}
+	m.msg.FileName = f.GetName()
+
+	m.done <- true
 
 	return nil
 }
