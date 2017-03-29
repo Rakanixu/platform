@@ -1,6 +1,6 @@
 # 1. Run elasticsearch
 # 2. Run scripts/es_init.sh
-# 3. Restart elasticsearch to have delete-by-query plugin working
+
 elasticsearch:
  image: docker.elastic.co/elasticsearch/elasticsearch:5.2.0
  hostname: "elasticsearch"
@@ -34,14 +34,6 @@ kibana:
   ports:
     - 5601:5601
 
-elasticsearch-head:
-  image: mobz/elasticsearch-head:5
-  hostname: "elasticsearch-head"
-  ports:
-    - "9101:9100"
-  links:
-    - elasticsearch
-
 redis:
   image: redis:3.2
   hostname: "redis"
@@ -54,121 +46,344 @@ tika:
  ports:
    - "9998:9998"
 
+nats:
+  image: nats:0.9.6
+  entrypoint: "/gnatsd"
+  expose:
+    - "4222"
+  ports:
+    - "8222:8222"
 
-#nats:
-#    image: 'nats:0.9.4'
-#    entrypoint: "/gnatsd -DV"
-#    expose:
-#      - "4222"
-#    ports:
-#      - "8222:8222"
-#
-#registry:
-#  command: -server -bootstrap -rejoin -log-level err
-#  image: progrium/consul:latest
-#  ports:
-#  - "8300:8300"
-#  - "8400:8400"
-#  - "8500:8500"
-#  - "8600:53/udp"
-#
-#web:
-#  command: --registry_address=registry:8500 --register_interval=5 --register_ttl=10 --web_namespace=com.kazoup.web  --enable_stats=true  --selector=cache --enable_tls -tls_cert_file=/ssl/all.pem --tls_key_file=/ssl/key.pem --web_cors=* web
-#  image: microhq/micro:latest
-#  links:
-#  - registry
-#  ports:
-#  - "8082:8082"
-#  volumes:
-#  - "./cmd/kazoup/ssl:/ssl"
-#
-#
-#auth-web:
-#  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222
-#  image: kazoup/auth-web:latest
-#  links:
-#  - registry
-#  - nats
-#
-#
-#config-srv:
-#  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222
-#  image: kazoup/config-srv:latest
-#  links:
-#  - registry
-#  - nats
-#
-#config-web:
-#  command: --registry_address=registry:8500 --selector=cache  --broker=nats --broker_address=nats:4222
-#  image: kazoup/config-web:latest
-#  links:
-#  - registry
-#
-#crawler-srv:
-#   command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222
-#   image: kazoup/crawler-srv:latest
-#   links:
-#   - registry
-#   - nats
-#
-#datasource-srv:
-#  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222
-#  image: kazoup/datasource-srv:latest
-#  links:
-#  - registry
-#  - nats
-#
-#db-srv:
-#  command: --elasticsearch_hosts=elasticsearch:9200 --registry_address=registry:8500  --selector=cache --broker=nats --broker_address=nats:4222
-#  image: kazoup/db-srv:latest
-#  environment:
-#  - ELASTICSEARCH_URL = "https://fdcafef6eb3464e469a96ae1d6da9fe6.eu-west-1.aws.found.io:9243"
-#  - ES_USERNAME = "elastic"
-#  - ES_PASSWORD = "q3cbAJ3TueRCTBIrgLLlpLkD"
-#  links:
-#  - registry
-#  - nats
-#
-#file-srv:
-#  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222
-#  image: kazoup/file-srv:latest
-#  links:
-#  - registry
-#  - nats
-#
-#
-#
-#media-web:
-#  command: --registry_address=registry:8500 --selector=cache  --broker=nats --broker_address=nats:4222
-#  image: kazoup/media-web:latest
-#  links:
-#  - registry
-#  - nats
-#
-#notification-srv:
-#  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222
-#  image: kazoup/notification-srv:latest
-#  links:
-#  - registry
-#  - nats
-#
-#notification-web:
-#  command: --registry_address=registry:8500 --selector=cache  --broker=nats --broker_address=nats:4222
-#  image: kazoup/notification-web:latest
-#  links:
-#  - registry
-#  - nats
-#
-#search-srv:
-#  command: --registry_address=registry:8500 --selector=cache --broker=nats --broker_address=nats:4222
-#  image: kazoup/search-srv:latest
-#  links:
-#  - registry
-#  - nats
-#
-#ui-web:
-#  command: --registry_address=registry:8500 --selector=cache  --broker=nats --broker_address=nats:4222
-#  image: kazoup/ui-web:latest
-#  links:
-#  - registry
-#  - nats
+registry:
+  command: -server -bootstrap -rejoin -log-level err
+  image: progrium/consul:latest
+  ports:
+  - "8300:8300"
+  - "8400:8400"
+  - "8500:8500"
+  - "8600:53/udp"
+
+web:
+  command: go run src/github.com/kazoup/platform/micro/web/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --register_interval=5 --register_ttl=10 --web_namespace=com.kazoup.web  --enable_stats=true  --selector=cache --enable_tls -tls_cert_file=/ssl/all.pem --tls_key_file=/ssl/key.pem --web_cors=* --transport=tcp web
+  image: golang:1.7-alpine3.5
+  links:
+  - registry
+  - nats
+  ports:
+  - "8082:8082"
+  volumes:
+  - "./cmd/kazoup/ssl:/ssl"
+  - "../../../:/go/src/"
+
+audioenrich-srv:
+  command: go run src/github.com/kazoup/platform/audioenrich/srv/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
+  image: golang:1.7-alpine3.5
+  links:
+  - registry
+  - nats
+  expose:
+    - "9090"
+  environment:
+    - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
+  volumes:
+    - "./cmd/kazoup/ssl:/ssl"
+    - "../../../:/go/src/"
+    - "./cmd/kazoup/google-app-credentials:/srv/google-app-credentials"
+
+auth-web:
+  command: go run src/github.com/kazoup/platform/auth/web/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
+  image: golang:1.7-alpine3.5
+  links:
+  - registry
+  - nats
+  expose:
+    - "9090"
+  environment:
+    - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
+  volumes:
+    - "./cmd/kazoup/ssl:/ssl"
+    - "../../../:/go/src/"
+    - "./cmd/kazoup/google-app-credentials:/srv/google-app-credentials"
+
+config-web:
+  command: go run src/github.com/kazoup/platform/config/web/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
+  image: golang:1.7-alpine3.5
+  links:
+  - registry
+  - nats
+  expose:
+    - "9090"
+  environment:
+    - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
+  volumes:
+    - "./cmd/kazoup/ssl:/ssl"
+    - "../../../:/go/src/"
+    - "./cmd/kazoup/google-app-credentials:/srv/google-app-credentials"
+
+crawler-srv:
+  command: go run src/github.com/kazoup/platform/crawler/srv/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
+  image: golang:1.7-alpine3.5
+  links:
+  - registry
+  - nats
+  expose:
+    - "9090"
+  environment:
+    - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
+  volumes:
+    - "./cmd/kazoup/ssl:/ssl"
+    - "../../../:/go/src/"
+    - "./cmd/kazoup/google-app-credentials:/srv/google-app-credentials"
+
+datasource-srv:
+  command: go run src/github.com/kazoup/platform/datasource/srv/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
+  image: golang:1.7-alpine3.5
+  links:
+  - registry
+  - nats
+  expose:
+    - "9090"
+  environment:
+    - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
+  volumes:
+    - "./cmd/kazoup/ssl:/ssl"
+    - "../../../:/go/src/"
+    - "./cmd/kazoup/google-app-credentials:/srv/google-app-credentials"
+
+datasource-srv:
+  command: go run src/github.com/kazoup/platform/datasource/srv/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
+  image: golang:1.7-alpine3.5
+  links:
+  - registry
+  - nats
+  expose:
+    - "9090"
+  environment:
+    - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
+  volumes:
+    - "./cmd/kazoup/ssl:/ssl"
+    - "../../../:/go/src/"
+    - "./cmd/kazoup/google-app-credentials:/srv/google-app-credentials"
+
+db-srv:
+  command: go run src/github.com/kazoup/platform/db/srv/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
+  image: golang:1.7-alpine3.5
+  links:
+  - registry
+  - nats
+  - elasticsearch
+  expose:
+    - "9090"
+  volumes:
+    - "./cmd/kazoup/ssl:/ssl"
+    - "../../../:/go/src/"
+
+docenrich-srv:
+  command: go run src/github.com/kazoup/platform/docenrich/srv/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
+  image: golang:1.7-alpine3.5
+  links:
+  - registry
+  - nats
+  expose:
+    - "9090"
+  environment:
+    - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
+  volumes:
+    - "./cmd/kazoup/ssl:/ssl"
+    - "../../../:/go/src/"
+    - "./cmd/kazoup/google-app-credentials:/srv/google-app-credentials"
+
+file-srv:
+  command: go run src/github.com/kazoup/platform/file/srv/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
+  image: golang:1.7-alpine3.5
+  links:
+  - registry
+  - nats
+  expose:
+    - "9090"
+  environment:
+    - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
+  volumes:
+    - "./cmd/kazoup/ssl:/ssl"
+    - "../../../:/go/src/"
+    - "./cmd/kazoup/google-app-credentials:/srv/google-app-credentials"
+
+imgenrich-srv:
+  command: go run src/github.com/kazoup/platform/imgenrich/srv/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
+  image: golang:1.7-alpine3.5
+  links:
+  - registry
+  - nats
+  expose:
+    - "9090"
+  environment:
+    - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
+  volumes:
+    - "./cmd/kazoup/ssl:/ssl"
+    - "../../../:/go/src/"
+    - "./cmd/kazoup/google-app-credentials:/srv/google-app-credentials"
+
+media-web:
+  command: go run src/github.com/kazoup/platform/media/web/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
+  image: golang:1.7-alpine3.5
+  links:
+  - registry
+  - nats
+  expose:
+    - "9090"
+  environment:
+    - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
+  volumes:
+    - "./cmd/kazoup/ssl:/ssl"
+    - "../../../:/go/src/"
+    - "./cmd/kazoup/google-app-credentials:/srv/google-app-credentials"
+
+monitor-srv:
+  command: go run src/github.com/kazoup/platform/monitor/srv/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
+  image: golang:1.7-alpine3.5
+  links:
+  - registry
+  - nats
+  expose:
+    - "9090"
+  environment:
+    - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
+  volumes:
+    - "./cmd/kazoup/ssl:/ssl"
+    - "../../../:/go/src/"
+    - "./cmd/kazoup/google-app-credentials:/srv/google-app-credentials"
+
+monitor-web:
+  command: go run src/github.com/kazoup/platform/monitor/web/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
+  image: golang:1.7-alpine3.5
+  links:
+  - registry
+  - nats
+  expose:
+    - "9090"
+  environment:
+    - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
+  volumes:
+    - "./cmd/kazoup/ssl:/ssl"
+    - "../../../:/go/src/"
+    - "./cmd/kazoup/google-app-credentials:/srv/google-app-credentials"
+
+notification-srv:
+  command: go run src/github.com/kazoup/platform/notification/srv/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
+  image: golang:1.7-alpine3.5
+  links:
+  - registry
+  - nats
+  expose:
+    - "9090"
+  environment:
+    - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
+  volumes:
+    - "./cmd/kazoup/ssl:/ssl"
+    - "../../../:/go/src/"
+    - "./cmd/kazoup/google-app-credentials:/srv/google-app-credentials"
+
+notification-web:
+  command: go run src/github.com/kazoup/platform/notification/web/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
+  image: golang:1.7-alpine3.5
+  links:
+  - registry
+  - nats
+  expose:
+    - "9090"
+  environment:
+    - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
+  volumes:
+    - "./cmd/kazoup/ssl:/ssl"
+    - "../../../:/go/src/"
+    - "./cmd/kazoup/google-app-credentials:/srv/google-app-credentials"
+
+profile-srv:
+  command: go run src/github.com/kazoup/platform/profile/srv/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
+  image: golang:1.7-alpine3.5
+  links:
+  - registry
+  - nats
+  expose:
+    - "9090"
+  environment:
+    - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
+  volumes:
+    - "./cmd/kazoup/ssl:/ssl"
+    - "../../../:/go/src/"
+    - "./cmd/kazoup/google-app-credentials:/srv/google-app-credentials"
+
+quota-srv:
+  command: go run src/github.com/kazoup/platform/quota/srv/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
+  image: golang:1.7-alpine3.5
+  links:
+  - registry
+  - nats
+  expose:
+    - "9090"
+  environment:
+    - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
+  volumes:
+    - "./cmd/kazoup/ssl:/ssl"
+    - "../../../:/go/src/"
+    - "./cmd/kazoup/google-app-credentials:/srv/google-app-credentials"
+
+search-srv:
+  command: go run src/github.com/kazoup/platform/search/srv/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
+  image: golang:1.7-alpine3.5
+  links:
+  - registry
+  - nats
+  expose:
+    - "9090"
+  environment:
+    - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
+  volumes:
+    - "./cmd/kazoup/ssl:/ssl"
+    - "../../../:/go/src/"
+    - "./cmd/kazoup/google-app-credentials:/srv/google-app-credentials"
+
+sentimentanalyzer-srv:
+  command: go run src/github.com/kazoup/platform/sentimentanalyzer/srv/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
+  image: golang:1.7-alpine3.5
+  links:
+  - registry
+  - nats
+  expose:
+    - "9090"
+  environment:
+    - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
+  volumes:
+    - "./cmd/kazoup/ssl:/ssl"
+    - "../../../:/go/src/"
+    - "./cmd/kazoup/google-app-credentials:/srv/google-app-credentials"
+
+textanalyzer-srv:
+  command: go run src/github.com/kazoup/platform/textanalyzer/srv/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
+  image: golang:1.7-alpine3.5
+  links:
+  - registry
+  - nats
+  expose:
+    - "9090"
+  environment:
+    - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
+  volumes:
+    - "./cmd/kazoup/ssl:/ssl"
+    - "../../../:/go/src/"
+    - "./cmd/kazoup/google-app-credentials:/srv/google-app-credentials"
+
+thumbnail-srv:
+  command: go run src/github.com/kazoup/platform/thumbnail/srv/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
+  image: golang:1.7-alpine3.5
+  links:
+  - registry
+  - nats
+  expose:
+    - "9090"
+  environment:
+    - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
+  volumes:
+    - "./cmd/kazoup/ssl:/ssl"
+    - "../../../:/go/src/"
+    - "./cmd/kazoup/google-app-credentials:/srv/google-app-credentials"
