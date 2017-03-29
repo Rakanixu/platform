@@ -8,6 +8,7 @@ import (
 	"github.com/micro/go-micro/broker"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	"log"
 )
 
 type AnnounceTextAnalyzer struct {
@@ -37,6 +38,8 @@ func (a *AnnounceTextAnalyzer) OnAudioEnrich(ctx context.Context, msg *announce_
 func (a *AnnounceTextAnalyzer) OnDocEnrich(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
 	// After a an document file has been enriched, we want to extract entities from content
 	if globals.DocEnrichTopic == msg.Handler {
+		log.Println("ON DOC ENRICH", msg)
+
 		var e *enrich_msg.EnrichMessage
 		if err := json.Unmarshal([]byte(msg.Data), &e); err != nil {
 			return err

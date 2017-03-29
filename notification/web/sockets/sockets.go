@@ -11,6 +11,7 @@ import (
 
 func Stream(ws *websocket.Conn) {
 	var m map[string]interface{}
+	c := client.NewClient()
 
 	// Connection established by client, server responds to let client know it can start sending data
 	if err := websocket.JSON.Send(ws, struct {
@@ -38,7 +39,7 @@ func Stream(ws *websocket.Conn) {
 		return
 	}
 
-	stream, err := client.DefaultClient.Stream(globals.NewContextFromJWT(m["token"].(string)), sreq)
+	stream, err := c.Stream(globals.NewContextFromJWT(m["token"].(string)), sreq)
 	if err != nil {
 		fmt.Println("ERROR opening stream for notifications", err)
 		return

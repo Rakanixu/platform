@@ -81,6 +81,7 @@ audioenrich-srv:
   links:
   - registry
   - nats
+  - redis
   expose:
     - "9090"
   environment:
@@ -126,6 +127,7 @@ crawler-srv:
   links:
   - registry
   - nats
+  - redis
   expose:
     - "9090"
   environment:
@@ -141,21 +143,7 @@ datasource-srv:
   links:
   - registry
   - nats
-  expose:
-    - "9090"
-  environment:
-    - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
-  volumes:
-    - "./cmd/kazoup/ssl:/ssl"
-    - "../../../:/go/src/"
-    - "./cmd/kazoup/google-app-credentials:/srv/google-app-credentials"
-
-datasource-srv:
-  command: go run src/github.com/kazoup/platform/datasource/srv/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
-  image: golang:1.7-alpine3.5
-  links:
-  - registry
-  - nats
+  - redis
   expose:
     - "9090"
   environment:
@@ -172,6 +160,7 @@ db-srv:
   - registry
   - nats
   - elasticsearch
+  - redis
   expose:
     - "9090"
   volumes:
@@ -184,6 +173,8 @@ docenrich-srv:
   links:
   - registry
   - nats
+  - tika
+  - redis
   expose:
     - "9090"
   environment:
@@ -199,6 +190,7 @@ file-srv:
   links:
   - registry
   - nats
+  - redis
   expose:
     - "9090"
   environment:
@@ -214,6 +206,7 @@ imgenrich-srv:
   links:
   - registry
   - nats
+  - redis
   expose:
     - "9090"
   environment:
@@ -244,6 +237,7 @@ monitor-srv:
   links:
   - registry
   - nats
+  - redis
   expose:
     - "9090"
   environment:
@@ -274,6 +268,7 @@ notification-srv:
   links:
   - registry
   - nats
+  - redis
   expose:
     - "9090"
   environment:
@@ -304,6 +299,7 @@ profile-srv:
   links:
   - registry
   - nats
+  - redis
   expose:
     - "9090"
   environment:
@@ -319,6 +315,7 @@ quota-srv:
   links:
   - registry
   - nats
+  - redis
   expose:
     - "9090"
   environment:
@@ -334,6 +331,7 @@ search-srv:
   links:
   - registry
   - nats
+  - redis
   expose:
     - "9090"
   environment:
@@ -349,6 +347,7 @@ sentimentanalyzer-srv:
   links:
   - registry
   - nats
+  - redis
   expose:
     - "9090"
   environment:
@@ -364,6 +363,7 @@ textanalyzer-srv:
   links:
   - registry
   - nats
+  - redis
   expose:
     - "9090"
   environment:
@@ -379,6 +379,7 @@ thumbnail-srv:
   links:
   - registry
   - nats
+  - redis
   expose:
     - "9090"
   environment:
