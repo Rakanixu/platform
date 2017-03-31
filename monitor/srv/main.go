@@ -30,8 +30,6 @@ func main() {
 	)
 	defer m.Close()
 
-	service.Init()
-
 	// healthchecks
 	service.Server().Subscribe(
 		service.Server().NewSubscriber(

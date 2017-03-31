@@ -1,5 +1,0 @@
-notification-srv:
-  command: --registry_address=registry:8500
-  image: kazoup/notification-srv
-  external_links:
-  - consul:registry

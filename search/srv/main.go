@@ -36,10 +36,7 @@ func main() {
 		}),
 	)
 
-	// Initialise service
-	service.Init()
 	// Init search engine
-
 	if err := engine.Init(); err != nil {
 		log.Fatal(err)
 	}

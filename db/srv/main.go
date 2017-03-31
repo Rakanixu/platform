@@ -61,10 +61,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Initialise service
-	service.Init()
 	// Init search engine
-
 	if err := engine.Init(service.Client()); err != nil {
 		log.Fatal(err)
 	}

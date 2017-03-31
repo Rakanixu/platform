@@ -6,7 +6,6 @@ import (
 	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/lib/globals"
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
-	"github.com/kazoup/platform/lib/wrappers"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
@@ -25,9 +24,9 @@ func init() {
 
 //SaveDatasource call datasource-srv and save new data source
 func SaveDatasource(ctx context.Context, user string, url string, token *oauth2.Token) error {
-	client := wrappers.NewKazoupClient()
+	c := client.NewClient()
 
-	srvReq := client.NewRequest(
+	srvReq := c.NewRequest(
 		globals.DATASOURCE_SERVICE_NAME,
 		"DataSource.Create",
 		&proto_datasource.CreateRequest{
@@ -49,7 +48,7 @@ func SaveDatasource(ctx context.Context, user string, url string, token *oauth2.
 
 	srvRes := &proto_datasource.CreateResponse{}
 
-	if err := client.Call(ctx, srvReq, srvRes); err != nil {
+	if err := c.Call(ctx, srvReq, srvRes); err != nil {
 		return errors.New("auth.web.helper.DataSource.Create", err.Error(), 500)
 	}
 

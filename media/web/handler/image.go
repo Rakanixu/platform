@@ -8,7 +8,6 @@ import (
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
-	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/metadata"
 	"golang.org/x/net/context"
@@ -93,7 +92,7 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Update token in DB
-	if err := db_conn.UpdateFileSystemAuth(wrappers.NewKazoupClient(), ctx, fSys.GetDatasourceId(), auth); err != nil {
+	if err := db_conn.UpdateFileSystemAuth(client.NewClient(), ctx, fSys.GetDatasourceId(), auth); err != nil {
 		log.Println("ERROR", err.Error())
 	}
 
