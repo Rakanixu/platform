@@ -306,7 +306,7 @@ func NewContextFromJWT(jwt string) context.Context {
 
 // DBAccess flags access to DB
 func DBAccess(ctx context.Context) error {
-	md, _ := metadata.FromContext(ctx)
+	//md, _ := metadata.FromContext(ctx)
 
 	/*if len(md["X-Kazoup-Token"]) == 0 {
 		return micro_errors.Forbidden("com.kazoup.srv.db", "No scope")
