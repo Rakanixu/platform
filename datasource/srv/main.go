@@ -94,8 +94,6 @@ func main() {
 		}),
 	)
 
-	service.Init()
-
 	if err := service.Run(); err != nil {
 		log.Fatalf("%v", err)
 	}
