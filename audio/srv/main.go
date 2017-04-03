@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/kazoup/platform/audioenrich/srv/handler"
-	"github.com/kazoup/platform/audioenrich/srv/subscriber"
+	"github.com/kazoup/platform/audio/srv/handler"
+	"github.com/kazoup/platform/audio/srv/proto/audio"
+	"github.com/kazoup/platform/audio/srv/subscriber"
 	"github.com/kazoup/platform/lib/globals"
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/healthchecks"
@@ -17,7 +18,7 @@ import (
 func main() {
 	var m monitor.Monitor
 
-	service := wrappers.NewKazoupService("audioenrich", m)
+	service := wrappers.NewKazoupService("audio", m)
 
 	// enrich-srv monitor
 	m = monitor.NewMonitor(
@@ -30,20 +31,11 @@ func main() {
 	healthchecks.RegisterBrokerHealthChecks(service, m)
 
 	// Attach handler
-	if err := service.Server().Handle(
-		service.Server().NewHandler(
-			&handler.AudioEnrich{
-				Client: service.Client(),
-			},
-		),
-	); err != nil {
-		log.Fatal(err)
-	}
+	proto_audio.RegisterServiceHandler(service.Server(), new(handler.Service))
 
 	gcslib.Register()
 
-	s := &subscriber.Enrich{
-		Client:             service.Client(),
+	s := &subscriber.TaskHandler{
 		GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
 		EnrichMsgChan:      make(chan subscriber.EnrichMsgChan, 1000000),
 		Workers:            20,
@@ -65,10 +57,7 @@ func main() {
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.AnnounceTopic,
-			&subscriber.AnnounceAudioEnrich{
-				Client: service.Client(),
-				Broker: service.Server().Options().Broker,
-			},
+			new(subscriber.AnnounceHandler),
 			server.SubscriberQueue("announce-audioenrich"),
 		),
 	); err != nil {

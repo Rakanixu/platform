@@ -37,7 +37,7 @@ const (
 	PROFILE_SERVICE_NAME           string = NAMESPACE + ".srv.profile"
 	MONITOR_SERVICE_NAME           string = NAMESPACE + ".srv.monitor"
 	THUMBNAIL_SERVICE_NAME         string = NAMESPACE + ".srv.thumbnail"
-	AUDIOENRICH_SERVICE_NAME       string = NAMESPACE + ".srv.audioenrich"
+	AUDIO_SERVICE_NAME             string = NAMESPACE + ".srv.audio"
 	DOCENRICH_SERVICE_NAME         string = NAMESPACE + ".srv.docenrich"
 	IMGENRICH_SERVICE_NAME         string = NAMESPACE + ".srv.imgenrich"
 	TEXTANALYZER_SERVICE_NAME      string = NAMESPACE + ".srv.textanalyzer"
@@ -51,6 +51,9 @@ const (
 
 	HANDLER_FILE_CREATE = FILE_SERVICE_NAME + ".File.Create"
 	HANDLER_FILE_DELETE = FILE_SERVICE_NAME + ".File.Delete"
+
+	HANDLER_AUDIO_ENRICH_FILE       = AUDIO_SERVICE_NAME + ".Service.EnrichFile"
+	HANDLER_AUDIO_ENRICH_DATASOURCE = AUDIO_SERVICE_NAME + ".Service.EnrichDatasource"
 
 	AnnounceTopic           string = NAMESPACE + ".topic.announce"
 	FilesTopic              string = NAMESPACE + ".topic.files"

@@ -70,7 +70,7 @@ var PRODUCT_QUOTAS = struct {
 				"handler":    0,
 				"subscriber": 0,
 			},
-			AUDIOENRICH_SERVICE_NAME: map[string]interface{}{
+			AUDIO_SERVICE_NAME: map[string]interface{}{
 				"label":      "Speech to text service",
 				"icon":       "image:audiotrack",
 				"handler":    0,
@@ -156,7 +156,7 @@ var PRODUCT_QUOTAS = struct {
 				"handler":    0,
 				"subscriber": 0,
 			},
-			AUDIOENRICH_SERVICE_NAME: map[string]interface{}{
+			AUDIO_SERVICE_NAME: map[string]interface{}{
 				"label":      "Speech to text service",
 				"icon":       "image:audiotrack",
 				"handler":    0,
