@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/kazoup/platform/imgenrich/srv/handler"
-	"github.com/kazoup/platform/imgenrich/srv/subscriber"
+	"github.com/kazoup/platform/image/srv/handler"
+	"github.com/kazoup/platform/image/srv/proto/image"
+	"github.com/kazoup/platform/image/srv/subscriber"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
@@ -16,7 +17,7 @@ import (
 func main() {
 	var m monitor.Monitor
 
-	service := wrappers.NewKazoupService("imgenrich", m)
+	service := wrappers.NewKazoupService("image", m)
 
 	// enrich-srv monitor
 	m = monitor.NewMonitor(
@@ -29,18 +30,9 @@ func main() {
 	healthchecks.RegisterBrokerHealthChecks(service, m)
 
 	// Attach handler
-	if err := service.Server().Handle(
-		service.Server().NewHandler(
-			&handler.ImgEnrich{
-				Client: service.Client(),
-			},
-		),
-	); err != nil {
-		log.Fatal(err)
-	}
+	proto_image.RegisterServiceHandler(service.Server(), new(handler.Service))
 
-	s := &subscriber.Enrich{
-		Client:        service.Client(),
+	s := &subscriber.TaskHandler{
 		EnrichMsgChan: make(chan subscriber.EnrichMsgChan, 1000000),
 		Workers:       25,
 	}
@@ -51,7 +43,7 @@ func main() {
 		service.Server().NewSubscriber(
 			globals.ImgEnrichTopic,
 			s,
-			server.SubscriberQueue("imgenrich"),
+			server.SubscriberQueue("image"),
 		),
 	); err != nil {
 		log.Fatal(err)
@@ -61,11 +53,8 @@ func main() {
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.AnnounceTopic,
-			&subscriber.AnnounceImgEnrich{
-				Client: service.Client(),
-				Broker: service.Server().Options().Broker,
-			},
-			server.SubscriberQueue("announce-imgenrich"),
+			new(subscriber.AnnounceHandler),
+			server.SubscriberQueue("announce-image"),
 		),
 	); err != nil {
 		log.Fatal(err)

@@ -82,7 +82,7 @@ var PRODUCT_QUOTAS = struct {
 				"handler":    0,
 				"subscriber": 0,
 			},
-			IMGENRICH_SERVICE_NAME: map[string]interface{}{
+			IMAGE_SERVICE_NAME: map[string]interface{}{
 				"label":      "Image content service",
 				"icon":       "image:photo-library",
 				"handler":    0,
@@ -168,7 +168,7 @@ var PRODUCT_QUOTAS = struct {
 				"handler":    0,
 				"subscriber": 0,
 			},
-			IMGENRICH_SERVICE_NAME: map[string]interface{}{
+			IMAGE_SERVICE_NAME: map[string]interface{}{
 				"label":      "Image content service",
 				"icon":       "image:photo-library",
 				"handler":    0,

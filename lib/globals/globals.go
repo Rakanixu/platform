@@ -39,7 +39,7 @@ const (
 	THUMBNAIL_SERVICE_NAME         string = NAMESPACE + ".srv.thumbnail"
 	AUDIO_SERVICE_NAME             string = NAMESPACE + ".srv.audio"
 	DOCUMENT_SERVICE_NAME          string = NAMESPACE + ".srv.document"
-	IMGENRICH_SERVICE_NAME         string = NAMESPACE + ".srv.imgenrich"
+	IMAGE_SERVICE_NAME             string = NAMESPACE + ".srv.image"
 	TEXTANALYZER_SERVICE_NAME      string = NAMESPACE + ".srv.textanalyzer"
 	SENTIMENTANALYZER_SERVICE_NAME string = NAMESPACE + ".srv.sentimentanalyzer"
 
@@ -57,6 +57,9 @@ const (
 
 	HANDLER_DOCUMENT_ENRICH_FILE       = DOCUMENT_SERVICE_NAME + ".Service.EnrichFile"
 	HANDLER_DOCUMENT_ENRICH_DATASOURCE = DOCUMENT_SERVICE_NAME + ".Service.EnrichDatasource"
+
+	HANDLER_IMAGE_ENRICH_FILE       = IMAGE_SERVICE_NAME + ".Service.EnrichFile"
+	HANDLER_IMAGE_ENRICH_DATASOURCE = IMAGE_SERVICE_NAME + ".Service.EnrichDatasource"
 
 	AnnounceTopic           string = NAMESPACE + ".topic.announce"
 	FilesTopic              string = NAMESPACE + ".topic.files"
