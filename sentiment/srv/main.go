@@ -5,8 +5,9 @@ import (
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
-	"github.com/kazoup/platform/sentimentanalyzer/srv/handler"
-	"github.com/kazoup/platform/sentimentanalyzer/srv/subscriber"
+	"github.com/kazoup/platform/sentiment/srv/handler"
+	"github.com/kazoup/platform/sentiment/srv/proto/sentiment"
+	"github.com/kazoup/platform/sentiment/srv/subscriber"
 	"github.com/micro/go-micro/server"
 	"github.com/micro/go-os/monitor"
 	"log"
@@ -16,7 +17,7 @@ import (
 func main() {
 	var m monitor.Monitor
 
-	service := wrappers.NewKazoupService("sentimentanalyzer", m)
+	service := wrappers.NewKazoupService("sentiment", m)
 
 	// enrich-srv monitor
 	m = monitor.NewMonitor(
@@ -28,29 +29,14 @@ func main() {
 
 	healthchecks.RegisterBrokerHealthChecks(service, m)
 
-	if err := service.Server().Handle(
-		service.Server().NewHandler(
-			&handler.SentimentAnalyzer{
-				Client: service.Client(),
-			},
-		),
-	); err != nil {
-		log.Println(err)
-	}
-
-	s := &subscriber.SentimentAnalyzer{
-		Client:        service.Client(),
-		EnrichMsgChan: make(chan subscriber.EnrichMsgChan, 1000000),
-		Workers:       40,
-	}
-	subscriber.StartWorkers(s)
+	proto_sentiment.RegisterServiceHandler(service.Server(), new(handler.Service))
 
 	// Attach subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.SentimentEnrichTopic,
-			s,
-			server.SubscriberQueue("sentimentanalyzer"),
+			subscriber.NewTaskHandler(40),
+			server.SubscriberQueue("sentiment"),
 		),
 	); err != nil {
 		log.Fatal(err)
@@ -60,11 +46,8 @@ func main() {
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.AnnounceTopic,
-			&subscriber.AnnounceSentimentAnalyzer{
-				Client: service.Client(),
-				Broker: service.Server().Options().Broker,
-			},
-			server.SubscriberQueue("announce-sentimentanalyzer"),
+			new(subscriber.SentimentHandler),
+			server.SubscriberQueue("announce-sentiment"),
 		),
 	); err != nil {
 		log.Fatal(err)

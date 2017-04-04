@@ -94,7 +94,7 @@ var PRODUCT_QUOTAS = struct {
 				"handler":    0,
 				"subscriber": 10,
 			},
-			SENTIMENTANALYZER_SERVICE_NAME: map[string]interface{}{
+			SENTIMENT_SERVICE_NAME: map[string]interface{}{
 				"label":      "Sentiment extraction service",
 				"icon":       "social:mood",
 				"handler":    0,
@@ -180,7 +180,7 @@ var PRODUCT_QUOTAS = struct {
 				"handler":    0,
 				"subscriber": 50,
 			},
-			SENTIMENTANALYZER_SERVICE_NAME: map[string]interface{}{
+			SENTIMENT_SERVICE_NAME: map[string]interface{}{
 				"label":      "Sentiment extraction service",
 				"icon":       "social:mood",
 				"handler":    0,

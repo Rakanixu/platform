@@ -1,18 +1,18 @@
 syntax = "proto3";
 
-package go.micro.srv.sentimentanalyzer;
+package proto.sentiment;
 
-service TextAnalyzer {
-  rpc Create(CreateRequest) returns (CreateResponse) {}
+service Service {
+  rpc AnalyzeFile(AnalyzeFileRequest) returns (AnalyzeFileResponse) {}
   rpc Health(HealthRequest) returns (HealthResponse) {}
 }
 
-message CreateRequest {
+message AnalyzeFileRequest {
   string index = 1;
   string id = 2;
 }
 
-message CreateResponse {
+message AnalyzeFileResponse {
   string info = 1;
 }
 

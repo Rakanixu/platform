@@ -26,22 +26,22 @@ import (
 )
 
 const (
-	NAMESPACE                      string = "com.kazoup"
-	DB_SERVICE_NAME                string = NAMESPACE + ".srv.db"
-	SEARCH_SERVICE_NAME            string = NAMESPACE + ".srv.search"
-	DATASOURCE_SERVICE_NAME        string = NAMESPACE + ".srv.datasource"
-	CRAWLER_SERVICE_NAME           string = NAMESPACE + ".srv.crawler"
-	NOTIFICATION_SERVICE_NAME      string = NAMESPACE + ".srv.notification"
-	FILE_SERVICE_NAME              string = NAMESPACE + ".srv.file"
-	QUOTA_SERVICE_NAME             string = NAMESPACE + ".srv.quota"
-	PROFILE_SERVICE_NAME           string = NAMESPACE + ".srv.profile"
-	MONITOR_SERVICE_NAME           string = NAMESPACE + ".srv.monitor"
-	THUMBNAIL_SERVICE_NAME         string = NAMESPACE + ".srv.thumbnail"
-	AUDIO_SERVICE_NAME             string = NAMESPACE + ".srv.audio"
-	DOCUMENT_SERVICE_NAME          string = NAMESPACE + ".srv.document"
-	IMAGE_SERVICE_NAME             string = NAMESPACE + ".srv.image"
-	TEXTANALYZER_SERVICE_NAME      string = NAMESPACE + ".srv.textanalyzer"
-	SENTIMENTANALYZER_SERVICE_NAME string = NAMESPACE + ".srv.sentimentanalyzer"
+	NAMESPACE                 string = "com.kazoup"
+	DB_SERVICE_NAME           string = NAMESPACE + ".srv.db"
+	SEARCH_SERVICE_NAME       string = NAMESPACE + ".srv.search"
+	DATASOURCE_SERVICE_NAME   string = NAMESPACE + ".srv.datasource"
+	CRAWLER_SERVICE_NAME      string = NAMESPACE + ".srv.crawler"
+	NOTIFICATION_SERVICE_NAME string = NAMESPACE + ".srv.notification"
+	FILE_SERVICE_NAME         string = NAMESPACE + ".srv.file"
+	QUOTA_SERVICE_NAME        string = NAMESPACE + ".srv.quota"
+	PROFILE_SERVICE_NAME      string = NAMESPACE + ".srv.profile"
+	MONITOR_SERVICE_NAME      string = NAMESPACE + ".srv.monitor"
+	THUMBNAIL_SERVICE_NAME    string = NAMESPACE + ".srv.thumbnail"
+	AUDIO_SERVICE_NAME        string = NAMESPACE + ".srv.audio"
+	DOCUMENT_SERVICE_NAME     string = NAMESPACE + ".srv.document"
+	IMAGE_SERVICE_NAME        string = NAMESPACE + ".srv.image"
+	TEXTANALYZER_SERVICE_NAME string = NAMESPACE + ".srv.textanalyzer"
+	SENTIMENT_SERVICE_NAME    string = NAMESPACE + ".srv.sentiment"
 
 	HANDLER_DATASOURCE_CREATE  = DATASOURCE_SERVICE_NAME + ".DataSource.Create"
 	HANDLER_DATASOURCE_DELETE  = DATASOURCE_SERVICE_NAME + ".DataSource.Delete"
@@ -60,6 +60,8 @@ const (
 
 	HANDLER_IMAGE_ENRICH_FILE       = IMAGE_SERVICE_NAME + ".Service.EnrichFile"
 	HANDLER_IMAGE_ENRICH_DATASOURCE = IMAGE_SERVICE_NAME + ".Service.EnrichDatasource"
+
+	HANDLER_SENTIMENT_ENRICH_FILE = SENTIMENT_SERVICE_NAME + ".Service.AnalyzeFile"
 
 	AnnounceTopic           string = NAMESPACE + ".topic.announce"
 	FilesTopic              string = NAMESPACE + ".topic.files"

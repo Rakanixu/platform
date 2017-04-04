@@ -4,60 +4,76 @@ import (
 	"encoding/json"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	db_helper "github.com/kazoup/platform/lib/dbhelper"
+	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	text "github.com/kazoup/platform/lib/normalization/text"
 	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
 	rossetelib "github.com/kazoup/platform/lib/rossete"
-	"github.com/micro/go-micro/client"
+	"github.com/micro/go-micro"
 	"golang.org/x/net/context"
 	"log"
 	"time"
 )
 
-type EnrichMsgChan struct {
+func NewTaskHandler(workers int) *taskHandler {
+	t := &taskHandler{
+		enrichMsgChan: make(chan enrichMsgChan, 1000000),
+		workers:       workers,
+	}
+
+	startWorkers(t)
+
+	return t
+}
+
+type taskHandler struct {
+	enrichMsgChan chan enrichMsgChan
+	workers       int
+}
+
+type enrichMsgChan struct {
 	ctx  context.Context
 	msg  *enrich_proto.EnrichMessage
 	done chan bool
 }
 
-type SentimentAnalyzer struct {
-	Client        client.Client
-	EnrichMsgChan chan EnrichMsgChan
-	Workers       int
-}
-
 // Enrich subscriber, receive EnrichMessage to get the file and process it
-func (sa *SentimentAnalyzer) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
-	c := EnrichMsgChan{
+func (t *taskHandler) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
+	c := enrichMsgChan{
 		ctx:  ctx,
 		msg:  enrichmsg,
 		done: make(chan bool),
 	}
 	// Queue internally
-	sa.EnrichMsgChan <- c
+	t.enrichMsgChan <- c
 
 	<-c.done
 
 	return nil
 }
 
-func (sa *SentimentAnalyzer) queueListener(wID int) {
-	for m := range sa.EnrichMsgChan {
-		if err := processEnrichMsg(sa.Client, m); err != nil {
+func (t *taskHandler) queueListener(wID int) {
+	for m := range t.enrichMsgChan {
+		if err := processEnrichMsg(m); err != nil {
 			log.Println("Error Processing sentiment analyzer on worker", wID, err)
 		}
 	}
 }
 
-func StartWorkers(sa *SentimentAnalyzer) {
-	for i := 0; i < sa.Workers; i++ {
-		go sa.queueListener(i)
+func startWorkers(t *taskHandler) {
+	for i := 0; i < t.workers; i++ {
+		go t.queueListener(i)
 	}
 }
 
-func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
-	frsp, err := db_helper.ReadFromDB(c, m.ctx, &db_proto.ReadRequest{
+func processEnrichMsg(m enrichMsgChan) error {
+	srv, ok := micro.FromContext(m.ctx)
+	if !ok {
+		return errors.ErrInvalidCtx
+	}
+
+	frsp, err := db_helper.ReadFromDB(srv.Client(), m.ctx, &db_proto.ReadRequest{
 		Index: m.msg.Index,
 		Type:  globals.FileType,
 		Id:    m.msg.Id,
@@ -120,7 +136,7 @@ func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
 				return err
 			}
 
-			_, err = db_helper.UpdateFromDB(c, m.ctx, &db_proto.UpdateRequest{
+			_, err = db_helper.UpdateFromDB(srv.Client(), m.ctx, &db_proto.UpdateRequest{
 				Index: m.msg.Index,
 				Type:  globals.FileType,
 				Id:    m.msg.Id,

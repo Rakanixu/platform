@@ -266,8 +266,8 @@ services:
       - "../../../:/go/src/"
       - "./cmd/kazoup/google-app-credentials:/srv/google-app-credentials"
 
-  sentimentanalyzer-srv:
-    command: go run src/github.com/kazoup/platform/sentimentanalyzer/srv/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
+  sentiment-srv:
+    command: go run src/github.com/kazoup/platform/sentiment/srv/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
     image: golang:1.7-alpine3.5
     external_links:
     - registry
