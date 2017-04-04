@@ -76,7 +76,7 @@ var PRODUCT_QUOTAS = struct {
 				"handler":    0,
 				"subscriber": 1,
 			},
-			DOCENRICH_SERVICE_NAME: map[string]interface{}{
+			DOCUMENT_SERVICE_NAME: map[string]interface{}{
 				"label":      "Content extraction service",
 				"icon":       "action:find-in-page",
 				"handler":    0,
@@ -162,7 +162,7 @@ var PRODUCT_QUOTAS = struct {
 				"handler":    0,
 				"subscriber": 5,
 			},
-			DOCENRICH_SERVICE_NAME: map[string]interface{}{
+			DOCUMENT_SERVICE_NAME: map[string]interface{}{
 				"label":      "Content extraction service",
 				"icon":       "action:find-in-page",
 				"handler":    0,

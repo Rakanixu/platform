@@ -1,17 +1,17 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: docenrich-srv
+  name: document-srv
 spec:
   replicas: 1
   revisionHistoryLimit: 3
   template:
     metadata:
       labels:
-        app: docenrich-srv
+        app: document-srv
     spec:
       containers:
-      - name: docenrich-srv
+      - name: document-srv
         command: [
                   "/srv",
                   "--registry=kubernetes",
@@ -20,14 +20,14 @@ spec:
                   "--broker_address=nats:4222",
                   "--transport=tcp",
                   ]
-        image: eu.gcr.io/desktop-1470249894548/docenrich-srv:latest
+        image: eu.gcr.io/desktop-1470249894548/document-srv:latest
         env:
           - name: GOOGLE_APPLICATION_CREDENTIALS
             value:  "/google-cloud-service-account/google-cloud-service-account.json"
         imagePullPolicy: Always
         ports:
         - containerPort: 9090
-          name: docenrich-port
+          name: document-port
         - containerPort: 10001
           name: broker-port
         volumeMounts:

@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/kazoup/platform/docenrich/srv/handler"
-	"github.com/kazoup/platform/docenrich/srv/subscriber"
+	"github.com/kazoup/platform/document/srv/handler"
+	"github.com/kazoup/platform/document/srv/proto/document"
+	"github.com/kazoup/platform/document/srv/subscriber"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
@@ -16,7 +17,7 @@ import (
 func main() {
 	var m monitor.Monitor
 
-	service := wrappers.NewKazoupService("docenrich", m)
+	service := wrappers.NewKazoupService("document", m)
 
 	// enrich-srv monitor
 	m = monitor.NewMonitor(
@@ -29,18 +30,9 @@ func main() {
 	healthchecks.RegisterBrokerHealthChecks(service, m)
 
 	// Attach handler
-	if err := service.Server().Handle(
-		service.Server().NewHandler(
-			&handler.DocEnrich{
-				Client: service.Client(),
-			},
-		),
-	); err != nil {
-		log.Fatal(err)
-	}
+	proto_document.RegisterServiceHandler(service.Server(), new(handler.Service))
 
-	s := &subscriber.Enrich{
-		Client:        service.Client(),
+	s := &subscriber.TaskHandler{
 		EnrichMsgChan: make(chan subscriber.EnrichMsgChan, 1000000),
 		Workers:       25,
 	}
@@ -51,7 +43,7 @@ func main() {
 		service.Server().NewSubscriber(
 			globals.DocEnrichTopic,
 			s,
-			server.SubscriberQueue("docenrich"),
+			server.SubscriberQueue("document"),
 		),
 	); err != nil {
 		log.Fatal(err)
@@ -61,11 +53,8 @@ func main() {
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.AnnounceTopic,
-			&subscriber.AnnounceDocEnrich{
-				Client: service.Client(),
-				Broker: service.Server().Options().Broker,
-			},
-			server.SubscriberQueue("announce-docenrich"),
+			new(subscriber.AnnounceHandler),
+			server.SubscriberQueue("announce-document"),
 		),
 	); err != nil {
 		log.Fatal(err)

@@ -5,11 +5,12 @@ import (
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	db_helper "github.com/kazoup/platform/lib/dbhelper"
+	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
 	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
-	"github.com/micro/go-micro/client"
+	"github.com/micro/go-micro"
 	"golang.org/x/net/context"
 	"log"
 )
@@ -20,14 +21,13 @@ type EnrichMsgChan struct {
 	done chan bool
 }
 
-type Enrich struct {
-	Client        client.Client
+type TaskHandler struct {
 	EnrichMsgChan chan EnrichMsgChan
 	Workers       int
 }
 
 // Enrich subscriber, receive EnrichMessage to get the file and process it
-func (e *Enrich) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
+func (t *TaskHandler) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
 	c := EnrichMsgChan{
 		ctx:  ctx,
 		msg:  enrichmsg,
@@ -35,7 +35,7 @@ func (e *Enrich) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessa
 	}
 
 	// Queue internally
-	e.EnrichMsgChan <- c
+	t.EnrichMsgChan <- c
 
 	// Block subscriber exit until process is done
 	<-c.done
@@ -43,22 +43,27 @@ func (e *Enrich) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessa
 	return nil
 }
 
-func (e *Enrich) queueListener(wID int) {
-	for m := range e.EnrichMsgChan {
-		if err := processEnrichMsg(e.Client, m); err != nil {
+func (t *TaskHandler) queueListener(wID int) {
+	for m := range t.EnrichMsgChan {
+		if err := processEnrichMsg(m); err != nil {
 			log.Println("Error Processing enrich msg (Document) on Worker", wID, err)
 		}
 	}
 }
 
-func StartWorkers(e *Enrich) {
-	for i := 0; i < e.Workers; i++ {
-		go e.queueListener(i)
+func StartWorkers(t *TaskHandler) {
+	for i := 0; i < t.Workers; i++ {
+		go t.queueListener(i)
 	}
 }
 
-func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
-	frsp, err := db_helper.ReadFromDB(c, m.ctx, &db_proto.ReadRequest{
+func processEnrichMsg(m EnrichMsgChan) error {
+	srv, ok := micro.FromContext(m.ctx)
+	if !ok {
+		return errors.ErrInvalidCtx
+	}
+
+	frsp, err := db_helper.ReadFromDB(srv.Client(), m.ctx, &db_proto.ReadRequest{
 		Index: m.msg.Index,
 		Type:  globals.FileType,
 		Id:    m.msg.Id,
@@ -72,7 +77,7 @@ func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
 		return err
 	}
 
-	drsp, err := db_helper.ReadFromDB(c, m.ctx, &db_proto.ReadRequest{
+	drsp, err := db_helper.ReadFromDB(srv.Client(), m.ctx, &db_proto.ReadRequest{
 		Index: globals.IndexDatasources,
 		Type:  globals.TypeDatasource,
 		Id:    f.GetDatasourceID(),
@@ -105,7 +110,7 @@ func processEnrichMsg(c client.Client, m EnrichMsgChan) error {
 		return err
 	}
 
-	_, err = db_helper.UpdateFromDB(c, m.ctx, &db_proto.UpdateRequest{
+	_, err = db_helper.UpdateFromDB(srv.Client(), m.ctx, &db_proto.UpdateRequest{
 		Index: m.msg.Index,
 		Type:  globals.FileType,
 		Id:    m.msg.Id,

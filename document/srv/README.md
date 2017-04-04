@@ -1,6 +1,6 @@
 # DOC ENRICH SERVICE
 
-docenrich-srv is microservice to enrich document files.
+document-srv is microservice to enrich document files.
 
 ## Getting started
 
