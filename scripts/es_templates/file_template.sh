@@ -14,8 +14,7 @@ curl -XPUT localhost:9200/_template/template_file -d '
           "type": "custom",
           "filter": [
             "lowercase",
-            "asciifolding",
-            "ngram_3_20"
+            "asciifolding"
           ],
           "tokenizer": "filename"
         },
