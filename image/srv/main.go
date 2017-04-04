@@ -32,17 +32,11 @@ func main() {
 	// Attach handler
 	proto_image.RegisterServiceHandler(service.Server(), new(handler.Service))
 
-	s := &subscriber.TaskHandler{
-		EnrichMsgChan: make(chan subscriber.EnrichMsgChan, 1000000),
-		Workers:       25,
-	}
-	subscriber.StartWorkers(s)
-
 	// Attach subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.ImgEnrichTopic,
-			s,
+			subscriber.NewTaskHandler(25),
 			server.SubscriberQueue("image"),
 		),
 	); err != nil {

@@ -15,50 +15,61 @@ import (
 	"log"
 )
 
-type EnrichMsgChan struct {
+func NewTaskHandler(workers int) *taskHandler {
+	t := &taskHandler{
+		enrichMsgChan: make(chan enrichMsgChan, 1000000),
+		workers:       workers,
+	}
+
+	startWorkers(t)
+
+	return t
+}
+
+type taskHandler struct {
+	enrichMsgChan chan enrichMsgChan
+	workers       int
+}
+
+type enrichMsgChan struct {
 	ctx  context.Context
 	msg  *enrich_proto.EnrichMessage
 	done chan bool
 }
 
-type TaskHandler struct {
-	EnrichMsgChan chan EnrichMsgChan
-	Workers       int
-}
-
 // Enrich subscriber, receive EnrichMessage to get the file and process it
-func (t *TaskHandler) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
-	c := EnrichMsgChan{
+func (t *taskHandler) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
+	c := enrichMsgChan{
 		ctx:  ctx,
 		msg:  enrichmsg,
 		done: make(chan bool),
 	}
 
 	// Queue internally
-	t.EnrichMsgChan <- c
+	t.enrichMsgChan <- c
 
 	<-c.done
 
 	return nil
 }
 
-// queueListener range over EnrichMsgChan channel and process msgs one by one
-func (t *TaskHandler) queueListener(wID int) {
-	for m := range t.EnrichMsgChan {
+// queueListener range over enrichMsgChan channel and process msgs one by one
+func (t *taskHandler) queueListener(wID int) {
+	for m := range t.enrichMsgChan {
 		if err := processEnrichMsg(m); err != nil {
 			log.Println("Error Processing enrich msg (Image) on worker ", wID, err)
 		}
 	}
 }
 
-func StartWorkers(t *TaskHandler) {
+func startWorkers(t *taskHandler) {
 	// Start workers
-	for i := 0; i < t.Workers; i++ {
+	for i := 0; i < t.workers; i++ {
 		go t.queueListener(i)
 	}
 }
 
-func processEnrichMsg(m EnrichMsgChan) error {
+func processEnrichMsg(m enrichMsgChan) error {
 	srv, ok := micro.FromContext(m.ctx)
 	if !ok {
 		return errors.ErrInvalidCtx
