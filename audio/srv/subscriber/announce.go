@@ -20,30 +20,13 @@ type AnnounceHandler struct{}
 func (a *AnnounceHandler) OnCrawlerFinished(ctx context.Context, msg *announce.AnnounceMessage) error {
 	// After a crawler has finished, we want enrich crawled audio files
 	if globals.DiscoverTopic == msg.Handler {
-		srv, ok := micro.FromContext(ctx)
-		if !ok {
-			return errors.ErrInvalidCtx
-		}
-
 		var e *proto_datasource.Endpoint
 		if err := json.Unmarshal([]byte(msg.Data), &e); err != nil {
 			return err
 		}
 
-		ids, err := retrieveAudioFilesNotProcessed(ctx, srv.Client(), e.Id, e.Index)
-		if err != nil {
+		if err := publishAudioFilesNotProcessed(ctx, e); err != nil {
 			return err
-		}
-
-		// Publish msg for all files not being process yet
-		for _, v := range ids {
-			if err := srv.Client().Publish(ctx, srv.Client().NewPublication(globals.AudioEnrichTopic, &enrich.EnrichMessage{
-				Index:  e.Index,
-				Id:     v,
-				UserId: e.UserId,
-			})); err != nil {
-				return err
-			}
 		}
 	}
 
@@ -106,20 +89,8 @@ func (a *AnnounceHandler) OnEnrichDatasource(ctx context.Context, msg *announce.
 			return err
 		}
 
-		ids, err := retrieveAudioFilesNotProcessed(ctx, srv.Client(), e.Id, e.Index)
-		if err != nil {
+		if err := publishAudioFilesNotProcessed(ctx, e); err != nil {
 			return err
-		}
-
-		// Publish msg for all files not being process yet
-		for _, v := range ids {
-			if err := srv.Client().Publish(ctx, srv.Client().NewPublication(globals.AudioEnrichTopic, &enrich.EnrichMessage{
-				Index:  e.Index,
-				Id:     v,
-				UserId: e.UserId,
-			})); err != nil {
-				return err
-			}
 		}
 	}
 

@@ -2,12 +2,17 @@ package subscriber
 
 import (
 	"encoding/json"
+	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	db_helper "github.com/kazoup/platform/lib/dbhelper"
+	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	enrich "github.com/kazoup/platform/lib/protomsg/enrich"
+	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
+	"log"
 )
 
 type info struct {
@@ -16,7 +21,32 @@ type info struct {
 
 var from, size int64
 
-func retrieveAudioFilesNotProcessed(ctx context.Context, c client.Client, dsID, index string) ([]string, error) {
+func publishAudioFilesNotProcessed(ctx context.Context, endpoint *proto_datasource.Endpoint) error {
+	srv, ok := micro.FromContext(ctx)
+	if !ok {
+		return errors.ErrInvalidCtx
+	}
+
+	ids, err := retrieveAudioFilesNotProcessed(ctx, srv.Client(), endpoint.Index)
+	if err != nil {
+		return err
+	}
+
+	// Publish msg for all files not being process yet
+	for _, v := range ids {
+		if err := srv.Client().Publish(ctx, srv.Client().NewPublication(globals.AudioEnrichTopic, &enrich.EnrichMessage{
+			Index:  endpoint.Index,
+			Id:     v,
+			UserId: endpoint.UserId,
+		})); err != nil {
+			log.Println("ERROR publishing AudioEnrichTopic", err)
+		}
+	}
+
+	return nil
+}
+
+func retrieveAudioFilesNotProcessed(ctx context.Context, c client.Client, index string) ([]string, error) {
 	var ids []string
 	from = 0
 	size = 9999
