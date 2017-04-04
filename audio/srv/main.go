@@ -35,19 +35,12 @@ func main() {
 
 	gcslib.Register()
 
-	s := &subscriber.TaskHandler{
-		GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
-		EnrichMsgChan:      make(chan subscriber.EnrichMsgChan, 1000000),
-		Workers:            20,
-	}
-	subscriber.StartWorkers(s)
-
 	// Attach subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.AudioEnrichTopic,
-			s,
-			server.SubscriberQueue("audioenrich"),
+			subscriber.NewTaskHandler(20, gcslib.NewGoogleCloudStorage()),
+			server.SubscriberQueue("audio"),
 		),
 	); err != nil {
 		log.Fatal(err)
@@ -58,7 +51,7 @@ func main() {
 		service.Server().NewSubscriber(
 			globals.AnnounceTopic,
 			new(subscriber.AnnounceHandler),
-			server.SubscriberQueue("announce-audioenrich"),
+			server.SubscriberQueue("announce-audio"),
 		),
 	); err != nil {
 		log.Fatal(err)

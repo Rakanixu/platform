@@ -16,48 +16,60 @@ import (
 	"log"
 )
 
-type EnrichMsgChan struct {
+func NewTaskHandler(workers int, cs *gcslib.GoogleCloudStorage) *taskHandler {
+	t := &taskHandler{
+		googleCloudStorage: cs,
+		enrichMsgChan:      make(chan enrichMsgChan, 1000000),
+		workers:            workers,
+	}
+
+	startWorkers(t)
+
+	return t
+}
+
+type taskHandler struct {
+	googleCloudStorage *gcslib.GoogleCloudStorage
+	enrichMsgChan      chan enrichMsgChan
+	workers            int
+}
+
+type enrichMsgChan struct {
 	msg  *enrich_proto.EnrichMessage
 	ctx  context.Context
 	done chan bool
 }
 
-type TaskHandler struct {
-	GoogleCloudStorage *gcslib.GoogleCloudStorage
-	EnrichMsgChan      chan EnrichMsgChan
-	Workers            int
-}
-
 // Enrich subscriber, receive EnrichMessage to get the file and process it
-func (e *TaskHandler) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
-	c := EnrichMsgChan{
+func (e *taskHandler) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
+	c := enrichMsgChan{
 		msg:  enrichmsg,
 		ctx:  ctx,
 		done: make(chan bool),
 	}
 	// Queue internally
-	e.EnrichMsgChan <- c
+	e.enrichMsgChan <- c
 
 	<-c.done
 
 	return nil
 }
 
-func (e *TaskHandler) queueListener(wID int) {
-	for m := range e.EnrichMsgChan {
-		if err := processEnrichMsg(e.GoogleCloudStorage, m); err != nil {
+func (e *taskHandler) queueListener(wID int) {
+	for m := range e.enrichMsgChan {
+		if err := processEnrichMsg(e.googleCloudStorage, m); err != nil {
 			log.Println("Error Processing enrich msg (Audio) on worker", wID, err)
 		}
 	}
 }
 
-func StartWorkers(t *TaskHandler) {
-	for i := 0; i < t.Workers; i++ {
+func startWorkers(t *taskHandler) {
+	for i := 0; i < t.workers; i++ {
 		go t.queueListener(i)
 	}
 }
 
-func processEnrichMsg(gcs *gcslib.GoogleCloudStorage, m EnrichMsgChan) error {
+func processEnrichMsg(gcs *gcslib.GoogleCloudStorage, m enrichMsgChan) error {
 	srv, ok := micro.FromContext(m.ctx)
 	if !ok {
 		return errors.ErrInvalidCtx
