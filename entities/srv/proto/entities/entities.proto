@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package proto.entities;
+
+service Service {
+  rpc ExtractFile(ExtractFileRequest) returns (ExtractFileResponse) {}
+  rpc Health(HealthRequest) returns (HealthResponse) {}
+}
+
+message ExtractFileRequest {
+  string index = 1;
+  string id = 2;
+}
+
+message ExtractFileResponse {
+  string info = 1;
+}
+
+message HealthRequest {
+  string type = 1;
+}
+
+message HealthResponse {
+  int64 status = 1;
+  string info = 2;
+}

@@ -30,19 +30,11 @@ func main() {
 
 	gcslib.Register()
 
-	s := &subscriber.Thumbnail{
-		Client:             service.Client(),
-		GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
-		ThumbnailMsgChan:   make(chan subscriber.ThumbnailMsgChan, 1000000),
-		Workers:            25,
-	}
-	subscriber.StartWorkers(s)
-
 	// Attach subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.ThumbnailTopic,
-			s,
+			subscriber.NewTaskHandler(25, gcslib.NewGoogleCloudStorage()),
 			server.SubscriberQueue("thumbnail"),
 		),
 	); err != nil {

@@ -3,7 +3,6 @@ package elastic
 import (
 	"bytes"
 	"github.com/kazoup/platform/lib/globals"
-	"log"
 	"strconv"
 )
 
@@ -55,8 +54,6 @@ func (e *ElasticQuery) Query() (string, error) {
 	buffer.WriteString(`]`)
 	buffer.WriteString(e.contentHighlight())
 	buffer.WriteString(`}`)
-
-	log.Println("QUERY", buffer.String())
 
 	return buffer.String(), nil
 }

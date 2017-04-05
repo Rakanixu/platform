@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package proto.audio;
+
+service Service {
+  rpc EnrichFile(EnrichFileRequest) returns (EnrichFileResponse) {}
+  rpc EnrichDatasource(EnrichDatasourceRequest) returns (EnrichDatasourceResponse) {}
+  rpc Health(HealthRequest) returns (HealthResponse) {}
+}
+
+message EnrichFileRequest {
+  string id = 1;
+  string index = 2;
+}
+
+message EnrichFileResponse {
+  string info = 1;
+}
+
+message EnrichDatasourceRequest {
+  string id = 1;
+}
+
+message EnrichDatasourceResponse {
+  string info = 1;
+}
+
+message HealthRequest {
+  string type = 1;
+}
+
+message HealthResponse {
+  int64 status = 1;
+  string info = 2;
+}
