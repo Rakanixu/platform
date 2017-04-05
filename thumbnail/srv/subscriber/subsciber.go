@@ -14,7 +14,6 @@ import (
 	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
 	"github.com/micro/go-micro"
 	"golang.org/x/net/context"
-	"log"
 )
 
 func NewTaskHandler(workers int, gcs *gcslib.GoogleCloudStorage) *taskHandler {
