@@ -40,7 +40,7 @@ const (
 	AUDIO_SERVICE_NAME        string = NAMESPACE + ".srv.audio"
 	DOCUMENT_SERVICE_NAME     string = NAMESPACE + ".srv.document"
 	IMAGE_SERVICE_NAME        string = NAMESPACE + ".srv.image"
-	TEXTANALYZER_SERVICE_NAME string = NAMESPACE + ".srv.textanalyzer"
+	ENTITIES_SERVICE_NAME     string = NAMESPACE + ".srv.entities"
 	SENTIMENT_SERVICE_NAME    string = NAMESPACE + ".srv.sentiment"
 
 	HANDLER_DATASOURCE_CREATE  = DATASOURCE_SERVICE_NAME + ".DataSource.Create"
@@ -62,6 +62,8 @@ const (
 	HANDLER_IMAGE_ENRICH_DATASOURCE = IMAGE_SERVICE_NAME + ".Service.EnrichDatasource"
 
 	HANDLER_SENTIMENT_ENRICH_FILE = SENTIMENT_SERVICE_NAME + ".Service.AnalyzeFile"
+
+	HANDLER_ENTITIES_EXTRACT_FILE = ENTITIES_SERVICE_NAME + ".Service.ExtractFile"
 
 	AnnounceTopic           string = NAMESPACE + ".topic.announce"
 	FilesTopic              string = NAMESPACE + ".topic.files"

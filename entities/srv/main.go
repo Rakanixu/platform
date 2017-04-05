@@ -1,12 +1,13 @@
 package main
 
 import (
+	"github.com/kazoup/platform/entities/srv/handler"
+	"github.com/kazoup/platform/entities/srv/proto/entities"
+	"github.com/kazoup/platform/entities/srv/subscriber"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
-	"github.com/kazoup/platform/textanalyzer/srv/handler"
-	"github.com/kazoup/platform/textanalyzer/srv/subscriber"
 	"github.com/micro/go-micro/server"
 	"github.com/micro/go-os/monitor"
 	"log"
@@ -16,7 +17,7 @@ import (
 func main() {
 	var m monitor.Monitor
 
-	service := wrappers.NewKazoupService("textanalyzer", m)
+	service := wrappers.NewKazoupService("entities", m)
 
 	// enrich-srv monitor
 	m = monitor.NewMonitor(
@@ -28,29 +29,15 @@ func main() {
 
 	healthchecks.RegisterBrokerHealthChecks(service, m)
 
-	if err := service.Server().Handle(
-		service.Server().NewHandler(
-			&handler.TextAnalyzer{
-				Client: service.Client(),
-			},
-		),
-	); err != nil {
-		log.Println(err)
-	}
-
-	s := &subscriber.TextAnalyzer{
-		Client:        service.Client(),
-		EnrichMsgChan: make(chan subscriber.EnrichMsgChan, 1000000),
-		Workers:       40,
-	}
-	subscriber.StartWorkers(s)
+	// Attach handler
+	proto_entities.RegisterServiceHandler(service.Server(), new(handler.Service))
 
 	// Attach subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.ExtractEntitiesTopic,
-			s,
-			server.SubscriberQueue("textanalyzer"),
+			subscriber.NewTaskHandler(40),
+			server.SubscriberQueue("entities"),
 		),
 	); err != nil {
 		log.Fatal(err)
@@ -60,11 +47,8 @@ func main() {
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.AnnounceTopic,
-			&subscriber.AnnounceTextAnalyzer{
-				Client: service.Client(),
-				Broker: service.Server().Options().Broker,
-			},
-			server.SubscriberQueue("announce-textanalyzer"),
+			new(subscriber.AnnounceHandler),
+			server.SubscriberQueue("announce-entities"),
 		),
 	); err != nil {
 		log.Fatal(err)

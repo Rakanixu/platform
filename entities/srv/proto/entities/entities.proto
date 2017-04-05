@@ -1,18 +1,18 @@
 syntax = "proto3";
 
-package go.micro.srv.textanalyzer;
+package proto.entities;
 
-service TextAnalyzer {
-  rpc Create(CreateRequest) returns (CreateResponse) {}
+service Service {
+  rpc ExtractFile(ExtractFileRequest) returns (ExtractFileResponse) {}
   rpc Health(HealthRequest) returns (HealthResponse) {}
 }
 
-message CreateRequest {
+message ExtractFileRequest {
   string index = 1;
   string id = 2;
 }
 
-message CreateResponse {
+message ExtractFileResponse {
   string info = 1;
 }
 

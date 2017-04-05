@@ -1,6 +1,6 @@
-# TEXT ANALYZER SERVICE
+# Entity Extraction Service
 
-textanalyzer-srv is microservice to analyze file content.
+entities-srv is microservice to extract entities from content.
 
 ## Getting started
 

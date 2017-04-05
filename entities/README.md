@@ -1,4 +1,4 @@
-# Text Analyzer
+# Entity extraction service
 
 
 ## Getting Started

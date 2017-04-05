@@ -88,7 +88,7 @@ var PRODUCT_QUOTAS = struct {
 				"handler":    0,
 				"subscriber": 10,
 			},
-			TEXTANALYZER_SERVICE_NAME: map[string]interface{}{
+			ENTITIES_SERVICE_NAME: map[string]interface{}{
 				"label":      "Entity extraction service",
 				"icon":       "action:description",
 				"handler":    0,
@@ -174,7 +174,7 @@ var PRODUCT_QUOTAS = struct {
 				"handler":    0,
 				"subscriber": 100,
 			},
-			TEXTANALYZER_SERVICE_NAME: map[string]interface{}{
+			ENTITIES_SERVICE_NAME: map[string]interface{}{
 				"label":      "Entity extraction service",
 				"icon":       "action:description",
 				"handler":    0,
