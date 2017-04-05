@@ -101,23 +101,24 @@
             profile: {
               srv: 'com.kazoup.srv.profile',
               read: 'Profile.Read',
-              updateSubscription: 'Subscription.Update',
+              updateSubscription: 'Subscription.Update'
             },
             imgenrich: {
               srv: 'com.kazoup.srv.imgenrich',
-              create: 'ImgEnrich.Create',
+              create: 'ImgEnrich.Create'
             },
             textanalyzer: { // This is a bit special, as doc content extraction is free (tika) but not entity extraction (rossete)
               srv: 'com.kazoup.srv.textanalyzer',
-              create: 'TextAnalyzer.Create',
+              create: 'TextAnalyzer.Create'
             },
             sentimentanalyzer: { // As textanalyzer
               srv: 'com.kazoup.srv.sentimentanalyzer',
-              create: 'SentimentAnalyzer.Create',
+              create: 'SentimentAnalyzer.Create'
             },
-            audioenrich: {
-              srv: 'com.kazoup.srv.audioenrich',
-              create: 'AudioEnrich.Create',
+            audio: {
+              srv: 'com.kazoup.srv.audio',
+              fileEnrich: 'Service.EnrichFile',
+              datasourceEnrich: 'Service.EnrichDatasource'
             }
           }
         };

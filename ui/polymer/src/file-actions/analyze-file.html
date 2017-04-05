@@ -124,8 +124,8 @@
           // Documents will trigger TextAnalayze, because the doc enrichment is free (tika) for all users and not limited
           switch (this.item.category) {
             case this.categoriesMap.audios:
-              this.rpcAnalyzeFileParams.service = window.Endpoints.srvs.audioenrich.srv;
-              this.rpcAnalyzeFileParams.method = window.Endpoints.srvs.audioenrich.create;
+              this.rpcAnalyzeFileParams.service = window.Endpoints.srvs.audio.srv;
+              this.rpcAnalyzeFileParams.method = window.Endpoints.srvs.audio.fileEnrich;
               break;
             case this.categoriesMap.documents:
               this.rpcAnalyzeFileParams.service = window.Endpoints.srvs.textanalyzer.srv;

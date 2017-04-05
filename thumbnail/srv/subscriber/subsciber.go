@@ -2,65 +2,82 @@ package subscriber
 
 import (
 	"encoding/json"
+	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	db_helper "github.com/kazoup/platform/lib/dbhelper"
+	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
-	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
-	"github.com/micro/go-micro/client"
+	enrich "github.com/kazoup/platform/lib/protomsg/enrich"
+	"github.com/micro/go-micro"
 	"golang.org/x/net/context"
-	"log"
 )
 
-type ThumbnailMsgChan struct {
-	ctx  context.Context
-	msg  *enrich_proto.EnrichMessage
-	done chan bool
+func NewTaskHandler(workers int, gcs *gcslib.GoogleCloudStorage) *taskHandler {
+	t := &taskHandler{
+		googleCloudStorage: gcs,
+		thumbnailMsgChan:   make(chan thumbnailMsgChan, 1000000),
+		Workers:            workers,
+	}
+
+	startWorkers(t)
+
+	return t
 }
 
-type Thumbnail struct {
-	Client             client.Client
-	GoogleCloudStorage *gcslib.GoogleCloudStorage
-	ThumbnailMsgChan   chan ThumbnailMsgChan
+type taskHandler struct {
+	googleCloudStorage *gcslib.GoogleCloudStorage
+	thumbnailMsgChan   chan thumbnailMsgChan
 	Workers            int
 }
 
+type thumbnailMsgChan struct {
+	ctx context.Context
+	msg *enrich.EnrichMessage
+	err chan error
+}
+
 // Enrich subscriber, receive EnrichMessage to get the file and process it
-func (e *Thumbnail) Thumbnail(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
-	c := ThumbnailMsgChan{
-		ctx:  ctx,
-		msg:  enrichmsg,
-		done: make(chan bool),
+func (t *taskHandler) Thumbnail(ctx context.Context, enrichmsg *enrich.EnrichMessage) error {
+	c := thumbnailMsgChan{
+		ctx: ctx,
+		msg: enrichmsg,
+		err: make(chan error),
 	}
 	// Queue internally
-	e.ThumbnailMsgChan <- c
+	t.thumbnailMsgChan <- c
 
-	<-c.done
-
-	return nil
+	return <-c.err
 }
 
-// queueListener range over ThumbnailMsgChan channel and process msgs one by one
-func (e *Thumbnail) queueListener(wID int) {
-	for m := range e.ThumbnailMsgChan {
-		if err := processThumbnailMsg(e.Client, e.GoogleCloudStorage, m); err != nil {
-			log.Println("Error Processing enrich msg (Thumbnail) on worker ", wID, err)
+// queueListener range over thumbnailMsgChan channel and process msgs one by one
+func (t *taskHandler) queueListener(wID int) {
+	for m := range t.thumbnailMsgChan {
+		if err := processThumbnailMsg(t.googleCloudStorage, m); err != nil {
+			m.err <- errors.NewPlatformError(globals.THUMBNAIL_SERVICE_NAME, "processEnrichMsg", fmt.Sprintf("worker %d", wID), err)
 		}
+		// Successful
+		m.err <- nil
 	}
 }
 
-func StartWorkers(e *Thumbnail) {
+func startWorkers(t *taskHandler) {
 	// Start workers
-	for i := 0; i < e.Workers; i++ {
-		go e.queueListener(i)
+	for i := 0; i < t.Workers; i++ {
+		go t.queueListener(i)
 	}
 }
 
-func processThumbnailMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m ThumbnailMsgChan) error {
-	frsp, err := db_helper.ReadFromDB(c, m.ctx, &db_proto.ReadRequest{
+func processThumbnailMsg(gcs *gcslib.GoogleCloudStorage, m thumbnailMsgChan) error {
+	srv, ok := micro.FromContext(m.ctx)
+	if !ok {
+		return errors.ErrInvalidCtx
+	}
+
+	frsp, err := db_helper.ReadFromDB(srv.Client(), m.ctx, &db_proto.ReadRequest{
 		Index: m.msg.Index,
 		Type:  globals.FileType,
 		Id:    m.msg.Id,
@@ -74,7 +91,7 @@ func processThumbnailMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m Thum
 		return err
 	}
 
-	drsp, err := db_helper.ReadFromDB(c, m.ctx, &db_proto.ReadRequest{
+	drsp, err := db_helper.ReadFromDB(srv.Client(), m.ctx, &db_proto.ReadRequest{
 		Index: globals.IndexDatasources,
 		Type:  globals.TypeDatasource,
 		Id:    f.GetDatasourceID(),
@@ -107,7 +124,7 @@ func processThumbnailMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m Thum
 		return err
 	}
 
-	_, err = db_helper.UpdateFromDB(c, m.ctx, &db_proto.UpdateRequest{
+	_, err = db_helper.UpdateFromDB(srv.Client(), m.ctx, &db_proto.UpdateRequest{
 		Index: m.msg.Index,
 		Type:  globals.FileType,
 		Id:    m.msg.Id,
@@ -116,8 +133,6 @@ func processThumbnailMsg(c client.Client, gcs *gcslib.GoogleCloudStorage, m Thum
 	if err != nil {
 		return err
 	}
-
-	m.done <- true
 
 	return nil
 }

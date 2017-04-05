@@ -19,6 +19,14 @@ curl -XPUT localhost:9200/_template/template_file -d '
           ],
           "tokenizer": "filename"
         },
+        "filename_index_no_ngrams": {
+          "type": "custom",
+          "filter": [
+            "lowercase",
+            "asciifolding"
+          ],
+          "tokenizer": "filename"
+        },
         "content_analyzer": {
           "type": "custom",
           "char_filter" : [ "html_strip" ],
@@ -85,7 +93,7 @@ curl -XPUT localhost:9200/_template/template_file -d '
         },
         "name":{
           "type": "text",
-          "analyzer": "filename_index",
+          "analyzer": "filename_index_no_ngrams",
           "index": true,
           "fields": {
             "raw": {

@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package proto.sentiment;
+
+service Service {
+  rpc AnalyzeFile(AnalyzeFileRequest) returns (AnalyzeFileResponse) {}
+  rpc Health(HealthRequest) returns (HealthResponse) {}
+}
+
+message AnalyzeFileRequest {
+  string index = 1;
+  string id = 2;
+}
+
+message AnalyzeFileResponse {
+  string info = 1;
+}
+
+message HealthRequest {
+  string type = 1;
+}
+
+message HealthResponse {
+  int64 status = 1;
+  string info = 2;
+}

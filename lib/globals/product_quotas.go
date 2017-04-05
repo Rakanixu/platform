@@ -70,31 +70,31 @@ var PRODUCT_QUOTAS = struct {
 				"handler":    0,
 				"subscriber": 0,
 			},
-			AUDIOENRICH_SERVICE_NAME: map[string]interface{}{
+			AUDIO_SERVICE_NAME: map[string]interface{}{
 				"label":      "Speech to text service",
 				"icon":       "image:audiotrack",
 				"handler":    0,
 				"subscriber": 1,
 			},
-			DOCENRICH_SERVICE_NAME: map[string]interface{}{
+			DOCUMENT_SERVICE_NAME: map[string]interface{}{
 				"label":      "Content extraction service",
 				"icon":       "action:find-in-page",
 				"handler":    0,
 				"subscriber": 0,
 			},
-			IMGENRICH_SERVICE_NAME: map[string]interface{}{
+			IMAGE_SERVICE_NAME: map[string]interface{}{
 				"label":      "Image content service",
 				"icon":       "image:photo-library",
 				"handler":    0,
 				"subscriber": 10,
 			},
-			TEXTANALYZER_SERVICE_NAME: map[string]interface{}{
+			ENTITIES_SERVICE_NAME: map[string]interface{}{
 				"label":      "Entity extraction service",
 				"icon":       "action:description",
 				"handler":    0,
 				"subscriber": 10,
 			},
-			SENTIMENTANALYZER_SERVICE_NAME: map[string]interface{}{
+			SENTIMENT_SERVICE_NAME: map[string]interface{}{
 				"label":      "Sentiment extraction service",
 				"icon":       "social:mood",
 				"handler":    0,
@@ -156,31 +156,31 @@ var PRODUCT_QUOTAS = struct {
 				"handler":    0,
 				"subscriber": 0,
 			},
-			AUDIOENRICH_SERVICE_NAME: map[string]interface{}{
+			AUDIO_SERVICE_NAME: map[string]interface{}{
 				"label":      "Speech to text service",
 				"icon":       "image:audiotrack",
 				"handler":    0,
 				"subscriber": 5,
 			},
-			DOCENRICH_SERVICE_NAME: map[string]interface{}{
+			DOCUMENT_SERVICE_NAME: map[string]interface{}{
 				"label":      "Content extraction service",
 				"icon":       "action:find-in-page",
 				"handler":    0,
 				"subscriber": 0,
 			},
-			IMGENRICH_SERVICE_NAME: map[string]interface{}{
+			IMAGE_SERVICE_NAME: map[string]interface{}{
 				"label":      "Image content service",
 				"icon":       "image:photo-library",
 				"handler":    0,
 				"subscriber": 100,
 			},
-			TEXTANALYZER_SERVICE_NAME: map[string]interface{}{
+			ENTITIES_SERVICE_NAME: map[string]interface{}{
 				"label":      "Entity extraction service",
 				"icon":       "action:description",
 				"handler":    0,
 				"subscriber": 50,
 			},
-			SENTIMENTANALYZER_SERVICE_NAME: map[string]interface{}{
+			SENTIMENT_SERVICE_NAME: map[string]interface{}{
 				"label":      "Sentiment extraction service",
 				"icon":       "social:mood",
 				"handler":    0,
