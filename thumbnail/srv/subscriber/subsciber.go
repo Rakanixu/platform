@@ -11,7 +11,7 @@ import (
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
-	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
+	enrich "github.com/kazoup/platform/lib/protomsg/enrich"
 	"github.com/micro/go-micro"
 	"golang.org/x/net/context"
 )
@@ -36,12 +36,12 @@ type taskHandler struct {
 
 type thumbnailMsgChan struct {
 	ctx context.Context
-	msg *enrich_proto.EnrichMessage
+	msg *enrich.EnrichMessage
 	err chan error
 }
 
 // Enrich subscriber, receive EnrichMessage to get the file and process it
-func (t *taskHandler) Thumbnail(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
+func (t *taskHandler) Thumbnail(ctx context.Context, enrichmsg *enrich.EnrichMessage) error {
 	c := thumbnailMsgChan{
 		ctx: ctx,
 		msg: enrichmsg,
