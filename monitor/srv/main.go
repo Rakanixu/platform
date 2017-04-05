@@ -22,6 +22,8 @@ func main() {
 			return nil
 		}),
 	)
+	// No options
+	service.Init()
 
 	m = os_monitor.NewMonitor(
 		os_monitor.Interval(time.Minute),
