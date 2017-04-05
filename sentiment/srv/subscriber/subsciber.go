@@ -2,6 +2,7 @@ package subscriber
 
 import (
 	"encoding/json"
+	"fmt"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	db_helper "github.com/kazoup/platform/lib/dbhelper"
 	"github.com/kazoup/platform/lib/errors"
@@ -33,31 +34,31 @@ type taskHandler struct {
 }
 
 type enrichMsgChan struct {
-	ctx  context.Context
-	msg  *enrich_proto.EnrichMessage
-	done chan bool
+	ctx context.Context
+	msg *enrich_proto.EnrichMessage
+	err chan error
 }
 
 // Enrich subscriber, receive EnrichMessage to get the file and process it
 func (t *taskHandler) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
 	c := enrichMsgChan{
-		ctx:  ctx,
-		msg:  enrichmsg,
-		done: make(chan bool),
+		ctx: ctx,
+		msg: enrichmsg,
+		err: make(chan error),
 	}
 	// Queue internally
 	t.enrichMsgChan <- c
 
-	<-c.done
-
-	return nil
+	return <-c.err
 }
 
 func (t *taskHandler) queueListener(wID int) {
 	for m := range t.enrichMsgChan {
 		if err := processEnrichMsg(m); err != nil {
-			log.Println("Error Processing sentiment analyzer on worker", wID, err)
+			m.err <- errors.NewPlatformError(globals.SENTIMENT_SERVICE_NAME, "processEnrichMsg", fmt.Sprintf("worker %d", wID), err)
 		}
+		// Successful
+		m.err <- nil
 	}
 }
 
@@ -150,8 +151,6 @@ func processEnrichMsg(m enrichMsgChan) error {
 
 		m.msg.FileName = f.GetName()
 	}
-
-	m.done <- true
 
 	return nil
 }

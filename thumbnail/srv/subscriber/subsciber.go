@@ -2,6 +2,7 @@ package subscriber
 
 import (
 	"encoding/json"
+	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	db_helper "github.com/kazoup/platform/lib/dbhelper"
@@ -35,32 +36,32 @@ type taskHandler struct {
 }
 
 type thumbnailMsgChan struct {
-	ctx  context.Context
-	msg  *enrich_proto.EnrichMessage
-	done chan bool
+	ctx context.Context
+	msg *enrich_proto.EnrichMessage
+	err chan error
 }
 
 // Enrich subscriber, receive EnrichMessage to get the file and process it
 func (t *taskHandler) Thumbnail(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
 	c := thumbnailMsgChan{
-		ctx:  ctx,
-		msg:  enrichmsg,
-		done: make(chan bool),
+		ctx: ctx,
+		msg: enrichmsg,
+		err: make(chan error),
 	}
 	// Queue internally
 	t.thumbnailMsgChan <- c
 
-	<-c.done
-
-	return nil
+	return <-c.err
 }
 
 // queueListener range over thumbnailMsgChan channel and process msgs one by one
 func (t *taskHandler) queueListener(wID int) {
 	for m := range t.thumbnailMsgChan {
 		if err := processThumbnailMsg(t.googleCloudStorage, m); err != nil {
-			log.Println("Error Processing enrich msg (Thumbnail) on worker ", wID, err)
+			m.err <- errors.NewPlatformError(globals.THUMBNAIL_SERVICE_NAME, "processEnrichMsg", fmt.Sprintf("worker %d", wID), err)
 		}
+		// Successful
+		m.err <- nil
 	}
 }
 
@@ -133,8 +134,6 @@ func processThumbnailMsg(gcs *gcslib.GoogleCloudStorage, m thumbnailMsgChan) err
 	if err != nil {
 		return err
 	}
-
-	m.done <- true
 
 	return nil
 }

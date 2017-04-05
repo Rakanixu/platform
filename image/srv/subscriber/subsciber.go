@@ -2,6 +2,7 @@ package subscriber
 
 import (
 	"encoding/json"
+	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	db_helper "github.com/kazoup/platform/lib/dbhelper"
@@ -12,7 +13,6 @@ import (
 	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
 	"github.com/micro/go-micro"
 	"golang.org/x/net/context"
-	"log"
 )
 
 func NewTaskHandler(workers int) *taskHandler {
@@ -32,33 +32,33 @@ type taskHandler struct {
 }
 
 type enrichMsgChan struct {
-	ctx  context.Context
-	msg  *enrich_proto.EnrichMessage
-	done chan bool
+	ctx context.Context
+	msg *enrich_proto.EnrichMessage
+	err chan error
 }
 
 // Enrich subscriber, receive EnrichMessage to get the file and process it
 func (t *taskHandler) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
 	c := enrichMsgChan{
-		ctx:  ctx,
-		msg:  enrichmsg,
-		done: make(chan bool),
+		ctx: ctx,
+		msg: enrichmsg,
+		err: make(chan error),
 	}
 
 	// Queue internally
 	t.enrichMsgChan <- c
 
-	<-c.done
-
-	return nil
+	return <-c.err
 }
 
 // queueListener range over enrichMsgChan channel and process msgs one by one
 func (t *taskHandler) queueListener(wID int) {
 	for m := range t.enrichMsgChan {
 		if err := processEnrichMsg(m); err != nil {
-			log.Println("Error Processing enrich msg (Image) on worker ", wID, err)
+			m.err <- errors.NewPlatformError(globals.IMAGE_SERVICE_NAME, "processEnrichMsg", fmt.Sprintf("worker %d", wID), err)
 		}
+		// Successful
+		m.err <- nil
 	}
 }
 
@@ -133,8 +133,6 @@ func processEnrichMsg(m enrichMsgChan) error {
 	}
 
 	m.msg.FileName = f.GetName()
-
-	m.done <- true
 
 	return nil
 }
