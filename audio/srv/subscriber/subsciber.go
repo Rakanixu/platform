@@ -2,6 +2,7 @@ package subscriber
 
 import (
 	"encoding/json"
+	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	db_helper "github.com/kazoup/platform/lib/dbhelper"
@@ -13,7 +14,6 @@ import (
 	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
 	"github.com/micro/go-micro"
 	"golang.org/x/net/context"
-	"log"
 )
 
 func NewTaskHandler(workers int, cs *gcslib.GoogleCloudStorage) *taskHandler {
@@ -35,31 +35,31 @@ type taskHandler struct {
 }
 
 type enrichMsgChan struct {
-	msg  *enrich_proto.EnrichMessage
-	ctx  context.Context
-	done chan bool
+	msg *enrich_proto.EnrichMessage
+	ctx context.Context
+	err chan error
 }
 
 // Enrich subscriber, receive EnrichMessage to get the file and process it
 func (e *taskHandler) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
 	c := enrichMsgChan{
-		msg:  enrichmsg,
-		ctx:  ctx,
-		done: make(chan bool),
+		msg: enrichmsg,
+		ctx: ctx,
+		err: make(chan error),
 	}
 	// Queue internally
 	e.enrichMsgChan <- c
 
-	<-c.done
-
-	return nil
+	return <-c.err
 }
 
 func (e *taskHandler) queueListener(wID int) {
 	for m := range e.enrichMsgChan {
 		if err := processEnrichMsg(e.googleCloudStorage, m); err != nil {
-			log.Println("Error Processing enrich msg (Audio) on worker", wID, err)
+			m.err <- errors.NewPlatformError(globals.AUDIO_SERVICE_NAME, "processEnrichMsg", fmt.Sprintf("worker %d", wID), err)
 		}
+		// Successful
+		m.err <- nil
 	}
 }
 
@@ -133,8 +133,6 @@ func processEnrichMsg(gcs *gcslib.GoogleCloudStorage, m enrichMsgChan) error {
 	}
 
 	m.msg.FileName = f.GetName()
-
-	m.done <- true
 
 	return nil
 }
