@@ -397,10 +397,8 @@ func (dfs *DropboxFs) pushFilesToChannel(list *dropbox.FilesListResponse) {
 			if f.Original.HasExplicitSharedMembers {
 				f.Access = globals.ACCESS_SHARED
 
+				// Error will be send over the channel withing the file
 				f, err = dfs.getFileMembers(f)
-				if err != nil {
-					// File will be send over channel anyway
-				}
 			} else {
 				// File is not share, but that means to dropbox that can be private, or public (everyone with link can access the file)
 				for k, v := range dfs.PublicFiles {
@@ -416,7 +414,7 @@ func (dfs *DropboxFs) pushFilesToChannel(list *dropbox.FilesListResponse) {
 				}
 			}
 
-			dfs.FilesChan <- NewFileMsg(f, nil)
+			dfs.FilesChan <- NewFileMsg(f, err)
 		}
 	}
 }
