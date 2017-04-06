@@ -3,6 +3,7 @@ package errors
 import (
 	"fmt"
 	micro_errors "github.com/micro/go-micro/errors"
+	"reflect"
 )
 
 var (
@@ -44,5 +45,7 @@ func NewDiscoveryError(entity interface{}, detail string, err error) error {
 }
 
 func (e *DiscoveryError) Error() string {
-	return fmt.Sprintf("%T %s %s", e.Entity, e.Detail, e.Err.Error())
+	t := reflect.TypeOf(e.Entity)
+
+	return fmt.Sprintf("%s %s %s ", t.Name(), e.Detail, e.Err.Error())
 }
