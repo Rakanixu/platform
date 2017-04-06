@@ -28,3 +28,21 @@ func NewPlatformError(service, task, detail string, err error) error {
 func (e *PlatformError) Error() string {
 	return fmt.Sprintf("%s %s %s %s", e.Service, e.Task, e.Detail, e.Err.Error())
 }
+
+type DiscoveryError struct {
+	Entity interface{}
+	Detail string
+	Err    error
+}
+
+func NewDiscoveryError(entity interface{}, detail string, err error) error {
+	return &DiscoveryError{
+		Entity: entity,
+		Detail: detail,
+		Err:    err,
+	}
+}
+
+func (e *DiscoveryError) Error() string {
+	return fmt.Sprintf("%T %s %s", e.Entity, e.Detail, e.Err.Error())
+}
