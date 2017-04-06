@@ -16,7 +16,6 @@ import (
 	"google.golang.org/api/drive/v3"
 	"io"
 	"io/ioutil"
-	"log"
 	"strings"
 	"time"
 )
@@ -102,7 +101,6 @@ func (gfs *GoogleDriveFs) processImage(f *file.KazoupGoogleFile) (file.File, err
 
 		return nil
 	}, backoff.NewExponentialBackOff()); err != nil {
-		log.Println("ERROR DOWNLOADING FILE", err)
 		return nil, err
 	}
 	defer rc.Close()
@@ -110,12 +108,10 @@ func (gfs *GoogleDriveFs) processImage(f *file.KazoupGoogleFile) (file.File, err
 	// Resize to optimal size for cloud vision API
 	cvrd, err := image.Thumbnail(rc, globals.CLOUD_VISION_IMG_WIDTH)
 	if err != nil {
-		log.Println("CLOUD VISION ERROR", err)
 		return nil, err
 	}
 
 	if f.Tags, err = cloudvision.Tag(ioutil.NopCloser(cvrd)); err != nil {
-		log.Println("CLOUD VISION ERROR", err)
 		return nil, err
 	}
 
@@ -239,7 +235,6 @@ func (gfs *GoogleDriveFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *fi
 
 		return nil
 	}, backoff.NewExponentialBackOff()); err != nil {
-		log.Println("ERROR DOWNLOADING FILE", err)
 		return nil, err
 	}
 	defer rc.Close()
@@ -248,13 +243,11 @@ func (gfs *GoogleDriveFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *fi
 		// Resize to our thumbnail size
 		rd, err := image.Thumbnail(rc, globals.THUMBNAIL_WIDTH)
 		if err != nil {
-			log.Println("THUMNAIL GENERATION ERROR, SKIPPING", err)
 			// Skip retry
 			return nil
 		}
 
 		if err := gcs.Upload(ioutil.NopCloser(rd), gfs.Endpoint.Index, f.ID); err != nil {
-			log.Println("THUMNAIL UPLOAD ERROR", err)
 			return err
 		}
 

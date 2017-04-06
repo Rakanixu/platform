@@ -128,12 +128,12 @@
               this.rpcAnalyzeFileParams.method = window.Endpoints.srvs.audio.fileEnrich;
               break;
             case this.categoriesMap.documents:
-              this.rpcAnalyzeFileParams.service = window.Endpoints.srvs.textanalyzer.srv;
-              this.rpcAnalyzeFileParams.method = window.Endpoints.srvs.textanalyzer.create;
+              this.rpcAnalyzeFileParams.service = window.Endpoints.srvs.entities.srv;
+              this.rpcAnalyzeFileParams.method = window.Endpoints.srvs.entities.extractFile;
               break;
             case this.categoriesMap.images:
-              this.rpcAnalyzeFileParams.service = window.Endpoints.srvs.imgenrich.srv;
-              this.rpcAnalyzeFileParams.method = window.Endpoints.srvs.imgenrich.create;
+              this.rpcAnalyzeFileParams.service = window.Endpoints.srvs.image.srv;
+              this.rpcAnalyzeFileParams.method = window.Endpoints.srvs.image.enrichFile;
               break;
           }
 

@@ -20,7 +20,7 @@ func NewTaskHandler(workers int, gcs *gcslib.GoogleCloudStorage) *taskHandler {
 	t := &taskHandler{
 		googleCloudStorage: gcs,
 		thumbnailMsgChan:   make(chan thumbnailMsgChan, 1000000),
-		Workers:            workers,
+		workers:            workers,
 	}
 
 	startWorkers(t)
@@ -31,7 +31,7 @@ func NewTaskHandler(workers int, gcs *gcslib.GoogleCloudStorage) *taskHandler {
 type taskHandler struct {
 	googleCloudStorage *gcslib.GoogleCloudStorage
 	thumbnailMsgChan   chan thumbnailMsgChan
-	Workers            int
+	workers            int
 }
 
 type thumbnailMsgChan struct {
@@ -66,7 +66,7 @@ func (t *taskHandler) queueListener(wID int) {
 
 func startWorkers(t *taskHandler) {
 	// Start workers
-	for i := 0; i < t.Workers; i++ {
+	for i := 0; i < t.workers; i++ {
 		go t.queueListener(i)
 	}
 }

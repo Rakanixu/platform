@@ -17,7 +17,6 @@ import (
 	"github.com/kazoup/platform/lib/tika"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"time"
 )
@@ -120,7 +119,6 @@ func (dfs *DropboxFs) processImage(f *file.KazoupDropboxFile) (file.File, error)
 
 		return nil
 	}, backoff.NewExponentialBackOff()); err != nil {
-		log.Println("ERROR DOWNLOADING FILE", err)
 		return nil, err
 	}
 	defer rc.Close()
@@ -128,13 +126,11 @@ func (dfs *DropboxFs) processImage(f *file.KazoupDropboxFile) (file.File, error)
 	// Resize to optimal size for cloud vision API
 	cvrd, err := image.Thumbnail(rc, globals.CLOUD_VISION_IMG_WIDTH)
 	if err != nil {
-		log.Println("CLOUD VISION ERROR", err)
 		return nil, err
 	}
 
 	// Library implements exponential backoff
 	if f.Tags, err = cloudvision.Tag(ioutil.NopCloser(cvrd)); err != nil {
-		log.Println("CLOUD VISION ERROR", err)
 		return nil, err
 	}
 
@@ -236,7 +232,6 @@ func (dfs *DropboxFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *file.K
 
 		return nil
 	}, backoff.NewExponentialBackOff()); err != nil {
-		log.Println("ERROR DOWNLOADING FILE", err)
 		return nil, err
 	}
 	defer rc.Close()
@@ -244,13 +239,11 @@ func (dfs *DropboxFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *file.K
 	backoff.Retry(func() error {
 		b, err := image.Thumbnail(rc, globals.THUMBNAIL_WIDTH)
 		if err != nil {
-			log.Println("THUMNAIL GENERATION ERROR, SKIPPING", err)
 			// Skip retry
 			return nil
 		}
 
 		if err := gcs.Upload(ioutil.NopCloser(b), dfs.Endpoint.Index, f.ID); err != nil {
-			log.Println("THUMNAIL UPLOAD ERROR", err)
 			return err
 		}
 
@@ -315,19 +308,19 @@ func (dfs *DropboxFs) getFileMembers(f *file.KazoupDropboxFile) (*file.KazoupDro
 	c := &http.Client{}
 	req, err := http.NewRequest("POST", globals.DropboxFileMembers, bytes.NewBuffer(b))
 	if err != nil {
-		return nil, err
+		return f, err
 	}
 	req.Header.Set("Authorization", dfs.token())
 	req.Header.Set("Content-Type", "application/json")
 	rsp, err := c.Do(req)
 	if err != nil {
-		return nil, err
+		return f, err
 	}
 	defer rsp.Body.Close()
 
 	var membersRsp *dropbox.FileMembersListResponse
 	if err := json.NewDecoder(rsp.Body).Decode(&membersRsp); err != nil {
-		return nil, err
+		return f, err
 	}
 
 	if len(membersRsp.Users) > 0 {
@@ -336,7 +329,7 @@ func (dfs *DropboxFs) getFileMembers(f *file.KazoupDropboxFile) (*file.KazoupDro
 		for _, v := range membersRsp.Users {
 			a, err := dfs.getAccount(v.User.AccountID)
 			if err != nil {
-				return nil, err
+				return f, err
 			}
 
 			f.Original.DropboxUsers = append(f.Original.DropboxUsers, *a)
@@ -404,10 +397,8 @@ func (dfs *DropboxFs) pushFilesToChannel(list *dropbox.FilesListResponse) {
 			if f.Original.HasExplicitSharedMembers {
 				f.Access = globals.ACCESS_SHARED
 
+				// Error will be send over the channel withing the file
 				f, err = dfs.getFileMembers(f)
-				if err != nil {
-					log.Println("ERROR getFileMembers dropbox", err)
-				}
 			} else {
 				// File is not share, but that means to dropbox that can be private, or public (everyone with link can access the file)
 				for k, v := range dfs.PublicFiles {
@@ -423,7 +414,7 @@ func (dfs *DropboxFs) pushFilesToChannel(list *dropbox.FilesListResponse) {
 				}
 			}
 
-			dfs.FilesChan <- NewFileMsg(f, nil)
+			dfs.FilesChan <- NewFileMsg(f, err)
 		}
 	}
 }
