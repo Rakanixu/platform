@@ -87,8 +87,7 @@
                 method: '',
                 request: {
                   id: '',     // Datasource ID or File ID
-                  index: '',  // Datasource index or the index the file belongs to
-                  type: ''    // Datasource or File types
+                  index: ''  // Datasource index or the index the file belongs to
                 }
               };
             }
@@ -140,7 +139,6 @@
           // TextAnalyzer.Create does not accept type (as only apply to single file), will be just omited by protobufs
           this.rpcAnalyzeFileParams.request.id = this.item.id;
           this.rpcAnalyzeFileParams.request.index = this.item.index;
-          this.rpcAnalyzeFileParams.request.type = 'file'; // We always hit the single file analyze from this element
 
           // SentimentAnalyzer.Create does not accept type (as only apply to single file), will be just omited by protobufs
 /*          this.rpcSentimentParams.request.id = this.item.id;
