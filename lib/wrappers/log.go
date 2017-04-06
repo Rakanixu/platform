@@ -2,6 +2,7 @@ package wrappers
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"github.com/kazoup/platform/lib/globals"
 	"github.com/micro/go-micro/server"
 	"golang.org/x/net/context"
 )
@@ -46,15 +47,28 @@ func logSubscriberWrapper(fn server.SubscriberFunc) server.SubscriberFunc {
 		var err error
 		err = fn(ctx, msg)
 
-		if err != nil {
-			log.WithFields(log.Fields{
-				"topic": msg.Topic(),
-			}).Error(err.Error())
-		} /* else {
-			log.WithFields(log.Fields{
-				"topic": msg.Topic(),
-			}).Info("OK")
-		}*/
+		if msg.Topic() != globals.AnnounceTopic {
+			uID, err := globals.ParseUserIdFromContext(ctx)
+			if err != nil {
+				log.WithFields(log.Fields{
+					"topic": msg.Topic(),
+					"task":  "LogSubscriberWrapper",
+				}).Error("Unable to retrieve user")
+			}
+
+			// Log what happended
+			if err != nil {
+				log.WithFields(log.Fields{
+					"topic": msg.Topic(),
+					"user":  uID,
+				}).Error(err.Error())
+			} else {
+				log.WithFields(log.Fields{
+					"topic": msg.Topic(),
+					"user":  uID,
+				}).Info("OK")
+			}
+		}
 
 		return err
 	}
