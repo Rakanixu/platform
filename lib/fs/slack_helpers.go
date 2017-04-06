@@ -16,7 +16,6 @@ import (
 	"github.com/kazoup/platform/lib/tika"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -144,7 +143,6 @@ func (sfs *SlackFs) processImage(f *file.KazoupSlackFile) (file.File, error) {
 
 		return nil
 	}, backoff.NewExponentialBackOff()); err != nil {
-		log.Println("ERROR DOWNLOADING FILE", err)
 		return nil, err
 	}
 	defer rc.Close()
@@ -152,12 +150,10 @@ func (sfs *SlackFs) processImage(f *file.KazoupSlackFile) (file.File, error) {
 	// Resize to optimal size for cloud vision API
 	cvrd, err := image.Thumbnail(rc, globals.CLOUD_VISION_IMG_WIDTH)
 	if err != nil {
-		log.Println("CLOUD VISION ERROR", err)
 		return nil, err
 	}
 
 	if f.Tags, err = cloudvision.Tag(ioutil.NopCloser(cvrd)); err != nil {
-		log.Println("CLOUD VISION ERROR", err)
 		return nil, err
 	}
 
@@ -260,7 +256,6 @@ func (sfs *SlackFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *file.Kaz
 
 		return nil
 	}, backoff.NewExponentialBackOff()); err != nil {
-		log.Println("ERROR DOWNLOADING FILE", err)
 		return nil, err
 	}
 	defer rc.Close()
@@ -268,13 +263,11 @@ func (sfs *SlackFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *file.Kaz
 	backoff.Retry(func() error {
 		b, err := image.Thumbnail(rc, globals.THUMBNAIL_WIDTH)
 		if err != nil {
-			log.Println("THUMNAIL GENERATION ERROR, SKIPPING", err)
 			// Skip retry
 			return nil
 		}
 
 		if err := gcs.Upload(ioutil.NopCloser(b), sfs.Endpoint.Index, f.ID); err != nil {
-			log.Println("THUMNAIL UPLOAD ERROR", err)
 			return err
 		}
 
@@ -311,14 +304,6 @@ func (sfs *SlackFs) shareFilePublicly(id string) (string, error) {
 	if err := json.NewDecoder(rsp.Body).Decode(&ssr); err != nil {
 		return "", err
 	}
-
-	// Response contains object, permalink_public attr will be modified
-	// Reindex document
-	//TODO: Commented out because client dependency. this method will return a FileMsg over a channel
-	/*f := file.NewKazoupFileFromSlackFile(ssr.File, sfs.Endpoint.Id, sfs.Endpoint.UserId, sfs.Endpoint.Index)
-	if err := file.IndexAsync(c, f, globals.FilesTopic, sfs.Endpoint.Index, true); err != nil {
-		return "", err
-	}*/
 
 	return ssr.File.PermalinkPublic, nil
 }

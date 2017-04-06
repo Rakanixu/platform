@@ -15,7 +15,6 @@ import (
 	"github.com/kazoup/platform/lib/tika"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"time"
 )
@@ -107,7 +106,6 @@ func (bfs *BoxFs) processImage(f *file.KazoupBoxFile) (file.File, error) {
 
 		return nil
 	}, backoff.NewExponentialBackOff()); err != nil {
-		log.Println("ERROR DOWNLOADING FILE", err)
 		return nil, err
 	}
 	defer rc.Close()
@@ -115,12 +113,10 @@ func (bfs *BoxFs) processImage(f *file.KazoupBoxFile) (file.File, error) {
 	// Resize to optimal size for cloud vision API
 	cvrd, err := image.Thumbnail(rc, globals.CLOUD_VISION_IMG_WIDTH)
 	if err != nil {
-		log.Println("CLOUD VISION ERROR", err)
 		return nil, err
 	}
 
 	if f.Tags, err = cloudvision.Tag(ioutil.NopCloser(cvrd)); err != nil {
-		log.Println("CLOUD VISION ERROR", err)
 		return nil, err
 	}
 
@@ -154,7 +150,6 @@ func (bfs *BoxFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *file.Kazou
 
 		return nil
 	}, backoff.NewExponentialBackOff()); err != nil {
-		log.Println("ERROR DOWNLOADING FILE", err)
 		return nil, err
 	}
 	defer rc.Close()
@@ -162,13 +157,11 @@ func (bfs *BoxFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *file.Kazou
 	backoff.Retry(func() error {
 		rd, err := image.Thumbnail(rc, globals.THUMBNAIL_WIDTH)
 		if err != nil {
-			log.Println("THUMNAIL GENERATION ERROR, SKIPPING", err)
 			// Skip retry
 			return nil
 		}
 
 		if err := gcs.Upload(ioutil.NopCloser(rd), bfs.Endpoint.Index, f.ID); err != nil {
-			log.Println("THUMNAIL UPLOAD ERROR", err)
 			return err
 		}
 

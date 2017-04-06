@@ -90,10 +90,10 @@ func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) erro
 			case fc := <-filesChan:
 				if fc.Error != nil {
 					log.Println("Error discovering file", fc.Error)
-				}
-
-				if err := file.IndexAsync(ctx, c.Client, fc.File, globals.FilesTopic, fc.File.GetIndex(), false); err != nil {
-					log.Println("Error indexing async file", err)
+				} else {
+					if err := file.IndexAsync(ctx, c.Client, fc.File, globals.FilesTopic, fc.File.GetIndex(), false); err != nil {
+						log.Println("Error indexing async file", err)
+					}
 				}
 
 				time.Sleep(globals.DISCOVERY_DELAY_MS)
@@ -115,10 +115,10 @@ func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) erro
 			case u := <-usersChan:
 				if u.Error != nil {
 					log.Println("Error discovering user", u.Error)
-				}
-
-				if err := c.Client.Publish(ctx, c.Client.NewPublication(globals.SlackUsersTopic, u.User)); err != nil {
-					log.Println("Error indexing user", err)
+				} else {
+					if err := c.Client.Publish(ctx, c.Client.NewPublication(globals.SlackUsersTopic, u.User)); err != nil {
+						log.Println("Error indexing user", err)
+					}
 				}
 			}
 		}
@@ -138,10 +138,10 @@ func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) erro
 			case ch := <-channelsChan:
 				if ch.Error != nil {
 					log.Println("Error discovering channel", ch.Error)
-				}
-
-				if err := c.Client.Publish(ctx, c.Client.NewPublication(globals.SlackChannelsTopic, ch.Channel)); err != nil {
-					log.Println("Error indexing channel", err)
+				} else {
+					if err := c.Client.Publish(ctx, c.Client.NewPublication(globals.SlackChannelsTopic, ch.Channel)); err != nil {
+						log.Println("Error indexing channel", err)
+					}
 				}
 			}
 		}

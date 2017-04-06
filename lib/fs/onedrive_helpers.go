@@ -15,7 +15,6 @@ import (
 	"github.com/kazoup/platform/lib/tika"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"time"
 )
@@ -173,11 +172,9 @@ func (ofs *OneDriveFs) getPermisions(f *file.KazoupOneDriveFile) error {
 func (ofs *OneDriveFs) pushToFilesChannel(f onedrive.OneDriveFile) error {
 	kof := file.NewKazoupFileFromOneDriveFile(f, ofs.Endpoint.Id, ofs.Endpoint.UserId, ofs.Endpoint.Index)
 
-	if err := ofs.getPermisions(kof); err != nil {
-		log.Println(err)
-	}
+	err := ofs.getPermisions(kof)
 
-	ofs.FilesChan <- NewFileMsg(kof, nil)
+	ofs.FilesChan <- NewFileMsg(kof, err)
 
 	return nil
 }
@@ -200,7 +197,6 @@ func (ofs *OneDriveFs) processImage(f *file.KazoupOneDriveFile) (file.File, erro
 
 		return nil
 	}, backoff.NewExponentialBackOff()); err != nil {
-		log.Println("ERROR DOWNLOADING FILE", err)
 		return nil, err
 	}
 	defer rc.Close()
@@ -208,12 +204,10 @@ func (ofs *OneDriveFs) processImage(f *file.KazoupOneDriveFile) (file.File, erro
 	// Resize to optimal size for cloud vision API
 	cvrd, err := image.Thumbnail(rc, globals.CLOUD_VISION_IMG_WIDTH)
 	if err != nil {
-		log.Println("CLOUD VISION ERROR", err)
 		return nil, err
 	}
 
 	if f.Tags, err = cloudvision.Tag(ioutil.NopCloser(cvrd)); err != nil {
-		log.Println("CLOUD VISION ERROR", err)
 		return nil, err
 	}
 
@@ -315,7 +309,6 @@ func (ofs *OneDriveFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *file.
 
 		return nil
 	}, backoff.NewExponentialBackOff()); err != nil {
-		log.Println("ERROR DOWNLOADING FILE", err)
 		return nil, err
 	}
 	defer rc.Close()
@@ -323,13 +316,11 @@ func (ofs *OneDriveFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *file.
 	backoff.Retry(func() error {
 		b, err := image.Thumbnail(rc, globals.THUMBNAIL_WIDTH)
 		if err != nil {
-			log.Println("THUMNAIL GENERATION ERROR, SKIPPING", err)
 			// Skip retry
 			return nil
 		}
 
 		if err := gcs.Upload(ioutil.NopCloser(b), ofs.Endpoint.Index, f.ID); err != nil {
-			log.Println("THUMNAIL UPLOAD ERROR", err)
 			return err
 		}
 
