@@ -5,23 +5,27 @@ import (
 	datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	db_conn "github.com/kazoup/platform/lib/dbhelper"
+	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
-	"github.com/micro/go-micro/client"
+	"github.com/micro/go-micro"
 	"golang.org/x/net/context"
 	"log"
 	"sync"
 	"time"
 )
 
-type Crawler struct {
-	Client client.Client
-}
+type TaskHandler struct{}
 
 // Scans subscriber, receive endpoint to crawl it
-func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) error {
+func (t *TaskHandler) Scans(ctx context.Context, endpoint *datasource.Endpoint) error {
+	srv, ok := micro.FromContext(ctx)
+	if !ok {
+		return errors.ErrInvalidCtx
+	}
+
 	cfs, err := fs.NewFsFromEndpoint(endpoint)
 	if err != nil {
 		return err
@@ -43,9 +47,9 @@ func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) erro
 	}
 
 	// Update token in DB
-	_, err = db_conn.UpdateFromDB(c.Client, ctx, &db_proto.UpdateRequest{
-		Index: "datasources",
-		Type:  "datasource",
+	_, err = db_conn.UpdateFromDB(srv.Client(), ctx, &db_proto.UpdateRequest{
+		Index: globals.IndexDatasources,
+		Type:  globals.TypeDatasource,
 		Id:    endpoint.Id,
 		Data:  string(b),
 	})
@@ -54,7 +58,7 @@ func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) erro
 	}
 
 	// Publish notification
-	if err := c.Client.Publish(ctx, c.Client.NewPublication(globals.NotificationTopic, &notification_proto.NotificationMessage{
+	if err := srv.Client().Publish(ctx, srv.Client().NewPublication(globals.NotificationTopic, &notification_proto.NotificationMessage{
 		Info:   "Scan started on " + endpoint.Url + " datasource.",
 		Method: globals.NOTIFY_REFRESH_DATASOURCES,
 		UserId: endpoint.UserId,
@@ -73,7 +77,7 @@ func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) erro
 	filesChan, filesRunning := cfs.Walk()
 
 	var wg sync.WaitGroup
-	wg.Add(3) //Wait for our 3 goroutines (file system listeners)
+	wg.Add(3) // Wait for files, users and channels discovery
 
 	// Listen to files
 	go func() {
@@ -89,9 +93,9 @@ func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) erro
 			// Channel receives File to be indexed by Elastic Search
 			case fc := <-filesChan:
 				if fc.Error != nil {
-					log.Println("Error discovering file", fc.Error)
+					log.Println(errors.NewDiscoveryError(fc.File, "crawler", fc.Error))
 				} else {
-					if err := file.IndexAsync(ctx, c.Client, fc.File, globals.FilesTopic, fc.File.GetIndex(), false); err != nil {
+					if err := file.IndexAsync(ctx, srv.Client(), fc.File, globals.FilesTopic, fc.File.GetIndex(), false); err != nil {
 						log.Println("Error indexing async file", err)
 					}
 				}
@@ -114,9 +118,9 @@ func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) erro
 			// Channel receives users to be indexed
 			case u := <-usersChan:
 				if u.Error != nil {
-					log.Println("Error discovering user", u.Error)
+					log.Println(errors.NewDiscoveryError(u.User, "crawler", u.Error))
 				} else {
-					if err := c.Client.Publish(ctx, c.Client.NewPublication(globals.SlackUsersTopic, u.User)); err != nil {
+					if err := srv.Client().Publish(ctx, srv.Client().NewPublication(globals.SlackUsersTopic, u.User)); err != nil {
 						log.Println("Error indexing user", err)
 					}
 				}
@@ -137,9 +141,9 @@ func (c *Crawler) Scans(ctx context.Context, endpoint *datasource.Endpoint) erro
 			// Channel receives channels to be indexed
 			case ch := <-channelsChan:
 				if ch.Error != nil {
-					log.Println("Error discovering channel", ch.Error)
+					log.Println(errors.NewDiscoveryError(ch.Channel, "crawler", ch.Error))
 				} else {
-					if err := c.Client.Publish(ctx, c.Client.NewPublication(globals.SlackChannelsTopic, ch.Channel)); err != nil {
+					if err := srv.Client().Publish(ctx, srv.Client().NewPublication(globals.SlackChannelsTopic, ch.Channel)); err != nil {
 						log.Println("Error indexing channel", err)
 					}
 				}
