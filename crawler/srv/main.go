@@ -36,10 +36,7 @@ func main() {
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.AnnounceTopic,
-			&subscriber.AnnounceCrawler{
-				Client: service.Client(),
-				Broker: service.Server().Options().Broker,
-			},
+			new(subscriber.AnnounceHandler),
 			server.SubscriberQueue("announce-crawler"),
 		),
 	); err != nil {
@@ -50,9 +47,7 @@ func main() {
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.DiscoverTopic,
-			&subscriber.Crawler{
-				Client: service.Client(),
-			},
+			new(subscriber.TaskHandler),
 			server.SubscriberQueue("crawler"),
 		),
 	); err != nil {
