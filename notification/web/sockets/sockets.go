@@ -2,9 +2,8 @@ package sockets
 
 import (
 	"fmt"
-
 	"github.com/kazoup/platform/lib/globals"
-	proto "github.com/kazoup/platform/notification/srv/proto/notification"
+	"github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/client"
 	"golang.org/x/net/websocket"
 )
@@ -30,8 +29,8 @@ func Stream(ws *websocket.Conn) {
 	// Stream initialization
 	sreq := client.DefaultClient.NewRequest(
 		globals.NOTIFICATION_SERVICE_NAME,
-		"Notification.Stream",
-		&proto.StreamRequest{},
+		"Service.Stream",
+		&proto_notification.StreamRequest{},
 	)
 
 	if m["token"] == nil {
@@ -50,7 +49,7 @@ func Stream(ws *websocket.Conn) {
 	// Send to Notification srv the userID we received from client connection
 	// At this moment,we subscribe to NotificationTopic
 	// Once is subscribed, service does not expect to received more data from client
-	if err := stream.Send(&proto.StreamRequest{
+	if err := stream.Send(&proto_notification.StreamRequest{
 		UserId: m["user_id"].(string),
 	}); err != nil {
 		fmt.Println("ERROR sending userID to stream handler")
@@ -60,7 +59,7 @@ func Stream(ws *websocket.Conn) {
 	// Listen for StreamResponses from notification service
 	// Once a response is received, send it back to client over the socket connection
 	for {
-		srsp := &proto.StreamResponse{}
+		srsp := &proto_notification.StreamResponse{}
 		if err := stream.Recv(srsp); err != nil {
 			fmt.Println("ERROR receiving notification from stream", err)
 			return
