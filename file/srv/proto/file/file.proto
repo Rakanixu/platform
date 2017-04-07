@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-package go.micro.srv.file;
+package proto.file;
 
-service File {
+service Service {
   rpc Create(CreateRequest) returns (CreateResponse) {}  // Creates a new file
-  rpc Delete(DeleteRequest) returns (CreateResponse) {}  // Deletes an existing file from third-party and kazoup indexes
+  rpc Delete(DeleteRequest) returns (DeleteResponse) {}  // Deletes an existing file from third-party and kazoup indexes
   rpc Share(ShareRequest) returns (ShareResponse) {}     // Shares a file
   rpc Health(HealthRequest) returns (HealthResponse) {}
 }
