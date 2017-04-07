@@ -146,7 +146,7 @@ func (a *AnnounceNotification) OnEntitiesExtraction(ctx context.Context, msg *an
 //OnCrawlerFinished
 func (a *AnnounceNotification) OnCrawlerFinished(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
 	// After a crawler finishes, we want to notify user
-	if globals.CrawlerFinishedTopic == msg.Handler {
+	if globals.DiscoveryFinishedTopic == msg.Handler {
 		var m *cawler_msg.CrawlerFinishedMessage
 		if err := json.Unmarshal([]byte(msg.Data), &m); err != nil {
 			return err
