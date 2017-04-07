@@ -2,32 +2,34 @@ package subscriber
 
 import (
 	"encoding/json"
-	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/datasource/srv/proto/datasource"
 	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	db_helper "github.com/kazoup/platform/lib/dbhelper"
+	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/globals"
-	announce_msg "github.com/kazoup/platform/lib/protomsg/announce"
+	announce "github.com/kazoup/platform/lib/protomsg/announce"
 	deletebucket_msg "github.com/kazoup/platform/lib/protomsg/deletebucket"
-	"github.com/micro/go-micro/broker"
-	"github.com/micro/go-micro/client"
+	"github.com/micro/go-micro"
 	"golang.org/x/net/context"
 )
 
-type AnnounceDatasource struct {
-	Client client.Client
-	Broker broker.Broker
-}
+type AnnounceHandler struct{}
 
 // OnDatasourceCreate
-func (a *AnnounceDatasource) OnDatasourceCreate(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
+func (a *AnnounceHandler) OnDatasourceCreate(ctx context.Context, msg *announce.AnnounceMessage) error {
 	// Trigger scan on datasource creation
 	if globals.HANDLER_DATASOURCE_CREATE == msg.Handler {
-		var r proto.CreateRequest
+		var r proto_datasource.CreateRequest
 		if err := json.Unmarshal([]byte(msg.Data), &r); err != nil {
 			return err
 		}
 
-		if err := a.Client.Publish(ctx, a.Client.NewPublication(
+		srv, ok := micro.FromContext(ctx)
+		if !ok {
+			return errors.ErrInvalidCtx
+		}
+
+		if err := srv.Client().Publish(ctx, srv.Client().NewPublication(
 			globals.DiscoverTopic,
 			r.Endpoint,
 		)); err != nil {
@@ -39,15 +41,20 @@ func (a *AnnounceDatasource) OnDatasourceCreate(ctx context.Context, msg *announ
 }
 
 // OnDatasourceDelete
-func (a *AnnounceDatasource) OnDatasourceDelete(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
+func (a *AnnounceHandler) OnDatasourceDelete(ctx context.Context, msg *announce.AnnounceMessage) error {
 	// Trigger bucket deletion for datasource
 	if globals.HANDLER_DATASOURCE_DELETE == msg.Handler {
-		var r proto.DeleteRequest
+		var r proto_datasource.DeleteRequest
 		if err := json.Unmarshal([]byte(msg.Data), &r); err != nil {
 			return err
 		}
 
-		if err := a.Client.Publish(ctx, a.Client.NewPublication(
+		srv, ok := micro.FromContext(ctx)
+		if !ok {
+			return errors.ErrInvalidCtx
+		}
+
+		if err := srv.Client().Publish(ctx, srv.Client().NewPublication(
 			globals.DeleteBucketTopic,
 			&deletebucket_msg.DeleteBucketMsg{
 				Index: r.Index,
@@ -61,16 +68,21 @@ func (a *AnnounceDatasource) OnDatasourceDelete(ctx context.Context, msg *announ
 }
 
 // OnDatasourceScan, trigger scan
-func (a *AnnounceDatasource) OnDatasourceScan(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
-	var e *proto.Endpoint
+func (a *AnnounceHandler) OnDatasourceScan(ctx context.Context, msg *announce.AnnounceMessage) error {
+	var e *proto_datasource.Endpoint
 
 	if globals.HANDLER_DATASOURCE_SCAN == msg.Handler {
-		var r proto.ScanRequest
+		var r proto_datasource.ScanRequest
 		if err := json.Unmarshal([]byte(msg.Data), &r); err != nil {
 			return err
 		}
 
-		rr, err := db_helper.ReadFromDB(a.Client, ctx, &db_proto.ReadRequest{
+		srv, ok := micro.FromContext(ctx)
+		if !ok {
+			return errors.ErrInvalidCtx
+		}
+
+		rr, err := db_helper.ReadFromDB(srv.Client(), ctx, &db_proto.ReadRequest{
 			Index: globals.IndexDatasources,
 			Type:  globals.TypeDatasource,
 			Id:    r.Id,
@@ -83,7 +95,7 @@ func (a *AnnounceDatasource) OnDatasourceScan(ctx context.Context, msg *announce
 			return err
 		}
 
-		if err := a.Client.Publish(ctx, a.Client.NewPublication(
+		if err := srv.Client().Publish(ctx, srv.Client().NewPublication(
 			globals.DiscoverTopic,
 			e,
 		)); err != nil {
@@ -95,19 +107,24 @@ func (a *AnnounceDatasource) OnDatasourceScan(ctx context.Context, msg *announce
 }
 
 // OnDatasourceScanAll trigger scans
-func (a *AnnounceDatasource) OnDatasourceScanAll(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
-	var es []*proto.Endpoint
-	var e *proto.Endpoint
+func (a *AnnounceHandler) OnDatasourceScanAll(ctx context.Context, msg *announce.AnnounceMessage) error {
+	var es []*proto_datasource.Endpoint
+	var e *proto_datasource.Endpoint
 
 	if globals.HANDLER_DATASOURCE_SCANALL == msg.Handler {
-		var r proto.ScanAllRequest
+		var r proto_datasource.ScanAllRequest
 		if err := json.Unmarshal([]byte(msg.Data), &r); err != nil {
 			return err
 		}
 
+		srv, ok := micro.FromContext(ctx)
+		if !ok {
+			return errors.ErrInvalidCtx
+		}
+
 		if len(r.DatasourcesId) > 0 {
 			for _, v := range r.DatasourcesId {
-				rr, err := db_helper.ReadFromDB(a.Client, ctx, &db_proto.ReadRequest{
+				rr, err := db_helper.ReadFromDB(srv.Client(), ctx, &db_proto.ReadRequest{
 					Index: globals.IndexDatasources,
 					Type:  globals.TypeDatasource,
 					Id:    v,
@@ -124,7 +141,7 @@ func (a *AnnounceDatasource) OnDatasourceScanAll(ctx context.Context, msg *annou
 			}
 
 		} else {
-			srvRes, err := db_helper.SearchFromDB(a.Client, ctx, &db_proto.SearchRequest{
+			srvRes, err := db_helper.SearchFromDB(srv.Client(), ctx, &db_proto.SearchRequest{
 				Index: globals.IndexDatasources,
 				Type:  globals.TypeDatasource,
 				From:  0,
@@ -140,7 +157,7 @@ func (a *AnnounceDatasource) OnDatasourceScanAll(ctx context.Context, msg *annou
 		}
 
 		for _, v := range es {
-			if err := a.Client.Publish(ctx, a.Client.NewPublication(
+			if err := srv.Client().Publish(ctx, srv.Client().NewPublication(
 				globals.DiscoverTopic,
 				v,
 			)); err != nil {

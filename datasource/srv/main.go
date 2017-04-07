@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/kazoup/platform/datasource/srv/handler"
+	"github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/datasource/srv/subscriber"
 	"github.com/kazoup/platform/lib/globals"
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
@@ -36,10 +37,7 @@ func main() {
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.AnnounceTopic,
-			&subscriber.AnnounceDatasource{
-				Client: service.Client(),
-				Broker: service.Server().Options().Broker,
-			},
+			new(subscriber.AnnounceHandler),
 			server.SubscriberQueue("announce-datasource"),
 		)); err != nil {
 		log.Fatal(err)
@@ -48,12 +46,9 @@ func main() {
 	// Attach crawler finished subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
-			globals.CrawlerFinishedTopic,
-			&subscriber.CrawlerFinished{
-				Client: service.Client(),
-				Broker: service.Server().Options().Broker,
-			},
-			server.SubscriberQueue("crawlerfinished"),
+			globals.DiscoveryFinishedTopic,
+			new(subscriber.DiscoveryFinished),
+			server.SubscriberQueue("discoveryfinished"),
 		)); err != nil {
 		log.Fatal(err)
 	}
@@ -62,11 +57,7 @@ func main() {
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.DeleteBucketTopic,
-			&subscriber.DeleteBucket{
-				Client:             service.Client(),
-				Broker:             service.Server().Options().Broker,
-				GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
-			},
+			subscriber.NewDeleteBucketHandler(gcslib.NewGoogleCloudStorage()),
 			server.SubscriberQueue("deletebucket"),
 		)); err != nil {
 		log.Fatal(err)
@@ -76,23 +67,14 @@ func main() {
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.DeleteFileInBucketTopic,
-			&subscriber.DeleteFileInBucket{
-				Client:             service.Client(),
-				Broker:             service.Server().Options().Broker,
-				GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
-			},
+			subscriber.NewDeleteFileInBucketHandler(gcslib.NewGoogleCloudStorage()),
 			server.SubscriberQueue("deletefileinbucket"),
 		)); err != nil {
 		log.Fatal(err)
 	}
 
 	// New service handler
-	service.Server().Handle(
-		service.Server().NewHandler(&handler.DataSource{
-			Client:             service.Client(),
-			GoogleCloudStorage: gcslib.NewGoogleCloudStorage(),
-		}),
-	)
+	proto_datasource.RegisterServiceHandler(service.Server(), handler.NewServiceHandler(gcslib.NewGoogleCloudStorage()))
 
 	if err := service.Run(); err != nil {
 		log.Fatalf("%v", err)
