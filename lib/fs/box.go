@@ -212,7 +212,7 @@ func (bfs *BoxFs) Delete(rq file_proto.DeleteRequest) chan FileMsg {
 		defer rsp.Body.Close()
 
 		if rsp.StatusCode != http.StatusNoContent {
-			bfs.FilesChan <- NewFileMsg(nil, errors.New(fmt.Sprintf("Deleting Box file failed with status code %d", rsp.StatusCode)))
+			bfs.FilesChan <- NewFileMsg(nil, fmt.Errorf("Deleting Box file failed with status code %d", rsp.StatusCode))
 			return
 		}
 
@@ -257,7 +257,7 @@ func (bfs *BoxFs) Update(req file_proto.ShareRequest) chan FileMsg {
 		defer rsp.Body.Close()
 
 		if rsp.StatusCode != http.StatusOK {
-			bfs.FilesChan <- NewFileMsg(nil, errors.New(fmt.Sprintf("Sharing Box file failed with status code %d", rsp.StatusCode)))
+			bfs.FilesChan <- NewFileMsg(nil, fmt.Errorf("Sharing Box file failed with status code %d", rsp.StatusCode))
 			return
 		}
 

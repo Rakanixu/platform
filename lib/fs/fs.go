@@ -62,5 +62,4 @@ func NewFsFromEndpoint(e *datasource_proto.Endpoint) (Fs, error) {
 		return nil, errors.New("Not such file system (fs)")
 	}
 
-	return nil, errors.New("Error parsing URL")
 }

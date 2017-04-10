@@ -144,7 +144,7 @@ func (lfs *LocalFs) walkDatasourceParents() error {
 func (lfs *LocalFs) walkHandler() filepath.WalkFunc {
 	return func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			log.Print("Got error %s", err)
+			log.Printf("Got error %s", err)
 			return nil
 		}
 		select {
