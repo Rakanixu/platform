@@ -165,7 +165,7 @@ func (ih *ImageHandler) loadDatasources(ctx context.Context) {
 	//FIXME: mazimun of 9999 datasources. paginate
 	req := client.DefaultClient.NewRequest(
 		globals.DATASOURCE_SERVICE_NAME,
-		"DataSource.Search",
+		"Service.Search",
 		&datasource.SearchRequest{
 			Index: "datasources",
 			Type:  "datasource",

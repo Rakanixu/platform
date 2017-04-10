@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/kazoup/platform/file/srv/handler"
+	"github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/file/srv/subscriber"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/healthchecks"
@@ -32,20 +33,13 @@ func main() {
 	healthchecks.RegisterBrokerHealthChecks(service, m)
 
 	// New service handler
-	service.Server().Handle(
-		service.Server().NewHandler(&handler.File{
-			Client: service.Client(),
-		}),
-	)
+	proto_file.RegisterServiceHandler(service.Server(), new(handler.Service))
 
 	// Subscribers
 	service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.AnnounceTopic,
-			&subscriber.AnnounceFile{
-				Client: service.Client(),
-				Broker: service.Server().Options().Broker,
-			},
+			new(subscriber.AnnounceHandler),
 			server.SubscriberQueue("announce-file"),
 		),
 	)

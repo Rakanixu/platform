@@ -145,6 +145,6 @@ func HandleDropboxCallback(w http.ResponseWriter, r *http.Request) {
 	CloseBrowserWindow(w, r)
 
 	if err := PublishNotification(uCtx, uID); err != nil {
-		log.Println("Error publishing notification msg (DataSource.Create)", err)
+		log.Println("Error publishing notification msg (Service.Create)", err)
 	}
 }

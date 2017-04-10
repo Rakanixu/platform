@@ -3,7 +3,7 @@
 // DO NOT EDIT!
 
 /*
-Package go_micro_srv_notification is a generated protocol buffer package.
+Package proto_notification is a generated protocol buffer package.
 
 It is generated from these files:
 	github.com/kazoup/platform/notification/srv/proto/notification/notification.proto
@@ -15,7 +15,7 @@ It has these top-level messages:
 	HealthRequest
 	HealthResponse
 */
-package go_micro_srv_notification
+package proto_notification
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -50,6 +50,34 @@ func (m *NotificationMessage) String() string            { return proto.CompactT
 func (*NotificationMessage) ProtoMessage()               {}
 func (*NotificationMessage) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
 
+func (m *NotificationMessage) GetInfo() string {
+	if m != nil {
+		return m.Info
+	}
+	return ""
+}
+
+func (m *NotificationMessage) GetMethod() string {
+	if m != nil {
+		return m.Method
+	}
+	return ""
+}
+
+func (m *NotificationMessage) GetData() string {
+	if m != nil {
+		return m.Data
+	}
+	return ""
+}
+
+func (m *NotificationMessage) GetUserId() string {
+	if m != nil {
+		return m.UserId
+	}
+	return ""
+}
+
 type StreamRequest struct {
 	UserId string `protobuf:"bytes,1,opt,name=user_id,json=userId" json:"user_id,omitempty"`
 	Token  string `protobuf:"bytes,2,opt,name=token" json:"token,omitempty"`
@@ -59,6 +87,20 @@ func (m *StreamRequest) Reset()                    { *m = StreamRequest{} }
 func (m *StreamRequest) String() string            { return proto.CompactTextString(m) }
 func (*StreamRequest) ProtoMessage()               {}
 func (*StreamRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
+
+func (m *StreamRequest) GetUserId() string {
+	if m != nil {
+		return m.UserId
+	}
+	return ""
+}
+
+func (m *StreamRequest) GetToken() string {
+	if m != nil {
+		return m.Token
+	}
+	return ""
+}
 
 type StreamResponse struct {
 	Message *NotificationMessage `protobuf:"bytes,1,opt,name=message" json:"message,omitempty"`
@@ -85,6 +127,13 @@ func (m *HealthRequest) String() string            { return proto.CompactTextStr
 func (*HealthRequest) ProtoMessage()               {}
 func (*HealthRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
 
+func (m *HealthRequest) GetType() string {
+	if m != nil {
+		return m.Type
+	}
+	return ""
+}
+
 type HealthResponse struct {
 	Status int64  `protobuf:"varint,1,opt,name=status" json:"status,omitempty"`
 	Info   string `protobuf:"bytes,2,opt,name=info" json:"info,omitempty"`
@@ -95,12 +144,26 @@ func (m *HealthResponse) String() string            { return proto.CompactTextSt
 func (*HealthResponse) ProtoMessage()               {}
 func (*HealthResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{4} }
 
+func (m *HealthResponse) GetStatus() int64 {
+	if m != nil {
+		return m.Status
+	}
+	return 0
+}
+
+func (m *HealthResponse) GetInfo() string {
+	if m != nil {
+		return m.Info
+	}
+	return ""
+}
+
 func init() {
-	proto.RegisterType((*NotificationMessage)(nil), "go.micro.srv.notification.NotificationMessage")
-	proto.RegisterType((*StreamRequest)(nil), "go.micro.srv.notification.StreamRequest")
-	proto.RegisterType((*StreamResponse)(nil), "go.micro.srv.notification.StreamResponse")
-	proto.RegisterType((*HealthRequest)(nil), "go.micro.srv.notification.HealthRequest")
-	proto.RegisterType((*HealthResponse)(nil), "go.micro.srv.notification.HealthResponse")
+	proto.RegisterType((*NotificationMessage)(nil), "proto.notification.NotificationMessage")
+	proto.RegisterType((*StreamRequest)(nil), "proto.notification.StreamRequest")
+	proto.RegisterType((*StreamResponse)(nil), "proto.notification.StreamResponse")
+	proto.RegisterType((*HealthRequest)(nil), "proto.notification.HealthRequest")
+	proto.RegisterType((*HealthResponse)(nil), "proto.notification.HealthResponse")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -108,33 +171,33 @@ var _ context.Context
 var _ client.Option
 var _ server.Option
 
-// Client API for Notification service
+// Client API for Service service
 
-type NotificationClient interface {
-	Stream(ctx context.Context, in *StreamRequest, opts ...client.CallOption) (Notification_StreamClient, error)
+type ServiceClient interface {
+	Stream(ctx context.Context, in *StreamRequest, opts ...client.CallOption) (Service_StreamClient, error)
 	Health(ctx context.Context, in *HealthRequest, opts ...client.CallOption) (*HealthResponse, error)
 }
 
-type notificationClient struct {
+type serviceClient struct {
 	c           client.Client
 	serviceName string
 }
 
-func NewNotificationClient(serviceName string, c client.Client) NotificationClient {
+func NewServiceClient(serviceName string, c client.Client) ServiceClient {
 	if c == nil {
 		c = client.NewClient()
 	}
 	if len(serviceName) == 0 {
-		serviceName = "go.micro.srv.notification"
+		serviceName = "proto.notification"
 	}
-	return &notificationClient{
+	return &serviceClient{
 		c:           c,
 		serviceName: serviceName,
 	}
 }
 
-func (c *notificationClient) Stream(ctx context.Context, in *StreamRequest, opts ...client.CallOption) (Notification_StreamClient, error) {
-	req := c.c.NewRequest(c.serviceName, "Notification.Stream", &StreamRequest{})
+func (c *serviceClient) Stream(ctx context.Context, in *StreamRequest, opts ...client.CallOption) (Service_StreamClient, error) {
+	req := c.c.NewRequest(c.serviceName, "Service.Stream", &StreamRequest{})
 	stream, err := c.c.Stream(ctx, req, opts...)
 	if err != nil {
 		return nil, err
@@ -142,33 +205,33 @@ func (c *notificationClient) Stream(ctx context.Context, in *StreamRequest, opts
 	if err := stream.Send(in); err != nil {
 		return nil, err
 	}
-	return &notificationStreamClient{stream}, nil
+	return &serviceStreamClient{stream}, nil
 }
 
-type Notification_StreamClient interface {
+type Service_StreamClient interface {
 	SendMsg(interface{}) error
 	RecvMsg(interface{}) error
 	Close() error
 	Recv() (*StreamResponse, error)
 }
 
-type notificationStreamClient struct {
+type serviceStreamClient struct {
 	stream client.Streamer
 }
 
-func (x *notificationStreamClient) Close() error {
+func (x *serviceStreamClient) Close() error {
 	return x.stream.Close()
 }
 
-func (x *notificationStreamClient) SendMsg(m interface{}) error {
+func (x *serviceStreamClient) SendMsg(m interface{}) error {
 	return x.stream.Send(m)
 }
 
-func (x *notificationStreamClient) RecvMsg(m interface{}) error {
+func (x *serviceStreamClient) RecvMsg(m interface{}) error {
 	return x.stream.Recv(m)
 }
 
-func (x *notificationStreamClient) Recv() (*StreamResponse, error) {
+func (x *serviceStreamClient) Recv() (*StreamResponse, error) {
 	m := new(StreamResponse)
 	err := x.stream.Recv(m)
 	if err != nil {
@@ -177,8 +240,8 @@ func (x *notificationStreamClient) Recv() (*StreamResponse, error) {
 	return m, nil
 }
 
-func (c *notificationClient) Health(ctx context.Context, in *HealthRequest, opts ...client.CallOption) (*HealthResponse, error) {
-	req := c.c.NewRequest(c.serviceName, "Notification.Health", in)
+func (c *serviceClient) Health(ctx context.Context, in *HealthRequest, opts ...client.CallOption) (*HealthResponse, error) {
+	req := c.c.NewRequest(c.serviceName, "Service.Health", in)
 	out := new(HealthResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
@@ -187,58 +250,58 @@ func (c *notificationClient) Health(ctx context.Context, in *HealthRequest, opts
 	return out, nil
 }
 
-// Server API for Notification service
+// Server API for Service service
 
-type NotificationHandler interface {
-	Stream(context.Context, *StreamRequest, Notification_StreamStream) error
+type ServiceHandler interface {
+	Stream(context.Context, *StreamRequest, Service_StreamStream) error
 	Health(context.Context, *HealthRequest, *HealthResponse) error
 }
 
-func RegisterNotificationHandler(s server.Server, hdlr NotificationHandler, opts ...server.HandlerOption) {
-	s.Handle(s.NewHandler(&Notification{hdlr}, opts...))
+func RegisterServiceHandler(s server.Server, hdlr ServiceHandler, opts ...server.HandlerOption) {
+	s.Handle(s.NewHandler(&Service{hdlr}, opts...))
 }
 
-type Notification struct {
-	NotificationHandler
+type Service struct {
+	ServiceHandler
 }
 
-func (h *Notification) Stream(ctx context.Context, stream server.Streamer) error {
+func (h *Service) Stream(ctx context.Context, stream server.Streamer) error {
 	m := new(StreamRequest)
 	if err := stream.Recv(m); err != nil {
 		return err
 	}
-	return h.NotificationHandler.Stream(ctx, m, &notificationStreamStream{stream})
+	return h.ServiceHandler.Stream(ctx, m, &serviceStreamStream{stream})
 }
 
-type Notification_StreamStream interface {
+type Service_StreamStream interface {
 	SendMsg(interface{}) error
 	RecvMsg(interface{}) error
 	Close() error
 	Send(*StreamResponse) error
 }
 
-type notificationStreamStream struct {
+type serviceStreamStream struct {
 	stream server.Streamer
 }
 
-func (x *notificationStreamStream) Close() error {
+func (x *serviceStreamStream) Close() error {
 	return x.stream.Close()
 }
 
-func (x *notificationStreamStream) SendMsg(m interface{}) error {
+func (x *serviceStreamStream) SendMsg(m interface{}) error {
 	return x.stream.Send(m)
 }
 
-func (x *notificationStreamStream) RecvMsg(m interface{}) error {
+func (x *serviceStreamStream) RecvMsg(m interface{}) error {
 	return x.stream.Recv(m)
 }
 
-func (x *notificationStreamStream) Send(m *StreamResponse) error {
+func (x *serviceStreamStream) Send(m *StreamResponse) error {
 	return x.stream.Send(m)
 }
 
-func (h *Notification) Health(ctx context.Context, in *HealthRequest, out *HealthResponse) error {
-	return h.NotificationHandler.Health(ctx, in, out)
+func (h *Service) Health(ctx context.Context, in *HealthRequest, out *HealthResponse) error {
+	return h.ServiceHandler.Health(ctx, in, out)
 }
 
 func init() {
@@ -246,26 +309,26 @@ func init() {
 }
 
 var fileDescriptor0 = []byte{
-	// 329 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0x8c, 0x92, 0x41, 0x4f, 0xc2, 0x40,
-	0x10, 0x85, 0x29, 0x60, 0x89, 0xa3, 0x70, 0x58, 0x8d, 0x56, 0x4f, 0x66, 0xbd, 0xe0, 0x65, 0x6b,
-	0xf0, 0x6a, 0x3c, 0xe3, 0x41, 0x13, 0xeb, 0xcd, 0x0b, 0x59, 0xe8, 0x02, 0x1b, 0x68, 0xa7, 0x76,
-	0xa7, 0x26, 0xfa, 0x33, 0xfd, 0x45, 0xd2, 0x6e, 0xab, 0x6d, 0xa2, 0x8d, 0xb7, 0x79, 0xcb, 0x37,
-	0xcc, 0x7b, 0x2f, 0x85, 0xa7, 0x95, 0xa6, 0x75, 0x36, 0x17, 0x0b, 0x8c, 0xfc, 0x8d, 0xfc, 0xc0,
-	0x2c, 0xf1, 0x93, 0xad, 0xa4, 0x25, 0xa6, 0x91, 0x1f, 0x23, 0xe9, 0xa5, 0x5e, 0x48, 0xd2, 0x18,
-	0xfb, 0x26, 0x7d, 0xf3, 0x93, 0x14, 0x09, 0x9b, 0xcf, 0x75, 0x21, 0x8a, 0xdf, 0xd9, 0xd9, 0x0a,
-	0x45, 0xa4, 0x17, 0x29, 0x8a, 0xdd, 0x8e, 0xa8, 0x03, 0x3c, 0x86, 0xa3, 0xc7, 0x9a, 0x7e, 0x50,
-	0xc6, 0xc8, 0x95, 0x62, 0x0c, 0xfa, 0x3a, 0x5e, 0xa2, 0xe7, 0x5c, 0x38, 0xe3, 0xfd, 0xa0, 0x98,
-	0xd9, 0x09, 0xb8, 0x91, 0xa2, 0x35, 0x86, 0x5e, 0xb7, 0x78, 0x2d, 0x55, 0xce, 0x86, 0x92, 0xa4,
-	0xd7, 0xb3, 0x6c, 0x3e, 0xb3, 0x53, 0x18, 0x64, 0x46, 0xa5, 0x33, 0x1d, 0x7a, 0x7d, 0x0b, 0xe7,
-	0xf2, 0x3e, 0xe4, 0x77, 0x30, 0x7c, 0xa6, 0x54, 0xc9, 0x28, 0x50, 0xaf, 0x99, 0x32, 0x54, 0x27,
-	0x9d, 0x3a, 0xc9, 0x8e, 0x61, 0x8f, 0x70, 0xa3, 0xe2, 0xf2, 0x9a, 0x15, 0xfc, 0x05, 0x46, 0xd5,
-	0xbe, 0x49, 0x30, 0x36, 0x8a, 0x4d, 0x61, 0x10, 0x59, 0xd7, 0xc5, 0x1f, 0x1c, 0x4c, 0x84, 0xf8,
-	0x33, 0xae, 0xf8, 0x25, 0x6b, 0x50, 0xad, 0xf3, 0x4b, 0x18, 0x4e, 0x95, 0xdc, 0xd2, 0xba, 0xf2,
-	0xb6, 0x4b, 0x46, 0xef, 0x89, 0xaa, 0x5a, 0xc8, 0x67, 0x7e, 0x0b, 0xa3, 0x0a, 0x2a, 0x0d, 0xec,
-	0x7a, 0x31, 0x24, 0x29, 0x33, 0x05, 0xd7, 0x0b, 0x4a, 0xf5, 0xdd, 0x61, 0xf7, 0xa7, 0xc3, 0xc9,
-	0xa7, 0x03, 0x87, 0x75, 0x0f, 0x4c, 0x82, 0x6b, 0xf3, 0xb0, 0x71, 0x8b, 0xed, 0x46, 0x65, 0xe7,
-	0x57, 0xff, 0x20, 0xad, 0x37, 0xde, 0xb9, 0x76, 0xd8, 0x0c, 0x5c, 0xeb, 0xb8, 0xf5, 0x44, 0x23,
-	0x79, 0xeb, 0x89, 0x66, 0x7c, 0xde, 0x99, 0xbb, 0xc5, 0x57, 0x76, 0xf3, 0x15, 0x00, 0x00, 0xff,
-	0xff, 0x7f, 0xb3, 0xe5, 0xc1, 0xba, 0x02, 0x00, 0x00,
+	// 325 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x90, 0x41, 0x4e, 0xf3, 0x30,
+	0x10, 0x85, 0x9b, 0xb6, 0x7f, 0xaa, 0x7f, 0x50, 0xbb, 0x30, 0xa8, 0x44, 0xac, 0xc0, 0x2c, 0x60,
+	0x95, 0xa0, 0xb2, 0x45, 0x48, 0xec, 0x60, 0x01, 0x52, 0x93, 0x03, 0x20, 0xb7, 0x99, 0x36, 0x56,
+	0x9b, 0x38, 0xc4, 0x93, 0x4a, 0x70, 0x2b, 0x6e, 0x88, 0x62, 0x27, 0x90, 0x88, 0x88, 0x95, 0xe7,
+	0xd9, 0x9f, 0x67, 0xde, 0x1b, 0x58, 0x6e, 0x25, 0x25, 0xe5, 0xca, 0x5f, 0xab, 0x34, 0xd8, 0x89,
+	0x0f, 0x55, 0xe6, 0x41, 0xbe, 0x17, 0xb4, 0x51, 0x45, 0x1a, 0x64, 0x8a, 0xe4, 0x46, 0xae, 0x05,
+	0x49, 0x95, 0x05, 0xba, 0x38, 0x04, 0x79, 0xa1, 0x48, 0x75, 0xaf, 0xdb, 0xc2, 0x37, 0xef, 0x8c,
+	0x99, 0xc3, 0x6f, 0xbf, 0xf0, 0x0c, 0x8e, 0x5f, 0x5a, 0xfa, 0x19, 0xb5, 0x16, 0x5b, 0x64, 0x0c,
+	0xc6, 0x32, 0xdb, 0x28, 0xcf, 0x39, 0x77, 0xae, 0xff, 0x87, 0xa6, 0x66, 0x73, 0x70, 0x53, 0xa4,
+	0x44, 0xc5, 0xde, 0xd0, 0xdc, 0xd6, 0xaa, 0x62, 0x63, 0x41, 0xc2, 0x1b, 0x59, 0xb6, 0xaa, 0xd9,
+	0x29, 0x4c, 0x4a, 0x8d, 0xc5, 0xab, 0x8c, 0xbd, 0xb1, 0x85, 0x2b, 0xf9, 0x14, 0xf3, 0x7b, 0x98,
+	0x46, 0x54, 0xa0, 0x48, 0x43, 0x7c, 0x2b, 0x51, 0x53, 0x9b, 0x74, 0xda, 0x24, 0x3b, 0x81, 0x7f,
+	0xa4, 0x76, 0x98, 0xd5, 0xd3, 0xac, 0xe0, 0x11, 0xcc, 0x9a, 0xff, 0x3a, 0x57, 0x99, 0x46, 0xf6,
+	0x00, 0x93, 0xd4, 0xba, 0x36, 0x0d, 0x8e, 0x16, 0x57, 0xfe, 0xef, 0x9c, 0x7e, 0x4f, 0xc8, 0xb0,
+	0xf9, 0xc7, 0x2f, 0x61, 0xfa, 0x88, 0x62, 0x4f, 0x49, 0x63, 0x8a, 0xc1, 0x98, 0xde, 0x73, 0x6c,
+	0xe2, 0x57, 0x35, 0xbf, 0x83, 0x59, 0x03, 0xd5, 0x93, 0xe7, 0xe0, 0x6a, 0x12, 0x54, 0x6a, 0xc3,
+	0x8d, 0xc2, 0x5a, 0x7d, 0x2f, 0x6f, 0xf8, 0xb3, 0xbc, 0xc5, 0xa7, 0x03, 0x93, 0x08, 0x8b, 0x83,
+	0x5c, 0x23, 0x8b, 0xc0, 0xb5, 0x19, 0xd8, 0x45, 0x9f, 0xd5, 0xce, 0x7e, 0xce, 0xf8, 0x5f, 0x88,
+	0x35, 0xc2, 0x07, 0x37, 0x0e, 0x5b, 0x82, 0x6b, 0xed, 0xf5, 0x37, 0xed, 0xe4, 0xeb, 0x6f, 0xda,
+	0x4d, 0xc7, 0x07, 0x2b, 0xd7, 0x40, 0xb7, 0x5f, 0x01, 0x00, 0x00, 0xff, 0xff, 0x15, 0xb4, 0x70,
+	0x3f, 0x8b, 0x02, 0x00, 0x00,
 }

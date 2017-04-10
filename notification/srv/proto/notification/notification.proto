@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package go.micro.srv.notification;
+package proto.notification;
 
-service Notification {
+service Service {
   rpc Stream(StreamRequest) returns (stream StreamResponse) {}
   rpc Health(HealthRequest) returns (HealthResponse) {}
 }

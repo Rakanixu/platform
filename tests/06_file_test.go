@@ -28,7 +28,7 @@ var ds_file_tests_data = testTable{
 	// Dropbox
 	{[]byte(`{
 		"service": "com.kazoup.srv.datasource",
-		"method": "DataSource.Create",
+		"method": "Service.Create",
 		"request": {
 			"endpoint": {
 				"user_id": "` + USER_ID + `",
@@ -44,7 +44,7 @@ var ds_file_tests_data = testTable{
 	// GoogleDrive
 	{[]byte(`{
 		"service": "com.kazoup.srv.datasource",
-		"method": "DataSource.Create",
+		"method": "Service.Create",
 		"request": {
 			"endpoint": {
 				"user_id": "` + USER_ID + `",
@@ -61,7 +61,7 @@ var ds_file_tests_data = testTable{
 	// Onedrive
 	{[]byte(`{
 		"service": "com.kazoup.srv.datasource",
-		"method": "DataSource.Create",
+		"method": "Service.Create",
 		"request": {
 			"endpoint": {
 				"user_id": "` + USER_ID + `",
@@ -80,7 +80,7 @@ var ds_file_tests_data = testTable{
 var create_file_tests_data = testTable{
 	{[]byte(`{
 		"service":"com.kazoup.srv.file",
-		"method":"File.Create",
+		"method":"Service.Create",
 		"request":{
 			"datasource_id":"` + globals.GetMD5Hash(DROPBOX_URL+USER_ID) + `",
 			"mime_type":"document",
@@ -89,7 +89,7 @@ var create_file_tests_data = testTable{
 	}`), &http.Response{StatusCode: 200}, noDuration},
 	{[]byte(`{
 		"service":"com.kazoup.srv.file",
-		"method":"File.Create",
+		"method":"Service.Create",
 		"request":{
 			"datasource_id":"` + globals.GetMD5Hash(GOOGLE_DRIVE_URL+USER_ID) + `",
 			"mime_type":"document",
@@ -98,7 +98,7 @@ var create_file_tests_data = testTable{
 	}`), &http.Response{StatusCode: 200}, noDuration},
 	{[]byte(`{
 		"service":"com.kazoup.srv.file",
-		"method":"File.Create",
+		"method":"Service.Create",
 		"request":{
 			"datasource_id":"` + globals.GetMD5Hash(ONE_DRIVE_URL+USER_ID) + `",
 			"mime_type":"document",
@@ -111,7 +111,7 @@ var ds_delete_tests_data = testTable{
 	// Dropbox
 	{[]byte(`{
 		"service": "com.kazoup.srv.datasource",
-		"method": "DataSource.Delete",
+		"method": "Service.Delete",
 		"request": {
 			"id": "` + globals.GetMD5Hash(DROPBOX_URL+USER_ID) + `"
 		}
@@ -119,7 +119,7 @@ var ds_delete_tests_data = testTable{
 	// GoogleDrive
 	{[]byte(`{
 		"service": "com.kazoup.srv.datasource",
-		"method": "DataSource.Delete",
+		"method": "Service.Delete",
 		"request": {
 			"id": "` + globals.GetMD5Hash(GOOGLE_DRIVE_URL+USER_ID) + `"
 		}
@@ -127,7 +127,7 @@ var ds_delete_tests_data = testTable{
 	// Onedrive
 	{[]byte(`{
 		"service": "com.kazoup.srv.datasource",
-		"method": "DataSource.Delete",
+		"method": "Service.Delete",
 		"request": {
 			"id": "` + globals.GetMD5Hash(ONE_DRIVE_URL+USER_ID) + `"
 		}
@@ -174,7 +174,7 @@ func TestFileCreate(t *testing.T) {
 
 			b := []byte(`{
 				"service":"com.kazoup.srv.file",
-				"method":"File.Delete",
+				"method":"Service.Delete",
 				"request":{
 					"datasource_id": "` + f.GetDatasourceID() + `",
 					"index": "` + f.GetIndex() + `",

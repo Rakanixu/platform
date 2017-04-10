@@ -28,7 +28,7 @@ func SaveDatasource(ctx context.Context, user string, url string, token *oauth2.
 
 	srvReq := c.NewRequest(
 		globals.DATASOURCE_SERVICE_NAME,
-		"DataSource.Create",
+		"Service.Create",
 		&proto_datasource.CreateRequest{
 			Endpoint: &proto_datasource.Endpoint{
 				UserId:          user,
@@ -49,7 +49,7 @@ func SaveDatasource(ctx context.Context, user string, url string, token *oauth2.
 	srvRes := &proto_datasource.CreateResponse{}
 
 	if err := c.Call(ctx, srvReq, srvRes); err != nil {
-		return errors.New("auth.web.helper.DataSource.Create", err.Error(), 500)
+		return errors.New("auth.web.helper.Service.Create", err.Error(), 500)
 	}
 
 	return nil

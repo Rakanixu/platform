@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-package go.micro.srv.datasource;
+package proto.datasource;
 
-service DataSource {
+service Service {
   rpc Create(CreateRequest) returns (CreateResponse) {}
   rpc Delete(DeleteRequest) returns (DeleteResponse) {}
   rpc Search(SearchRequest) returns (SearchResponse) {}

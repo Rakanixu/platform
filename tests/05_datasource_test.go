@@ -24,7 +24,7 @@ var datasources_test_data = testTable{
 	// Box
 	{[]byte(`{
 		"service": "com.kazoup.srv.datasource",
-		"method": "DataSource.Create",
+		"method": "Service.Create",
 		"request": {
 			"endpoint": {
 				"user_id": "` + USER_ID + `",
@@ -41,7 +41,7 @@ var datasources_test_data = testTable{
 	// Dropbox
 	{[]byte(`{
 		"service": "com.kazoup.srv.datasource",
-		"method": "DataSource.Create",
+		"method": "Service.Create",
 		"request": {
 			"endpoint": {
 				"user_id": "` + USER_ID + `",
@@ -57,7 +57,7 @@ var datasources_test_data = testTable{
 	// GoogleDrive
 	{[]byte(`{
 		"service": "com.kazoup.srv.datasource",
-		"method": "DataSource.Create",
+		"method": "Service.Create",
 		"request": {
 			"endpoint": {
 				"user_id": "` + USER_ID + `",
@@ -74,7 +74,7 @@ var datasources_test_data = testTable{
 	// Onedrive
 	{[]byte(`{
 		"service": "com.kazoup.srv.datasource",
-		"method": "DataSource.Create",
+		"method": "Service.Create",
 		"request": {
 			"endpoint": {
 				"user_id": "` + USER_ID + `",
@@ -92,7 +92,7 @@ var datasources_test_data = testTable{
 	// Usually, this index should be empty, but can be some data as I have no control over mails received (And I won't clean it though SMTP calls)
 	{[]byte(`{
 		"service": "com.kazoup.srv.datasource",
-		"method": "DataSource.Create",
+		"method": "Service.Create",
 		"request": {
 			"endpoint": {
 				"user_id": "` + USER_ID + `",
@@ -110,7 +110,7 @@ var datasources_test_data = testTable{
 	// Timeouts would be difficult to manage
 	{[]byte(`{
 		"service": "com.kazoup.srv.datasource",
-		"method": "DataSource.Create",
+		"method": "Service.Create",
 		"request": {
 			"endpoint": {
 				"user_id": "` + USER_ID + `",
@@ -127,7 +127,7 @@ var datasources_test_data = testTable{
 	// Invalid data
 	{[]byte(`{
 		"service": "com.kazoup.srv.datasource",
-		"method": "DataSource.Create",
+		"method": "Service.Create",
 		"request": {
 			"endpoint": {
 				"user_id": "` + USER_ID + `",
@@ -161,7 +161,7 @@ var delete_datasources_test_data = testTable{
 	// Box
 	{[]byte(`{
 		"service": "com.kazoup.srv.datasource",
-		"method": "DataSource.Delete",
+		"method": "Service.Delete",
 		"request": {
 			"id": "` + globals.GetMD5Hash(BOX_URL+USER_ID) + `"
 		}
@@ -169,7 +169,7 @@ var delete_datasources_test_data = testTable{
 	// Dropbox
 	{[]byte(`{
 		"service": "com.kazoup.srv.datasource",
-		"method": "DataSource.Delete",
+		"method": "Service.Delete",
 		"request": {
 			"id": "` + globals.GetMD5Hash(DROPBOX_URL+USER_ID) + `"
 		}
@@ -177,7 +177,7 @@ var delete_datasources_test_data = testTable{
 	// GoogleDrive
 	{[]byte(`{
 		"service": "com.kazoup.srv.datasource",
-		"method": "DataSource.Delete",
+		"method": "Service.Delete",
 		"request": {
 			"id": "` + globals.GetMD5Hash(GOOGLE_DRIVE_URL+USER_ID) + `"
 		}
@@ -185,7 +185,7 @@ var delete_datasources_test_data = testTable{
 	// Onedrive
 	{[]byte(`{
 		"service": "com.kazoup.srv.datasource",
-		"method": "DataSource.Delete",
+		"method": "Service.Delete",
 		"request": {
 			"id": "` + globals.GetMD5Hash(ONE_DRIVE_URL+USER_ID) + `"
 		}
@@ -193,7 +193,7 @@ var delete_datasources_test_data = testTable{
 	// Gmail
 	{[]byte(`{
 		"service": "com.kazoup.srv.datasource",
-		"method": "DataSource.Delete",
+		"method": "Service.Delete",
 		"request": {
 			"id": "` + globals.GetMD5Hash(GMAIL_URL+USER_ID) + `"
 		}
@@ -201,7 +201,7 @@ var delete_datasources_test_data = testTable{
 	// Slack
 	{[]byte(`{
 		"service": "com.kazoup.srv.datasource",
-		"method": "DataSource.Delete",
+		"method": "Service.Delete",
 		"request": {
 			"id": "` + globals.GetMD5Hash(SLACK_URL+USER_ID) + `"
 		}
@@ -211,7 +211,7 @@ var delete_datasources_test_data = testTable{
 var search_datasources = testTable{
 	{[]byte(`{
 		"service":"com.kazoup.srv.datasource",
-		"method":"DataSource.Search",
+		"method":"Service.Search",
 		"request":{
 			"index":"datasources",
 			"type":"datasource",

@@ -25,7 +25,7 @@ find * -type d -maxdepth 1 -print | while read dir; do
       exit 1;
   	fi;
 	sudo chown -R ubuntu:ubuntu /home/ubuntu/.kube
-	sudo kubectl set image deployment/$IMAGE $IMAGE=eu.gcr.io/desktop-1470249894548/$IMAGE:$CIRCLE_SHA1
+	kubectl set image deployment/$IMAGE $IMAGE=eu.gcr.io/desktop-1470249894548/$IMAGE:$CIRCLE_SHA1
 	if [ $? -ne 0 ]; then
    		 echo "Could not perform rolling update"
       exit 1;

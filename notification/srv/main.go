@@ -33,10 +33,7 @@ func main() {
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.NotificationTopic,
-			&subscriber.Proxy{
-				Server: service.Server(),
-				Client: service.Client(),
-			},
+			new(subscriber.ProxyHandler),
 		),
 	); err != nil {
 		log.Fatal(err)
@@ -46,24 +43,17 @@ func main() {
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.AnnounceTopic,
-			&subscriber.AnnounceNotification{
-				Client: service.Client(),
-				Broker: service.Server().Options().Broker,
-			},
+			new(subscriber.AnnounceHandler),
 			server.SubscriberQueue("announce-notification"),
 		),
 	); err != nil {
 		log.Fatal(err)
 	}
 
-	// Notification handler instantiate with service broker
-	// It will allow to subscribe to topics and then stream actions back to clients
+	// Register service handler
 	if err := service.Server().Handle(
 		service.Server().NewHandler(
-			&handler.Notification{
-				Server: service.Server(),
-				Client: service.Client(),
-			},
+			new(handler.Service),
 		),
 	); err != nil {
 		log.Fatal(err)
