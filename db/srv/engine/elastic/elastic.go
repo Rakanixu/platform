@@ -89,7 +89,7 @@ func (e *elastic) Init(c client.Client) error {
 				// elib.BulkableRequest stores two objects, headers and body
 				src, err := req.Source()
 				if err != nil {
-					log.Println("Error: %v", err)
+					log.Printf("Error: %v", err)
 					return
 				}
 
@@ -100,7 +100,7 @@ func (e *elastic) Init(c client.Client) error {
 				// Assert type and use the proper context
 				bkr, ok := req.(subscriber.BulkableKazoupRequest)
 				if !ok {
-					log.Println("Error BulkableKazoupRequest assertion: %v", bkr)
+					log.Printf("Error BulkableKazoupRequest assertion: %v", bkr)
 					return
 				}
 
@@ -111,7 +111,7 @@ func (e *elastic) Init(c client.Client) error {
 						Id:     kf.Doc.ID,
 						UserId: kf.Doc.UserId,
 					})); err != nil {
-						log.Print("Publishing ThumbnailTopic error %s", err)
+						log.Printf("Publishing ThumbnailTopic error %s", err)
 					}
 				}
 			}
@@ -278,17 +278,17 @@ func (e *elastic) Search(ctx context.Context, req *db.SearchRequest) (*db.Search
 	var results []interface{}
 	var err error
 	var rstr string
-	var uId string
+	var uID string
 
 	// Get user id from context
-	uId, err = globals.ParseUserIdFromContext(ctx)
+	uID, err = globals.ParseUserIdFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	eQuery := ElasticQuery{
 		Index:                req.Index,
-		UserId:               uId,
+		UserId:               uID,
 		Term:                 req.Term,
 		From:                 req.From,
 		Size:                 req.Size,
@@ -366,11 +366,11 @@ func (e *elastic) Search(ctx context.Context, req *db.SearchRequest) (*db.Search
 // This should return single ID as all files should have unique ID's as we seting them up based on unique path MD5
 // Method will work on any index and alias as long ID's are unique
 func (e *elastic) SearchById(ctx context.Context, req *db.SearchByIdRequest) (*db.SearchByIdResponse, error) {
-	var uId string
+	var uID string
 	var err error
 
 	// Get user id implicitly
-	uId, err = globals.ParseUserIdFromContext(ctx)
+	uID, err = globals.ParseUserIdFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -378,7 +378,7 @@ func (e *elastic) SearchById(ctx context.Context, req *db.SearchByIdRequest) (*d
 	eQuery := ElasticQuery{
 		Index:  req.Index,
 		Id:     req.Id,
-		UserId: uId,
+		UserId: uID,
 		Type:   req.Type,
 	}
 	query, err := eQuery.QueryById()

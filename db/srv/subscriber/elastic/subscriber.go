@@ -26,7 +26,7 @@ func Subscribe(e *model.Elastic) error {
 					// We do not use bulk, as is just one element
 					_, err := e.Client.Index().Index(v.FileMessage.Index).Type(globals.FileType).Id(v.FileMessage.Id).BodyString(v.FileMessage.Data).Do(context.Background())
 					if err != nil {
-						log.Print("Indexer error %s", err)
+						log.Printf("Indexer error %s", err)
 					}
 
 					n := &notification_proto.NotificationMessage{
@@ -36,12 +36,12 @@ func Subscribe(e *model.Elastic) error {
 
 					// Publish scan topic, crawlers should pick up message
 					if err := v.Client.Publish(v.Ctx, v.Client.NewPublication(globals.NotificationTopic, n)); err != nil {
-						log.Print("Publishing (notify file) error %s", err)
+						log.Printf("Publishing (notify file) error %s", err)
 					}
 				} else {
 					f, err := file.NewFileFromString(v.FileMessage.Data)
 					if err != nil {
-						log.Print("Error creating file from string error %s", err)
+						log.Printf("Error creating file from string error %s", err)
 					}
 
 					// Use bulk processor as we will index groups of documents
