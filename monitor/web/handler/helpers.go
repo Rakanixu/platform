@@ -73,7 +73,6 @@ func distanceOfTime(minutes float64) string {
 		return fmt.Sprintf("%d days", int(minutes/1440))
 	}
 
-	return ""
 }
 
 func timeAgo(t int64) string {

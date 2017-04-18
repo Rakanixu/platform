@@ -37,7 +37,6 @@ func (s *Service) Stream(ctx context.Context, stream server.Streamer) error {
 		}
 	}
 
-	return nil
 }
 
 func (s *Service) Health(ctx context.Context, req *proto_notification.HealthRequest, rsp *proto_notification.HealthResponse) error {

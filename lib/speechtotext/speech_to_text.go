@@ -65,7 +65,7 @@ func AsyncContent(uri string) (SpeechToText, error) {
 				Name: aop.Name(),
 			})
 			if err != nil {
-				log.Println("Error polling audio content: %v", err)
+				log.Printf("Error polling audio content: %v", err)
 				return
 			}
 			if op.Done {
@@ -75,12 +75,12 @@ func AsyncContent(uri string) (SpeechToText, error) {
 		}
 
 		if op.GetError() != nil {
-			log.Println("Error extracting audio content: %v", err)
+			log.Printf("Error extracting audio content: %v", err)
 		}
 		if op.GetResponse() != nil {
 			var res speechpb.AsyncRecognizeResponse
 			if err := proto.Unmarshal(op.GetResponse().Value, &res); err != nil {
-				log.Println("Error unmarshalling speech to text response: %v", err)
+				log.Printf("Error unmarshalling speech to text response: %v", err)
 			}
 
 			var buffer bytes.Buffer
@@ -88,15 +88,15 @@ func AsyncContent(uri string) (SpeechToText, error) {
 				for _, alt := range result.Alternatives {
 					n, err := normalize_text.Normalize(alt.Transcript)
 					if err != nil {
-						log.Println("Error normalizing audio content: %v", err)
+						log.Printf("Error normalizing audio content: %v", err)
 					}
 					_, err = buffer.WriteString(n)
 					if err != nil {
-						log.Println("Error concatenating audio content transcripts: %v", err)
+						log.Printf("Error concatenating audio content transcripts: %v", err)
 					}
 					_, err = buffer.WriteString(" ")
 					if err != nil {
-						log.Println("Error concatenating audio content transcripts: %v", err)
+						log.Printf("Error concatenating audio content transcripts: %v", err)
 					}
 				}
 			}

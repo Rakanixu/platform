@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// Authorize
+//Authorize
 func (bfs *BoxFs) Authorize() (*datasource_proto.Token, error) {
 	tokenSource := globals.NewBoxOauthConfig().TokenSource(oauth2.NoContext, &oauth2.Token{
 		AccessToken:  bfs.Endpoint.Token.AccessToken,
@@ -37,10 +37,9 @@ func (bfs *BoxFs) GetDatasourceId() string {
 // GetThumbnail returns a URI pointing to an image
 func (bfs *BoxFs) GetThumbnail(id string) (string, error) {
 	url := fmt.Sprintf(
-		"%s%s&Authorization=%s",
+		"%s%s&Authorization=%s/thumbnail.png?min_height=256&min_width=256",
 		globals.BoxFileMetadataEndpoint,
 		id,
-		"/thumbnail.png?min_height=256&min_width=256",
 		bfs.token(),
 	)
 

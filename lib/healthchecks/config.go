@@ -41,6 +41,6 @@ func configWebHealthCheck(m monitor.Monitor) {
 	)
 
 	if err := m.Register(chc); err != nil {
-		fmt.Println("ERROR registering HealthChecker %v", n, err)
+		fmt.Printf("ERROR registering HealthChecker %s %s", n, err)
 	}
 }

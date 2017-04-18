@@ -45,5 +45,4 @@ func NewCloudStorageFromEndpoint(e *datasource_proto.Endpoint, connector string)
 		return nil, errors.New("Not such cloud storage constructor")
 	}
 
-	return nil, errors.New("Error parsing URL")
 }

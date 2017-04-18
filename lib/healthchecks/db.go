@@ -102,7 +102,7 @@ func dbConnectionHealthCheck(srv micro.Service, m monitor.Monitor) {
 	)
 
 	if err := m.Register(chc); err != nil {
-		fmt.Println("ERROR registering HealthChecker %v", n, err)
+		fmt.Printf("ERROR registering HealthChecker %s %s", n, err)
 	}
 }
 
@@ -143,6 +143,6 @@ func dbSrvHealthCheck(srv micro.Service, m monitor.Monitor) {
 	)
 
 	if err := m.Register(dshc); err != nil {
-		fmt.Println("ERROR registering HealthChecker %v", n, err)
+		fmt.Printf("ERROR registering HealthChecker %s %s", n, err)
 	}
 }
