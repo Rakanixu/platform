@@ -114,13 +114,6 @@ func processEnrichMsg(m enrichMsgChan) error {
 		return err
 	}
 
-	operations.Update(m.ctx, &proto_operations.UpdateRequest{
-		Index: m.msg.Index,
-		Type:  globals.FileType,
-		Id:    m.msg.Id,
-		Data:  string(b),
-	})
-
 	_, err = operations.Update(m.ctx, &proto_operations.UpdateRequest{
 		Index: m.msg.Index,
 		Type:  globals.FileType,
