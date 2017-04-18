@@ -17,8 +17,7 @@ func init() {
 	config.Register(new(elastic))
 }
 
-// Init Elastic db (engine)
-// Common init for DB, Config and Subscriber interfaces
+// Init config db
 func (e *elastic) Init() error {
 	var err error
 
@@ -43,7 +42,7 @@ func (e *elastic) Init() error {
 	return nil
 }
 
-// CreateIndexWithSettings creates an ES index with template settings if match naming
+// CreateIndex creates an ES index with template settings if match index* naming
 func (e *elastic) CreateIndex(ctx context.Context, req *proto_config.CreateIndexRequest) (*proto_config.CreateIndexResponse, error) {
 	exists, err := e.Client.IndexExists(req.Index).Do(ctx)
 	if err != nil {
