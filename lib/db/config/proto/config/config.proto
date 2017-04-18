@@ -2,32 +2,6 @@ syntax = "proto3";
 
 package proto.config;
 
-service Config {
-    rpc CreateIndex(CreateIndexRequest) returns (CreateIndexResponse) {}
-    rpc Status(StatusRequest) returns (StatusResponse) {}
-    rpc AddAlias(AddAliasRequest) returns (AddAliasResponse) {}
-    rpc DeleteIndex(DeleteIndexRequest) returns (DeleteIndexResponse) {}
-    rpc DeleteAlias(DeleteAliasRequest) returns (DeleteAliasResponse) {}
-    rpc RenameAlias(RenameAliasRequest) returns (RenameAliasResponse) {}
-}
-
-message DocRef {
-    string index = 1;
-    string type = 2;
-    string id = 3;
-}
-
-message BulkCreateRequest {
-    string index = 1;
-    string type = 2;
-    string id = 3;
-    string data = 4;
-}
-
-message BulkCreateResponse {
-
-}
-
 message CreateIndexRequest {
     string index = 1;
 }
