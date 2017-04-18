@@ -4,6 +4,8 @@ import (
 	"github.com/kazoup/platform/document/srv/handler"
 	"github.com/kazoup/platform/document/srv/proto/document"
 	"github.com/kazoup/platform/document/srv/subscriber"
+	"github.com/kazoup/platform/lib/db/operations/engine"
+	_ "github.com/kazoup/platform/lib/db/operations/engine/elastic"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
@@ -15,6 +17,11 @@ import (
 )
 
 func main() {
+	// Init DB Operations
+	if err := operations.Init(); err != nil {
+		log.Fatal(err)
+	}
+
 	var m monitor.Monitor
 
 	service := wrappers.NewKazoupService("document", m)

@@ -4,14 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	db_proto "github.com/kazoup/platform/db/srv/proto/db"
-	db_helper "github.com/kazoup/platform/lib/dbhelper"
+	"github.com/kazoup/platform/lib/db/operations/engine"
+	"github.com/kazoup/platform/lib/db/operations/proto/operations"
 	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
 	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
-	"github.com/micro/go-micro"
 	"golang.org/x/net/context"
 )
 
@@ -68,12 +67,7 @@ func startWorkers(t *taskHandler) {
 }
 
 func processEnrichMsg(m enrichMsgChan) error {
-	srv, ok := micro.FromContext(m.ctx)
-	if !ok {
-		return errors.ErrInvalidCtx
-	}
-
-	frsp, err := db_helper.ReadFromDB(srv.Client(), m.ctx, &db_proto.ReadRequest{
+	frsp, err := operations.Read(m.ctx, &proto_operations.ReadRequest{
 		Index: m.msg.Index,
 		Type:  globals.FileType,
 		Id:    m.msg.Id,
@@ -87,7 +81,7 @@ func processEnrichMsg(m enrichMsgChan) error {
 		return err
 	}
 
-	drsp, err := db_helper.ReadFromDB(srv.Client(), m.ctx, &db_proto.ReadRequest{
+	drsp, err := operations.Read(m.ctx, &proto_operations.ReadRequest{
 		Index: globals.IndexDatasources,
 		Type:  globals.TypeDatasource,
 		Id:    f.GetDatasourceID(),
@@ -120,7 +114,14 @@ func processEnrichMsg(m enrichMsgChan) error {
 		return err
 	}
 
-	_, err = db_helper.UpdateFromDB(srv.Client(), m.ctx, &db_proto.UpdateRequest{
+	operations.Update(m.ctx, &proto_operations.UpdateRequest{
+		Index: m.msg.Index,
+		Type:  globals.FileType,
+		Id:    m.msg.Id,
+		Data:  string(b),
+	})
+
+	_, err = operations.Update(m.ctx, &proto_operations.UpdateRequest{
 		Index: m.msg.Index,
 		Type:  globals.FileType,
 		Id:    m.msg.Id,
