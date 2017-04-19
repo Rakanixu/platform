@@ -3,15 +3,14 @@ package subscriber
 import (
 	"encoding/json"
 	"fmt"
-	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	db_proto "github.com/kazoup/platform/db/srv/proto/db"
-	db_helper "github.com/kazoup/platform/lib/dbhelper"
+	"github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/lib/db/operations"
+	"github.com/kazoup/platform/lib/db/operations/proto/operations"
 	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
-	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
-	"github.com/micro/go-micro"
+	enrich "github.com/kazoup/platform/lib/protomsg/enrich"
 	"golang.org/x/net/context"
 )
 
@@ -33,12 +32,12 @@ type taskHandler struct {
 
 type enrichMsgChan struct {
 	ctx context.Context
-	msg *enrich_proto.EnrichMessage
+	msg *enrich.EnrichMessage
 	err chan error
 }
 
 // Enrich subscriber, receive EnrichMessage to get the file and process it
-func (t *taskHandler) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
+func (t *taskHandler) Enrich(ctx context.Context, enrichmsg *enrich.EnrichMessage) error {
 	c := enrichMsgChan{
 		ctx: ctx,
 		msg: enrichmsg,
@@ -70,12 +69,7 @@ func startWorkers(t *taskHandler) {
 }
 
 func processEnrichMsg(m enrichMsgChan) error {
-	srv, ok := micro.FromContext(m.ctx)
-	if !ok {
-		return errors.ErrInvalidCtx
-	}
-
-	frsp, err := db_helper.ReadFromDB(srv.Client(), m.ctx, &db_proto.ReadRequest{
+	frsp, err := operations.Read(m.ctx, &proto_operations.ReadRequest{
 		Index: m.msg.Index,
 		Type:  globals.FileType,
 		Id:    m.msg.Id,
@@ -89,7 +83,7 @@ func processEnrichMsg(m enrichMsgChan) error {
 		return err
 	}
 
-	drsp, err := db_helper.ReadFromDB(srv.Client(), m.ctx, &db_proto.ReadRequest{
+	drsp, err := operations.Read(m.ctx, &proto_operations.ReadRequest{
 		Index: globals.IndexDatasources,
 		Type:  globals.TypeDatasource,
 		Id:    f.GetDatasourceID(),
@@ -98,7 +92,7 @@ func processEnrichMsg(m enrichMsgChan) error {
 		return err
 	}
 
-	var endpoint datasource_proto.Endpoint
+	var endpoint proto_datasource.Endpoint
 	if err := json.Unmarshal([]byte(drsp.Result), &endpoint); err != nil {
 		return err
 	}
@@ -122,7 +116,7 @@ func processEnrichMsg(m enrichMsgChan) error {
 		return err
 	}
 
-	_, err = db_helper.UpdateFromDB(srv.Client(), m.ctx, &db_proto.UpdateRequest{
+	_, err = operations.Update(m.ctx, &proto_operations.UpdateRequest{
 		Index: m.msg.Index,
 		Type:  globals.FileType,
 		Id:    m.msg.Id,
