@@ -3,14 +3,14 @@ package subscriber
 import (
 	"encoding/json"
 	"fmt"
-	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/lib/db/operations"
 	"github.com/kazoup/platform/lib/db/operations/proto/operations"
 	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
-	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
+	enrich "github.com/kazoup/platform/lib/protomsg/enrich"
 	"golang.org/x/net/context"
 )
 
@@ -32,12 +32,12 @@ type taskHandler struct {
 
 type enrichMsgChan struct {
 	ctx context.Context
-	msg *enrich_proto.EnrichMessage
+	msg *enrich.EnrichMessage
 	err chan error
 }
 
 // Enrich subscriber, receive EnrichMessage to get the file and process it
-func (t *taskHandler) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {
+func (t *taskHandler) Enrich(ctx context.Context, enrichmsg *enrich.EnrichMessage) error {
 	c := enrichMsgChan{
 		ctx: ctx,
 		msg: enrichmsg,
@@ -90,7 +90,7 @@ func processEnrichMsg(m enrichMsgChan) error {
 		return err
 	}
 
-	var endpoint datasource_proto.Endpoint
+	var endpoint proto_datasource.Endpoint
 	if err := json.Unmarshal([]byte(drsp.Result), &endpoint); err != nil {
 		return err
 	}

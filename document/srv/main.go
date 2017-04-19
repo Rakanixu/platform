@@ -5,7 +5,6 @@ import (
 	"github.com/kazoup/platform/document/srv/proto/document"
 	"github.com/kazoup/platform/document/srv/subscriber"
 	"github.com/kazoup/platform/lib/db/operations"
-	_ "github.com/kazoup/platform/lib/db/operations/elastic"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
