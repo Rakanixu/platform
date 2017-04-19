@@ -3,11 +3,9 @@ package handler
 import (
 	"github.com/kazoup/platform/datasource/srv/engine"
 	"github.com/kazoup/platform/datasource/srv/proto/datasource"
-	platform_errors "github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/globals"
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/validate"
-	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
 )
@@ -28,17 +26,12 @@ func (s *service) Create(ctx context.Context, req *proto_datasource.CreateReques
 		return err
 	}
 
-	srv, ok := micro.FromContext(ctx)
-	if !ok {
-		return platform_errors.ErrInvalidCtx
-	}
-
 	eng, err := engine.NewDataSourceEngine(req.Endpoint)
 	if err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource.NewDataSourceEngine", err.Error())
 	}
 
-	datasourcesList, err := engine.SearchDataSources(ctx, srv.Client(), &proto_datasource.SearchRequest{
+	datasourcesList, err := engine.SearchDataSources(ctx, &proto_datasource.SearchRequest{
 		Index: globals.IndexDatasources,
 		Type:  globals.TypeDatasource,
 		From:  0,
@@ -51,7 +44,7 @@ func (s *service) Create(ctx context.Context, req *proto_datasource.CreateReques
 	}
 
 	// Validate and assigns Id and index
-	endpoint, err := eng.Validate(ctx, srv.Client(), datasources)
+	endpoint, err := eng.Validate(ctx, datasources)
 	if err != nil {
 		return errors.BadRequest("go.micro.srv.datasource.eng.Validate", err.Error())
 	}
@@ -60,11 +53,11 @@ func (s *service) Create(ctx context.Context, req *proto_datasource.CreateReques
 	// Update req data with the last values
 	req.Endpoint = endpoint
 
-	if err := eng.Save(ctx, srv.Client(), endpoint, endpoint.Id); err != nil {
+	if err := eng.Save(ctx, endpoint, endpoint.Id); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource.eng.Save", err.Error())
 	}
 
-	if err := eng.CreateIndexWithAlias(ctx, srv.Client()); err != nil {
+	if err := eng.CreateIndexWithAlias(ctx); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource.eng.CreateIndexWithAlias", err.Error())
 	}
 
@@ -81,13 +74,8 @@ func (s *service) Delete(ctx context.Context, req *proto_datasource.DeleteReques
 		return err
 	}
 
-	srv, ok := micro.FromContext(ctx)
-	if !ok {
-		return platform_errors.ErrInvalidCtx
-	}
-
 	// Read datasource
-	endpoint, err := engine.ReadDataSource(ctx, srv.Client(), req.Id)
+	endpoint, err := engine.ReadDataSource(ctx, req.Id)
 	if err != nil {
 		return err
 	}
@@ -103,7 +91,7 @@ func (s *service) Delete(ctx context.Context, req *proto_datasource.DeleteReques
 	req.Index = endpoint.Index
 
 	// Delete datasource
-	if err := eng.Delete(ctx, srv.Client()); err != nil {
+	if err := eng.Delete(ctx); err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
 
@@ -112,12 +100,7 @@ func (s *service) Delete(ctx context.Context, req *proto_datasource.DeleteReques
 
 // Search datasources handler
 func (s *service) Search(ctx context.Context, req *proto_datasource.SearchRequest, rsp *proto_datasource.SearchResponse) error {
-	srv, ok := micro.FromContext(ctx)
-	if !ok {
-		return platform_errors.ErrInvalidCtx
-	}
-
-	result, err := engine.SearchDataSources(ctx, srv.Client(), req)
+	result, err := engine.SearchDataSources(ctx, req)
 	if err != nil {
 		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
 	}
@@ -134,13 +117,8 @@ func (s *service) Scan(ctx context.Context, req *proto_datasource.ScanRequest, r
 		return err
 	}
 
-	srv, ok := micro.FromContext(ctx)
-	if !ok {
-		return platform_errors.ErrInvalidCtx
-	}
-
 	// Read datasource, acts as pre validation before After Handler
-	_, err := engine.ReadDataSource(ctx, srv.Client(), req.Id)
+	_, err := engine.ReadDataSource(ctx, req.Id)
 	if err != nil {
 		return err
 	}

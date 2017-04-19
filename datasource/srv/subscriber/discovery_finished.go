@@ -2,8 +2,9 @@ package subscriber
 
 import (
 	"encoding/json"
-	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	db_proto "github.com/kazoup/platform/db/srv/proto/db"
+	"github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/lib/db/operations"
+	"github.com/kazoup/platform/lib/db/operations/proto/operations"
 	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/globals"
 	crawler "github.com/kazoup/platform/lib/protomsg/crawler"
@@ -21,8 +22,7 @@ func (df *DiscoveryFinished) PostDiscovery(ctx context.Context, msg *crawler.Cra
 		return errors.ErrInvalidCtx
 	}
 
-	c := db_proto.NewDBClient(globals.DB_SERVICE_NAME, srv.Client())
-	rsp, err := c.Read(ctx, &db_proto.ReadRequest{
+	rsp, err := operations.Read(ctx, &proto_operations.ReadRequest{
 		Index: globals.IndexDatasources,
 		Type:  globals.TypeDatasource,
 		Id:    msg.DatasourceId,
@@ -31,7 +31,7 @@ func (df *DiscoveryFinished) PostDiscovery(ctx context.Context, msg *crawler.Cra
 		return err
 	}
 
-	var ds *proto.Endpoint
+	var ds *proto_datasource.Endpoint
 	if err := json.Unmarshal([]byte(rsp.Result), &ds); err != nil {
 		return err
 	}
@@ -42,7 +42,8 @@ func (df *DiscoveryFinished) PostDiscovery(ctx context.Context, msg *crawler.Cra
 	if err != nil {
 		return err
 	}
-	_, err = c.Update(ctx, &db_proto.UpdateRequest{
+
+	_, err = operations.Update(ctx, &proto_operations.UpdateRequest{
 		Index: globals.IndexDatasources,
 		Type:  globals.TypeDatasource,
 		Id:    msg.DatasourceId,

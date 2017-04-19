@@ -2,36 +2,28 @@ package engine
 
 import (
 	"encoding/json"
-	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	db_proto "github.com/kazoup/platform/db/srv/proto/db"
-	db_helper "github.com/kazoup/platform/lib/dbhelper"
+	"github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/lib/db/operations"
+	"github.com/kazoup/platform/lib/db/operations/proto/operations"
 	"github.com/kazoup/platform/lib/globals"
-	"github.com/micro/go-micro/client"
 	"golang.org/x/net/context"
-	"log"
 	"strings"
 )
 
 // ReadDataSource returns the endpoint with given id
-func ReadDataSource(ctx context.Context, c client.Client, id string) (*datasource_proto.Endpoint, error) {
-	srvReq := c.NewRequest(
-		globals.DB_SERVICE_NAME,
-		"DB.Read",
-		&db_proto.ReadRequest{
-			Index: "datasources",
-			Type:  "datasource",
-			Id:    id,
-		},
-	)
-	srvRes := &db_proto.ReadResponse{}
-
-	if err := c.Call(ctx, srvReq, srvRes); err != nil {
+func ReadDataSource(ctx context.Context, id string) (*proto_datasource.Endpoint, error) {
+	rsp, err := operations.Read(ctx, &proto_operations.ReadRequest{
+		Index: globals.IndexDatasources,
+		Type:  globals.TypeDatasource,
+		Id:    id,
+	})
+	if err != nil {
 		return nil, err
 	}
 
-	var endpoint *datasource_proto.Endpoint
+	var endpoint *proto_datasource.Endpoint
 
-	if err := json.Unmarshal([]byte(srvRes.Result), &endpoint); err != nil {
+	if err := json.Unmarshal([]byte(rsp.Result), &endpoint); err != nil {
 		return nil, err
 	}
 
@@ -39,10 +31,10 @@ func ReadDataSource(ctx context.Context, c client.Client, id string) (*datasourc
 }
 
 // SearchDataSources queries for datasources stored in ES
-func SearchDataSources(ctx context.Context, c client.Client, req *datasource_proto.SearchRequest) (*datasource_proto.SearchResponse, error) {
-	srvRes, err := db_helper.SearchFromDB(c, ctx, &db_proto.SearchRequest{
-		Index:    "datasources",
-		Type:     "datasource",
+func SearchDataSources(ctx context.Context, req *proto_datasource.SearchRequest) (*proto_datasource.SearchResponse, error) {
+	rsp, err := operations.Search(ctx, &proto_operations.SearchRequest{
+		Index:    globals.IndexDatasources,
+		Type:     globals.TypeDatasource,
 		From:     req.From,
 		Size:     req.Size,
 		Category: req.Category,
@@ -51,23 +43,24 @@ func SearchDataSources(ctx context.Context, c client.Client, req *datasource_pro
 		Url:      req.Url,
 	})
 	if err != nil {
-		return &datasource_proto.SearchResponse{}, err
+		return nil, err
 	}
 
-	rsp := &datasource_proto.SearchResponse{
-		Result: srvRes.Result,
-		Info:   srvRes.Info,
+	ds := &proto_datasource.SearchResponse{
+		Result: rsp.Result,
+		Info:   rsp.Info,
 	}
 
-	return rsp, nil
+	return ds, nil
 }
 
-func cleanFilesHelperIndex(ctx context.Context, c client.Client, endpoint *datasource_proto.Endpoint) error {
-	var datasources []*datasource_proto.Endpoint
+func cleanFilesHelperIndex(ctx context.Context, endpoint *proto_datasource.Endpoint) error {
+	var datasources []*proto_datasource.Endpoint
 
-	rsp, err := SearchDataSources(ctx, c, &datasource_proto.SearchRequest{
-		Index: "datasources",
-		Type:  "datasource",
+	// FIXME: pagination
+	rsp, err := SearchDataSources(ctx, &proto_datasource.SearchRequest{
+		Index: globals.IndexDatasources,
+		Type:  globals.TypeDatasource,
 		From:  0,
 		Size:  9999,
 	})
@@ -81,13 +74,13 @@ func cleanFilesHelperIndex(ctx context.Context, c client.Client, endpoint *datas
 
 	idx := strings.LastIndex(endpoint.Url, "/")
 	if idx > 0 {
-		deleteZombieRecords(ctx, c, datasources, endpoint.Url[:idx])
+		deleteZombieRecords(ctx, datasources, endpoint.Url[:idx])
 	}
 
 	return nil
 }
 
-func deleteZombieRecords(ctx context.Context, c client.Client, datasources []*datasource_proto.Endpoint, urlToDelete string) {
+func deleteZombieRecords(ctx context.Context, datasources []*proto_datasource.Endpoint, urlToDelete string) {
 	delete := 0
 
 	for _, v := range datasources {
@@ -97,24 +90,19 @@ func deleteZombieRecords(ctx context.Context, c client.Client, datasources []*da
 	}
 
 	if delete >= len(datasources)-1 {
-		deleteReq := c.NewRequest(
-			globals.DB_SERVICE_NAME,
-			"DB.Delete",
-			&db_proto.DeleteRequest{
-				Index: globals.IndexHelper,
-				Type:  "file",
-				Id:    globals.GetMD5Hash(urlToDelete[len(localEndpoint):]),
-			},
-		)
-		deleteRes := &db_proto.DeleteResponse{}
-
-		if err := c.Call(ctx, deleteReq, deleteRes); err != nil {
-			log.Println("ERROR", err)
+		_, err := operations.Delete(ctx, &proto_operations.DeleteRequest{
+			Index: globals.IndexHelper,
+			Type:  globals.FileType,
+			Id:    globals.GetMD5Hash(urlToDelete[len(localEndpoint):]),
+		})
+		if err != nil {
+			return
 		}
+
 		idx := strings.LastIndex(urlToDelete, "/")
 
 		if idx > 0 && urlToDelete[:idx] != "local:/" {
-			deleteZombieRecords(ctx, c, datasources, urlToDelete[:idx])
+			deleteZombieRecords(ctx, datasources, urlToDelete[:idx])
 		}
 	}
 }
