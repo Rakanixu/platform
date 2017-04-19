@@ -2,14 +2,14 @@ package handler
 
 import (
 	"encoding/json"
-	db_proto "github.com/kazoup/platform/db/srv/proto/db"
+	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/kazoup/platform/file/srv/proto/file"
-	db_conn "github.com/kazoup/platform/lib/dbhelper"
-	platform_errors "github.com/kazoup/platform/lib/errors"
-	"github.com/kazoup/platform/lib/file"
+	"github.com/kazoup/platform/lib/db/bulk"
+	"github.com/kazoup/platform/lib/db/operations"
+	"github.com/kazoup/platform/lib/db/operations/proto/operations"
+	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/validate"
-	"github.com/micro/go-micro"
 	"golang.org/x/net/context"
 )
 
@@ -21,13 +21,8 @@ func (s *Service) Create(ctx context.Context, req *proto_file.CreateRequest, rsp
 		return err
 	}
 
-	srv, ok := micro.FromContext(ctx)
-	if !ok {
-		return platform_errors.ErrInvalidCtx
-	}
-
 	// Instantiate file system
-	fsys, err := NewFileSystem(srv.Client(), ctx, req.DatasourceId)
+	fsys, err := NewFileSystem(ctx, req.DatasourceId)
 	if err != nil {
 		return err
 	}
@@ -39,7 +34,7 @@ func (s *Service) Create(ctx context.Context, req *proto_file.CreateRequest, rsp
 	}
 
 	// Update token in DB
-	if err := db_conn.UpdateFileSystemAuth(srv.Client(), ctx, req.DatasourceId, auth); err != nil {
+	if err := fs.UpdateFsAuth(ctx, req.DatasourceId, auth); err != nil {
 		return err
 	}
 
@@ -55,12 +50,17 @@ func (s *Service) Create(ctx context.Context, req *proto_file.CreateRequest, rsp
 	}
 
 	// Index created file
-	if err := file.IndexAsync(ctx, srv.Client(), fmc.File, globals.FilesTopic, fmc.File.GetIndex(), true); err != nil {
-		return err
-	}
-
 	b, err := json.Marshal(fmc.File)
 	if err != nil {
+		return err
+	}
+	if err := bulk.Files(ctx, &crawler.FileMessage{
+		Id:     fmc.File.GetID(),
+		UserId: fmc.File.GetUserID(),
+		Index:  fmc.File.GetIndex(),
+		Notify: false,
+		Data:   string(b),
+	}); err != nil {
 		return err
 	}
 
@@ -76,13 +76,8 @@ func (s *Service) Delete(ctx context.Context, req *proto_file.DeleteRequest, rsp
 		return err
 	}
 
-	srv, ok := micro.FromContext(ctx)
-	if !ok {
-		return platform_errors.ErrInvalidCtx
-	}
-
 	// Instantiate file system
-	fsys, err := NewFileSystem(srv.Client(), ctx, req.DatasourceId)
+	fsys, err := NewFileSystem(ctx, req.DatasourceId)
 	if err != nil {
 		return err
 	}
@@ -94,7 +89,7 @@ func (s *Service) Delete(ctx context.Context, req *proto_file.DeleteRequest, rsp
 	}
 
 	// Update token in DB
-	if err := db_conn.UpdateFileSystemAuth(srv.Client(), ctx, req.DatasourceId, auth); err != nil {
+	if err := fs.UpdateFsAuth(ctx, req.DatasourceId, auth); err != nil {
 		return err
 	}
 
@@ -109,7 +104,7 @@ func (s *Service) Delete(ctx context.Context, req *proto_file.DeleteRequest, rsp
 	}
 
 	// Delete from DB
-	_, err = db_conn.DeleteFromDB(srv.Client(), ctx, &db_proto.DeleteRequest{
+	_, err = operations.Delete(ctx, &proto_operations.DeleteRequest{
 		Index: req.Index,
 		Type:  globals.FileType,
 		Id:    req.FileId,
@@ -127,13 +122,8 @@ func (s *Service) Share(ctx context.Context, req *proto_file.ShareRequest, rsp *
 		return err
 	}
 
-	srv, ok := micro.FromContext(ctx)
-	if !ok {
-		return platform_errors.ErrInvalidCtx
-	}
-
 	// Instantiate file system
-	fsys, err := NewFileSystem(srv.Client(), ctx, req.DatasourceId)
+	fsys, err := NewFileSystem(ctx, req.DatasourceId)
 	if err != nil {
 		return err
 	}
@@ -145,7 +135,7 @@ func (s *Service) Share(ctx context.Context, req *proto_file.ShareRequest, rsp *
 	}
 
 	// Update token in DB
-	if err := db_conn.UpdateFileSystemAuth(srv.Client(), ctx, req.DatasourceId, auth); err != nil {
+	if err := fs.UpdateFsAuth(ctx, req.DatasourceId, auth); err != nil {
 		return err
 	}
 
@@ -164,7 +154,7 @@ func (s *Service) Share(ctx context.Context, req *proto_file.ShareRequest, rsp *
 		return err
 	}
 
-	if _, err := db_conn.UpdateFromDB(srv.Client(), ctx, &db_proto.UpdateRequest{
+	if _, err := operations.Update(ctx, &proto_operations.UpdateRequest{
 		Index: req.Index,
 		Type:  globals.FileType,
 		Id:    req.FileId,

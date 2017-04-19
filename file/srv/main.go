@@ -4,6 +4,8 @@ import (
 	"github.com/kazoup/platform/file/srv/handler"
 	"github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/file/srv/subscriber"
+	"github.com/kazoup/platform/lib/db/bulk"
+	"github.com/kazoup/platform/lib/db/operations"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
@@ -43,6 +45,16 @@ func main() {
 			server.SubscriberQueue("announce-file"),
 		),
 	)
+
+	// Init DB operations
+	if err := operations.Init(); err != nil {
+		log.Fatal(err)
+	}
+
+	// Init DB bulk indexer
+	if err := bulk.Init(service); err != nil {
+		log.Fatal(err)
+	}
 
 	// Run service
 	if err := service.Run(); err != nil {
