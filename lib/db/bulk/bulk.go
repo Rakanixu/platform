@@ -1,4 +1,4 @@
-package bulker
+package bulk
 
 import (
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"

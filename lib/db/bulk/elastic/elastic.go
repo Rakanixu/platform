@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
-	"github.com/kazoup/platform/lib/db/bulk/engine"
+	"github.com/kazoup/platform/lib/db/bulk"
 	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
@@ -38,7 +38,7 @@ type bulkableKazoupRequest struct {
 }
 
 func init() {
-	bulker.Register(&elastic{
+	bulk.Register(&elastic{
 		FilesChannel:         make(chan *filesChannel),
 		SlackUsersChannel:    make(chan *crawler.SlackUserMessage),
 		SlackChannelsChannel: make(chan *crawler.SlackChannelMessage),

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	"github.com/kazoup/platform/lib/db/operations/engine"
+	"github.com/kazoup/platform/lib/db/operations"
 	"github.com/kazoup/platform/lib/db/operations/proto/operations"
 	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/file"

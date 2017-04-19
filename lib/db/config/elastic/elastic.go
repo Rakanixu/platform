@@ -2,7 +2,7 @@ package elastic
 
 import (
 	"encoding/json"
-	"github.com/kazoup/platform/lib/db/config/engine"
+	"github.com/kazoup/platform/lib/db/config"
 	"github.com/kazoup/platform/lib/db/config/proto/config"
 	"golang.org/x/net/context"
 	elib "gopkg.in/olivere/elastic.v5"
