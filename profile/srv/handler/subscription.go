@@ -44,7 +44,7 @@ func (s *Subscription) Update(ctx context.Context, req *proto.UpdateSubRequest, 
 	}
 
 	// Update to team for now
-	if err := slib.UpdateSubscription(req.SubId, pt); err != nil {
+	if err := stripe.UpdateSubscription(req.SubId, pt); err != nil {
 		return errors.InternalServerError("com.kazoup.srv.profile.Create", err.Error())
 	}
 
