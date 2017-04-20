@@ -78,20 +78,6 @@ services:
       - "../../../:/go/src/"
       - "./cmd/kazoup/google-app-credentials:/srv/google-app-credentials"
 
-  db-srv:
-    command: go run src/github.com/kazoup/platform/db/srv/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
-    image: golang:1.7-alpine3.5
-    external_links:
-    - registry
-    - nats
-    - elasticsearch
-    - redis
-    expose:
-      - "9090"
-    volumes:
-      - "./cmd/kazoup/ssl:/ssl"
-      - "../../../:/go/src/"
-
   document-srv:
     command: go run src/github.com/kazoup/platform/document/srv/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
     image: golang:1.7-alpine3.5
