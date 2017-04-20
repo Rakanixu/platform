@@ -20,7 +20,6 @@ type Operations interface {
 	Delete(ctx context.Context, req *proto_operations.DeleteRequest) (*proto_operations.DeleteResponse, error)
 	DeleteByQuery(ctx context.Context, req *proto_operations.DeleteByQueryRequest) (*proto_operations.DeleteByQueryResponse, error)
 	Search(ctx context.Context, req *proto_operations.SearchRequest) (*proto_operations.SearchResponse, error)
-	SearchById(ctx context.Context, req *proto_operations.SearchByIdRequest) (*proto_operations.SearchByIdResponse, error)
 }
 
 var (
@@ -62,10 +61,6 @@ func DeleteByQuery(ctx context.Context, req *proto_operations.DeleteByQueryReque
 
 func Search(ctx context.Context, req *proto_operations.SearchRequest) (*proto_operations.SearchResponse, error) {
 	return operations.Search(ctx, req)
-}
-
-func SearchById(ctx context.Context, req *proto_operations.SearchByIdRequest) (*proto_operations.SearchByIdResponse, error) {
-	return operations.SearchById(ctx, req)
 }
 
 func TypeFactory(typ string, data string) (interface{}, error) {

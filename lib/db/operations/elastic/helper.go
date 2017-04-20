@@ -69,22 +69,6 @@ func (e *ElasticQuery) DeleteQuery() (string, error) {
 	return buffer.String(), nil
 }
 
-// QueryById generates a Elasticsearch DSL query for searching aliases by id
-func (e *ElasticQuery) QueryById() (string, error) {
-	var buffer bytes.Buffer
-
-	buffer.WriteString(`{"query":{"bool":{"must":[{"term":{"id":"`)
-	buffer.WriteString(e.Id + `"}}`)
-	// Filter by user for files, not for users or channels (slack)
-	// This is due to channels and users (slack) does not have to store the user they belong to
-	if e.FileType == globals.FileType {
-		buffer.WriteString(`,` + e.filterUser())
-	}
-	buffer.WriteString(`]}}}`)
-
-	return buffer.String(), nil
-}
-
 func (e *ElasticQuery) defaultSorting() string {
 	var buffer bytes.Buffer
 
