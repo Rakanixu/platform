@@ -157,8 +157,8 @@
       getLocalAsset: function(path) {
         return stripDataOrigin(path);
       },
-      getPreview: function(id){
-	      return this.endpoints.web + "/media/image?file_id=" + id + "&token=" + this.getToken();
+      getPreview: function(index, id){
+	      return this.endpoints.web + "/media/image?index=" + index + "&file_id=" + id + "&token=" + this.getToken();
       },
       getAsset: function(path) {
 	      return this.endpoints.web + "/media/raw/" + removeSlashesFromBegining(stripDataOrigin(path)) + "&token=" + this.getToken();

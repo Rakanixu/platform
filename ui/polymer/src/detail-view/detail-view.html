@@ -104,7 +104,7 @@
       <template is="dom-if" if="[[isImage(item.category)]]" restamp="true">
         <template is="dom-if" if="[[!isGmail(item.file_type)]]">
           <iron-image id="detailImg"
-                      src="[[endpoints.web]]/media/preview?file_id=[[item.id]]&width=600&mode=fit&quality=100&token=[[getToken()]]"
+                      src="[[endpoints.web]]/media/preview?index=[[item.index]]&file_id=[[item.id]]&width=600&mode=fit&quality=100&token=[[getToken()]]"
                       sizing="contain"
                       placeholder="[[imports.unknownImg]]"
                       preload

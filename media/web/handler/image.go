@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	db_conn "github.com/kazoup/platform/lib/dbhelper"
+	"github.com/kazoup/platform/lib/db/operations"
+	"github.com/kazoup/platform/lib/db/operations/proto/operations"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
@@ -33,6 +34,7 @@ func NewImageHandler() *ImageHandler {
 func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//Extract values from URL
 	file_id := r.FormValue("file_id")
+	index := r.FormValue("index")
 	width := r.FormValue("width")
 	height := r.FormValue("height")
 	mode := r.FormValue("mode")
@@ -62,15 +64,20 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		"X-Kazoup-Token": globals.DB_ACCESS_TOKEN,
 	})
 
-	uID, err := globals.ParseJWTToken(token)
+	// Get file
+	rs, err := operations.Read(ctx, &proto_operations.ReadRequest{
+		Index: index,
+		Type:  globals.FileType,
+		Id:    file_id,
+	})
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("operations.Read %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
-	f, err := file.GetFileByID(ctx, globals.GetMD5Hash(uID), file_id)
+	f, err := file.NewFileFromString(rs.Result)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "NewFileFromString", http.StatusInternalServerError)
 		return
 	}
 
@@ -92,7 +99,7 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Update token in DB
-	if err := db_conn.UpdateFileSystemAuth(client.NewClient(), ctx, fSys.GetDatasourceId(), auth); err != nil {
+	if err := fs.UpdateFsAuth(ctx, fSys.GetDatasourceId(), auth); err != nil {
 		log.Println("ERROR", err.Error())
 	}
 
