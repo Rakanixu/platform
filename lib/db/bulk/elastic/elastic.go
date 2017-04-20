@@ -9,6 +9,7 @@ import (
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
+	"github.com/kazoup/platform/lib/slack"
 	"github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro"
 	"golang.org/x/net/context"
@@ -188,8 +189,13 @@ func (e *elastic) Init(srv micro.Service) error {
 		for {
 			select {
 			case v := <-e.SlackUsersChannel:
+				var u slack.ESSlackUser
+				if err := json.Unmarshal([]byte(v.Data), &u); err != nil {
+					log.Printf("Error unmarshalling channel %s", err)
+				}
+
 				// Use bulk processor as we will index groups of documents
-				r := elib.NewBulkIndexRequest().Index(v.Index).Type(globals.UserType).Id(v.Id).Doc(v.Data)
+				r := elib.NewBulkUpdateRequest().Index(v.Index).Type(globals.UserType).Id(globals.GetMD5Hash(u.UserID)).DocAsUpsert(true).Doc(u)
 				e.BulkProcessor.Add(r)
 			}
 
@@ -201,8 +207,13 @@ func (e *elastic) Init(srv micro.Service) error {
 		for {
 			select {
 			case v := <-e.SlackChannelsChannel:
+				var ch slack.ESSlackChannel
+				if err := json.Unmarshal([]byte(v.Data), &ch); err != nil {
+					log.Printf("Error unmarshalling channel %s", err)
+				}
+
 				// Use bulk processor as we will index groups of documents
-				r := elib.NewBulkIndexRequest().Index(v.Index).Type(globals.ChannelType).Id(v.Id).Doc(v.Data)
+				r := elib.NewBulkUpdateRequest().Index(v.Index).Type(globals.ChannelType).Id(globals.GetMD5Hash(ch.ChannelID)).DocAsUpsert(true).Doc(ch)
 				e.BulkProcessor.Add(r)
 			}
 

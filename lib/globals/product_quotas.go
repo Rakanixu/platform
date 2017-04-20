@@ -52,6 +52,18 @@ var PRODUCT_QUOTAS = struct {
 				"handler":    0,
 				"subscriber": 0,
 			},
+			USER_SERVICE_NAME: map[string]interface{}{
+				"label":      "User service",
+				"icon":       "editor:insert-drive-file",
+				"handler":    0,
+				"subscriber": 0,
+			},
+			CHANNEL_SERVICE_NAME: map[string]interface{}{
+				"label":      "Channel service",
+				"icon":       "editor:insert-drive-file",
+				"handler":    0,
+				"subscriber": 0,
+			},
 			QUOTA_SERVICE_NAME: map[string]interface{}{
 				"label":      "Quota service",
 				"icon":       "action:lock-outline",
@@ -134,6 +146,18 @@ var PRODUCT_QUOTAS = struct {
 			},
 			FILE_SERVICE_NAME: map[string]interface{}{
 				"label":      "File service",
+				"icon":       "editor:insert-drive-file",
+				"handler":    0,
+				"subscriber": 0,
+			},
+			USER_SERVICE_NAME: map[string]interface{}{
+				"label":      "User service",
+				"icon":       "editor:insert-drive-file",
+				"handler":    0,
+				"subscriber": 0,
+			},
+			CHANNEL_SERVICE_NAME: map[string]interface{}{
+				"label":      "Channel service",
 				"icon":       "editor:insert-drive-file",
 				"handler":    0,
 				"subscriber": 0,

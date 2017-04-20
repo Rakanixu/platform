@@ -434,11 +434,10 @@
             notify: false,
             value: function() {
               return {
-                service: window.Endpoints.srvs.file.srv,
-                method: window.Endpoints.srvs.file.read,
+                service: window.Endpoints.srvs.user.srv,
+                method: window.Endpoints.srvs.user.read,
                 request: {
                   index: '',
-                  type: 'user',
                   id: ''
                 }
               };
@@ -449,11 +448,10 @@
             notify: false,
             value: function() {
               return {
-                service: window.Endpoints.srvs.file.srv,
-                method: window.Endpoints.srvs.file.read,
+                service: window.Endpoints.srvs.channel.srv,
+                method: window.Endpoints.srvs.channel.read,
                 request: {
                   index: '',
-                  type: 'channel',
                   id: ''
                 }
               };

@@ -33,6 +33,8 @@ const (
 	CRAWLER_SERVICE_NAME      string = NAMESPACE + ".srv.crawler"
 	NOTIFICATION_SERVICE_NAME string = NAMESPACE + ".srv.notification"
 	FILE_SERVICE_NAME         string = NAMESPACE + ".srv.file"
+	USER_SERVICE_NAME         string = NAMESPACE + ".srv.user"
+	CHANNEL_SERVICE_NAME      string = NAMESPACE + ".srv.channel"
 	QUOTA_SERVICE_NAME        string = NAMESPACE + ".srv.quota"
 	PROFILE_SERVICE_NAME      string = NAMESPACE + ".srv.profile"
 	MONITOR_SERVICE_NAME      string = NAMESPACE + ".srv.monitor"
