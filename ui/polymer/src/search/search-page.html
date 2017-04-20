@@ -712,8 +712,8 @@
 
                 this.set('loading', true);
                 this.set('rpcElasticParams', {
-                    service: 'com.kazoup.srv.search',
-                    method: 'Search.Search',
+                    service: window.Endpoints.srvs.file.srv,
+                    method: window.Endpoints.srvs.file.search,
                     request: this.$.filterConverter.getFilterAsObj()
                 });
                 this.$.rpcElastic.body = this.rpcElasticParams;

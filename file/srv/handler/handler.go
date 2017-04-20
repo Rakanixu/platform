@@ -10,6 +10,7 @@ import (
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/validate"
+	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
 )
 
@@ -70,6 +71,26 @@ func (s *Service) Create(ctx context.Context, req *proto_file.CreateRequest, rsp
 	return nil
 }
 
+// Create File handler
+func (s *Service) Read(ctx context.Context, req *proto_file.ReadRequest, rsp *proto_file.ReadResponse) error {
+	if err := validate.Exists(ctx, req.Index, req.Id); err != nil {
+		return err
+	}
+
+	res, err := operations.Read(ctx, &proto_operations.ReadRequest{
+		Index: req.Index,
+		Type:  globals.FileType,
+		Id:    req.Id,
+	})
+	if err != nil {
+		return errors.InternalServerError(globals.FILE_SERVICE_NAME, err.Error())
+	}
+
+	rsp.Result = res.Result
+
+	return nil
+}
+
 // Delete File handler
 func (s *Service) Delete(ctx context.Context, req *proto_file.DeleteRequest, rsp *proto_file.DeleteResponse) error {
 	if err := validate.Exists(ctx, req.DatasourceId); err != nil {
@@ -112,6 +133,36 @@ func (s *Service) Delete(ctx context.Context, req *proto_file.DeleteRequest, rsp
 	if err != nil {
 		return err
 	}
+
+	return nil
+}
+
+// Search File handler
+func (s *Service) Search(ctx context.Context, req *proto_file.SearchRequest, rsp *proto_file.SearchResponse) error {
+	if err := validate.Exists(ctx, req.Index); err != nil {
+		return err
+	}
+
+	res, err := operations.Search(ctx, &proto_operations.SearchRequest{
+		Index:                req.Index,
+		Term:                 req.Term,
+		From:                 req.From,
+		Size:                 req.Size,
+		Category:             req.Category,
+		Url:                  req.Url,
+		Depth:                req.Depth,
+		Type:                 globals.FileType,
+		FileType:             req.FileType,
+		Access:               req.Access,
+		ContentCategory:      req.ContentCategory,
+		NoKazoupFileOriginal: req.NoKazoupFileOriginal,
+	})
+	if err != nil {
+		return errors.InternalServerError(globals.FILE_SERVICE_NAME, err.Error())
+	}
+
+	rsp.Result = res.Result
+	rsp.Info = res.Info
 
 	return nil
 }

@@ -250,22 +250,6 @@ services:
       - "../../../:/go/src/"
       - "./cmd/kazoup/google-app-credentials:/srv/google-app-credentials"
 
-  search-srv:
-    command: go run src/github.com/kazoup/platform/search/srv/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
-    image: golang:1.7-alpine3.5
-    external_links:
-    - registry
-    - nats
-    - redis
-    expose:
-      - "9090"
-    environment:
-      - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
-    volumes:
-      - "./cmd/kazoup/ssl:/ssl"
-      - "../../../:/go/src/"
-      - "./cmd/kazoup/google-app-credentials:/srv/google-app-credentials"
-
   sentiment-srv:
     command: go run src/github.com/kazoup/platform/sentiment/srv/main.go --registry_address=registry:8500 --broker=nats --broker_address=nats:4222 --server_address=0.0.0.0:9090 --transport=tcp
     image: golang:1.7-alpine3.5

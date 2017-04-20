@@ -4,6 +4,7 @@ package proto.datasource;
 
 service Service {
   rpc Create(CreateRequest) returns (CreateResponse) {}
+  rpc Read(ReadRequest) returns (ReadResponse) {}
   rpc Delete(DeleteRequest) returns (DeleteResponse) {}
   rpc Search(SearchRequest) returns (SearchResponse) {}
   rpc Scan(ScanRequest) returns (ScanResponse) {}
@@ -28,6 +29,14 @@ message CreateRequest {
 
 message CreateResponse {
   string response = 1;
+}
+
+message ReadRequest {
+  string id = 1;
+}
+
+message ReadResponse {
+  string result = 1;
 }
 
 message DeleteRequest {
