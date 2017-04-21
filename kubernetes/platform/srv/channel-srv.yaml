@@ -1,17 +1,17 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: document-srv
+  name: channel-srv
 spec:
   replicas: 1
   revisionHistoryLimit: 3
   template:
     metadata:
       labels:
-        app: document-srv
+        app: channel-srv
     spec:
       containers:
-      - name: document-srv
+      - name: channel-srv
         command: [
                   "/srv",
                   "--registry=kubernetes",
@@ -20,7 +20,7 @@ spec:
                   "--broker_address=nats:4222",
                   "--transport=tcp",
                   ]
-        image: eu.gcr.io/desktop-1470249894548/document-srv:latest
+        image: eu.gcr.io/desktop-1470249894548/channel-srv:latest
         env:
           - name: GOOGLE_APPLICATION_CREDENTIALS
             value:  "/google-cloud-service-account/google-cloud-service-account.json"
@@ -33,7 +33,7 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 9090
-          name: document-port
+          name: channel-port
         - containerPort: 10001
           name: broker-port
         volumeMounts:
