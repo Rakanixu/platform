@@ -16,12 +16,6 @@ var PRODUCT_QUOTAS = struct {
 }{
 	M: map[string]map[string]map[string]interface{}{
 		PRODUCT_TYPE_PERSONAL: map[string]map[string]interface{}{
-			DB_SERVICE_NAME: map[string]interface{}{
-				"label":      "Database service",
-				"icon":       "device:storage",
-				"handler":    0,
-				"subscriber": 0,
-			},
 			SEARCH_SERVICE_NAME: map[string]interface{}{
 				"label":      "Search service",
 				"icon":       "action:search",
@@ -48,6 +42,18 @@ var PRODUCT_QUOTAS = struct {
 			},
 			FILE_SERVICE_NAME: map[string]interface{}{
 				"label":      "File service",
+				"icon":       "editor:insert-drive-file",
+				"handler":    0,
+				"subscriber": 0,
+			},
+			USER_SERVICE_NAME: map[string]interface{}{
+				"label":      "User service",
+				"icon":       "editor:insert-drive-file",
+				"handler":    0,
+				"subscriber": 0,
+			},
+			CHANNEL_SERVICE_NAME: map[string]interface{}{
+				"label":      "Channel service",
 				"icon":       "editor:insert-drive-file",
 				"handler":    0,
 				"subscriber": 0,
@@ -102,12 +108,6 @@ var PRODUCT_QUOTAS = struct {
 			},
 		},
 		PRODUCT_TYPE_TEAM: map[string]map[string]interface{}{
-			DB_SERVICE_NAME: map[string]interface{}{
-				"label":      "Database service",
-				"icon":       "device:storage",
-				"handler":    0,
-				"subscriber": 0,
-			},
 			SEARCH_SERVICE_NAME: map[string]interface{}{
 				"label":      "Search service",
 				"icon":       "action:search",
@@ -134,6 +134,18 @@ var PRODUCT_QUOTAS = struct {
 			},
 			FILE_SERVICE_NAME: map[string]interface{}{
 				"label":      "File service",
+				"icon":       "editor:insert-drive-file",
+				"handler":    0,
+				"subscriber": 0,
+			},
+			USER_SERVICE_NAME: map[string]interface{}{
+				"label":      "User service",
+				"icon":       "editor:insert-drive-file",
+				"handler":    0,
+				"subscriber": 0,
+			},
+			CHANNEL_SERVICE_NAME: map[string]interface{}{
+				"label":      "Channel service",
 				"icon":       "editor:insert-drive-file",
 				"handler":    0,
 				"subscriber": 0,

@@ -2,7 +2,7 @@ package handler
 
 import (
 	"github.com/kazoup/platform/lib/globals"
-	slib "github.com/kazoup/platform/lib/stripe"
+	"github.com/kazoup/platform/lib/stripe"
 	proto "github.com/kazoup/platform/profile/srv/proto/subscription"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
@@ -32,7 +32,7 @@ func (s *Subscription) Update(ctx context.Context, req *proto.UpdateSubRequest, 
 		}
 
 		// Save credit card associated with user
-		if err := slib.SaveCard(req.StripeId, req.CheckoutTokenId); err != nil {
+		if err := stripe.SaveCard(req.StripeId, req.CheckoutTokenId); err != nil {
 			return errors.InternalServerError("com.kazoup.srv.profile.Create", err.Error())
 		}
 		pt = globals.PRODUCT_TYPE_TEAM
@@ -44,7 +44,7 @@ func (s *Subscription) Update(ctx context.Context, req *proto.UpdateSubRequest, 
 	}
 
 	// Update to team for now
-	if err := slib.UpdateSubscription(req.SubId, pt); err != nil {
+	if err := stripe.UpdateSubscription(req.SubId, pt); err != nil {
 		return errors.InternalServerError("com.kazoup.srv.profile.Create", err.Error())
 	}
 

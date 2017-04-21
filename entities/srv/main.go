@@ -4,6 +4,7 @@ import (
 	"github.com/kazoup/platform/entities/srv/handler"
 	"github.com/kazoup/platform/entities/srv/proto/entities"
 	"github.com/kazoup/platform/entities/srv/subscriber"
+	"github.com/kazoup/platform/lib/db/operations"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
@@ -15,6 +16,10 @@ import (
 )
 
 func main() {
+	if err := operations.Init(); err != nil {
+		log.Fatal(err)
+	}
+
 	var m monitor.Monitor
 
 	service := wrappers.NewKazoupService("entities", m)

@@ -1,13 +1,12 @@
 package handler
 
 import (
+	"encoding/json"
 	"github.com/kazoup/platform/datasource/srv/engine"
 	"github.com/kazoup/platform/datasource/srv/proto/datasource"
-	platform_errors "github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/globals"
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/validate"
-	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
 )
@@ -25,20 +24,15 @@ type service struct {
 // Create datasource handler
 func (s *service) Create(ctx context.Context, req *proto_datasource.CreateRequest, rsp *proto_datasource.CreateResponse) error {
 	if err := validate.Exists(ctx, req.Endpoint.Url); err != nil {
-		return err
-	}
-
-	srv, ok := micro.FromContext(ctx)
-	if !ok {
-		return platform_errors.ErrInvalidCtx
+		return errors.BadRequest(globals.DATASOURCE_SERVICE_NAME, err.Error())
 	}
 
 	eng, err := engine.NewDataSourceEngine(req.Endpoint)
 	if err != nil {
-		return errors.InternalServerError("go.micro.srv.datasource.NewDataSourceEngine", err.Error())
+		return errors.InternalServerError(globals.DATASOURCE_SERVICE_NAME, err.Error())
 	}
 
-	datasourcesList, err := engine.SearchDataSources(ctx, srv.Client(), &proto_datasource.SearchRequest{
+	datasourcesList, err := engine.SearchDataSources(ctx, &proto_datasource.SearchRequest{
 		Index: globals.IndexDatasources,
 		Type:  globals.TypeDatasource,
 		From:  0,
@@ -51,26 +45,48 @@ func (s *service) Create(ctx context.Context, req *proto_datasource.CreateReques
 	}
 
 	// Validate and assigns Id and index
-	endpoint, err := eng.Validate(ctx, srv.Client(), datasources)
+	endpoint, err := eng.Validate(ctx, datasources)
 	if err != nil {
-		return errors.BadRequest("go.micro.srv.datasource.eng.Validate", err.Error())
+		return errors.BadRequest(globals.DATASOURCE_SERVICE_NAME, err.Error())
 	}
 
 	// Request will be available on After handler wrapper
 	// Update req data with the last values
 	req.Endpoint = endpoint
 
-	if err := eng.Save(ctx, srv.Client(), endpoint, endpoint.Id); err != nil {
-		return errors.InternalServerError("go.micro.srv.datasource.eng.Save", err.Error())
+	if err := eng.Save(ctx, endpoint, endpoint.Id); err != nil {
+		return errors.InternalServerError(globals.DATASOURCE_SERVICE_NAME, err.Error())
 	}
 
-	if err := eng.CreateIndexWithAlias(ctx, srv.Client()); err != nil {
-		return errors.InternalServerError("go.micro.srv.datasource.eng.CreateIndexWithAlias", err.Error())
+	if err := eng.CreateIndexWithAlias(ctx); err != nil {
+		return errors.InternalServerError(globals.DATASOURCE_SERVICE_NAME, err.Error())
 	}
 
 	if err := s.googleCloudStorage.CreateBucket(endpoint.Index); err != nil {
-		return errors.InternalServerError("GoogleCloudStorage", err.Error())
+		return errors.InternalServerError(globals.DATASOURCE_SERVICE_NAME, err.Error())
 	}
+
+	return nil
+}
+
+// Read datasource handler
+func (s *service) Read(ctx context.Context, req *proto_datasource.ReadRequest, rsp *proto_datasource.ReadResponse) error {
+	if err := validate.Exists(ctx, req.Id); err != nil {
+		return errors.BadRequest(globals.DATASOURCE_SERVICE_NAME, err.Error())
+	}
+
+	// Read datasource
+	endpoint, err := engine.ReadDataSource(ctx, req.Id)
+	if err != nil {
+		return errors.InternalServerError(globals.DATASOURCE_SERVICE_NAME, err.Error())
+	}
+
+	b, err := json.Marshal(endpoint)
+	if err != nil {
+		return errors.InternalServerError(globals.DATASOURCE_SERVICE_NAME, err.Error())
+	}
+
+	rsp.Result = string(b)
 
 	return nil
 }
@@ -78,24 +94,19 @@ func (s *service) Create(ctx context.Context, req *proto_datasource.CreateReques
 // Delete datasource handler
 func (s *service) Delete(ctx context.Context, req *proto_datasource.DeleteRequest, rsp *proto_datasource.DeleteResponse) error {
 	if err := validate.Exists(ctx, req.Id); err != nil {
-		return err
-	}
-
-	srv, ok := micro.FromContext(ctx)
-	if !ok {
-		return platform_errors.ErrInvalidCtx
+		return errors.BadRequest(globals.DATASOURCE_SERVICE_NAME, err.Error())
 	}
 
 	// Read datasource
-	endpoint, err := engine.ReadDataSource(ctx, srv.Client(), req.Id)
+	endpoint, err := engine.ReadDataSource(ctx, req.Id)
 	if err != nil {
-		return err
+		return errors.InternalServerError(globals.DATASOURCE_SERVICE_NAME, err.Error())
 	}
 
 	// Instantiate an engine given datasource
 	eng, err := engine.NewDataSourceEngine(endpoint)
 	if err != nil {
-		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
+		return errors.InternalServerError(globals.DATASOURCE_SERVICE_NAME, err.Error())
 	}
 
 	// Request will be available on After handler wrapper
@@ -103,8 +114,8 @@ func (s *service) Delete(ctx context.Context, req *proto_datasource.DeleteReques
 	req.Index = endpoint.Index
 
 	// Delete datasource
-	if err := eng.Delete(ctx, srv.Client()); err != nil {
-		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
+	if err := eng.Delete(ctx); err != nil {
+		return errors.InternalServerError(globals.DATASOURCE_SERVICE_NAME, err.Error())
 	}
 
 	return nil
@@ -112,14 +123,9 @@ func (s *service) Delete(ctx context.Context, req *proto_datasource.DeleteReques
 
 // Search datasources handler
 func (s *service) Search(ctx context.Context, req *proto_datasource.SearchRequest, rsp *proto_datasource.SearchResponse) error {
-	srv, ok := micro.FromContext(ctx)
-	if !ok {
-		return platform_errors.ErrInvalidCtx
-	}
-
-	result, err := engine.SearchDataSources(ctx, srv.Client(), req)
+	result, err := engine.SearchDataSources(ctx, req)
 	if err != nil {
-		return errors.InternalServerError("go.micro.srv.datasource", err.Error())
+		return errors.InternalServerError(globals.DATASOURCE_SERVICE_NAME, err.Error())
 	}
 
 	rsp.Result = result.Result
@@ -131,16 +137,11 @@ func (s *service) Search(ctx context.Context, req *proto_datasource.SearchReques
 // Scan datasources handler, will publish to scan topic to be pick up by crawler srv
 func (s *service) Scan(ctx context.Context, req *proto_datasource.ScanRequest, rsp *proto_datasource.ScanResponse) error {
 	if err := validate.Exists(ctx, req.Id); err != nil {
-		return err
-	}
-
-	srv, ok := micro.FromContext(ctx)
-	if !ok {
-		return platform_errors.ErrInvalidCtx
+		return errors.BadRequest(globals.DATASOURCE_SERVICE_NAME, err.Error())
 	}
 
 	// Read datasource, acts as pre validation before After Handler
-	_, err := engine.ReadDataSource(ctx, srv.Client(), req.Id)
+	_, err := engine.ReadDataSource(ctx, req.Id)
 	if err != nil {
 		return err
 	}

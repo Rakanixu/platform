@@ -1,21 +1,20 @@
 package engine
 
 import (
-	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	"github.com/micro/go-micro/client"
+	"github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"golang.org/x/net/context"
 )
 
 // Onedrive struct
 type Onedrive struct {
-	Endpoint datasource_proto.Endpoint
+	Endpoint proto_datasource.Endpoint
 }
 
 // Validate
-func (o *Onedrive) Validate(ctx context.Context, c client.Client, datasources string) (*datasource_proto.Endpoint, error) {
+func (o *Onedrive) Validate(ctx context.Context, datasources string) (*proto_datasource.Endpoint, error) {
 	var err error
 
-	o.Endpoint, err = GenerateEndpoint(ctx, c, o.Endpoint)
+	o.Endpoint, err = GenerateEndpoint(ctx, o.Endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -24,16 +23,16 @@ func (o *Onedrive) Validate(ctx context.Context, c client.Client, datasources st
 }
 
 // Save one drive datasource
-func (o *Onedrive) Save(ctx context.Context, c client.Client, data interface{}, id string) error {
-	return SaveDataSource(ctx, c, data, id)
+func (o *Onedrive) Save(ctx context.Context, data interface{}, id string) error {
+	return SaveDataSource(ctx, data, id)
 }
 
 // Delete one drive data source
-func (o *Onedrive) Delete(ctx context.Context, c client.Client) error {
-	return DeleteDataSource(ctx, c, &o.Endpoint)
+func (o *Onedrive) Delete(ctx context.Context) error {
+	return DeleteDataSource(ctx, &o.Endpoint)
 }
 
 // CreateIndeWithAlias creates a index for local datasource
-func (o *Onedrive) CreateIndexWithAlias(ctx context.Context, c client.Client) error {
-	return CreateIndexWithAlias(ctx, c, &o.Endpoint)
+func (o *Onedrive) CreateIndexWithAlias(ctx context.Context) error {
+	return CreateIndexWithAlias(ctx, &o.Endpoint)
 }

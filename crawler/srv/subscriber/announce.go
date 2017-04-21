@@ -2,7 +2,7 @@ package subscriber
 
 import (
 	"encoding/json"
-	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/globals"
 	announce "github.com/kazoup/platform/lib/protomsg/announce"

@@ -3,6 +3,8 @@ package main
 import (
 	"github.com/kazoup/platform/crawler/srv/subscriber"
 	"github.com/kazoup/platform/lib/categories"
+	"github.com/kazoup/platform/lib/db/bulk"
+	"github.com/kazoup/platform/lib/db/operations"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
@@ -51,6 +53,16 @@ func main() {
 			server.SubscriberQueue("crawler"),
 		),
 	); err != nil {
+		log.Fatal(err)
+	}
+
+	// Initialize DB operations
+	if err := operations.Init(); err != nil {
+		log.Fatal(err)
+	}
+
+	// Initialize DB bulk indexer
+	if err := bulk.Init(service); err != nil {
 		log.Fatal(err)
 	}
 

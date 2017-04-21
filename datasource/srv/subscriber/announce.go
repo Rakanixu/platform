@@ -3,8 +3,8 @@ package subscriber
 import (
 	"encoding/json"
 	"github.com/kazoup/platform/datasource/srv/proto/datasource"
-	db_proto "github.com/kazoup/platform/db/srv/proto/db"
-	db_helper "github.com/kazoup/platform/lib/dbhelper"
+	"github.com/kazoup/platform/lib/db/operations"
+	"github.com/kazoup/platform/lib/db/operations/proto/operations"
 	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/globals"
 	announce "github.com/kazoup/platform/lib/protomsg/announce"
@@ -82,7 +82,7 @@ func (a *AnnounceHandler) OnDatasourceScan(ctx context.Context, msg *announce.An
 			return errors.ErrInvalidCtx
 		}
 
-		rr, err := db_helper.ReadFromDB(srv.Client(), ctx, &db_proto.ReadRequest{
+		rr, err := operations.Read(ctx, &proto_operations.ReadRequest{
 			Index: globals.IndexDatasources,
 			Type:  globals.TypeDatasource,
 			Id:    r.Id,
@@ -124,7 +124,7 @@ func (a *AnnounceHandler) OnDatasourceScanAll(ctx context.Context, msg *announce
 
 		if len(r.DatasourcesId) > 0 {
 			for _, v := range r.DatasourcesId {
-				rr, err := db_helper.ReadFromDB(srv.Client(), ctx, &db_proto.ReadRequest{
+				rr, err := operations.Read(ctx, &proto_operations.ReadRequest{
 					Index: globals.IndexDatasources,
 					Type:  globals.TypeDatasource,
 					Id:    v,
@@ -141,7 +141,7 @@ func (a *AnnounceHandler) OnDatasourceScanAll(ctx context.Context, msg *announce
 			}
 
 		} else {
-			srvRes, err := db_helper.SearchFromDB(srv.Client(), ctx, &db_proto.SearchRequest{
+			srvRes, err := operations.Search(ctx, &proto_operations.SearchRequest{
 				Index: globals.IndexDatasources,
 				Type:  globals.TypeDatasource,
 				From:  0,

@@ -1,7 +1,7 @@
 package handler
 
 import (
-	slib "github.com/kazoup/platform/lib/stripe"
+	"github.com/kazoup/platform/lib/stripe"
 	proto "github.com/kazoup/platform/profile/srv/proto/profile"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
@@ -19,7 +19,7 @@ func (p *Profile) Read(ctx context.Context, req *proto.ReadRequest, rsp *proto.R
 		return errors.InternalServerError("com.kazoup.srv.profile.Profile.Read", "stripe_id required")
 	}
 
-	m, pf, err := slib.GetCustomer(req.StripeId)
+	m, pf, err := stripe.GetCustomer(req.StripeId)
 	if err != nil {
 		return err
 	}

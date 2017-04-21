@@ -252,7 +252,7 @@
                                                             class="primary image"
                                                             sizing="cover"
                                                             placeholder="[[imports.unknownVideo]]"
-                                                            src$="[[endpoints.web]]/media/preview?user_id=[[md5UserId]]&file_id=[[item.id]]&width=128&height=128&mode=fit&quality=50&token=[[getToken()]]"
+                                                            src$="[[endpoints.web]]/media/preview?index=[[item.index]]&user_id=[[md5UserId]]&file_id=[[item.id]]&width=128&height=128&mode=fit&quality=50&token=[[getToken()]]"
                                                             preload
                                                             fade></iron-image>
                                             </template>
@@ -712,8 +712,8 @@
 
                 this.set('loading', true);
                 this.set('rpcElasticParams', {
-                    service: 'com.kazoup.srv.search',
-                    method: 'Search.Search',
+                    service: window.Endpoints.srvs.file.srv,
+                    method: window.Endpoints.srvs.file.search,
                     request: this.$.filterConverter.getFilterAsObj()
                 });
                 this.$.rpcElastic.body = this.rpcElasticParams;
@@ -776,7 +776,6 @@
                             index: Auth.getMD5UserId(),
                             from: 0,
                             size: this.size,
-                            type: 'file',
                             term: '',
                             url: e.model.__data__.item.url,
                             depth: e.model.__data__.item.depth + 1,

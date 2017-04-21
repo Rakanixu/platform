@@ -4,7 +4,9 @@ package proto.file;
 
 service Service {
   rpc Create(CreateRequest) returns (CreateResponse) {}  // Creates a new file
+  rpc Read(ReadRequest) returns (ReadResponse) {}        // Reads a new file
   rpc Delete(DeleteRequest) returns (DeleteResponse) {}  // Deletes an existing file from third-party and kazoup indexes
+  rpc Search(SearchRequest) returns (SearchResponse) {}  // Deletes an existing file from third-party and kazoup indexes
   rpc Share(ShareRequest) returns (ShareResponse) {}     // Shares a file
   rpc Health(HealthRequest) returns (HealthResponse) {}
 }
@@ -20,6 +22,15 @@ message CreateResponse {
   string data = 2;          // Stringify file
 }
 
+message ReadRequest {
+  string index = 1;
+  string id = 2;
+}
+
+message ReadResponse {
+  string result = 1;
+}
+
 message DeleteRequest {
   string datasource_id = 1;       // Our Endpoint identifier
   string index = 2;               // DB Index name ref
@@ -30,6 +41,25 @@ message DeleteRequest {
 
 message DeleteResponse {
 
+}
+
+message SearchRequest {
+  string index = 1;
+  string term = 2;
+  int64 from = 3;
+  int64 size = 4;
+  string category = 5;
+  string url = 6;
+  int64 depth = 7;
+  string file_type = 8;
+  string access = 9;
+  string content_category = 10;
+  bool no_kazoup_file_original = 11;
+}
+
+message SearchResponse {
+  string result = 1;
+  string info = 2;
 }
 
 message ShareRequest {

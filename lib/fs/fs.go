@@ -1,12 +1,16 @@
 package fs
 
 import (
+	"encoding/json"
 	"errors"
-	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	file_proto "github.com/kazoup/platform/file/srv/proto/file"
+	"github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/file/srv/proto/file"
+	"github.com/kazoup/platform/lib/db/operations"
+	"github.com/kazoup/platform/lib/db/operations/proto/operations"
 	file "github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
+	"golang.org/x/net/context"
 	"strings"
 )
 
@@ -21,13 +25,13 @@ type FsOperations interface {
 	Walk() (chan FileMsg, chan bool)
 	WalkUsers() (chan UserMsg, chan bool)
 	WalkChannels() (chan ChannelMsg, chan bool)
-	Create(file_proto.CreateRequest) chan FileMsg
-	Delete(file_proto.DeleteRequest) chan FileMsg
-	Update(file_proto.ShareRequest) chan FileMsg
+	Create(proto_file.CreateRequest) chan FileMsg
+	Delete(proto_file.DeleteRequest) chan FileMsg
+	Update(proto_file.ShareRequest) chan FileMsg
 }
 
 type FsUtils interface {
-	Authorize() (*datasource_proto.Token, error)
+	Authorize() (*proto_datasource.Token, error)
 	GetDatasourceId() string
 	GetThumbnail(string) (string, error)
 }
@@ -40,12 +44,10 @@ type FsProcessing interface {
 }
 
 // NewFsFromEndpoint constructor from endpoint
-func NewFsFromEndpoint(e *datasource_proto.Endpoint) (Fs, error) {
+func NewFsFromEndpoint(e *proto_datasource.Endpoint) (Fs, error) {
 	dsUrl := strings.Split(e.Url, ":")
 
 	switch dsUrl[0] {
-	case globals.Local:
-		return NewLocalFsFromEndpoint(e), nil
 	case globals.Slack:
 		return NewSlackFsFromEndpoint(e), nil
 	case globals.GoogleDrive:
@@ -61,5 +63,59 @@ func NewFsFromEndpoint(e *datasource_proto.Endpoint) (Fs, error) {
 	default:
 		return nil, errors.New("Not such file system (fs)")
 	}
+}
 
+// UpdateFsAuth is a helper for updating auth details
+func UpdateFsAuth(ctx context.Context, id string, token *proto_datasource.Token) error {
+	var ds *proto_datasource.Endpoint
+
+	// Retrieve endpoint
+	rr, err := operations.Read(ctx, &proto_operations.ReadRequest{
+		Index: globals.IndexDatasources,
+		Type:  globals.TypeDatasource,
+		Id:    id,
+	})
+	if err != nil {
+		return err
+	}
+
+	if err := json.Unmarshal([]byte(rr.Result), &ds); err != nil {
+		return err
+	}
+
+	ds.Token = token
+
+	b, err := json.Marshal(ds)
+	if err != nil {
+		return err
+	}
+
+	_, err = operations.Update(ctx, &proto_operations.UpdateRequest{
+		Index: globals.IndexDatasources,
+		Type:  globals.TypeDatasource,
+		Id:    id,
+		Data:  string(b),
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ClearIndex is a helper that remove records (Files) from db that not longer belong to a datasource
+// Compares LastSeen with the time the crawler started
+// so all records with a LastSeen before will be removed from index
+// file does not exists any more on datasource
+func ClearIndex(ctx context.Context, e *proto_datasource.Endpoint) error {
+	_, err := operations.DeleteByQuery(ctx, &proto_operations.DeleteByQueryRequest{
+		Indexes:  []string{e.Index},
+		Types:    []string{globals.FileType},
+		LastSeen: e.LastScanStarted,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

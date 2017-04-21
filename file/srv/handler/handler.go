@@ -2,14 +2,15 @@ package handler
 
 import (
 	"encoding/json"
-	db_proto "github.com/kazoup/platform/db/srv/proto/db"
+	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/kazoup/platform/file/srv/proto/file"
-	db_conn "github.com/kazoup/platform/lib/dbhelper"
-	platform_errors "github.com/kazoup/platform/lib/errors"
-	"github.com/kazoup/platform/lib/file"
+	"github.com/kazoup/platform/lib/db/bulk"
+	"github.com/kazoup/platform/lib/db/operations"
+	"github.com/kazoup/platform/lib/db/operations/proto/operations"
+	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/validate"
-	"github.com/micro/go-micro"
+	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
 )
 
@@ -21,13 +22,8 @@ func (s *Service) Create(ctx context.Context, req *proto_file.CreateRequest, rsp
 		return err
 	}
 
-	srv, ok := micro.FromContext(ctx)
-	if !ok {
-		return platform_errors.ErrInvalidCtx
-	}
-
 	// Instantiate file system
-	fsys, err := NewFileSystem(srv.Client(), ctx, req.DatasourceId)
+	fsys, err := NewFileSystem(ctx, req.DatasourceId)
 	if err != nil {
 		return err
 	}
@@ -39,7 +35,7 @@ func (s *Service) Create(ctx context.Context, req *proto_file.CreateRequest, rsp
 	}
 
 	// Update token in DB
-	if err := db_conn.UpdateFileSystemAuth(srv.Client(), ctx, req.DatasourceId, auth); err != nil {
+	if err := fs.UpdateFsAuth(ctx, req.DatasourceId, auth); err != nil {
 		return err
 	}
 
@@ -55,17 +51,42 @@ func (s *Service) Create(ctx context.Context, req *proto_file.CreateRequest, rsp
 	}
 
 	// Index created file
-	if err := file.IndexAsync(ctx, srv.Client(), fmc.File, globals.FilesTopic, fmc.File.GetIndex(), true); err != nil {
-		return err
-	}
-
 	b, err := json.Marshal(fmc.File)
 	if err != nil {
+		return err
+	}
+	if err := bulk.Files(ctx, &crawler.FileMessage{
+		Id:     fmc.File.GetID(),
+		UserId: fmc.File.GetUserID(),
+		Index:  fmc.File.GetIndex(),
+		Notify: false,
+		Data:   string(b),
+	}); err != nil {
 		return err
 	}
 
 	rsp.Data = string(b)
 	rsp.DocUrl = fmc.File.GetURL()
+
+	return nil
+}
+
+// Create File handler
+func (s *Service) Read(ctx context.Context, req *proto_file.ReadRequest, rsp *proto_file.ReadResponse) error {
+	if err := validate.Exists(ctx, req.Index, req.Id); err != nil {
+		return err
+	}
+
+	res, err := operations.Read(ctx, &proto_operations.ReadRequest{
+		Index: req.Index,
+		Type:  globals.FileType,
+		Id:    req.Id,
+	})
+	if err != nil {
+		return errors.InternalServerError(globals.FILE_SERVICE_NAME, err.Error())
+	}
+
+	rsp.Result = res.Result
 
 	return nil
 }
@@ -76,13 +97,8 @@ func (s *Service) Delete(ctx context.Context, req *proto_file.DeleteRequest, rsp
 		return err
 	}
 
-	srv, ok := micro.FromContext(ctx)
-	if !ok {
-		return platform_errors.ErrInvalidCtx
-	}
-
 	// Instantiate file system
-	fsys, err := NewFileSystem(srv.Client(), ctx, req.DatasourceId)
+	fsys, err := NewFileSystem(ctx, req.DatasourceId)
 	if err != nil {
 		return err
 	}
@@ -94,7 +110,7 @@ func (s *Service) Delete(ctx context.Context, req *proto_file.DeleteRequest, rsp
 	}
 
 	// Update token in DB
-	if err := db_conn.UpdateFileSystemAuth(srv.Client(), ctx, req.DatasourceId, auth); err != nil {
+	if err := fs.UpdateFsAuth(ctx, req.DatasourceId, auth); err != nil {
 		return err
 	}
 
@@ -109,7 +125,7 @@ func (s *Service) Delete(ctx context.Context, req *proto_file.DeleteRequest, rsp
 	}
 
 	// Delete from DB
-	_, err = db_conn.DeleteFromDB(srv.Client(), ctx, &db_proto.DeleteRequest{
+	_, err = operations.Delete(ctx, &proto_operations.DeleteRequest{
 		Index: req.Index,
 		Type:  globals.FileType,
 		Id:    req.FileId,
@@ -121,19 +137,44 @@ func (s *Service) Delete(ctx context.Context, req *proto_file.DeleteRequest, rsp
 	return nil
 }
 
+// Search File handler
+func (s *Service) Search(ctx context.Context, req *proto_file.SearchRequest, rsp *proto_file.SearchResponse) error {
+	if err := validate.Exists(ctx, req.Index); err != nil {
+		return err
+	}
+
+	res, err := operations.Search(ctx, &proto_operations.SearchRequest{
+		Index:                req.Index,
+		Term:                 req.Term,
+		From:                 req.From,
+		Size:                 req.Size,
+		Category:             req.Category,
+		Url:                  req.Url,
+		Depth:                req.Depth,
+		Type:                 globals.FileType,
+		FileType:             req.FileType,
+		Access:               req.Access,
+		ContentCategory:      req.ContentCategory,
+		NoKazoupFileOriginal: req.NoKazoupFileOriginal,
+	})
+	if err != nil {
+		return errors.InternalServerError(globals.FILE_SERVICE_NAME, err.Error())
+	}
+
+	rsp.Result = res.Result
+	rsp.Info = res.Info
+
+	return nil
+}
+
 // Share file handler
 func (s *Service) Share(ctx context.Context, req *proto_file.ShareRequest, rsp *proto_file.ShareResponse) error {
 	if err := validate.Exists(ctx, req.OriginalId, req.DatasourceId); err != nil {
 		return err
 	}
 
-	srv, ok := micro.FromContext(ctx)
-	if !ok {
-		return platform_errors.ErrInvalidCtx
-	}
-
 	// Instantiate file system
-	fsys, err := NewFileSystem(srv.Client(), ctx, req.DatasourceId)
+	fsys, err := NewFileSystem(ctx, req.DatasourceId)
 	if err != nil {
 		return err
 	}
@@ -145,7 +186,7 @@ func (s *Service) Share(ctx context.Context, req *proto_file.ShareRequest, rsp *
 	}
 
 	// Update token in DB
-	if err := db_conn.UpdateFileSystemAuth(srv.Client(), ctx, req.DatasourceId, auth); err != nil {
+	if err := fs.UpdateFsAuth(ctx, req.DatasourceId, auth); err != nil {
 		return err
 	}
 
@@ -164,7 +205,7 @@ func (s *Service) Share(ctx context.Context, req *proto_file.ShareRequest, rsp *
 		return err
 	}
 
-	if _, err := db_conn.UpdateFromDB(srv.Client(), ctx, &db_proto.UpdateRequest{
+	if _, err := operations.Update(ctx, &proto_operations.UpdateRequest{
 		Index: req.Index,
 		Type:  globals.FileType,
 		Id:    req.FileId,

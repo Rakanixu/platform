@@ -79,15 +79,15 @@ type ChannelListResponse struct {
 	Channels []SlackChannel
 }
 
-type SlackChannel struct {
-	ID         string `json:"id"`
-	Name       string `json:"name"`
-	Created    int    `json:"created"`
-	Creator    string `json:"creator"`
-	IsArchived bool   `json:"is_archived"`
-	IsMember   bool   `json:"is_member"`
-	NumMembers int    `json:"num_members"`
-	Topic      struct {
+type ESSlackChannel struct {
+	ChannelID   string `json:"channel_id"`
+	ChannelName string `json:"channel_name"`
+	Created     int    `json:"created"`
+	Creator     string `json:"creator"`
+	IsArchived  bool   `json:"is_archived"`
+	IsMember    bool   `json:"is_member"`
+	NumMembers  int    `json:"num_members"`
+	Topic       struct {
 		Value   string `json:"value"`
 		Creator string `json:"creator"`
 		LastSet int    `json:"last_set"`
@@ -99,15 +99,21 @@ type SlackChannel struct {
 	} `json:"purpose"`
 }
 
+type SlackChannel struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	ESSlackChannel
+}
+
 type UserListResponse struct {
 	Ok      bool        `json:"ok"`
 	Members []SlackUser `json:"members"`
 }
 
-type SlackUser struct {
-	ID       string      `json:"id"`
+type ESSlackUser struct {
+	UserID   string      `json:"user_id"`
 	TeamID   string      `json:"team_id"`
-	Name     string      `json:"name"`
+	UserName string      `json:"user_name"`
 	Deleted  bool        `json:"deleted"`
 	Status   interface{} `json:"status,omitempty"`
 	Color    string      `json:"color,omitempty"`
@@ -139,6 +145,12 @@ type SlackUser struct {
 	IsBot             bool   `json:"is_bot,omitempty"`
 	Has2Fa            bool   `json:"has_2fa,omitempty"`
 	TwoFactorType     string `json:"two_factor_type,omitempty"`
+}
+
+type SlackUser struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	ESSlackUser
 }
 
 type SlackShareResponse struct {

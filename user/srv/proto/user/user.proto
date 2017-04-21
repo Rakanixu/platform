@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package proto.user;
+
+service Service {
+  rpc Read(ReadRequest) returns (ReadResponse) {}        // Reads a user (eg. slack user with permissions for a given file)
+  rpc Health(HealthRequest) returns (HealthResponse) {}
+}
+
+message ReadRequest {
+  string index = 1;
+  string id = 2;
+}
+
+message ReadResponse {
+  string result = 1;
+}
+
+message HealthRequest {
+  string type = 1;
+}
+
+message HealthResponse {
+  int64 status = 1;
+  string info = 2;
+}

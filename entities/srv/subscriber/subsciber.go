@@ -3,15 +3,14 @@ package subscriber
 import (
 	"encoding/json"
 	"fmt"
-	db_proto "github.com/kazoup/platform/db/srv/proto/db"
-	db_helper "github.com/kazoup/platform/lib/dbhelper"
+	"github.com/kazoup/platform/lib/db/operations"
+	"github.com/kazoup/platform/lib/db/operations/proto/operations"
 	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
-	text "github.com/kazoup/platform/lib/normalization/text"
+	"github.com/kazoup/platform/lib/normalization/text"
 	enrich "github.com/kazoup/platform/lib/protomsg/enrich"
-	rossetelib "github.com/kazoup/platform/lib/rossete"
-	"github.com/micro/go-micro"
+	"github.com/kazoup/platform/lib/rossete"
 	"golang.org/x/net/context"
 	"strings"
 	"time"
@@ -75,12 +74,7 @@ func startWorkers(t *taskHandler) {
 }
 
 func processEnrichMsg(m enrichMsgChan) error {
-	srv, ok := micro.FromContext(m.ctx)
-	if !ok {
-		return errors.ErrInvalidCtx
-	}
-
-	frsp, err := db_helper.ReadFromDB(srv.Client(), m.ctx, &db_proto.ReadRequest{
+	rsp, err := operations.Read(m.ctx, &proto_operations.ReadRequest{
 		Index: m.msg.Index,
 		Type:  globals.FileType,
 		Id:    m.msg.Id,
@@ -89,7 +83,7 @@ func processEnrichMsg(m enrichMsgChan) error {
 		return err
 	}
 
-	f, err := file.NewFileFromString(frsp.Result)
+	f, err := file.NewFileFromString(rsp.Result)
 	if err != nil {
 		return err
 	}
@@ -121,7 +115,7 @@ func processEnrichMsg(m enrichMsgChan) error {
 				return err
 			}
 
-			e, err := rossetelib.Entities(t)
+			e, err := rossete.Entities(t)
 			if err != nil {
 				return err
 			}
@@ -153,7 +147,7 @@ func processEnrichMsg(m enrichMsgChan) error {
 			return err
 		}
 
-		_, err = db_helper.UpdateFromDB(srv.Client(), m.ctx, &db_proto.UpdateRequest{
+		_, err = operations.Update(m.ctx, &proto_operations.UpdateRequest{
 			Index: m.msg.Index,
 			Type:  globals.FileType,
 			Id:    m.msg.Id,
