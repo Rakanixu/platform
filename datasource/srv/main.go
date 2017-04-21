@@ -4,6 +4,8 @@ import (
 	"github.com/kazoup/platform/datasource/srv/handler"
 	"github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/datasource/srv/subscriber"
+	"github.com/kazoup/platform/lib/db/config"
+	"github.com/kazoup/platform/lib/db/operations"
 	"github.com/kazoup/platform/lib/globals"
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/healthchecks"
@@ -16,6 +18,16 @@ import (
 )
 
 func main() {
+	// Init DB operations
+	if err := operations.Init(); err != nil {
+		log.Fatal(err)
+	}
+
+	// Init DB config
+	if err := config.Init(); err != nil {
+		log.Fatal(err)
+	}
+
 	var m monitor.Monitor
 
 	service := wrappers.NewKazoupService("datasource", m)

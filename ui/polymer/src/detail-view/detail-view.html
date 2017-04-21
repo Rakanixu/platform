@@ -104,7 +104,7 @@
       <template is="dom-if" if="[[isImage(item.category)]]" restamp="true">
         <template is="dom-if" if="[[!isGmail(item.file_type)]]">
           <iron-image id="detailImg"
-                      src="[[endpoints.web]]/media/preview?file_id=[[item.id]]&width=600&mode=fit&quality=100&token=[[getToken()]]"
+                      src="[[endpoints.web]]/media/preview?index=[[item.index]]&file_id=[[item.id]]&width=600&mode=fit&quality=100&token=[[getToken()]]"
                       sizing="contain"
                       placeholder="[[imports.unknownImg]]"
                       preload
@@ -420,11 +420,10 @@
             notify: false,
             value: function() {
               return {
-                service: window.Endpoints.srvs.search.srv,
-                method: window.Endpoints.srvs.search.read,
+                service: window.Endpoints.srvs.file.srv,
+                method: window.Endpoints.srvs.file.read,
                 request: {
                   index: '',
-                  type: 'file',
                   id: ''
                 }
               };
@@ -435,11 +434,10 @@
             notify: false,
             value: function() {
               return {
-                service: window.Endpoints.srvs.search.srv,
-                method: window.Endpoints.srvs.search.searchById,
+                service: window.Endpoints.srvs.user.srv,
+                method: window.Endpoints.srvs.user.read,
                 request: {
                   index: '',
-                  type: 'user',
                   id: ''
                 }
               };
@@ -450,11 +448,10 @@
             notify: false,
             value: function() {
               return {
-                service: window.Endpoints.srvs.search.srv,
-                method: window.Endpoints.srvs.search.searchById,
+                service: window.Endpoints.srvs.channel.srv,
+                method: window.Endpoints.srvs.channel.read,
                 request: {
                   index: '',
-                  type: 'channel',
                   id: ''
                 }
               };

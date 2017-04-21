@@ -2,10 +2,10 @@ package subscriber
 
 import (
 	"encoding/json"
-	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	proto_db "github.com/kazoup/platform/db/srv/proto/db"
+	"github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/image/srv/proto/image"
-	db_helper "github.com/kazoup/platform/lib/dbhelper"
+	"github.com/kazoup/platform/lib/db/operations"
+	"github.com/kazoup/platform/lib/db/operations/proto/operations"
 	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/globals"
 	announce "github.com/kazoup/platform/lib/protomsg/announce"
@@ -72,12 +72,7 @@ func (a *AnnounceHandler) OnEnrichDatasource(ctx context.Context, msg *announce.
 			return err
 		}
 
-		srv, ok := micro.FromContext(ctx)
-		if !ok {
-			return errors.ErrInvalidCtx
-		}
-
-		rsp, err := db_helper.ReadFromDB(srv.Client(), ctx, &proto_db.ReadRequest{
+		rsp, err := operations.Read(ctx, &proto_operations.ReadRequest{
 			Index: globals.IndexDatasources,
 			Type:  globals.TypeDatasource,
 			Id:    r.Id,

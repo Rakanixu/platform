@@ -1,21 +1,20 @@
 package engine
 
 import (
-	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	"github.com/micro/go-micro/client"
+	"github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"golang.org/x/net/context"
 )
 
 // Box struct
 type Box struct {
-	Endpoint proto.Endpoint
+	Endpoint proto_datasource.Endpoint
 }
 
 // Validate box datasource
-func (b *Box) Validate(ctx context.Context, c client.Client, datasources string) (*proto.Endpoint, error) {
+func (b *Box) Validate(ctx context.Context, datasources string) (*proto_datasource.Endpoint, error) {
 	var err error
 
-	b.Endpoint, err = GenerateEndpoint(ctx, c, b.Endpoint)
+	b.Endpoint, err = GenerateEndpoint(ctx, b.Endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -24,16 +23,16 @@ func (b *Box) Validate(ctx context.Context, c client.Client, datasources string)
 }
 
 // Save box data source
-func (b *Box) Save(ctx context.Context, c client.Client, data interface{}, id string) error {
-	return SaveDataSource(ctx, c, data, id)
+func (b *Box) Save(ctx context.Context, data interface{}, id string) error {
+	return SaveDataSource(ctx, data, id)
 }
 
 // Delete box data source
-func (b *Box) Delete(ctx context.Context, c client.Client) error {
-	return DeleteDataSource(ctx, c, &b.Endpoint)
+func (b *Box) Delete(ctx context.Context) error {
+	return DeleteDataSource(ctx, &b.Endpoint)
 }
 
 // CreateIndeWithAlias creates a index for box datasource
-func (b *Box) CreateIndexWithAlias(ctx context.Context, c client.Client) error {
-	return CreateIndexWithAlias(ctx, c, &b.Endpoint)
+func (b *Box) CreateIndexWithAlias(ctx context.Context) error {
+	return CreateIndexWithAlias(ctx, &b.Endpoint)
 }

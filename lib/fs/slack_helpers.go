@@ -42,6 +42,10 @@ func (sfs *SlackFs) getUsers() {
 	}
 
 	for _, v := range usersRsp.Members {
+		// Due to marshalling and ES naming
+		v.UserID = v.ID
+		v.UserName = v.Name
+
 		b, err := json.Marshal(v)
 		if err != nil {
 			sfs.UsersChan <- NewUserMsg(nil, err)
@@ -76,6 +80,10 @@ func (sfs *SlackFs) getChannels() {
 	}
 
 	for _, v := range channelsRsp.Channels {
+		// Due to marshalling and ES naming
+		v.ChannelID = v.ID
+		v.ChannelName = v.Name
+
 		b, err := json.Marshal(v)
 		if err != nil {
 			sfs.ChannelsChan <- NewChannelMsg(nil, err)

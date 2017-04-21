@@ -4,6 +4,7 @@ import (
 	"github.com/kazoup/platform/audio/srv/handler"
 	"github.com/kazoup/platform/audio/srv/proto/audio"
 	"github.com/kazoup/platform/audio/srv/subscriber"
+	"github.com/kazoup/platform/lib/db/operations"
 	"github.com/kazoup/platform/lib/globals"
 	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/healthchecks"
@@ -16,6 +17,10 @@ import (
 )
 
 func main() {
+	if err := operations.Init(); err != nil {
+		log.Fatal(err)
+	}
+
 	var m monitor.Monitor
 
 	service := wrappers.NewKazoupService("audio", m)

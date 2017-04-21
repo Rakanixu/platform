@@ -3,23 +3,20 @@ package engine
 import (
 	"encoding/json"
 	"errors"
+	"github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"golang.org/x/net/context"
 	"os"
 	"strings"
-
-	proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	"github.com/micro/go-micro/client"
-	"golang.org/x/net/context"
 )
 
 // Local struct
 type Local struct {
-	Endpoint   proto.Endpoint
+	Endpoint   proto_datasource.Endpoint
 	DataOrigin string
 }
 
 // Validate local datasource (directory exists) and check for intersections between local datasources
-func (l *Local) Validate(ctx context.Context, c client.Client, datasources string) (*proto_datasource.Endpoint, error) {
+func (l *Local) Validate(ctx context.Context, datasources string) (*proto_datasource.Endpoint, error) {
 	i := strings.LastIndex(l.Endpoint.Url, "//")
 
 	l.DataOrigin = l.Endpoint.Url[i+1 : len(l.Endpoint.Url)] // Local filesystem path
@@ -27,7 +24,7 @@ func (l *Local) Validate(ctx context.Context, c client.Client, datasources strin
 		return nil, err
 	}
 
-	var endpoints []*proto.Endpoint
+	var endpoints []*proto_datasource.Endpoint
 
 	if err := json.Unmarshal([]byte(datasources), &endpoints); err != nil {
 		return nil, err
@@ -48,7 +45,7 @@ func (l *Local) Validate(ctx context.Context, c client.Client, datasources strin
 	}
 
 	var err error
-	l.Endpoint, err = GenerateEndpoint(ctx, c, l.Endpoint)
+	l.Endpoint, err = GenerateEndpoint(ctx, l.Endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -57,20 +54,20 @@ func (l *Local) Validate(ctx context.Context, c client.Client, datasources strin
 }
 
 // Save local datasource
-func (l *Local) Save(ctx context.Context, c client.Client, data interface{}, id string) error {
-	return SaveDataSource(ctx, c, data, id)
+func (l *Local) Save(ctx context.Context, data interface{}, id string) error {
+	return SaveDataSource(ctx, data, id)
 }
 
 // Delete local data source
-func (l *Local) Delete(ctx context.Context, c client.Client) error {
-	if err := DeleteDataSource(ctx, c, &l.Endpoint); err != nil {
+func (l *Local) Delete(ctx context.Context) error {
+	if err := DeleteDataSource(ctx, &l.Endpoint); err != nil {
 		return err
 	}
 
 	// Specific clean up for local datasources ()
 	if strings.Contains(l.Endpoint.Url, localEndpoint) {
 		// Remove records from helper index that only belongs to the datasource
-		if err := cleanFilesHelperIndex(ctx, c, &l.Endpoint); err != nil {
+		if err := cleanFilesHelperIndex(ctx, &l.Endpoint); err != nil {
 			return err
 		}
 	}
@@ -79,6 +76,6 @@ func (l *Local) Delete(ctx context.Context, c client.Client) error {
 }
 
 // CreateIndeWithAlias creates a index for local datasource
-func (l *Local) CreateIndexWithAlias(ctx context.Context, c client.Client) error {
-	return CreateIndexWithAlias(ctx, c, &l.Endpoint)
+func (l *Local) CreateIndexWithAlias(ctx context.Context) error {
+	return CreateIndexWithAlias(ctx, &l.Endpoint)
 }

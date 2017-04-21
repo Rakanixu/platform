@@ -2,12 +2,12 @@ package engine
 
 import (
 	"encoding/json"
-	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	db_config_proto "github.com/kazoup/platform/db/srv/proto/config"
-	db_proto "github.com/kazoup/platform/db/srv/proto/db"
-	db_conn "github.com/kazoup/platform/lib/dbhelper"
+	"github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/lib/db/config"
+	"github.com/kazoup/platform/lib/db/config/proto/config"
+	"github.com/kazoup/platform/lib/db/operations"
+	"github.com/kazoup/platform/lib/db/operations/proto/operations"
 	"github.com/kazoup/platform/lib/globals"
-	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
 	"strings"
@@ -25,14 +25,14 @@ const (
 
 // Engine interface implements Validation, Save, Delete, Update for datasources
 type Engine interface {
-	Validate(ctx context.Context, c client.Client, datasources string) (*datasource_proto.Endpoint, error)
-	Save(ctx context.Context, c client.Client, data interface{}, id string) error
-	Delete(ctx context.Context, c client.Client) error
-	CreateIndexWithAlias(ctx context.Context, c client.Client) error
+	Validate(ctx context.Context, datasources string) (*proto_datasource.Endpoint, error)
+	Save(ctx context.Context, data interface{}, id string) error
+	Delete(ctx context.Context) error
+	CreateIndexWithAlias(ctx context.Context) error
 }
 
 // NewDataSourceEngine returns a Engine interface
-func NewDataSourceEngine(endpoint *datasource_proto.Endpoint) (Engine, error) {
+func NewDataSourceEngine(endpoint *proto_datasource.Endpoint) (Engine, error) {
 	if strings.Contains(endpoint.Url, localEndpoint) {
 		return &Local{
 			Endpoint: *endpoint,
@@ -81,11 +81,11 @@ func NewDataSourceEngine(endpoint *datasource_proto.Endpoint) (Engine, error) {
 }
 
 // GenerateEndpoint assings index and id if data does not exists
-func GenerateEndpoint(ctx context.Context, c client.Client, endpoint datasource_proto.Endpoint) (datasource_proto.Endpoint, error) {
+func GenerateEndpoint(ctx context.Context, endpoint proto_datasource.Endpoint) (proto_datasource.Endpoint, error) {
 	// Search for existing datasource. If exists, use instance.
 	// DB.Search internally tries to get userId explicitly (from request). If not preset, tries to get from context
 	// If context is system context, an error will be trow
-	srvRsp, err := SearchDataSources(ctx, c, &datasource_proto.SearchRequest{
+	srvRsp, err := SearchDataSources(ctx, &proto_datasource.SearchRequest{
 		Index: globals.IndexDatasources,
 		Type:  globals.TypeDatasource,
 		From:  0,
@@ -93,12 +93,12 @@ func GenerateEndpoint(ctx context.Context, c client.Client, endpoint datasource_
 		Url:   endpoint.Url,
 	})
 	if err != nil {
-		return datasource_proto.Endpoint{}, err
+		return proto_datasource.Endpoint{}, err
 	}
 
-	var r []*datasource_proto.Endpoint
+	var r []*proto_datasource.Endpoint
 	if err := json.Unmarshal([]byte(srvRsp.Result), &r); err != nil {
-		return datasource_proto.Endpoint{}, err
+		return proto_datasource.Endpoint{}, err
 	}
 	// user_id + url makes a constraint, so record should be unique.
 	if len(r) == 1 {
@@ -122,19 +122,18 @@ func GenerateEndpoint(ctx context.Context, c client.Client, endpoint datasource_
 }
 
 // SaveDataSource is a helper to write DS in ES.
-func SaveDataSource(ctx context.Context, c client.Client, data interface{}, id string) error {
+func SaveDataSource(ctx context.Context, data interface{}, id string) error {
 	b, err := json.Marshal(data)
 	if err != nil {
 		return err
 	}
 
-	_, err = db_conn.CreateIntoDB(c, ctx, &db_proto.CreateRequest{
-		Index: "datasources",
-		Type:  "datasource",
+	_, err = operations.Create(ctx, &proto_operations.CreateRequest{
+		Index: globals.IndexDatasources,
+		Type:  globals.TypeDatasource,
 		Id:    id,
 		Data:  string(b),
 	})
-
 	if err != nil {
 		return err
 	}
@@ -143,26 +142,20 @@ func SaveDataSource(ctx context.Context, c client.Client, data interface{}, id s
 }
 
 // DeleteDataSource deletes a datasource previously stored and index associated with it
-func DeleteDataSource(ctx context.Context, c client.Client, endpoint *datasource_proto.Endpoint) error {
+func DeleteDataSource(ctx context.Context, endpoint *proto_datasource.Endpoint) error {
 	if endpoint != nil {
 		// Remove index for datasource associated with it
-		deleteIndexReq := c.NewRequest(
-			globals.DB_SERVICE_NAME,
-			"Config.DeleteIndex",
-			&db_config_proto.DeleteIndexRequest{
-				Index: endpoint.Index,
-			},
-		)
-		deleteIndexRes := &db_proto.DeleteResponse{}
-
-		if err := c.Call(ctx, deleteIndexReq, deleteIndexRes); err != nil {
+		_, err := config.DeleteIndex(ctx, &proto_config.DeleteIndexRequest{
+			Index: endpoint.Index,
+		})
+		if err != nil {
 			return err
 		}
 
 		// Delete record from datasources index
-		_, err := db_conn.DeleteFromDB(c, ctx, &db_proto.DeleteRequest{
-			Index: "datasources",
-			Type:  "datasource",
+		_, err = operations.Delete(ctx, &proto_operations.DeleteRequest{
+			Index: globals.IndexDatasources,
+			Type:  globals.TypeDatasource,
 			Id:    endpoint.Id,
 		})
 
@@ -174,47 +167,30 @@ func DeleteDataSource(ctx context.Context, c client.Client, endpoint *datasource
 	return nil
 }
 
-func CreateIndexWithAlias(ctx context.Context, c client.Client, endpoint *datasource_proto.Endpoint) error {
+func CreateIndexWithAlias(ctx context.Context, endpoint *proto_datasource.Endpoint) error {
 	// Create index
-	createIndexSrvReq := c.NewRequest(
-		globals.DB_SERVICE_NAME,
-		"Config.CreateIndex",
-		&db_config_proto.CreateIndexRequest{
-			Index: endpoint.Index,
-		},
-	)
-	createIndexSrvRes := &db_config_proto.CreateIndexResponse{}
-
-	if err := c.Call(ctx, createIndexSrvReq, createIndexSrvRes); err != nil {
+	_, err := config.CreateIndex(ctx, &proto_config.CreateIndexRequest{
+		Index: endpoint.Index,
+	})
+	if err != nil {
 		return err
 	}
 
 	// Create DS alias
-	addAliasReq := c.NewRequest(
-		globals.DB_SERVICE_NAME,
-		"Config.AddAlias",
-		&db_config_proto.AddAliasRequest{
-			Index: endpoint.Index,
-			Alias: endpoint.Id,
-		},
-	)
-	addAliasRes := &db_config_proto.AddAliasResponse{}
-
-	if err := c.Call(ctx, addAliasReq, addAliasRes); err != nil {
+	_, err = config.AddAlias(ctx, &proto_config.AddAliasRequest{
+		Index: endpoint.Index,
+		Alias: endpoint.Id,
+	})
+	if err != nil {
 		return err
 	}
 
 	// Create specific "files" alias
-	addAliasReq = c.NewRequest(
-		globals.DB_SERVICE_NAME,
-		"Config.AddAlias",
-		&db_config_proto.AddAliasRequest{
-			Index: endpoint.Index,
-			Alias: globals.GetMD5Hash(endpoint.UserId),
-		},
-	)
-
-	if err := c.Call(ctx, addAliasReq, addAliasRes); err != nil {
+	_, err = config.AddAlias(ctx, &proto_config.AddAliasRequest{
+		Index: endpoint.Index,
+		Alias: globals.GetMD5Hash(endpoint.UserId),
+	})
+	if err != nil {
 		return err
 	}
 

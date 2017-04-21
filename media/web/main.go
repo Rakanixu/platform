@@ -1,15 +1,21 @@
 package main
 
 import (
+	"github.com/kazoup/platform/lib/db/operations"
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/media/web/handler"
 	"github.com/micro/go-os/monitor"
 	microweb "github.com/micro/go-web"
+	"log"
 	"time"
 )
 
 func main() {
+	if err := operations.Init(); err != nil {
+		log.Fatal(err)
+	}
+
 	var m monitor.Monitor
 
 	service := microweb.NewService(microweb.Name("com.kazoup.web.media"))

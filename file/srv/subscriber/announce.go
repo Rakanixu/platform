@@ -5,7 +5,7 @@ import (
 	"github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/globals"
-	announce_msg "github.com/kazoup/platform/lib/protomsg/announce"
+	announce "github.com/kazoup/platform/lib/protomsg/announce"
 	deletefile "github.com/kazoup/platform/lib/protomsg/deletefileinbucket"
 	"github.com/micro/go-micro"
 	"golang.org/x/net/context"
@@ -14,7 +14,7 @@ import (
 type AnnounceHandler struct{}
 
 // OnFileDeleted
-func (a *AnnounceHandler) OnFileDeleted(ctx context.Context, msg *announce_msg.AnnounceMessage) error {
+func (a *AnnounceHandler) OnFileDeleted(ctx context.Context, msg *announce.AnnounceMessage) error {
 	// After file has been deleted, remove its thumbnail from our GCS account
 	if globals.HANDLER_FILE_DELETE == msg.Handler {
 		var r *proto_file.DeleteRequest

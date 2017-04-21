@@ -4,43 +4,20 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	db "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/lib/box"
 	"github.com/kazoup/platform/lib/categories"
-	db_helper "github.com/kazoup/platform/lib/dbhelper"
 	"github.com/kazoup/platform/lib/dropbox"
 	"github.com/kazoup/platform/lib/globals"
 	gmailhelper "github.com/kazoup/platform/lib/gmail"
 	"github.com/kazoup/platform/lib/local"
 	"github.com/kazoup/platform/lib/onedrive"
 	"github.com/kazoup/platform/lib/slack"
-	"github.com/micro/go-micro/client"
-	"golang.org/x/net/context"
 	googledrive "google.golang.org/api/drive/v3"
 	"net/url"
 	"path/filepath"
 	"strings"
 	"time"
 )
-
-// GetFileByID retrieves a file given its id and the user belongs to
-func GetFileByID(ctx context.Context, md5UserId, id string) (File, error) {
-	rs, err := db_helper.SearchById(client.DefaultClient, ctx, &db.SearchByIdRequest{
-		Index: md5UserId,
-		Type:  "file",
-		Id:    id,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	f, err := NewFileFromString(rs.Result)
-	if err != nil {
-		return nil, err
-	}
-
-	return f, err
-}
 
 func NewFileFromString(s string) (File, error) {
 	kf := &KazoupFile{}

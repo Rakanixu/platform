@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package proto.config;
+
+message CreateIndexRequest {
+    string index = 1;
+}
+
+message CreateIndexResponse {
+
+}
+
+message StatusRequest {
+
+}
+
+message StatusResponse {
+    string status = 1;
+}
+
+message AddAliasRequest {
+    string index = 1;
+    string alias = 2;
+}
+
+message AddAliasResponse {
+
+}
+
+message DeleteIndexRequest {
+    string index = 1;
+}
+
+message DeleteIndexResponse {
+
+}
+
+message DeleteAliasRequest {
+    string index = 1;
+    string alias = 2;
+}
+
+message DeleteAliasResponse {
+
+}
+
+message RenameAliasRequest {
+    string index = 1;
+    string old_alias = 2;
+    string new_alias = 3;
+}
+
+message RenameAliasResponse {
+
+}

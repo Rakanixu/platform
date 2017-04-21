@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/kazoup/platform/datasource/srv/proto/datasource"
-	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	"github.com/kazoup/platform/file/srv/proto/file"
-	db_helper "github.com/kazoup/platform/lib/dbhelper"
+	"github.com/kazoup/platform/lib/db/operations"
+	"github.com/kazoup/platform/lib/db/operations/proto/operations"
 	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/globals"
 	announce "github.com/kazoup/platform/lib/protomsg/announce"
 	crawler "github.com/kazoup/platform/lib/protomsg/crawler"
-	enrich_msg "github.com/kazoup/platform/lib/protomsg/enrich"
+	enrich "github.com/kazoup/platform/lib/protomsg/enrich"
 	"github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro"
 	"golang.org/x/net/context"
@@ -23,7 +23,7 @@ type AnnounceHandler struct{}
 func (a *AnnounceHandler) OnDocEnrich(ctx context.Context, msg *announce.AnnounceMessage) error {
 	// Notify that document enrichment happened
 	if globals.DocEnrichTopic == msg.Handler {
-		var m *enrich_msg.EnrichMessage
+		var m *enrich.EnrichMessage
 		if err := json.Unmarshal([]byte(msg.Data), &m); err != nil {
 			return err
 		}
@@ -52,7 +52,7 @@ func (a *AnnounceHandler) OnDocEnrich(ctx context.Context, msg *announce.Announc
 func (a *AnnounceHandler) OnImgEnrich(ctx context.Context, msg *announce.AnnounceMessage) error {
 	// Notify that image enrichment happened
 	if globals.ImgEnrichTopic == msg.Handler {
-		var m *enrich_msg.EnrichMessage
+		var m *enrich.EnrichMessage
 		if err := json.Unmarshal([]byte(msg.Data), &m); err != nil {
 			return err
 		}
@@ -81,7 +81,7 @@ func (a *AnnounceHandler) OnImgEnrich(ctx context.Context, msg *announce.Announc
 func (a *AnnounceHandler) OnAudioEnrich(ctx context.Context, msg *announce.AnnounceMessage) error {
 	// Notify that audio enrichment happened
 	if globals.AudioEnrichTopic == msg.Handler {
-		var m *enrich_msg.EnrichMessage
+		var m *enrich.EnrichMessage
 		if err := json.Unmarshal([]byte(msg.Data), &m); err != nil {
 			return err
 		}
@@ -110,7 +110,7 @@ func (a *AnnounceHandler) OnAudioEnrich(ctx context.Context, msg *announce.Annou
 func (a *AnnounceHandler) OnSentimentExtraction(ctx context.Context, msg *announce.AnnounceMessage) error {
 	// Notify that sentiment extraction happened
 	if globals.SentimentEnrichTopic == msg.Handler {
-		var m *enrich_msg.EnrichMessage
+		var m *enrich.EnrichMessage
 		if err := json.Unmarshal([]byte(msg.Data), &m); err != nil {
 			return err
 		}
@@ -139,7 +139,7 @@ func (a *AnnounceHandler) OnSentimentExtraction(ctx context.Context, msg *announ
 func (a *AnnounceHandler) OnEntitiesExtraction(ctx context.Context, msg *announce.AnnounceMessage) error {
 	// Notify that entities extraction happened
 	if globals.ExtractEntitiesTopic == msg.Handler {
-		var m *enrich_msg.EnrichMessage
+		var m *enrich.EnrichMessage
 		if err := json.Unmarshal([]byte(msg.Data), &m); err != nil {
 			return err
 		}
@@ -179,7 +179,7 @@ func (a *AnnounceHandler) OnCrawlerFinished(ctx context.Context, msg *announce.A
 			return errors.ErrInvalidCtx
 		}
 
-		rsp, err := db_helper.ReadFromDB(srv.Client(), ctx, &db_proto.ReadRequest{
+		rsp, err := operations.Read(ctx, &proto_operations.ReadRequest{
 			Index: globals.IndexDatasources,
 			Type:  globals.TypeDatasource,
 			Id:    m.DatasourceId,

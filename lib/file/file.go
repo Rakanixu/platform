@@ -1,12 +1,8 @@
 package file
 
 import (
-	"encoding/json"
-	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	"github.com/kazoup/platform/lib/globals"
 	rossetelib "github.com/kazoup/platform/lib/rossete"
-	"github.com/micro/go-micro/client"
-	"golang.org/x/net/context"
 	"time"
 )
 
@@ -36,25 +32,4 @@ type File interface {
 	SetContentCategory(kazoupCategorization *KazoupCategorization)
 	SetEntities(entities *rossetelib.RosseteEntities)
 	SetSentiment(sentiment *rossetelib.RosseteSentiment)
-}
-
-func IndexAsync(ctx context.Context, c client.Client, file File, topic, index string, notify bool) error {
-	b, err := json.Marshal(file)
-	if err != nil {
-		return err
-	}
-
-	msg := &crawler.FileMessage{
-		Id:     file.GetID(),
-		UserId: file.GetUserID(),
-		Index:  index,
-		Notify: notify,
-		Data:   string(b),
-	}
-
-	if err := c.Publish(ctx, c.NewPublication(topic, msg)); err != nil {
-		return err
-	}
-
-	return nil
 }

@@ -4,17 +4,16 @@ import (
 	"encoding/json"
 	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/globals"
-	proto "github.com/kazoup/platform/notification/srv/proto/notification"
+	"github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/broker"
-	_ "github.com/micro/go-plugins/broker/nats"
 	"golang.org/x/net/context"
 )
 
 type ProxyHandler struct{}
 
 // SubscriberProxy listens for messages and proxys to service Broker to be streamed to clients afterwards
-func (p *ProxyHandler) SubscriberProxy(ctx context.Context, notificationMsg *proto.NotificationMessage) error {
+func (p *ProxyHandler) SubscriberProxy(ctx context.Context, notificationMsg *proto_notification.NotificationMessage) error {
 	srv, ok := micro.FromContext(ctx)
 	if !ok {
 		return errors.ErrInvalidCtx

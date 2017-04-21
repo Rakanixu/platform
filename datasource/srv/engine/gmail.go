@@ -1,21 +1,20 @@
 package engine
 
 import (
-	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	"github.com/micro/go-micro/client"
+	"github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"golang.org/x/net/context"
 )
 
 // Gmail struct
 type Gmail struct {
-	Endpoint datasource_proto.Endpoint
+	Endpoint proto_datasource.Endpoint
 }
 
 // Validate gmail data  source
-func (g *Gmail) Validate(ctx context.Context, c client.Client, datasources string) (*datasource_proto.Endpoint, error) {
+func (g *Gmail) Validate(ctx context.Context, datasources string) (*proto_datasource.Endpoint, error) {
 	var err error
 
-	g.Endpoint, err = GenerateEndpoint(ctx, c, g.Endpoint)
+	g.Endpoint, err = GenerateEndpoint(ctx, g.Endpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -24,16 +23,16 @@ func (g *Gmail) Validate(ctx context.Context, c client.Client, datasources strin
 }
 
 // Save gmail data source
-func (g *Gmail) Save(ctx context.Context, c client.Client, data interface{}, id string) error {
-	return SaveDataSource(ctx, c, data, id)
+func (g *Gmail) Save(ctx context.Context, data interface{}, id string) error {
+	return SaveDataSource(ctx, data, id)
 }
 
 // Delete gmail data source
-func (g *Gmail) Delete(ctx context.Context, c client.Client) error {
-	return DeleteDataSource(ctx, c, &g.Endpoint)
+func (g *Gmail) Delete(ctx context.Context) error {
+	return DeleteDataSource(ctx, &g.Endpoint)
 }
 
 // CreateIndeWithAlias creates a index for gmail datasource
-func (g *Gmail) CreateIndexWithAlias(ctx context.Context, c client.Client) error {
-	return CreateIndexWithAlias(ctx, c, &g.Endpoint)
+func (g *Gmail) CreateIndexWithAlias(ctx context.Context) error {
+	return CreateIndexWithAlias(ctx, &g.Endpoint)
 }

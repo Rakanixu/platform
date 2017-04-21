@@ -2,14 +2,15 @@ package subscriber
 
 import (
 	"encoding/json"
-	datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	db_proto "github.com/kazoup/platform/db/srv/proto/db"
-	db_conn "github.com/kazoup/platform/lib/dbhelper"
+	"github.com/kazoup/platform/crawler/srv/proto/crawler"
+	"github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/lib/db/bulk"
+	"github.com/kazoup/platform/lib/db/operations"
+	"github.com/kazoup/platform/lib/db/operations/proto/operations"
 	"github.com/kazoup/platform/lib/errors"
-	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
-	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
+	"github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro"
 	"golang.org/x/net/context"
 	"log"
@@ -20,7 +21,7 @@ import (
 type TaskHandler struct{}
 
 // Scans subscriber, receive endpoint to crawl it
-func (t *TaskHandler) Scans(ctx context.Context, endpoint *datasource.Endpoint) error {
+func (t *TaskHandler) Scans(ctx context.Context, endpoint *proto_datasource.Endpoint) error {
 	srv, ok := micro.FromContext(ctx)
 	if !ok {
 		return errors.ErrInvalidCtx
@@ -47,7 +48,7 @@ func (t *TaskHandler) Scans(ctx context.Context, endpoint *datasource.Endpoint) 
 	}
 
 	// Update token in DB
-	_, err = db_conn.UpdateFromDB(srv.Client(), ctx, &db_proto.UpdateRequest{
+	_, err = operations.Update(ctx, &proto_operations.UpdateRequest{
 		Index: globals.IndexDatasources,
 		Type:  globals.TypeDatasource,
 		Id:    endpoint.Id,
@@ -58,7 +59,7 @@ func (t *TaskHandler) Scans(ctx context.Context, endpoint *datasource.Endpoint) 
 	}
 
 	// Publish notification
-	if err := srv.Client().Publish(ctx, srv.Client().NewPublication(globals.NotificationTopic, &notification_proto.NotificationMessage{
+	if err := srv.Client().Publish(ctx, srv.Client().NewPublication(globals.NotificationTopic, &proto_notification.NotificationMessage{
 		Info:   "Scan started on " + endpoint.Url + " datasource.",
 		Method: globals.NOTIFY_REFRESH_DATASOURCES,
 		UserId: endpoint.UserId,
@@ -79,6 +80,12 @@ func (t *TaskHandler) Scans(ctx context.Context, endpoint *datasource.Endpoint) 
 	var wg sync.WaitGroup
 	wg.Add(3) // Wait for files, users and channels discovery
 
+	// Shared error channel
+	errs := make(chan error, 10)
+
+	// Handle errors
+	go handleDiscoveryErrors(errs)
+
 	// Listen to files
 	go func() {
 		for {
@@ -93,10 +100,21 @@ func (t *TaskHandler) Scans(ctx context.Context, endpoint *datasource.Endpoint) 
 			// Channel receives File to be indexed by Elastic Search
 			case fc := <-filesChan:
 				if fc.Error != nil {
-					log.Println(errors.NewDiscoveryError(fc.File, "crawler", fc.Error))
+					errs <- errors.NewDiscoveryError(fc.File, "crawler", fc.Error)
 				} else {
-					if err := file.IndexAsync(ctx, srv.Client(), fc.File, globals.FilesTopic, fc.File.GetIndex(), false); err != nil {
-						log.Println("Error indexing async file", err)
+					b, err := json.Marshal(fc.File)
+					if err != nil {
+						errs <- err
+					} else {
+						if err := bulk.Files(ctx, &crawler.FileMessage{
+							Id:     fc.File.GetID(),
+							UserId: fc.File.GetUserID(),
+							Index:  fc.File.GetIndex(),
+							Notify: false,
+							Data:   string(b),
+						}); err != nil {
+							errs <- errors.NewDiscoveryError(fc.File, "crawler bulk file", err)
+						}
 					}
 				}
 
@@ -118,10 +136,10 @@ func (t *TaskHandler) Scans(ctx context.Context, endpoint *datasource.Endpoint) 
 			// Channel receives users to be indexed
 			case u := <-usersChan:
 				if u.Error != nil {
-					log.Println(errors.NewDiscoveryError(u.User, "crawler", u.Error))
+					errs <- errors.NewDiscoveryError(u.User, "crawler", u.Error)
 				} else {
-					if err := srv.Client().Publish(ctx, srv.Client().NewPublication(globals.SlackUsersTopic, u.User)); err != nil {
-						log.Println("Error indexing user", err)
+					if err := bulk.SlackUsers(ctx, u.User); err != nil {
+						errs <- errors.NewDiscoveryError(u.User, "crawler bulk user", err)
 					}
 				}
 			}
@@ -141,10 +159,10 @@ func (t *TaskHandler) Scans(ctx context.Context, endpoint *datasource.Endpoint) 
 			// Channel receives channels to be indexed
 			case ch := <-channelsChan:
 				if ch.Error != nil {
-					log.Println(errors.NewDiscoveryError(ch.Channel, "crawler", ch.Error))
+					errs <- errors.NewDiscoveryError(ch.Channel, "crawler", ch.Error)
 				} else {
-					if err := srv.Client().Publish(ctx, srv.Client().NewPublication(globals.SlackChannelsTopic, ch.Channel)); err != nil {
-						log.Println("Error indexing channel", err)
+					if err := bulk.SlackChannels(ctx, ch.Channel); err != nil {
+						errs <- errors.NewDiscoveryError(ch.Channel, "crawler bulk channel", err)
 					}
 				}
 			}
@@ -153,5 +171,13 @@ func (t *TaskHandler) Scans(ctx context.Context, endpoint *datasource.Endpoint) 
 
 	wg.Wait() // Wait for all listeners
 
+	close(errs)
+
 	return nil
+}
+
+func handleDiscoveryErrors(errs chan error) {
+	for err := range errs {
+		log.Printf("Discovery error: %v", err)
+	}
 }
