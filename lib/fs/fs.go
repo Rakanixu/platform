@@ -48,8 +48,6 @@ func NewFsFromEndpoint(e *proto_datasource.Endpoint) (Fs, error) {
 	dsUrl := strings.Split(e.Url, ":")
 
 	switch dsUrl[0] {
-	case globals.Local:
-		return NewLocalFsFromEndpoint(e), nil
 	case globals.Slack:
 		return NewSlackFsFromEndpoint(e), nil
 	case globals.GoogleDrive:
@@ -97,6 +95,23 @@ func UpdateFsAuth(ctx context.Context, id string, token *proto_datasource.Token)
 		Type:  globals.TypeDatasource,
 		Id:    id,
 		Data:  string(b),
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// ClearIndex is a helper that remove records (Files) from db that not longer belong to a datasource
+// Compares LastSeen with the time the crawler started
+// so all records with a LastSeen before will be removed from index
+// file does not exists any more on datasource
+func ClearIndex(ctx context.Context, e *proto_datasource.Endpoint) error {
+	_, err := operations.DeleteByQuery(ctx, &proto_operations.DeleteByQueryRequest{
+		Indexes:  []string{e.Index},
+		Types:    []string{globals.FileType},
+		LastSeen: e.LastScanStarted,
 	})
 	if err != nil {
 		return err

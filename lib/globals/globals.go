@@ -10,10 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
-	db_proto "github.com/kazoup/platform/db/srv/proto/db"
 	kazoup_context "github.com/kazoup/platform/lib/context"
-	"github.com/micro/go-micro/client"
 	micro_errors "github.com/micro/go-micro/errors"
 	"github.com/micro/go-micro/metadata"
 	"golang.org/x/net/context"
@@ -21,13 +18,11 @@ import (
 	"golang.org/x/oauth2/google"
 	"golang.org/x/oauth2/slack"
 	"io"
-	"log"
 	"time"
 )
 
 const (
 	NAMESPACE                 string = "com.kazoup"
-	DB_SERVICE_NAME           string = NAMESPACE + ".srv.db"
 	SEARCH_SERVICE_NAME       string = NAMESPACE + ".srv.search"
 	DATASOURCE_SERVICE_NAME   string = NAMESPACE + ".srv.datasource"
 	CRAWLER_SERVICE_NAME      string = NAMESPACE + ".srv.crawler"
@@ -319,21 +314,6 @@ func NewContextFromJWT(jwt string) context.Context {
 	})
 }
 
-// DBAccess flags access to DB
-func DBAccess(ctx context.Context) error {
-	//md, _ := metadata.FromContext(ctx)
-
-	/*if len(md["X-Kazoup-Token"]) == 0 {
-		return micro_errors.Forbidden("com.kazoup.srv.db", "No scope")
-	}
-
-	if md["X-Kazoup-Token"] != DB_ACCESS_TOKEN {
-		return micro_errors.Forbidden("com.kazoup.srv.db", "Invalid scope")
-	}*/
-
-	return nil
-}
-
 // ParseUserIdFromContext returns user_id from context
 func ParseUserIdFromContext(ctx context.Context) (string, error) {
 	if ctx.Value(kazoup_context.UserIdCtxKey{}) == nil {
@@ -428,32 +408,6 @@ func NewUUID() (string, error) {
 	// version 4 (pseudo-random); see section 4.1.3
 	uuid[6] = uuid[6]&^0xf0 | 0x40
 	return fmt.Sprintf("%x-%x-%x-%x-%x", uuid[0:4], uuid[4:6], uuid[6:8], uuid[8:10], uuid[10:]), nil
-}
-
-// Remove records (Files) from db that not longer belong to a datasource
-// Compares LastSeen with the time the crawler started
-// so all records with a LastSeen before will be removed from index
-// file does not exists any more on datasource
-// Also deletes thumbs that does not exists any more on index
-func ClearIndex(ctx context.Context, c client.Client, e *datasource_proto.Endpoint) error {
-	// Clean the index after all messages have been published
-	delReq := &db_proto.DeleteByQueryRequest{
-		Indexes:  []string{e.Index},
-		Types:    []string{"file"},
-		LastSeen: e.LastScanStarted,
-	}
-	srvReq := c.NewRequest(
-		DB_SERVICE_NAME,
-		"DB.DeleteByQuery",
-		delReq,
-	)
-	srvRes := &db_proto.DeleteByQueryResponse{}
-	if err := c.Call(ctx, srvReq, srvRes); err != nil {
-		log.Printf("Error globals.ClearIndex -  %s", err)
-		return err
-	}
-
-	return nil
 }
 
 func GetMD5Hash(text string) string {
