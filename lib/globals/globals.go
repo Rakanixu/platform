@@ -23,7 +23,6 @@ import (
 
 const (
 	NAMESPACE                 string = "com.kazoup"
-	SEARCH_SERVICE_NAME       string = NAMESPACE + ".srv.search"
 	DATASOURCE_SERVICE_NAME   string = NAMESPACE + ".srv.datasource"
 	CRAWLER_SERVICE_NAME      string = NAMESPACE + ".srv.crawler"
 	NOTIFICATION_SERVICE_NAME string = NAMESPACE + ".srv.notification"
