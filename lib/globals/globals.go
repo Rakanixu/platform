@@ -63,9 +63,6 @@ const (
 	HANDLER_ENTITIES_EXTRACT_FILE = ENTITIES_SERVICE_NAME + ".Service.ExtractFile"
 
 	AnnounceTopic           string = NAMESPACE + ".topic.announce"
-	FilesTopic              string = NAMESPACE + ".topic.files"
-	SlackChannelsTopic      string = NAMESPACE + ".topic.slackchannels"
-	SlackUsersTopic         string = NAMESPACE + ".topic.slackusers"
 	DiscoverTopic           string = NAMESPACE + ".topic.discover.files"
 	DiscoveryFinishedTopic  string = NAMESPACE + ".topic.discover.finish"
 	DocEnrichTopic          string = NAMESPACE + ".topic.document"
