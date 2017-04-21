@@ -106,8 +106,6 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	url := fmt.Sprintf("%s", f.PreviewURL(width, height, mode, quality))
 
 	switch f.GetFileType() {
-	case globals.Local:
-		http.Redirect(w, r, url, http.StatusSeeOther)
 	case globals.Slack, globals.Box:
 		// There is an issue when setting headers on a redirect request, the headers are dropped
 		// We query for the image directly and attach response to the first request response

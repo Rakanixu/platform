@@ -86,7 +86,6 @@ const (
 	FileTypeDirectory = "directories"
 	TypeDatasource    = "datasource"
 
-	Local       = "local"
 	Slack       = "slack"
 	GoogleDrive = "googledrive"
 	Gmail       = "gmail"
