@@ -21,6 +21,13 @@ spec:
                   "--transport=tcp",
                   ]
         image: eu.gcr.io/desktop-1470249894548/notification-srv:latest
+        env:
+          - name: ELASTICSEARCH_URL
+            value:  "https://8d22518314b8a6bab84906817730e7f4.eu-west-1.aws.found.io:9243"
+          - name: ES_USERNAME
+            value: "admin"
+          - name: ES_PASSWORD
+            value: "9svne8f655h"
         imagePullPolicy: Always
         ports:
         - containerPort: 9090

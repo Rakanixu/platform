@@ -1,12 +1,12 @@
 package handler
 
 import (
+	"errors"
 	"github.com/kazoup/platform/document/srv/proto/document"
 	platform_errors "github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/quota"
 	"github.com/kazoup/platform/lib/validate"
-	proto_quota "github.com/kazoup/platform/quota/srv/proto/quota"
-	"github.com/micro/go-micro"
 	"golang.org/x/net/context"
 )
 
@@ -17,26 +17,19 @@ func (de *Service) EnrichFile(ctx context.Context, req *proto_document.EnrichFil
 		return err
 	}
 
-	srv, ok := micro.FromContext(ctx)
-	if !ok {
-		return platform_errors.ErrInvalidCtx
-	}
-
-	// Check Quota first
-	qreq := srv.Client().NewRequest(
-		globals.QUOTA_SERVICE_NAME,
-		"Quota.Read",
-		&proto_quota.ReadRequest{
-			Srv: globals.DOCUMENT_SERVICE_NAME,
-		},
-	)
-	qrsp := &proto_quota.ReadResponse{}
-	if err := srv.Client().Call(ctx, qreq, qrsp); err != nil {
+	uID, err := globals.ParseUserIdFromContext(ctx)
+	if err != nil {
 		return err
 	}
 
+	// Check Quota first
+	_, _, rate, _, quota, ok := quota.Check(ctx, globals.DOCUMENT_SERVICE_NAME, uID)
+	if !ok {
+		return platform_errors.NewPlatformError(globals.DOCUMENT_SERVICE_NAME, "EnrichFile", "", errors.New("quota.Check"))
+	}
+
 	// Quota exceded, respond sync and do not initiate go routines
-	if qrsp.Quota.Rate-qrsp.Quota.Quota > 0 {
+	if rate-quota > 0 {
 		rsp.Info = "Quota for Document content extraction service exceeded."
 		return nil
 	}

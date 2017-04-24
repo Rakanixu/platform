@@ -74,7 +74,6 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			micro.WrapClient(
 				ContextClientWrapper(service),
 				/*awsxray.NewClientWrapper(opts...),*/
-				KazoupClientWrap(),
 			),
 			micro.WrapSubscriber(
 				ContextSubscriberWrapper(service),
@@ -120,7 +119,6 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 		micro.WrapClient(
 			ContextClientWrapper(service),
 			/*awsxray.NewClientWrapper(opts...),*/
-			KazoupClientWrap(),
 		),
 		micro.WrapSubscriber(
 			ContextSubscriberWrapper(service),

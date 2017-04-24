@@ -1,12 +1,12 @@
 package handler
 
 import (
+	"errors"
 	platform_errors "github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/quota"
 	"github.com/kazoup/platform/lib/validate"
-	quota_proto "github.com/kazoup/platform/quota/srv/proto/quota"
 	"github.com/kazoup/platform/sentiment/srv/proto/sentiment"
-	"github.com/micro/go-micro"
 	"golang.org/x/net/context"
 )
 
@@ -18,26 +18,19 @@ func (s *Service) AnalyzeFile(ctx context.Context, req *proto_sentiment.AnalyzeF
 		return err
 	}
 
-	srv, ok := micro.FromContext(ctx)
-	if !ok {
-		return platform_errors.ErrInvalidCtx
-	}
-
-	// Check Quota first
-	qreq := srv.Client().NewRequest(
-		globals.QUOTA_SERVICE_NAME,
-		"Quota.Read",
-		&quota_proto.ReadRequest{
-			Srv: globals.SENTIMENT_SERVICE_NAME,
-		},
-	)
-	qrsp := &quota_proto.ReadResponse{}
-	if err := srv.Client().Call(ctx, qreq, qrsp); err != nil {
+	uID, err := globals.ParseUserIdFromContext(ctx)
+	if err != nil {
 		return err
 	}
 
+	// Check Quota first
+	_, _, rate, _, quota, ok := quota.Check(ctx, globals.SENTIMENT_SERVICE_NAME, uID)
+	if !ok {
+		return platform_errors.NewPlatformError(globals.SENTIMENT_SERVICE_NAME, "AnalyzeFile", "", errors.New("quota.Check"))
+	}
+
 	// Quota exceded, respond sync and do not initiate go routines
-	if qrsp.Quota.Rate-qrsp.Quota.Quota > 0 {
+	if rate-quota > 0 {
 		rsp.Info = "Quota for Entity extraction service exceeded."
 		return nil
 	}

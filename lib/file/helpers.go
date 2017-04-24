@@ -9,12 +9,10 @@ import (
 	"github.com/kazoup/platform/lib/dropbox"
 	"github.com/kazoup/platform/lib/globals"
 	gmailhelper "github.com/kazoup/platform/lib/gmail"
-	"github.com/kazoup/platform/lib/local"
 	"github.com/kazoup/platform/lib/onedrive"
 	"github.com/kazoup/platform/lib/slack"
 	googledrive "google.golang.org/api/drive/v3"
 	"net/url"
-	"path/filepath"
 	"strings"
 	"time"
 )
@@ -26,12 +24,6 @@ func NewFileFromString(s string) (File, error) {
 	}
 
 	switch kf.FileType {
-	case globals.Local:
-		klf := &KazoupLocalFile{}
-		if err := json.Unmarshal([]byte(s), klf); err != nil {
-			return nil, err
-		}
-		return klf, nil
 	case globals.Slack:
 		ksf := &KazoupSlackFile{}
 		if err := json.Unmarshal([]byte(s), ksf); err != nil {
@@ -166,28 +158,6 @@ func NewKazoupFileFromSlackFile(s slack.SlackFile, dsId, uId, index string) *Kaz
 		Index:        index,
 	}
 	return &KazoupSlackFile{*kf, &s}
-}
-
-func NewKazoupFileFromLocal(lf *local.LocalFile, dsId, uId, index string) *KazoupLocalFile {
-	// don;t save all LocalFile as mmost of data is same as KazoupFile just pass file mode
-	kf := &KazoupFile{
-		ID:           globals.GetMD5Hash(lf.Path),
-		UserId:       uId,
-		Name:         lf.Info.Name(),
-		URL:          "/local" + lf.Path,
-		Modified:     lf.Info.ModTime(),
-		FileSize:     lf.Info.Size(),
-		IsDir:        lf.Info.IsDir(),
-		Category:     categories.GetDocType(filepath.Ext(lf.Info.Name())),
-		Depth:        UrlDepth(lf.Path),
-		FileType:     globals.Local,
-		LastSeen:     time.Now().Unix(),
-		Access:       globals.ACCESS_PRIVATE,
-		DatasourceId: dsId,
-		Index:        index,
-	}
-	return &KazoupLocalFile{*kf}
-
 }
 
 // NewKazoupFileFromOneDriveFile constructor

@@ -16,12 +16,6 @@ var PRODUCT_QUOTAS = struct {
 }{
 	M: map[string]map[string]map[string]interface{}{
 		PRODUCT_TYPE_PERSONAL: map[string]map[string]interface{}{
-			SEARCH_SERVICE_NAME: map[string]interface{}{
-				"label":      "Search service",
-				"icon":       "action:search",
-				"handler":    0,
-				"subscriber": 0,
-			},
 			DATASOURCE_SERVICE_NAME: map[string]interface{}{
 				"label":      "Datasource service",
 				"icon":       "file:cloud-queue",
@@ -108,12 +102,6 @@ var PRODUCT_QUOTAS = struct {
 			},
 		},
 		PRODUCT_TYPE_TEAM: map[string]map[string]interface{}{
-			SEARCH_SERVICE_NAME: map[string]interface{}{
-				"label":      "Search service",
-				"icon":       "action:search",
-				"handler":    0,
-				"subscriber": 0,
-			},
 			DATASOURCE_SERVICE_NAME: map[string]interface{}{
 				"label":      "Datasource service",
 				"icon":       "file:cloud-queue",

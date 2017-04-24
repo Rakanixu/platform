@@ -1,42 +1,36 @@
 package handler
 
 import (
+	"errors"
 	"github.com/kazoup/platform/audio/srv/proto/audio"
+	platform_errors "github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/quota"
 	"github.com/kazoup/platform/lib/validate"
-	quota_proto "github.com/kazoup/platform/quota/srv/proto/quota"
-	"github.com/micro/go-micro"
-	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
 )
 
-type Service struct{}
+type Service struct {
+	quota quota.Checker
+}
 
 func (s *Service) EnrichFile(ctx context.Context, req *proto_audio.EnrichFileRequest, rsp *proto_audio.EnrichFileResponse) error {
 	if err := validate.Exists(ctx, req.Id, req.Index); err != nil {
 		return err
 	}
 
-	srv, ok := micro.FromContext(ctx)
-	if !ok {
-		return errors.New("Cant get srv from context", "", 500)
-	}
-
-	// Check Quota for audio service
-	qreq := srv.Client().NewRequest(
-		globals.QUOTA_SERVICE_NAME,
-		"Quota.Read",
-		&quota_proto.ReadRequest{
-			Srv: globals.AUDIO_SERVICE_NAME,
-		},
-	)
-	qrsp := &quota_proto.ReadResponse{}
-	if err := srv.Client().Call(ctx, qreq, qrsp); err != nil {
+	uID, err := globals.ParseUserIdFromContext(ctx)
+	if err != nil {
 		return err
 	}
 
+	_, _, rate, _, quota, ok := quota.Check(ctx, globals.AUDIO_SERVICE_NAME, uID)
+	if !ok {
+		return platform_errors.NewPlatformError(globals.AUDIO_SERVICE_NAME, "EnrichFile", "", errors.New("quota.Check"))
+	}
+
 	// Quota exceded, respond sync and do not initiate go routines
-	if qrsp.Quota.Rate-qrsp.Quota.Quota > 0 {
+	if rate-quota > 0 {
 		rsp.Info = "Quota for Speech to text service exceeded."
 		return nil
 	}

@@ -1,33 +1,42 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: search-srv
+  name: user-srv
 spec:
   replicas: 1
   revisionHistoryLimit: 3
   template:
     metadata:
       labels:
-        app: search-srv
+        app: user-srv
     spec:
       containers:
-      - name: search-srv
+      - name: user-srv
         command: [
                   "/srv",
-                  "--registry=kubernetes", 
+                  "--registry=kubernetes",
                   "--server_address=0.0.0.0:9090",
                   "--broker=nats",
                   "--broker_address=nats:4222",
                   "--transport=tcp",
                   ]
-        image: eu.gcr.io/desktop-1470249894548/search-srv:latest
+        image: eu.gcr.io/desktop-1470249894548/user-srv:latest
+        env:
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value:  "/google-cloud-service-account/google-cloud-service-account.json"
+          - name: ELASTICSEARCH_URL
+            value:  "https://8d22518314b8a6bab84906817730e7f4.eu-west-1.aws.found.io:9243"
+          - name: ES_USERNAME
+            value: "admin"
+          - name: ES_PASSWORD
+            value: "9svne8f655h"
         imagePullPolicy: Always
         ports:
         - containerPort: 9090
-          name: search-port
+          name: user-port
         - containerPort: 10001
           name: broker-port
-        volumeMounts: 
+        volumeMounts:
         - name: google-cloud-service-account
           mountPath: "/google-cloud-service-account"
           readOnly: true
@@ -36,8 +45,8 @@ spec:
           readOnly: true
       volumes:
       - name: google-cloud-service-account
-        secret: 
+        secret:
           secretName: "google-cloud-service-account"
       - name: aws-credentials
-        secret: 
+        secret:
           secretName: "aws-credentials"
