@@ -4,6 +4,7 @@ import (
 	"github.com/kazoup/platform/document/srv/handler"
 	"github.com/kazoup/platform/document/srv/proto/document"
 	"github.com/kazoup/platform/document/srv/subscriber"
+	"github.com/kazoup/platform/lib/db/custom"
 	"github.com/kazoup/platform/lib/db/operations"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/healthchecks"
@@ -18,6 +19,11 @@ import (
 func main() {
 	// Init DB Operations
 	if err := operations.Init(); err != nil {
+		log.Fatal(err)
+	}
+
+	// Init DB Custom Operations
+	if err := custom.Init(); err != nil {
 		log.Fatal(err)
 	}
 
