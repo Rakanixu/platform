@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	IMAGE_TIMESTAMP_ES_MAP = "opts_kazoup_file.thumbnail_timestamp"
+	IMAGE_TIMESTAMP_ES_MAP = "opts_kazoup_file.tags_timestamp"
 )
 
 type AnnounceHandler struct{}
