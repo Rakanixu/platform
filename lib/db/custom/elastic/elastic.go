@@ -73,6 +73,10 @@ func (e *elastic) ScrollUnprocessedFiles(ctx context.Context, req *proto_custom.
 	out, err := s.Do(ctx)
 	if err == io.EOF {
 		done = true
+
+		return &proto_custom.ScrollUnprocessedFilesResponse{
+			Result: "[]",
+		}, nil
 	}
 	if err != io.EOF && err != nil {
 		return nil, err
