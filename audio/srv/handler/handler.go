@@ -10,6 +10,10 @@ import (
 	"golang.org/x/net/context"
 )
 
+const (
+	QUOTA_EXCEEDED_MSG = "Quota for Speech to text service exceeded."
+)
+
 type Service struct {
 	quota quota.Checker
 }
@@ -31,7 +35,7 @@ func (s *Service) EnrichFile(ctx context.Context, req *proto_audio.EnrichFileReq
 
 	// Quota exceded, respond sync and do not initiate go routines
 	if rate-quota > 0 {
-		rsp.Info = "Quota for Speech to text service exceeded."
+		rsp.Info = QUOTA_EXCEEDED_MSG
 		return nil
 	}
 

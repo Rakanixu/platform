@@ -1,0 +1,70 @@
+{
+  "file": {
+    "properties": {
+      "id": {
+        "type": "keyword",
+        "index": true
+      },
+      "user_id": {
+        "type": "keyword",
+        "index": true
+      },
+      "name":{
+        "type": "text",
+        "analyzer": "filename_index_no_ngrams",
+        "index": true,
+        "fields": {
+          "raw": {
+            "type": "keyword",
+            "index": true
+          }
+        }
+      },
+      "category": {
+        "type": "keyword",
+        "index": true
+      },
+      "file_type": {
+        "type": "keyword",
+        "index": true
+      },
+      "url": {
+        "type": "text",
+        "analyzer": "path_analyzer",
+        "index": true
+      },
+      "is_dir": {
+        "type": "boolean",
+        "index": true
+      },
+      "modified": {
+        "type": "date",
+        "format": "date_optional_time"
+      },
+      "last_seen": {
+        "type": "long",
+        "index": true
+      },
+      "file_size": {
+        "type": "long"
+      },
+      "access": {
+        "type": "keyword",
+        "index": true
+      },
+      "content": {
+        "type": "text",
+        "analyzer": "content_analyzer",
+        "index": true
+      },
+      "content_category": {
+        "type": "keyword",
+        "index": true
+      },
+      "tags": {
+        "type": "keyword",
+        "index": true
+      }
+    }
+  }
+}

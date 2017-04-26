@@ -3,6 +3,7 @@ package main
 // ElasticSearch v5.X
 // This tool finds all indeces in an elasticsearch cluster to update its settings and mapping
 // Check update mapping constrains:
+// In general, the mapping for existing fields cannot be updated.
 // https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-put-mapping.html#updating-field-mappings
 import (
 	"bytes"
@@ -26,7 +27,7 @@ const (
 func main() {
 	fa := flag.String("a", "analysis.json", "Path to ES new analysis json file")
 	fm := flag.String("f", "map.json", "Path to ES new mapping json file")
-	url := flag.String("url", "http://elasticsearch:9200", "Path to ES map file")
+	url := flag.String("url", "https://admin:9svne8f655h@8d22518314b8a6bab84906817730e7f4.eu-west-1.aws.found.io:9243", "Path to ES map file")
 
 	flag.Parse()
 	if *fa == "" {

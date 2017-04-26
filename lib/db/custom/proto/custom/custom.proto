@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package proto.custom;
+
+message ScrollUnprocessedFilesRequest {
+    string index = 1;
+    string category = 2;
+    string field = 3;
+}
+
+message ScrollUnprocessedFilesResponse {
+    string result = 1;
+}

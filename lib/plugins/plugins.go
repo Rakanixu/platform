@@ -10,6 +10,7 @@ import (
 	// DB implementation
 	_ "github.com/kazoup/platform/lib/db/bulk/elastic"
 	_ "github.com/kazoup/platform/lib/db/config/elastic"
+	_ "github.com/kazoup/platform/lib/db/custom/elastic"
 	_ "github.com/kazoup/platform/lib/db/operations/elastic"
 
 	// Quota implementation

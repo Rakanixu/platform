@@ -47,27 +47,32 @@ func logSubscriberWrapper(fn server.SubscriberFunc) server.SubscriberFunc {
 		var err error
 		err = fn(ctx, msg)
 
-		if msg.Topic() != globals.AnnounceTopic {
-			uID, err := globals.ParseUserIdFromContext(ctx)
-			if err != nil {
-				log.WithFields(log.Fields{
-					"topic": msg.Topic(),
-					"task":  "LogSubscriberWrapper",
-				}).Error("Unable to retrieve user")
-			}
+		uID, uErr := globals.ParseUserIdFromContext(ctx)
+		if uErr != nil {
+			log.WithFields(log.Fields{
+				"topic": msg.Topic(),
+				"task":  "LogSubscriberWrapper",
+			}).Error("Unable to retrieve user")
+		}
 
+		if msg.Topic() != globals.AnnounceTopic {
 			// Log what happended
-			if err != nil {
-				log.WithFields(log.Fields{
-					"topic": msg.Topic(),
-					"user":  uID,
-				}).Error(err.Error())
-			} else {
+			if err == nil {
 				log.WithFields(log.Fields{
 					"topic": msg.Topic(),
 					"user":  uID,
 				}).Info("OK")
 			}
+		}
+
+		// On Announce Topic, we only check for errors
+		// This avoids  to generate to much logs.
+		// Succesfull subscribers use to publish a new message specified the task has to be done.
+		if err != nil {
+			log.WithFields(log.Fields{
+				"topic": msg.Topic(),
+				"user":  uID,
+			}).Error(err.Error())
 		}
 
 		return err

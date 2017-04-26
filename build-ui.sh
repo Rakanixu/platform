@@ -8,7 +8,7 @@ CWD="$(pwd)"
 # cleanup
 rm -rf  ui/web/html
 cd ui/polymer && npm install && bower install
-npm install polymer-cli
+npm install polymer-cli@0.17.0
 node_modules/polymer-cli/bin/polymer.js build -v
 cd .. && cp -r polymer/build/bundled web/html
 cd $CWD
