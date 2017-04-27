@@ -1,5 +1,5 @@
 <dom-module id="add-datasources-dialog">
-  <template>
+    <template>
     <style include="iron-flex iron-flex-alignment"></style>
     <style is="custom-style" include="shared-styles">
       :host {
@@ -64,7 +64,7 @@
         </paper-button>
         -->
       </div>
-      <mat-button class="action" label="Cancel" on-tap="closeDatasourceDialog"></mat-button>
+     
     </mat-dialog>
 
     <paper-toast id="toast" duration="6000" text=""></paper-toast>
@@ -80,103 +80,102 @@
                headers="[[headers]]"></iron-ajax>
   </template>
 
-  <script>
-    'use strict';
+    <script>
+        'use strict';
 
-    (function() {
-      Polymer({
-        is: 'add-datasources-dialog',
-        behaviors: [
-          UtilBehaviorImp,
-          MapBehaviorImp,
-          EndpointsBehaviorImp
-        ],
-        properties: {
-          lastDatasourceCreated: {
-            type: Object,
-            notify: false,
-            value: function() {
-              return {};
-            }
-          }
-        },
-        ready: function() {
-          if (window && window.process && window.process.type) {
-            ipcRenderer.on('add-folder', this._addDatasource.bind(this));
-            ipcRenderer.on('auth-callback-message', this._authSuccessful.bind(this));
-          }
-        },
-        openDatasourceDialog: function() {
-          this.$.addDatasourceDialog.show();
-        },
-        closeDatasourceDialog: function() {
-          this.$.addDatasourceDialog.hide();
-        },
-        doAuth: function(e) {
-          if (window && window.process && window.process.type) {
-            if (e.currentTarget.getAttribute('data-url') == 'local://' ) {
-              ipcRenderer.send('open-folder');
-            } else {
-              ipcRenderer.send(
-                'auth-message',
-                {
-                  url: e.currentTarget.getAttribute('data-url') + '?jwt=' + Auth.getJWT(),
-                  token: localStorage.getItem('token'),
-                  id_token: localStorage.getItem('id_token'),
-                  show_onboarding: localStorage.getItem('show_onboarding')
+        (function() {
+            Polymer({
+                is: 'add-datasources-dialog',
+                behaviors: [
+                    UtilBehaviorImp,
+                    MapBehaviorImp,
+                    EndpointsBehaviorImp
+                ],
+                properties: {
+                    lastDatasourceCreated: {
+                        type: Object,
+                        notify: false,
+                        value: function() {
+                            return {};
+                        }
+                    }
+                },
+                ready: function() {
+                    if (window && window.process && window.process.type) {
+                        ipcRenderer.on('add-folder', this._addDatasource.bind(this));
+                        ipcRenderer.on('auth-callback-message', this._authSuccessful.bind(this));
+                    }
+                },
+                openDatasourceDialog: function() {
+                    this.$.addDatasourceDialog.show();
+                },
+                closeDatasourceDialog: function() {
+                    this.$.addDatasourceDialog.hide();
+                },
+                doAuth: function(e) {
+                    if (window && window.process && window.process.type) {
+                        if (e.currentTarget.getAttribute('data-url') == 'local://') {
+                            ipcRenderer.send('open-folder');
+                        } else {
+                            ipcRenderer.send(
+                                'auth-message', {
+                                    url: e.currentTarget.getAttribute('data-url') + '?jwt=' + Auth.getJWT(),
+                                    token: localStorage.getItem('token'),
+                                    id_token: localStorage.getItem('id_token'),
+                                    show_onboarding: localStorage.getItem('show_onboarding')
+                                }
+                            );
+                        }
+                    } else {
+                        window.open(e.currentTarget.getAttribute('data-url') + '?jwt=' + Auth.getJWT());
+                    }
+
+                    this.closeDatasourceDialog();
+                },
+                _addDatasource: function(e, folder) {
+                    this.headers = Auth.getHeaders();
+                    this.set('loading', true);
+
+                    if (folder.length > 0) {
+                        this.set('lastDatasourceCreated', {
+                            endpoint: {
+                                url: 'local://' + folder[0]
+                            }
+                        });
+                    }
+
+                    this.$.rpcAddDatasource.body = {
+                        service: 'com.kazoup.srv.datasource',
+                        method: 'Service.Create',
+                        request: this.lastDatasourceCreated
+                    };
+                    this.$.rpcAddDatasource.generateRequest();
+                },
+                _authSuccessful: function(e, detail) {
+                    for (var attr in detail) {
+                        if (detail.hasOwnProperty(attr)) {
+                            localStorage.setItem(attr, detail[attr]);
+                        }
+                    }
+                },
+                _handleAddDatasource: function(e) {
+                    if (e.detail.response) {
+                        this.closeDatasourceDialog();
+                        this.$.toast.text = 'New datasource created succesfully';
+                        this.$.toast.show();
+                        this.async(this.init, 1000);
+                    }
+                },
+                _handleError: function(e) {
+                    this.set('loading', false);
+                    this.checkUnauthorize(e);
+
+                    if (e.detail.request && e.detail.request.response) {
+                        this.$.toast.text = e.detail.request.response.detail;
+                        this.$.toast.show();
+                    }
                 }
-              );
-            }
-          } else {
-            window.open(e.currentTarget.getAttribute('data-url') + '?jwt=' + Auth.getJWT());
-          }
-
-          this.closeDatasourceDialog();
-        },
-        _addDatasource: function(e, folder) {
-          this.headers = Auth.getHeaders();
-          this.set('loading', true);
-
-          if (folder.length > 0) {
-            this.set('lastDatasourceCreated', {
-              endpoint: {
-                url: 'local://' + folder[0]
-              }
             });
-          }
-
-          this.$.rpcAddDatasource.body = {
-            service: 'com.kazoup.srv.datasource',
-            method: 'Service.Create',
-            request: this.lastDatasourceCreated
-          };
-          this.$.rpcAddDatasource.generateRequest();
-        },
-        _authSuccessful: function(e, detail) {
-          for (var attr in detail) {
-            if (detail.hasOwnProperty(attr)) {
-              localStorage.setItem(attr, detail[attr]);
-            }
-          }
-        },
-        _handleAddDatasource: function(e) {
-          if (e.detail.response) {
-            this.closeDatasourceDialog();
-            this.$.toast.text = 'New datasource created succesfully';
-            this.$.toast.show();
-            this.async(this.init, 1000);
-          }
-        },
-        _handleError: function(e) {
-          this.set('loading', false);
-          this.checkUnauthorize(e);
-
-          if (e.detail.request && e.detail.request.response) {
-            this.$.toast.text = e.detail.request.response.detail;
-            this.$.toast.show();
-          }
-        }
-      });
-    }());
-  </script>
+        }());
+    </script>
 </dom-module>
