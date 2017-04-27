@@ -92,13 +92,13 @@
 <link rel="import" href="../../src/profile/profile-page.html">
 
 <dom-module id="main-menu">
-  <template>
+    <template>
     <style include="iron-flex iron-flex-alignment"></style>
     <style include="shared-styles">
       :host {
         display: block;
       }
-
+      
       a {
         color: inherit;
         text-decoration: inherit;
@@ -149,240 +149,206 @@
                 <paper-tooltip for="datasource[[item.id]]">[[getDatasourceUrl(item.url)]]</paper-tooltip>
               </template>
 
-              <mat-divider></mat-divider>
+    <mat-divider></mat-divider>
 
-              <paper-icon-item on-tap="setPathWithParams"
-                               data-path="/u/search"
-                               data-params$='{"category":"[[categoriesMap.documents]]","index":"[[md5UserId]]","term":""}'>
-                <iron-icon icon="editor:insert-drive-file" item-icon></iron-icon>Documents
-              </paper-icon-item>
+    <paper-icon-item on-tap="setPathWithParams" data-path="/u/search" data-params$='{"category":"[[categoriesMap.documents]]","index":"[[md5UserId]]","term":""}'>
+        <iron-icon icon="editor:insert-drive-file" item-icon></iron-icon>Documents
+    </paper-icon-item>
 
-              <paper-icon-item on-tap="setPathWithParams"
-                               data-path="/u/search"
-                               data-params$='{"category":"[[categoriesMap.videos]]","index":"[[md5UserId]]","term":""}'>
-                <iron-icon icon="av:movie" item-icon></iron-icon>Movies
-              </paper-icon-item>
+    <paper-icon-item on-tap="setPathWithParams" data-path="/u/search" data-params$='{"category":"[[categoriesMap.videos]]","index":"[[md5UserId]]","term":""}'>
+        <iron-icon icon="av:movie" item-icon></iron-icon>Movies
+    </paper-icon-item>
 
-              <paper-icon-item on-tap="setPathWithParams"
-                               data-path="/u/search"
-                               data-params$='{"category":"[[categoriesMap.images]]","index":"[[md5UserId]]","term":""}'>
-                <iron-icon icon="image:camera-alt" item-icon></iron-icon>Pictures
-              </paper-icon-item>
+    <paper-icon-item on-tap="setPathWithParams" data-path="/u/search" data-params$='{"category":"[[categoriesMap.images]]","index":"[[md5UserId]]","term":""}'>
+        <iron-icon icon="image:camera-alt" item-icon></iron-icon>Pictures
+    </paper-icon-item>
 
-              <paper-icon-item on-tap="setPathWithParams"
-                               data-path="/u/search"
-                               data-params$='{"category":"[[categoriesMap.audios]]","index":"[[md5UserId]]","term":""}'>
-                <iron-icon icon="image:audiotrack" item-icon></iron-icon>Audio
-              </paper-icon-item>
+    <paper-icon-item on-tap="setPathWithParams" data-path="/u/search" data-params$='{"category":"[[categoriesMap.audios]]","index":"[[md5UserId]]","term":""}'>
+        <iron-icon icon="image:audiotrack" item-icon></iron-icon>Audio
+    </paper-icon-item>
 
-              <paper-icon-item on-tap="setPathWithParams"
-                               data-path="/u/search"
-                               data-params$='{"access":"[[accessMap.public]]","index":"[[md5UserId]]","term":""}'>
-                <iron-icon icon="icons:cloud" item-icon></iron-icon>Public
-              </paper-icon-item>
+    <paper-icon-item on-tap="setPathWithParams" data-path="/u/search" data-params$='{"access":"[[accessMap.public]]","index":"[[md5UserId]]","term":""}'>
+        <iron-icon icon="icons:cloud" item-icon></iron-icon>Public
+    </paper-icon-item>
 
-              <paper-icon-item on-tap="setPathWithParams"
-                               data-path="/u/search"
-                               data-params$='{"content_category":"[[contentCategoryMap.sensitive]]","index":"[[md5UserId]]","term":""}'>
-                <iron-icon icon="icons:warning" item-icon></iron-icon>Sensitive
-              </paper-icon-item>
+    <paper-icon-item on-tap="setPathWithParams" data-path="/u/search" data-params$='{"content_category":"[[contentCategoryMap.sensitive]]","index":"[[md5UserId]]","term":""}'>
+        <iron-icon icon="icons:warning" item-icon></iron-icon>Sensitive
+    </paper-icon-item>
 
-              <mat-divider></mat-divider>
+    <mat-divider></mat-divider>
 
-              <paper-icon-item on-tap="showDatasourcesDialog">
-                <iron-icon icon="icons:add-circle-outline" item-icon></iron-icon>Add Files
-              </paper-icon-item>
-              <paper-icon-item on-tap="showSettingsPage">
-                <iron-icon icon="icons:settings" item-icon></iron-icon>Settings
-              </paper-icon-item>
-              <paper-icon-item on-tap="showIntercom">
-                <iron-icon icon="icons:feedback" item-icon></iron-icon>Feedback
-              </paper-icon-item>
-              <paper-icon-item id="logout" on-tap="logout">
-                <iron-icon icon="icons:power-settings-new" item-icon></iron-icon>Sign out
-              </paper-icon-item>
-            </paper-menu>
-          </div>
-        </div>
-      </div>
+    <paper-icon-item on-tap="showDatasourcesDialog">
+        <iron-icon icon="icons:add-circle-outline" item-icon></iron-icon>Add Files
+    </paper-icon-item>
+    <paper-icon-item on-tap="showSettingsPage">
+        <iron-icon icon="icons:settings" item-icon></iron-icon>Settings
+    </paper-icon-item>
+    <paper-icon-item on-tap="showIntercom">
+        <iron-icon icon="icons:feedback" item-icon></iron-icon>Feedback
+    </paper-icon-item>
+    <paper-icon-item id="logout" on-tap="logout">
+        <iron-icon icon="icons:power-settings-new" item-icon></iron-icon>Sign out
+    </paper-icon-item>
+    </paper-menu>
+    </div>
+    </div>
+    </div>
 
-      <div main>
+    <div main>
         <iron-pages id="authPages">
-          <search-page id="search"
-                       route="{{route}}"
-                       subroute="{{subroute}}"
-                       query-params="{{queryParams}}"
-                       datasource-results="{{datasourceResults}}"
-                       name="search"></search-page>
-          <settings-page id="settings"
-                         route="{{route}}"
-                         subroute="{{subroute}}"
-                         query-params="{{queryParams}}"
-                         datasource-results="{{datasourceResults}}"
-                         name="settings"></settings-page>
-          <profile-page id="profile"
-                         route="{{route}}"
-                         subroute="{{subroute}}"
-                         query-params="{{queryParams}}"
-                         name="profile"></profile-page>
+            <search-page id="search" route="{{route}}" subroute="{{subroute}}" query-params="{{queryParams}}" datasource-results="{{datasourceResults}}" name="search"></search-page>
+            <settings-page id="settings" route="{{route}}" subroute="{{subroute}}" query-params="{{queryParams}}" datasource-results="{{datasourceResults}}" name="settings"></settings-page>
+            <profile-page id="profile" route="{{route}}" subroute="{{subroute}}" query-params="{{queryParams}}" name="profile"></profile-page>
         </iron-pages>
-      </div>
+    </div>
 
     </paper-drawer-panel>
 
     <paper-toast id="toast" text=""></paper-toast>
 
-    <iron-ajax id="rpcGetDatasources"
-               method="POST"
-               content-type="application/json"
-               url="[[endpoints.endpoint]]"
-               handle-as="json"
-               on-error="_handleError"
-               on-response="_handleGetDatasource"
-               params="[[rpcGetDatasourcesParams]]"
-               headers="[[headers]]"></iron-ajax>
+    <iron-ajax id="rpcGetDatasources" method="POST" content-type="application/json" url="[[endpoints.endpoint]]" handle-as="json" on-error="_handleError" on-response="_handleGetDatasource" params="[[rpcGetDatasourcesParams]]" headers="[[headers]]"></iron-ajax>
     <check-connection></check-connection>
     <notify-messages></notify-messages>
 
     <scheduler-client datasource-results="{{datasourceResults}}"></scheduler-client>
     <add-datasources-dialog id="addDatasources"></add-datasources-dialog>
-  </template>
+    </template>
 
-  <script>
-    'use strict';
+    <script>
+        'use strict';
 
-    (function() {
-      Polymer({
-        is: 'main-menu',
-        behaviors: [
-          MapBehaviorImp,
-          EndpointsBehaviorImp,
-          UtilBehaviorImp
-        ],
-        properties: {
-          datasourceResults: {
-            type: Array,
-            notify: true,
-            value: function() {
-              return [];
-            }
-          },
-          rpcGetDatasourcesParams: {
-            type: Object,
-            notify: false,
-            value: function() {
-              return {
-                service: window.Endpoints.srvs.datasource.srv,
-                method: window.Endpoints.srvs.datasource.search,
-                request: {
-                  index: 'datasources',
-                  type: 'datasource',
-                  from: 0,
-                  size: 9999
+        (function() {
+            Polymer({
+                is: 'main-menu',
+                behaviors: [
+                    MapBehaviorImp,
+                    EndpointsBehaviorImp,
+                    UtilBehaviorImp
+                ],
+                properties: {
+                    datasourceResults: {
+                        type: Array,
+                        notify: true,
+                        value: function() {
+                            return [];
+                        }
+                    },
+                    rpcGetDatasourcesParams: {
+                        type: Object,
+                        notify: false,
+                        value: function() {
+                            return {
+                                service: window.Endpoints.srvs.datasource.srv,
+                                method: window.Endpoints.srvs.datasource.search,
+                                request: {
+                                    index: 'datasources',
+                                    type: 'datasource',
+                                    from: 0,
+                                    size: 9999
+                                }
+                            };
+                        }
+                    }
+                },
+                observers: [
+                    '_route(route.path)'
+                ],
+                _route: function(path) {
+                    if (path.indexOf(this.pagesMap.u.path) === 0) {
+                        this.init();
+
+                        switch (path) {
+                            case this.pagesMap.search.path:
+                                this.$.authPages.selected = 0;
+                                break;
+                            case this.pagesMap.settings.path:
+                                this.$.authPages.selected = 1;
+                                break;
+                            case this.pagesMap.profile.path:
+                                this.$.authPages.selected = 2;
+                                break;
+                            default:
+                                // Fallback, for example, when /u is hitted
+                                this.set('route.path', this.pagesMap.search.path);
+                                break;
+                        }
+                    }
+                },
+                ready: function() {
+                    window.addEventListener('main-menu-open', function() {
+                        this.$.navDrawerPanel.openDrawer();
+                    }.bind(this));
+
+                    window.addEventListener('main-menu-close', function() {
+                        this.$.navDrawerPanel.closeDrawer();
+                    }.bind(this))
+
+                    window.addEventListener('refresh-datasources', function() {
+                        this.refreshDatasources();
+                    }.bind(this));
+                },
+                init: function() {
+                    this.md5UserId = Auth.getMD5UserId();
+                    this.headers = Auth.getHeaders();
+                    this.profile = Auth.getProfile();
+                    this.$.rpcGetDatasources.body = this.rpcGetDatasourcesParams;
+                    this.$.rpcGetDatasources.generateRequest();
+                },
+                refreshDatasources: function() {
+                    this.async(function() {
+                        this.$.rpcGetDatasources.body = this.rpcGetDatasourcesParams;
+                        this.$.rpcGetDatasources.generateRequest();
+                    });
+                },
+                setPathWithParams: function(e) {
+                    this.closeMenu();
+                    this.set('route.path', e.currentTarget.dataset.path);
+                    this.set('route.__queryParams', JSON.parse(e.currentTarget.dataset.params));
+                },
+                showSettingsPage: function(e) {
+                    this.closeMenu();
+                    this.set('route.path', this.pagesMap.settings.path);
+                    this.set('route.__queryParams', {
+                        s: 'datasources'
+                    });
+                },
+                showProfilePage: function(e) {
+                    this.closeMenu();
+
+                    this.set('route.path', this.pagesMap.profile.path);
+                    this.set('route.__queryParams', {});
+                },
+                showDatasourcesDialog: function(e) {
+                    this.$.addDatasources.openDatasourceDialog();
+                },
+                showIntercom: function(e) {
+                    this.closeMenu();
+
+                    Intercom('boot', {
+                        app_id: '765edcee587b03dba65dcf9c8b7ea0b1f488a7c5'
+                    });
+                    Intercom('show');
+                },
+                logout: function() {
+                    Auth.clear();
+                    Intercom('shutdown');
+
+                    this.closeMenu();
+                    this.set('route.path', this.pagesMap.login.path);
+                    this.set('route.__queryParams', {});
+                },
+                _handleGetDatasource: function(e) {
+                    if (e.detail.response && e.detail.response.result) {
+                        var results = JSON.parse(e.detail.response.result);
+
+                        // List datasources
+                        this.set('datasourceResults', results ? results : []);
+                    }
+                },
+                _handleError: function(e, detail) {
+                    this.checkUnauthorize(e);
                 }
-              };
-            }
-          }
-        },
-        observers: [
-          '_route(route.path)'
-        ],
-        _route: function(path) {
-          if (path.indexOf(this.pagesMap.u.path) === 0) {
-            this.init();
-
-            switch (path) {
-              case this.pagesMap.search.path:
-                this.$.authPages.selected = 0;
-                break;
-              case this.pagesMap.settings.path:
-                this.$.authPages.selected = 1;
-                break;
-              case this.pagesMap.profile.path:
-                this.$.authPages.selected = 2;
-                break;
-              default:
-                // Fallback, for example, when /u is hitted
-                this.set('route.path', this.pagesMap.search.path);
-                break;
-            }
-          }
-        },
-        ready: function() {
-          window.addEventListener('main-menu-open', function() {
-            this.$.navDrawerPanel.openDrawer();
-          }.bind(this));
-
-          window.addEventListener('main-menu-close', function() {
-            this.$.navDrawerPanel.closeDrawer();
-          }.bind(this))
-
-          window.addEventListener('refresh-datasources', function() {
-            this.refreshDatasources();
-          }.bind(this));
-        },
-        init: function() {
-          this.md5UserId = Auth.getMD5UserId();
-          this.headers = Auth.getHeaders();
-          this.profile = Auth.getProfile();
-          this.$.rpcGetDatasources.body = this.rpcGetDatasourcesParams;
-          this.$.rpcGetDatasources.generateRequest();
-        },
-        refreshDatasources: function() {
-          this.async(function() {
-            this.$.rpcGetDatasources.body = this.rpcGetDatasourcesParams;
-            this.$.rpcGetDatasources.generateRequest();
-          });
-        },
-        setPathWithParams: function(e) {
-          this.closeMenu();
-          this.set('route.path', e.currentTarget.dataset.path);
-          this.set('route.__queryParams', JSON.parse(e.currentTarget.dataset.params));
-        },
-        showSettingsPage: function(e) {
-          this.closeMenu();
-          this.set('route.path', this.pagesMap.settings.path);
-          this.set('route.__queryParams', {
-            s: 'datasources'
-          });
-        },
-        showProfilePage: function(e) {
-          this.closeMenu();
-
-          this.set('route.path', this.pagesMap.profile.path);
-          this.set('route.__queryParams', {});
-        },
-        showDatasourcesDialog: function(e) {
-          this.$.addDatasources.openDatasourceDialog();
-        },
-        showIntercom: function(e) {
-          this.closeMenu();
-
-          Intercom('boot', {
-            app_id: '765edcee587b03dba65dcf9c8b7ea0b1f488a7c5'
-          });
-          Intercom('show');
-        },
-        logout: function() {
-          Auth.clear();
-          Intercom('shutdown');
-
-          this.closeMenu();
-          this.set('route.path', this.pagesMap.login.path);
-          this.set('route.__queryParams', {});
-        },
-        _handleGetDatasource: function(e) {
-          if (e.detail.response && e.detail.response.result) {
-            var results = JSON.parse(e.detail.response.result);
-
-            // List datasources
-            this.set('datasourceResults', results ? results : []);
-          }
-        },
-        _handleError: function(e, detail) {
-          this.checkUnauthorize(e);
-        }
-      });
-    }());
-  </script>
+            });
+        }());
+    </script>
 </dom-module>
