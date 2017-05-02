@@ -2,6 +2,10 @@ package elastic
 
 import (
 	"encoding/json"
+	"log"
+	"os"
+	"time"
+
 	"github.com/cenkalti/backoff"
 	"github.com/kazoup/gabs"
 	"github.com/kazoup/platform/lib/db/operations"
@@ -10,8 +14,6 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	"golang.org/x/net/context"
 	elib "gopkg.in/olivere/elastic.v5"
-	"os"
-	"time"
 )
 
 type elastic struct {
@@ -206,7 +208,7 @@ func (e *elastic) Search(ctx context.Context, req *proto_operations.SearchReques
 			Info:   `{"total":0}`,
 		}, nil
 	}
-
+	log.Printf("Took : %v ms", out.TookInMillis)
 	for _, v := range out.Hits.Hits {
 		data, err := v.Source.MarshalJSON()
 		if err != nil {
