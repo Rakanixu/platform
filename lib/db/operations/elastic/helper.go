@@ -2,8 +2,9 @@ package elastic
 
 import (
 	"bytes"
-	"github.com/kazoup/platform/lib/globals"
 	"strconv"
+
+	"github.com/kazoup/platform/lib/globals"
 )
 
 // TODO: use gabs (handle JSON in go)
@@ -182,7 +183,7 @@ func (e *ElasticQuery) queryTerm() string {
 	if len(e.Term) <= 0 {
 		buffer.WriteString(`{}`)
 	} else {
-		buffer.WriteString(`{"match": {"name.raw":{"boost":10,"query": "`)
+		buffer.WriteString(`{"match": {"name.raw":{"query": "`)
 		buffer.WriteString(e.Term)
 		buffer.WriteString(`"}}},`)
 		buffer.WriteString(`{"match": {"name":{"query": "`)
@@ -197,7 +198,7 @@ func (e *ElasticQuery) queryContent() string {
 	var buffer bytes.Buffer
 
 	if len(e.Term) > 0 && e.Type == globals.FileType {
-		buffer.WriteString(`{"match_phrase": {"content":{"boost":6,"query":"`)
+		buffer.WriteString(`{"match_phrase": {"content":{"query":"`)
 		buffer.WriteString(e.Term)
 		buffer.WriteString(`"}}}`)
 	} else {
@@ -211,7 +212,7 @@ func (e *ElasticQuery) queryTags() string {
 	var buffer bytes.Buffer
 
 	if len(e.Term) > 0 && e.Type == globals.FileType {
-		buffer.WriteString(`{"match": {"tags":{"boost":6,"query":"`)
+		buffer.WriteString(`{"match": {"tags":{"query":"`)
 		buffer.WriteString(e.Term)
 		buffer.WriteString(`"}}}`)
 	} else {
