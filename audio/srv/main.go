@@ -7,8 +7,8 @@ import (
 	"github.com/kazoup/platform/lib/db/custom"
 	"github.com/kazoup/platform/lib/db/operations"
 	"github.com/kazoup/platform/lib/globals"
-	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/healthchecks"
+	"github.com/kazoup/platform/lib/objectstorage"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/go-micro/server"
@@ -43,13 +43,13 @@ func main() {
 	// Attach handler
 	proto_audio.RegisterServiceHandler(service.Server(), new(handler.Service))
 
-	gcslib.Register()
+	objectstorage.Init()
 
 	// Attach subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.AudioEnrichTopic,
-			subscriber.NewTaskHandler(20, gcslib.NewGoogleCloudStorage()),
+			subscriber.NewTaskHandler(20),
 			server.SubscriberQueue("audio"),
 		),
 	); err != nil {

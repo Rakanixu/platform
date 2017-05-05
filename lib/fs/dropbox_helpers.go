@@ -11,8 +11,8 @@ import (
 	"github.com/kazoup/platform/lib/dropbox"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
-	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/image"
+	"github.com/kazoup/platform/lib/objectstorage"
 	sttlib "github.com/kazoup/platform/lib/speechtotext"
 	"github.com/kazoup/platform/lib/tika"
 	"io"
@@ -179,7 +179,7 @@ func (dfs *DropboxFs) processDocument(f *file.KazoupDropboxFile) (file.File, err
 }
 
 // processAudio uploads audio file to GCS and runs async speech to text over it
-func (dfs *DropboxFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.KazoupDropboxFile) (file.File, error) {
+func (dfs *DropboxFs) processAudio(f *file.KazoupDropboxFile) (file.File, error) {
 	// Download file from Box, so connector is globals.Box
 	bcs, err := cs.NewCloudStorageFromEndpoint(dfs.Endpoint, globals.Dropbox)
 	if err != nil {
@@ -191,7 +191,7 @@ func (dfs *DropboxFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.Kazou
 		return nil, err
 	}
 
-	if err := gcs.Upload(rc, globals.AUDIO_BUCKET, f.ID); err != nil {
+	if err := objectstorage.Upload(rc, globals.AUDIO_BUCKET, f.ID); err != nil {
 		return nil, err
 	}
 
@@ -215,7 +215,7 @@ func (dfs *DropboxFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.Kazou
 }
 
 // processThumbnail, thumbnail generation
-func (dfs *DropboxFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *file.KazoupDropboxFile) (file.File, error) {
+func (dfs *DropboxFs) processThumbnail(f *file.KazoupDropboxFile) (file.File, error) {
 	// Downloads from dropbox, see connector
 	dcs, err := cs.NewCloudStorageFromEndpoint(dfs.Endpoint, globals.Dropbox)
 	if err != nil {
@@ -243,7 +243,7 @@ func (dfs *DropboxFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *file.K
 			return nil
 		}
 
-		if err := gcs.Upload(ioutil.NopCloser(b), dfs.Endpoint.Index, f.ID); err != nil {
+		if err := objectstorage.Upload(ioutil.NopCloser(b), dfs.Endpoint.Index, f.ID); err != nil {
 			return err
 		}
 

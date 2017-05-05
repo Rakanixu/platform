@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
-	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 )
 
 // DocEnrich extracts content from document and add to File
@@ -78,7 +77,7 @@ func (ofs *OneDriveFs) ImgEnrich(f file.File) chan FileMsg {
 }
 
 // AudioEnrich extracts audio and save it as text
-func (ofs *OneDriveFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+func (ofs *OneDriveFs) AudioEnrich(f file.File) chan FileMsg {
 	go func() {
 		var err error
 
@@ -99,7 +98,7 @@ func (ofs *OneDriveFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) 
 		}
 
 		if f.(*file.KazoupOneDriveFile).Category == globals.CATEGORY_AUDIO && processAudio {
-			f, err = ofs.processAudio(gcs, f.(*file.KazoupOneDriveFile))
+			f, err = ofs.processAudio(f.(*file.KazoupOneDriveFile))
 			if err != nil {
 				ofs.FilesChan <- NewFileMsg(nil, err)
 				return
@@ -113,7 +112,7 @@ func (ofs *OneDriveFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) 
 }
 
 // Thumbnail generate thumbnail
-func (ofs *OneDriveFs) Thumbnail(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+func (ofs *OneDriveFs) Thumbnail(f file.File) chan FileMsg {
 	go func() {
 		var err error
 
@@ -134,7 +133,7 @@ func (ofs *OneDriveFs) Thumbnail(f file.File, gcs *gcslib.GoogleCloudStorage) ch
 		}
 
 		if f.(*file.KazoupOneDriveFile).Category == globals.CATEGORY_PICTURE && processThumbnail {
-			f, err = ofs.processThumbnail(gcs, f.(*file.KazoupOneDriveFile))
+			f, err = ofs.processThumbnail(f.(*file.KazoupOneDriveFile))
 			if err != nil {
 				ofs.FilesChan <- NewFileMsg(nil, err)
 				return

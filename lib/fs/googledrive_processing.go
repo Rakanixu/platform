@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
-	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 )
 
 // DocEnrich extracts content from document and add to File
@@ -78,7 +77,7 @@ func (gfs *GoogleDriveFs) ImgEnrich(f file.File) chan FileMsg {
 }
 
 // AudioEnrich extracts audio and save it as text
-func (gfs *GoogleDriveFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+func (gfs *GoogleDriveFs) AudioEnrich(f file.File) chan FileMsg {
 	go func() {
 		var err error
 
@@ -99,7 +98,7 @@ func (gfs *GoogleDriveFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorag
 		}
 
 		if f.(*file.KazoupGoogleFile).Category == globals.CATEGORY_AUDIO && processAudio {
-			f, err = gfs.processAudio(gcs, f.(*file.KazoupGoogleFile))
+			f, err = gfs.processAudio(f.(*file.KazoupGoogleFile))
 			if err != nil {
 				gfs.FilesChan <- NewFileMsg(nil, err)
 				return
@@ -113,7 +112,7 @@ func (gfs *GoogleDriveFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorag
 }
 
 // Thumbnail generate thumbnail
-func (gfs *GoogleDriveFs) Thumbnail(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+func (gfs *GoogleDriveFs) Thumbnail(f file.File) chan FileMsg {
 	go func() {
 		var err error
 
@@ -134,7 +133,7 @@ func (gfs *GoogleDriveFs) Thumbnail(f file.File, gcs *gcslib.GoogleCloudStorage)
 		}
 
 		if f.(*file.KazoupGoogleFile).Category == globals.CATEGORY_PICTURE && processThumbnail {
-			f, err = gfs.processThumbnail(gcs, f.(*file.KazoupGoogleFile))
+			f, err = gfs.processThumbnail(f.(*file.KazoupGoogleFile))
 			if err != nil {
 				gfs.FilesChan <- NewFileMsg(nil, err)
 				return

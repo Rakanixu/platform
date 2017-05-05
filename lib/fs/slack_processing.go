@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
-	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 )
 
 // DocEnrich extracts content from document and add to File
@@ -78,7 +77,7 @@ func (sfs *SlackFs) ImgEnrich(f file.File) chan FileMsg {
 }
 
 // AudioEnrich extracts audio and save it as text
-func (sfs *SlackFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+func (sfs *SlackFs) AudioEnrich(f file.File) chan FileMsg {
 	go func() {
 		var err error
 
@@ -99,7 +98,7 @@ func (sfs *SlackFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) cha
 		}
 
 		if f.(*file.KazoupSlackFile).Category == globals.CATEGORY_AUDIO && processAudio {
-			f, err = sfs.processAudio(gcs, f.(*file.KazoupSlackFile))
+			f, err = sfs.processAudio(f.(*file.KazoupSlackFile))
 			if err != nil {
 				sfs.FilesChan <- NewFileMsg(nil, err)
 				return
@@ -113,7 +112,7 @@ func (sfs *SlackFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) cha
 }
 
 // Thumbnail generate thumbnail
-func (sfs *SlackFs) Thumbnail(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+func (sfs *SlackFs) Thumbnail(f file.File) chan FileMsg {
 	go func() {
 		var err error
 
@@ -134,7 +133,7 @@ func (sfs *SlackFs) Thumbnail(f file.File, gcs *gcslib.GoogleCloudStorage) chan 
 		}
 
 		if f.(*file.KazoupSlackFile).Category == globals.CATEGORY_PICTURE && processThumb {
-			f, err = sfs.processThumbnail(gcs, f.(*file.KazoupSlackFile))
+			f, err = sfs.processThumbnail(f.(*file.KazoupSlackFile))
 			if err != nil {
 				sfs.FilesChan <- NewFileMsg(nil, err)
 				return

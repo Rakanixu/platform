@@ -9,7 +9,6 @@ import (
 	"github.com/kazoup/platform/lib/db/operations/proto/operations"
 	file "github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
-	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"golang.org/x/net/context"
 	"strings"
 )
@@ -39,8 +38,8 @@ type FsUtils interface {
 type FsProcessing interface {
 	DocEnrich(file.File) chan FileMsg
 	ImgEnrich(file.File) chan FileMsg
-	AudioEnrich(file.File, *gcslib.GoogleCloudStorage) chan FileMsg
-	Thumbnail(file.File, *gcslib.GoogleCloudStorage) chan FileMsg
+	AudioEnrich(file.File) chan FileMsg
+	Thumbnail(file.File) chan FileMsg
 }
 
 // NewFsFromEndpoint constructor from endpoint

@@ -15,4 +15,7 @@ import (
 
 	// Quota implementation
 	_ "github.com/kazoup/platform/lib/quota/redis"
+
+	// Object Storage implementation for platform data (thumbnails, tokens, etc)
+	_ "github.com/kazoup/platform/lib/objectstorage/googlecloud"
 )

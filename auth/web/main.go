@@ -1,14 +1,19 @@
 package main
 
 import (
-	"log"
-
 	"github.com/kazoup/platform/auth/web/handler"
+	"github.com/kazoup/platform/lib/objectstorage"
 	_ "github.com/kazoup/platform/lib/plugins"
 	web "github.com/micro/go-web"
+	"log"
 )
 
 func main() {
+	// Init Object Storage
+	if err := objectstorage.Init(); err != nil {
+		log.Fatal(err)
+	}
+
 	service := web.NewService(web.Name("com.kazoup.web.auth"))
 
 	service.HandleFunc("/google/login", handler.HandleGoogleLogin)

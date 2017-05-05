@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/kazoup/platform/lib/db/operations"
 	"github.com/kazoup/platform/lib/healthchecks"
+	"github.com/kazoup/platform/lib/objectstorage"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/media/web/handler"
 	"github.com/micro/go-os/monitor"
@@ -12,7 +13,13 @@ import (
 )
 
 func main() {
+	// Init DB operations
 	if err := operations.Init(); err != nil {
+		log.Fatal(err)
+	}
+
+	// Init Object Storage
+	if err := objectstorage.Init(); err != nil {
 		log.Fatal(err)
 	}
 

@@ -1,4 +1,4 @@
-package googlecloudstorage
+package objectstorage
 
 import (
 	"bytes"

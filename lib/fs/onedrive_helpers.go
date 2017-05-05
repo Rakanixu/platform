@@ -8,8 +8,8 @@ import (
 	"github.com/kazoup/platform/lib/cloudvision"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
-	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/image"
+	"github.com/kazoup/platform/lib/objectstorage"
 	"github.com/kazoup/platform/lib/onedrive"
 	sttlib "github.com/kazoup/platform/lib/speechtotext"
 	"github.com/kazoup/platform/lib/tika"
@@ -256,7 +256,7 @@ func (ofs *OneDriveFs) processDocument(f *file.KazoupOneDriveFile) (file.File, e
 }
 
 // processAudio uploads audio file to GCS and runs async speech to text over it
-func (ofs *OneDriveFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.KazoupOneDriveFile) (file.File, error) {
+func (ofs *OneDriveFs) processAudio(f *file.KazoupOneDriveFile) (file.File, error) {
 	// Download file from GoogleDrive, so connector is globals.OneDrive
 	ocs, err := cs.NewCloudStorageFromEndpoint(ofs.Endpoint, globals.OneDrive)
 	if err != nil {
@@ -268,7 +268,7 @@ func (ofs *OneDriveFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.Kazo
 		return nil, err
 	}
 
-	if err := gcs.Upload(rc, globals.AUDIO_BUCKET, f.ID); err != nil {
+	if err := objectstorage.Upload(rc, globals.AUDIO_BUCKET, f.ID); err != nil {
 		return nil, err
 	}
 
@@ -292,7 +292,7 @@ func (ofs *OneDriveFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.Kazo
 }
 
 // processImage, thumbnail generation, cloud vision processing
-func (ofs *OneDriveFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *file.KazoupOneDriveFile) (file.File, error) {
+func (ofs *OneDriveFs) processThumbnail(f *file.KazoupOneDriveFile) (file.File, error) {
 	// Download file from OneDrive, so connector is globals.OneDrive
 	ocs, err := cs.NewCloudStorageFromEndpoint(ofs.Endpoint, globals.OneDrive)
 	if err != nil {
@@ -320,7 +320,7 @@ func (ofs *OneDriveFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *file.
 			return nil
 		}
 
-		if err := gcs.Upload(ioutil.NopCloser(b), ofs.Endpoint.Index, f.ID); err != nil {
+		if err := objectstorage.Upload(ioutil.NopCloser(b), ofs.Endpoint.Index, f.ID); err != nil {
 			return err
 		}
 
