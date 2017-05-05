@@ -5,7 +5,7 @@ import (
 )
 
 func TestNewTaskHandler(t *testing.T) {
-	NewTaskHandler(1, nil)
+	NewTaskHandler(1)
 }
 
 func TestTaskHandler_Enrich(t *testing.T) {
