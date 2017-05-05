@@ -10,16 +10,14 @@ import (
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
-	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	enrich "github.com/kazoup/platform/lib/protomsg/enrich"
 	"golang.org/x/net/context"
 )
 
-func NewTaskHandler(workers int, gcs *gcslib.GoogleCloudStorage) *taskHandler {
+func NewTaskHandler(workers int) *taskHandler {
 	t := &taskHandler{
-		googleCloudStorage: gcs,
-		thumbnailMsgChan:   make(chan thumbnailMsgChan, 1000000),
-		workers:            workers,
+		thumbnailMsgChan: make(chan thumbnailMsgChan, 1000000),
+		workers:          workers,
 	}
 
 	startWorkers(t)
@@ -28,9 +26,8 @@ func NewTaskHandler(workers int, gcs *gcslib.GoogleCloudStorage) *taskHandler {
 }
 
 type taskHandler struct {
-	googleCloudStorage *gcslib.GoogleCloudStorage
-	thumbnailMsgChan   chan thumbnailMsgChan
-	workers            int
+	thumbnailMsgChan chan thumbnailMsgChan
+	workers          int
 }
 
 type thumbnailMsgChan struct {
@@ -55,7 +52,7 @@ func (t *taskHandler) Thumbnail(ctx context.Context, enrichmsg *enrich.EnrichMes
 // queueListener range over thumbnailMsgChan channel and process msgs one by one
 func (t *taskHandler) queueListener(wID int) {
 	for m := range t.thumbnailMsgChan {
-		if err := processThumbnailMsg(t.googleCloudStorage, m); err != nil {
+		if err := processThumbnailMsg(m); err != nil {
 			m.err <- errors.NewPlatformError(globals.THUMBNAIL_SERVICE_NAME, "processEnrichMsg", fmt.Sprintf("worker %d", wID), err)
 		}
 		// Successful
@@ -70,7 +67,7 @@ func startWorkers(t *taskHandler) {
 	}
 }
 
-func processThumbnailMsg(gcs *gcslib.GoogleCloudStorage, m thumbnailMsgChan) error {
+func processThumbnailMsg(m thumbnailMsgChan) error {
 	frsp, err := operations.Read(m.ctx, &proto_operations.ReadRequest{
 		Index: m.msg.Index,
 		Type:  globals.FileType,
@@ -104,7 +101,7 @@ func processThumbnailMsg(gcs *gcslib.GoogleCloudStorage, m thumbnailMsgChan) err
 		return err
 	}
 
-	ch := mfs.Thumbnail(f, gcs)
+	ch := mfs.Thumbnail(f)
 	// Block while enriching, we expect only one m
 	fm := <-ch
 	close(ch)

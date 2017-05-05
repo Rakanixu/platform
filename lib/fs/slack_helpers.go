@@ -9,8 +9,8 @@ import (
 	"github.com/kazoup/platform/lib/cloudvision"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
-	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/image"
+	"github.com/kazoup/platform/lib/objectstorage"
 	"github.com/kazoup/platform/lib/slack"
 	sttlib "github.com/kazoup/platform/lib/speechtotext"
 	"github.com/kazoup/platform/lib/tika"
@@ -210,7 +210,7 @@ func (sfs *SlackFs) processDocument(f *file.KazoupSlackFile) (file.File, error) 
 }
 
 // processAudio uploads audio file to GCS and runs async speech to text over it
-func (sfs *SlackFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.KazoupSlackFile) (file.File, error) {
+func (sfs *SlackFs) processAudio(f *file.KazoupSlackFile) (file.File, error) {
 	// Download file from GoogleDrive, so connector is globals.OneDrive
 	scs, err := cs.NewCloudStorageFromEndpoint(sfs.Endpoint, globals.Slack)
 	if err != nil {
@@ -222,7 +222,7 @@ func (sfs *SlackFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.KazoupS
 		return nil, err
 	}
 
-	if err := gcs.Upload(rc, globals.AUDIO_BUCKET, f.ID); err != nil {
+	if err := objectstorage.Upload(rc, globals.AUDIO_BUCKET, f.ID); err != nil {
 		return nil, err
 	}
 
@@ -246,7 +246,7 @@ func (sfs *SlackFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.KazoupS
 }
 
 // processThumbnail downloads original picture, resize and uploads to Google storage
-func (sfs *SlackFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *file.KazoupSlackFile) (file.File, error) {
+func (sfs *SlackFs) processThumbnail(f *file.KazoupSlackFile) (file.File, error) {
 	// Download file from Slack, so connector is globals.Slack
 	scs, err := cs.NewCloudStorageFromEndpoint(sfs.Endpoint, globals.Slack)
 
@@ -275,7 +275,7 @@ func (sfs *SlackFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *file.Kaz
 			return nil
 		}
 
-		if err := gcs.Upload(ioutil.NopCloser(b), sfs.Endpoint.Index, f.ID); err != nil {
+		if err := objectstorage.Upload(ioutil.NopCloser(b), sfs.Endpoint.Index, f.ID); err != nil {
 			return err
 		}
 

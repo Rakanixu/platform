@@ -8,8 +8,8 @@ import (
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	gmailhelper "github.com/kazoup/platform/lib/gmail"
-	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/image"
+	"github.com/kazoup/platform/lib/objectstorage"
 	sttlib "github.com/kazoup/platform/lib/speechtotext"
 	"github.com/kazoup/platform/lib/tika"
 	"golang.org/x/net/context"
@@ -198,7 +198,7 @@ func (gfs *GmailFs) processDocument(f *file.KazoupGmailFile) (file.File, error) 
 }
 
 // processAudio uploads audio file to GCS and runs async speech to text over it
-func (gfs *GmailFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.KazoupGmailFile) (file.File, error) {
+func (gfs *GmailFs) processAudio(f *file.KazoupGmailFile) (file.File, error) {
 	// Download file from Box, so connector is globals.Box
 	gmcs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.Gmail)
 	if err != nil {
@@ -210,7 +210,7 @@ func (gfs *GmailFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.KazoupG
 		return nil, err
 	}
 
-	if err := gcs.Upload(rc, globals.AUDIO_BUCKET, f.ID); err != nil {
+	if err := objectstorage.Upload(rc, globals.AUDIO_BUCKET, f.ID); err != nil {
 		return nil, err
 	}
 
@@ -234,7 +234,7 @@ func (gfs *GmailFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.KazoupG
 }
 
 // generateThumbnail downloads original picture, resize and uploads to Google storage
-func (gfs *GmailFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *file.KazoupGmailFile) (file.File, error) {
+func (gfs *GmailFs) processThumbnail(f *file.KazoupGmailFile) (file.File, error) {
 	// Downloads from gmail, see connector
 	gmcs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.Gmail)
 	if err != nil {
@@ -262,7 +262,7 @@ func (gfs *GmailFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *file.Kaz
 			return nil
 		}
 
-		if err := gcs.Upload(ioutil.NopCloser(b), gfs.Endpoint.Index, f.ID); err != nil {
+		if err := objectstorage.Upload(ioutil.NopCloser(b), gfs.Endpoint.Index, f.ID); err != nil {
 			return err
 		}
 

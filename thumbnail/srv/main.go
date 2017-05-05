@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/kazoup/platform/lib/db/operations"
 	"github.com/kazoup/platform/lib/globals"
-	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/healthchecks"
+	"github.com/kazoup/platform/lib/objectstorage"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/kazoup/platform/thumbnail/srv/subscriber"
@@ -15,7 +15,13 @@ import (
 )
 
 func main() {
+	// Init DB operations
 	if err := operations.Init(); err != nil {
+		log.Fatal(err)
+	}
+
+	// Init Object Storage
+	if err := objectstorage.Init(); err != nil {
 		log.Fatal(err)
 	}
 
@@ -33,13 +39,11 @@ func main() {
 
 	healthchecks.RegisterBrokerHealthChecks(service, m)
 
-	gcslib.Register()
-
 	// Attach subscriber
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.ThumbnailTopic,
-			subscriber.NewTaskHandler(25, gcslib.NewGoogleCloudStorage()),
+			subscriber.NewTaskHandler(25),
 			server.SubscriberQueue("thumbnail"),
 		),
 	); err != nil {

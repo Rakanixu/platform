@@ -7,8 +7,8 @@ import (
 	"github.com/kazoup/platform/lib/db/config"
 	"github.com/kazoup/platform/lib/db/operations"
 	"github.com/kazoup/platform/lib/globals"
-	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/healthchecks"
+	"github.com/kazoup/platform/lib/objectstorage"
 	_ "github.com/kazoup/platform/lib/plugins"
 	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/go-micro/server"
@@ -28,6 +28,11 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Init Object Storage
+	if err := objectstorage.Init(); err != nil {
+		log.Fatal(err)
+	}
+
 	var m monitor.Monitor
 
 	service := wrappers.NewKazoupService("datasource", m)
@@ -42,8 +47,6 @@ func main() {
 
 	healthchecks.RegisterDatasourceHealthChecks(service, m)
 	healthchecks.RegisterBrokerHealthChecks(service, m)
-
-	gcslib.Register()
 
 	// Attach crawler started subscriber
 	if err := service.Server().Subscribe(
@@ -69,7 +72,7 @@ func main() {
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.DeleteBucketTopic,
-			subscriber.NewDeleteBucketHandler(gcslib.NewGoogleCloudStorage()),
+			subscriber.NewDeleteBucketHandler(),
 			server.SubscriberQueue("deletebucket"),
 		)); err != nil {
 		log.Fatal(err)
@@ -79,14 +82,14 @@ func main() {
 	if err := service.Server().Subscribe(
 		service.Server().NewSubscriber(
 			globals.DeleteFileInBucketTopic,
-			subscriber.NewDeleteFileInBucketHandler(gcslib.NewGoogleCloudStorage()),
+			subscriber.NewDeleteFileInBucketHandler(),
 			server.SubscriberQueue("deletefileinbucket"),
 		)); err != nil {
 		log.Fatal(err)
 	}
 
 	// New service handler
-	proto_datasource.RegisterServiceHandler(service.Server(), handler.NewServiceHandler(gcslib.NewGoogleCloudStorage()))
+	proto_datasource.RegisterServiceHandler(service.Server(), handler.NewServiceHandler())
 
 	if err := service.Run(); err != nil {
 		log.Fatalf("%v", err)

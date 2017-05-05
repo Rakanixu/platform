@@ -7,8 +7,8 @@ import (
 	"github.com/kazoup/platform/lib/cloudvision"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
-	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/image"
+	"github.com/kazoup/platform/lib/objectstorage"
 	sttlib "github.com/kazoup/platform/lib/speechtotext"
 	"github.com/kazoup/platform/lib/tika"
 	"golang.org/x/net/context"
@@ -170,7 +170,7 @@ func (gfs *GoogleDriveFs) processDocument(f *file.KazoupGoogleFile) (file.File, 
 }
 
 // processAudio uploads audio file to GCS and runs async speech to text over it
-func (gfs *GoogleDriveFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.KazoupGoogleFile) (file.File, error) {
+func (gfs *GoogleDriveFs) processAudio(f *file.KazoupGoogleFile) (file.File, error) {
 	// Download file from GoogleDrive, so connector is globals.GoogleDrive
 	gdcs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.GoogleDrive)
 	if err != nil {
@@ -192,7 +192,7 @@ func (gfs *GoogleDriveFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.K
 		return nil, err
 	}
 
-	if err := gcs.Upload(rc, globals.AUDIO_BUCKET, f.ID); err != nil {
+	if err := objectstorage.Upload(rc, globals.AUDIO_BUCKET, f.ID); err != nil {
 		return nil, err
 	}
 
@@ -216,7 +216,7 @@ func (gfs *GoogleDriveFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.K
 }
 
 // processThumbnail, thumbnail generation
-func (gfs *GoogleDriveFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *file.KazoupGoogleFile) (file.File, error) {
+func (gfs *GoogleDriveFs) processThumbnail(f *file.KazoupGoogleFile) (file.File, error) {
 	// Download file from GoogleDrive, so connector is globals.GoogleDrive
 	gdcs, err := cs.NewCloudStorageFromEndpoint(gfs.Endpoint, globals.GoogleDrive)
 	if err != nil {
@@ -247,7 +247,7 @@ func (gfs *GoogleDriveFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *fi
 			return nil
 		}
 
-		if err := gcs.Upload(ioutil.NopCloser(rd), gfs.Endpoint.Index, f.ID); err != nil {
+		if err := objectstorage.Upload(ioutil.NopCloser(rd), gfs.Endpoint.Index, f.ID); err != nil {
 			return err
 		}
 

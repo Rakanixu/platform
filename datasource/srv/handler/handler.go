@@ -5,21 +5,17 @@ import (
 	"github.com/kazoup/platform/datasource/srv/engine"
 	"github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/lib/globals"
-	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
+	"github.com/kazoup/platform/lib/objectstorage"
 	"github.com/kazoup/platform/lib/validate"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
 )
 
-func NewServiceHandler(cloudStorage *gcslib.GoogleCloudStorage) *service {
-	return &service{
-		googleCloudStorage: cloudStorage,
-	}
+func NewServiceHandler() *service {
+	return new(service)
 }
 
-type service struct {
-	googleCloudStorage *gcslib.GoogleCloudStorage
-}
+type service struct{}
 
 // Create datasource handler
 func (s *service) Create(ctx context.Context, req *proto_datasource.CreateRequest, rsp *proto_datasource.CreateResponse) error {
@@ -62,7 +58,7 @@ func (s *service) Create(ctx context.Context, req *proto_datasource.CreateReques
 		return errors.InternalServerError(globals.DATASOURCE_SERVICE_NAME, err.Error())
 	}
 
-	if err := s.googleCloudStorage.CreateBucket(endpoint.Index); err != nil {
+	if err := objectstorage.CreateBucket(endpoint.Index); err != nil {
 		return errors.InternalServerError(globals.DATASOURCE_SERVICE_NAME, err.Error())
 	}
 

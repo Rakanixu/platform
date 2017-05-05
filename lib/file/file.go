@@ -8,7 +8,6 @@ import (
 
 const (
 	DEFAULT_IMAGE_PREVIEW_URL string = globals.SERVER_ADDRESS + "/media/image/http?source=http://www.scaleautomag.com/sitefiles/images/no-preview-available.png"
-	BASE_URL_FILE_PREVIEW     string = globals.SERVER_ADDRESS + "/media"
 )
 
 type File interface {

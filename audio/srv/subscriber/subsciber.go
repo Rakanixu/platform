@@ -10,16 +10,14 @@ import (
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
-	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
 	"golang.org/x/net/context"
 )
 
-func NewTaskHandler(workers int, cs *gcslib.GoogleCloudStorage) *taskHandler {
+func NewTaskHandler(workers int) *taskHandler {
 	t := &taskHandler{
-		googleCloudStorage: cs,
-		enrichMsgChan:      make(chan enrichMsgChan, 1000000),
-		workers:            workers,
+		enrichMsgChan: make(chan enrichMsgChan, 1000000),
+		workers:       workers,
 	}
 
 	startWorkers(t)
@@ -28,9 +26,8 @@ func NewTaskHandler(workers int, cs *gcslib.GoogleCloudStorage) *taskHandler {
 }
 
 type taskHandler struct {
-	googleCloudStorage *gcslib.GoogleCloudStorage
-	enrichMsgChan      chan enrichMsgChan
-	workers            int
+	enrichMsgChan chan enrichMsgChan
+	workers       int
 }
 
 type enrichMsgChan struct {
@@ -54,7 +51,7 @@ func (e *taskHandler) Enrich(ctx context.Context, enrichmsg *enrich_proto.Enrich
 
 func (e *taskHandler) queueListener(wID int) {
 	for m := range e.enrichMsgChan {
-		if err := processEnrichMsg(e.googleCloudStorage, m); err != nil {
+		if err := processEnrichMsg(m); err != nil {
 			m.err <- errors.NewPlatformError(globals.AUDIO_SERVICE_NAME, "processEnrichMsg", fmt.Sprintf("worker %d", wID), err)
 		}
 		// Successful
@@ -68,7 +65,7 @@ func startWorkers(t *taskHandler) {
 	}
 }
 
-func processEnrichMsg(gcs *gcslib.GoogleCloudStorage, m enrichMsgChan) error {
+func processEnrichMsg(m enrichMsgChan) error {
 	frsp, err := operations.Read(m.ctx, &proto_operations.ReadRequest{
 		Index: m.msg.Index,
 		Type:  globals.FileType,
@@ -102,7 +99,7 @@ func processEnrichMsg(gcs *gcslib.GoogleCloudStorage, m enrichMsgChan) error {
 		return err
 	}
 
-	ch := mfs.AudioEnrich(f, gcs)
+	ch := mfs.AudioEnrich(f)
 	// Block while enriching, we expect only one file
 	fm := <-ch
 	close(ch)

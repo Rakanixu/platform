@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
-	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 )
 
 // DocEnrich extracts content from document and add to File
@@ -78,7 +77,7 @@ func (bfs *BoxFs) ImgEnrich(f file.File) chan FileMsg {
 }
 
 // AudioEnrich extracts audio and save it as text
-func (bfs *BoxFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+func (bfs *BoxFs) AudioEnrich(f file.File) chan FileMsg {
 	go func() {
 		var err error
 
@@ -99,7 +98,7 @@ func (bfs *BoxFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan 
 		}
 
 		if f.(*file.KazoupBoxFile).Category == globals.CATEGORY_AUDIO && processAudio {
-			f, err = bfs.processAudio(gcs, f.(*file.KazoupBoxFile))
+			f, err = bfs.processAudio(f.(*file.KazoupBoxFile))
 			if err != nil {
 				bfs.FilesChan <- NewFileMsg(nil, err)
 				return
@@ -113,7 +112,7 @@ func (bfs *BoxFs) AudioEnrich(f file.File, gcs *gcslib.GoogleCloudStorage) chan 
 }
 
 // ImgEnrich extracts tags from image and generate thumbnail
-func (bfs *BoxFs) Thumbnail(f file.File, gcs *gcslib.GoogleCloudStorage) chan FileMsg {
+func (bfs *BoxFs) Thumbnail(f file.File) chan FileMsg {
 	go func() {
 		var err error
 
@@ -134,7 +133,7 @@ func (bfs *BoxFs) Thumbnail(f file.File, gcs *gcslib.GoogleCloudStorage) chan Fi
 		}
 
 		if f.(*file.KazoupBoxFile).Category == globals.CATEGORY_PICTURE && processThumb {
-			f, err = bfs.processThumbnail(gcs, f.(*file.KazoupBoxFile))
+			f, err = bfs.processThumbnail(f.(*file.KazoupBoxFile))
 			if err != nil {
 				bfs.FilesChan <- NewFileMsg(nil, err)
 				return

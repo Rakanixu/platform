@@ -1,13 +1,13 @@
-package googlecloudstorage
+package objectstorage
 
 import (
 	"encoding/json"
+	"github.com/kazoup/platform/lib/objectstorage"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/storage/v1"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -15,20 +15,20 @@ import (
 
 type GoogleCloudStorage struct{}
 
-func NewGoogleCloudStorage() *GoogleCloudStorage {
-	return &GoogleCloudStorage{}
-}
-
 var (
 	SignedURLOption *SignedURLOptions
 	GCSProjectID    string
 )
 
+func init() {
+	objectstorage.Register(new(GoogleCloudStorage))
+}
+
 // Loads the "default" google cloud config
-func Register() {
+func (gcs *GoogleCloudStorage) Init() error {
 	b, err := ioutil.ReadFile(os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"))
 	if err != nil {
-		log.Fatalf("Error reading config file: %s", err)
+		return err
 	}
 
 	var d struct {
@@ -48,7 +48,7 @@ func Register() {
 	}
 
 	if err := json.Unmarshal(b, &d); err != nil {
-		log.Fatalf("Error unmarshalling config file: %s", err)
+		return err
 	}
 
 	GCSProjectID = d.ProjectID
@@ -58,6 +58,8 @@ func Register() {
 		PrivateKey:     []byte(d.PrivateKey),
 		Method:         http.MethodGet,
 	}
+
+	return nil
 }
 
 func (gcs *GoogleCloudStorage) CreateBucket(bucketName string) error {

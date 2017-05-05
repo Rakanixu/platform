@@ -9,8 +9,8 @@ import (
 	"github.com/kazoup/platform/lib/cloudvision"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
-	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
 	"github.com/kazoup/platform/lib/image"
+	"github.com/kazoup/platform/lib/objectstorage"
 	sttlib "github.com/kazoup/platform/lib/speechtotext"
 	"github.com/kazoup/platform/lib/tika"
 	"io"
@@ -133,7 +133,7 @@ func (bfs *BoxFs) processImage(f *file.KazoupBoxFile) (file.File, error) {
 }
 
 // processThumbnail, thumbnail generation
-func (bfs *BoxFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *file.KazoupBoxFile) (file.File, error) {
+func (bfs *BoxFs) processThumbnail(f *file.KazoupBoxFile) (file.File, error) {
 	// Download file from Box, so connector is globals.Box
 	bcs, err := cs.NewCloudStorageFromEndpoint(bfs.Endpoint, globals.Box)
 	if err != nil {
@@ -161,7 +161,7 @@ func (bfs *BoxFs) processThumbnail(gcs *gcslib.GoogleCloudStorage, f *file.Kazou
 			return nil
 		}
 
-		if err := gcs.Upload(ioutil.NopCloser(rd), bfs.Endpoint.Index, f.ID); err != nil {
+		if err := objectstorage.Upload(ioutil.NopCloser(rd), bfs.Endpoint.Index, f.ID); err != nil {
 			return err
 		}
 
@@ -213,7 +213,7 @@ func (bfs *BoxFs) processDocument(f *file.KazoupBoxFile) (file.File, error) {
 }
 
 // processAudio uploads audio file to GCS and runs async speech to text over it
-func (bfs *BoxFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.KazoupBoxFile) (file.File, error) {
+func (bfs *BoxFs) processAudio(f *file.KazoupBoxFile) (file.File, error) {
 	// Download file from Box, so connector is globals.Box
 	bcs, err := cs.NewCloudStorageFromEndpoint(bfs.Endpoint, globals.Box)
 	if err != nil {
@@ -225,7 +225,7 @@ func (bfs *BoxFs) processAudio(gcs *gcslib.GoogleCloudStorage, f *file.KazoupBox
 		return nil, err
 	}
 
-	if err := gcs.Upload(rc, globals.AUDIO_BUCKET, f.ID); err != nil {
+	if err := objectstorage.Upload(rc, globals.AUDIO_BUCKET, f.ID); err != nil {
 		return nil, err
 	}
 

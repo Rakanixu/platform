@@ -5,7 +5,7 @@ import (
 	"fmt"
 	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/lib/globals"
-	gcslib "github.com/kazoup/platform/lib/googlecloudstorage"
+	"github.com/kazoup/platform/lib/objectstorage"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
@@ -14,13 +14,6 @@ import (
 	"io/ioutil"
 	"net/http"
 )
-
-var gcs *gcslib.GoogleCloudStorage
-
-func init() {
-	gcslib.Register()
-	gcs = gcslib.NewGoogleCloudStorage()
-}
 
 //SaveDatasource call datasource-srv and save new data source
 func SaveDatasource(ctx context.Context, user string, url string, token *oauth2.Token) error {
@@ -63,7 +56,7 @@ func SaveTmpToken(uuid, jwt string) error {
 	}
 
 	// We save uuid - jwt token pair in GCS
-	if err := gcs.Upload(ioutil.NopCloser(bytes.NewBufferString(jwt)), globals.TMP_TOKEN_BUCKET, uuid); err != nil {
+	if err := objectstorage.Upload(ioutil.NopCloser(bytes.NewBufferString(jwt)), globals.TMP_TOKEN_BUCKET, uuid); err != nil {
 		return err
 	}
 
@@ -73,7 +66,7 @@ func SaveTmpToken(uuid, jwt string) error {
 // RetrieveUserAndContextFromUUID retrieves userId and context from GCS
 func RetrieveUserAndContextFromUUID(uuid string) (string, context.Context, error) {
 	// Retrieve JWT associated with uuid
-	rd, err := gcs.Download(globals.TMP_TOKEN_BUCKET, string(uuid))
+	rd, err := objectstorage.Download(globals.TMP_TOKEN_BUCKET, string(uuid))
 	if err != nil {
 		return "", nil, err
 	}
