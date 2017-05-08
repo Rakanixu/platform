@@ -2,12 +2,11 @@ package mock
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/lib/db/operations"
 	"github.com/kazoup/platform/lib/db/operations/proto/operations"
 	"github.com/kazoup/platform/lib/file"
-	"github.com/micro/go-micro/metadata"
+	"github.com/kazoup/platform/lib/globals"
 	"golang.org/x/net/context"
 )
 
@@ -28,17 +27,10 @@ func (e *mock) Create(ctx context.Context, req *proto_operations.CreateRequest) 
 
 // Read record
 func (e *mock) Read(ctx context.Context, req *proto_operations.ReadRequest) (*proto_operations.ReadResponse, error) {
-	md, ok := metadata.FromContext(ctx)
-	if !ok {
-		return nil, errors.New("Invalid context")
-	}
-
-	if len(md["Wanted-Type"]) == 0 {
-		return nil, errors.New("Wanted-Type not set in context")
-	}
-
-	if md["Wanted-Type"] == "file" {
-		f := &file.KazoupFile{}
+	if req.Type == "file" {
+		f := &file.KazoupFile{
+			FileType: globals.GoogleDrive,
+		}
 
 		b, err := json.Marshal(f)
 		if err != nil {
@@ -50,8 +42,10 @@ func (e *mock) Read(ctx context.Context, req *proto_operations.ReadRequest) (*pr
 		}, nil
 	}
 
-	if md["Wanted-Type"] == "datasource" {
-		e := &proto_datasource.Endpoint{}
+	if req.Type == "datasource" {
+		e := &proto_datasource.Endpoint{
+			Url: "googledrive://test",
+		}
 
 		b, err := json.Marshal(e)
 		if err != nil {
