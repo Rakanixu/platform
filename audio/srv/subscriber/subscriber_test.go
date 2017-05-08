@@ -57,13 +57,19 @@ func TestTaskHandler_queueListener(t *testing.T) {
 		msg enrichMsgChan
 	}{
 		{
-			enrichMsgChan{},
+			enrichMsgChan{
+				msg: &enrich_proto.EnrichMessage{},
+			},
 		},
 		{
-			enrichMsgChan{},
+			enrichMsgChan{
+				msg: &enrich_proto.EnrichMessage{},
+			},
 		},
 		{
-			enrichMsgChan{},
+			enrichMsgChan{
+				msg: &enrich_proto.EnrichMessage{},
+			},
 		},
 	}
 

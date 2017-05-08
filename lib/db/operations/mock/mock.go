@@ -29,7 +29,7 @@ func (e *mock) Create(ctx context.Context, req *proto_operations.CreateRequest) 
 func (e *mock) Read(ctx context.Context, req *proto_operations.ReadRequest) (*proto_operations.ReadResponse, error) {
 	if req.Type == "file" {
 		f := &file.KazoupFile{
-			FileType: globals.GoogleDrive,
+			FileType: globals.Mock,
 		}
 
 		b, err := json.Marshal(f)
@@ -44,7 +44,7 @@ func (e *mock) Read(ctx context.Context, req *proto_operations.ReadRequest) (*pr
 
 	if req.Type == "datasource" {
 		e := &proto_datasource.Endpoint{
-			Url: "googledrive://test",
+			Url: globals.Mock,
 		}
 
 		b, err := json.Marshal(e)
