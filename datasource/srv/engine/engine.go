@@ -75,6 +75,12 @@ func NewDataSourceEngine(endpoint *proto_datasource.Endpoint) (Engine, error) {
 		}, nil
 	}
 
+	if strings.Contains(endpoint.Url, globals.Mock) {
+		return &Mock{
+			Endpoint: *endpoint,
+		}, nil
+	}
+
 	err := errors.New("com.kazoup.Datasource.NewDataSourceEngine", "Error parsing endpoint for ", 500)
 
 	return nil, err

@@ -73,8 +73,35 @@ func (e *mock) DeleteByQuery(ctx context.Context, req *proto_operations.DeleteBy
 }
 
 func (e *mock) Search(ctx context.Context, req *proto_operations.SearchRequest) (*proto_operations.SearchResponse, error) {
-	return &proto_operations.SearchResponse{
-	//Result: rstr,
-	//Info:   info.String(),
-	}, nil
+	if req.Type == globals.FileType {
+		f := &file.KazoupFile{
+			FileType: globals.Mock,
+		}
+
+		b, err := json.Marshal(f)
+		if err != nil {
+			return nil, err
+		}
+
+		return &proto_operations.SearchResponse{
+			Result: "[" + string(b) + "]",
+		}, nil
+	}
+
+	if req.Type == globals.TypeDatasource {
+		e := &proto_datasource.Endpoint{
+			Url: globals.Mock,
+		}
+
+		b, err := json.Marshal(e)
+		if err != nil {
+			return nil, err
+		}
+
+		return &proto_operations.SearchResponse{
+			Result: "[" + string(b) + "]",
+		}, nil
+	}
+
+	return &proto_operations.SearchResponse{}, nil
 }
