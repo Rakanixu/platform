@@ -27,7 +27,7 @@ func (e *mock) Create(ctx context.Context, req *proto_operations.CreateRequest) 
 
 // Read record
 func (e *mock) Read(ctx context.Context, req *proto_operations.ReadRequest) (*proto_operations.ReadResponse, error) {
-	if req.Type == "file" {
+	if req.Type == globals.FileType {
 		f := &file.KazoupFile{
 			FileType: globals.Mock,
 		}
@@ -42,7 +42,7 @@ func (e *mock) Read(ctx context.Context, req *proto_operations.ReadRequest) (*pr
 		}, nil
 	}
 
-	if req.Type == "datasource" {
+	if req.Type == globals.TypeDatasource {
 		e := &proto_datasource.Endpoint{
 			Url: globals.Mock,
 		}

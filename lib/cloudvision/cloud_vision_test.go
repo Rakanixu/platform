@@ -11,7 +11,8 @@ func TestTag(t *testing.T) {
 		t.Fatalf("Failed to read file: %v", err)
 	}
 
-	if err := Tag(file); err != nil {
+	_, err = Tag(file)
+	if err != nil {
 		t.Fatalf("Failed to tag image: %v", err)
 	}
 }
