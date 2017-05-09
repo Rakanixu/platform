@@ -10,6 +10,10 @@ import (
 	"golang.org/x/net/context"
 )
 
+const (
+	QUOTA_EXCEEDED_MSG = "Quota for Entity extraction service exceeded."
+)
+
 type Service struct{}
 
 // ExtractFile handler
@@ -31,7 +35,7 @@ func (s *Service) ExtractFile(ctx context.Context, req *proto_entities.ExtractFi
 
 	// Quota exceded, respond sync and do not initiate go routines
 	if rate-quota > 0 {
-		rsp.Info = "Quota for Entity extraction service exceeded."
+		rsp.Info = QUOTA_EXCEEDED_MSG
 		return nil
 	}
 
