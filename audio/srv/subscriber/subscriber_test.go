@@ -78,7 +78,7 @@ func TestTaskHandler_queueListener(t *testing.T) {
 	}
 
 	if len(queueListenerTestData) != len(th.enrichMsgChan) {
-		t.Error("Expected %v, got %v", len(queueListenerTestData), len(th.enrichMsgChan))
+		t.Errorf("Expected %d, got %d", len(queueListenerTestData), len(th.enrichMsgChan))
 	}
 }
 

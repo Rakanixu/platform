@@ -67,9 +67,17 @@ func (mfs *MockFs) Create(rq proto_file.CreateRequest) chan FileMsg {
 }
 
 func (mfs *MockFs) Delete(rq proto_file.DeleteRequest) chan FileMsg {
+	go func() {
+		mfs.FilesChan <- NewFileMsg(file.NewKazoupFileFromMockFile(), nil)
+	}()
+
 	return mfs.FilesChan
 }
 
 func (mfs *MockFs) Update(req proto_file.ShareRequest) chan FileMsg {
+	go func() {
+		mfs.FilesChan <- NewFileMsg(file.NewKazoupFileFromMockFile(), nil)
+	}()
+
 	return mfs.FilesChan
 }

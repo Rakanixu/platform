@@ -28,11 +28,7 @@ func (e *mock) Create(ctx context.Context, req *proto_operations.CreateRequest) 
 // Read record
 func (e *mock) Read(ctx context.Context, req *proto_operations.ReadRequest) (*proto_operations.ReadResponse, error) {
 	if req.Type == globals.FileType {
-		f := &file.KazoupFile{
-			FileType: globals.Mock,
-		}
-
-		b, err := json.Marshal(f)
+		b, err := json.Marshal(file.NewKazoupFileFromMockFile())
 		if err != nil {
 			return nil, err
 		}
@@ -74,11 +70,7 @@ func (e *mock) DeleteByQuery(ctx context.Context, req *proto_operations.DeleteBy
 
 func (e *mock) Search(ctx context.Context, req *proto_operations.SearchRequest) (*proto_operations.SearchResponse, error) {
 	if req.Type == globals.FileType {
-		f := &file.KazoupFile{
-			FileType: globals.Mock,
-		}
-
-		b, err := json.Marshal(f)
+		b, err := json.Marshal(file.NewKazoupFileFromMockFile())
 		if err != nil {
 			return nil, err
 		}
