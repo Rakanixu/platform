@@ -7,7 +7,8 @@ import (
 )
 
 var (
-	ErrInvalidCtx = micro_errors.New("Cant get srv from context", "", 500)
+	ErrInvalidCtx          = micro_errors.New("Cant get srv from context", "", 500)
+	ErrInvalidCloudStorage = micro_errors.New("Not such cloud storage", "", 500)
 )
 
 type PlatformError struct {

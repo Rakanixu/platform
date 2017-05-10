@@ -2,6 +2,7 @@ package cloudstorage
 
 import (
 	"github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/globals"
 	"reflect"
 	"testing"
@@ -64,6 +65,14 @@ func TestNewCloudStorageFromEndpoint(t *testing.T) {
 			out{
 				NewBoxCloudStorage(&proto_datasource.Endpoint{}),
 				nil,
+			},
+		},
+		{
+			&proto_datasource.Endpoint{},
+			"",
+			out{
+				nil,
+				errors.ErrInvalidCloudStorage,
 			},
 		},
 	}

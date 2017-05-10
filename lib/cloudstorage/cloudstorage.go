@@ -1,8 +1,8 @@
 package cloudstorage
 
 import (
-	"errors"
 	"github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/globals"
 	"io"
 )
@@ -42,7 +42,7 @@ func NewCloudStorageFromEndpoint(e *proto_datasource.Endpoint, connector string)
 	case globals.Box:
 		return NewBoxCloudStorage(e), nil
 	default:
-		return nil, errors.New("Not such cloud storage constructor")
+		return nil, errors.ErrInvalidCloudStorage
 	}
 
 }
