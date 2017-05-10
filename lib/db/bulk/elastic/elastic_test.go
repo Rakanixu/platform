@@ -1,15 +1,15 @@
 package elastic
 
 import (
-	"encoding/json"
+	//"encoding/json"
 	"github.com/kazoup/platform/crawler/srv/proto/crawler"
 	kazoup_context "github.com/kazoup/platform/lib/context"
-	"github.com/kazoup/platform/lib/file"
-	"github.com/kazoup/platform/lib/slack"
+	//"github.com/kazoup/platform/lib/file"
+	//"github.com/kazoup/platform/lib/slack"
 	"github.com/kazoup/platform/lib/wrappers"
-	"github.com/micro/go-micro"
+	//"github.com/micro/go-micro"
 	"golang.org/x/net/context"
-	elib "gopkg.in/olivere/elastic.v5"
+	//elib "gopkg.in/olivere/elastic.v5"
 	"testing"
 )
 
@@ -45,6 +45,8 @@ func TestElastic_Init(t *testing.T) {
 		t.Error("Client not running")
 	}
 }
+
+/*
 
 func TestElastic_Files(t *testing.T) {
 	result := e.Files(ctx, &crawler.FileMessage{})
@@ -166,15 +168,19 @@ func Test_processFiles(t *testing.T) {
 	}
 
 	// Data may not be yet, but is eventually consistent
-	/*	time.Sleep(time.Millisecond * 100)*/
-	/*	count, err := e.Client.Count(TEST_INDEX_FILES).Do(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
+*/
+/*	time.Sleep(time.Millisecond * 100)*/ /*
 
-		if int64(len(testData)) != count {
-			t.Errorf("Expected: %v, got: %v", len(testData), count)
-		}*/
+ */
+/*	count, err := e.Client.Count(TEST_INDEX_FILES).Do(context.TODO())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if int64(len(testData)) != count {
+		t.Errorf("Expected: %v, got: %v", len(testData), count)
+	}*/ /*
+
 
 	_, err = e.Client.DeleteIndex(TEST_INDEX_FILES).Do(context.TODO())
 	if err != nil {
@@ -241,20 +247,24 @@ func Test_processSlackUsers(t *testing.T) {
 
 	// Data may not be yet, but is eventually consistent
 	// time.Sleep(time.Millisecond * 100)
-	/*
-		count, err := e.Client.Count(TEST_INDEX_USERS).Do(context.TODO())
-		if err != nil {
-			t.Fatal(err)
-		}
+*/
+/*
+	count, err := e.Client.Count(TEST_INDEX_USERS).Do(context.TODO())
+	if err != nil {
+		t.Fatal(err)
+	}
 
-		if int64(len(testData)) != count {
-			t.Errorf("Expected: %v, got: %v", len(testData), count)
-		}*/
+	if int64(len(testData)) != count {
+		t.Errorf("Expected: %v, got: %v", len(testData), count)
+	}*/ /*
 
-	/*	_, err = e.Client.DeleteIndex(TEST_INDEX_USERS).Do(context.TODO())
-		if err != nil {
-			t.Error("Error cleaning up index from running ElasticSearch instance", err)
-		}*/
+
+ */
+/*	_, err = e.Client.DeleteIndex(TEST_INDEX_USERS).Do(context.TODO())
+	if err != nil {
+		t.Error("Error cleaning up index from running ElasticSearch instance", err)
+	}*/ /*
+
 }
 
 func Test_processSlackChannels(t *testing.T) {
@@ -313,3 +323,4 @@ func Test_processSlackChannels(t *testing.T) {
 		e.SlackChannelsChannel <- tt.channelChannel
 	}
 }
+*/
