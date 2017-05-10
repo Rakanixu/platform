@@ -10,6 +10,10 @@ import (
 	"golang.org/x/net/context"
 )
 
+const (
+	QUOTA_EXCEEDED_MSG = "Quota for Document content extraction service exceeded."
+)
+
 type Service struct{}
 
 func (de *Service) EnrichFile(ctx context.Context, req *proto_document.EnrichFileRequest, rsp *proto_document.EnrichFileResponse) error {
@@ -30,7 +34,7 @@ func (de *Service) EnrichFile(ctx context.Context, req *proto_document.EnrichFil
 
 	// Quota exceded, respond sync and do not initiate go routines
 	if rate-quota > 0 {
-		rsp.Info = "Quota for Document content extraction service exceeded."
+		rsp.Info = QUOTA_EXCEEDED_MSG
 		return nil
 	}
 

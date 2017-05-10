@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"github.com/kazoup/platform/audio/srv/proto/audio"
 	kazoup_context "github.com/kazoup/platform/lib/context"
 	_ "github.com/kazoup/platform/lib/quota/mock"
+	"github.com/kazoup/platform/sentiment/srv/proto/sentiment"
 	"github.com/micro/go-micro/metadata"
 	"golang.org/x/net/context"
 	"testing"
@@ -22,73 +22,43 @@ var (
 	)
 )
 
-func TestEnrichFile(t *testing.T) {
+func TestAnalyzeFile(t *testing.T) {
 	var enrinchFilesTestData = []struct {
 		ctx         context.Context
-		req         *proto_audio.EnrichFileRequest
-		expectedRsp *proto_audio.EnrichFileResponse
-		rsp         *proto_audio.EnrichFileResponse
+		req         *proto_sentiment.AnalyzeFileRequest
+		expectedRsp *proto_sentiment.AnalyzeFileResponse
+		rsp         *proto_sentiment.AnalyzeFileResponse
 	}{
 		// Quota has been excedded
 		{
 			metadata.NewContext(ctx, map[string]string{
 				"Quota-Exceeded": "true",
 			}),
-			&proto_audio.EnrichFileRequest{
+			&proto_sentiment.AnalyzeFileRequest{
 				Index: "test_index",
 				Id:    "test_id",
 			},
-			&proto_audio.EnrichFileResponse{
+			&proto_sentiment.AnalyzeFileResponse{
 				Info: QUOTA_EXCEEDED_MSG,
 			},
-			&proto_audio.EnrichFileResponse{},
+			&proto_sentiment.AnalyzeFileResponse{},
 		},
 		// Quota has not been exceeded
 		{
 			metadata.NewContext(ctx, map[string]string{
 				"Quota-Exceeded": "false",
 			}),
-			&proto_audio.EnrichFileRequest{
+			&proto_sentiment.AnalyzeFileRequest{
 				Index: "test_index",
 				Id:    "test_id",
 			},
-			&proto_audio.EnrichFileResponse{
-				Info: "",
-			},
-			&proto_audio.EnrichFileResponse{},
+			&proto_sentiment.AnalyzeFileResponse{},
+			&proto_sentiment.AnalyzeFileResponse{},
 		},
 	}
 
 	for _, tt := range enrinchFilesTestData {
-		if err := srv.EnrichFile(tt.ctx, tt.req, tt.rsp); err != nil {
-			t.Fatal(err)
-		}
-
-		if tt.expectedRsp.Info != tt.rsp.Info {
-			t.Errorf("Expected '%v', got: '%v'", tt.expectedRsp.Info, tt.rsp.Info)
-		}
-	}
-}
-
-func TestEnrichDatasource(t *testing.T) {
-	var enrinchDatasourceTestData = []struct {
-		ctx         context.Context
-		req         *proto_audio.EnrichDatasourceRequest
-		expectedRsp *proto_audio.EnrichDatasourceResponse
-		rsp         *proto_audio.EnrichDatasourceResponse
-	}{
-		{
-			context.TODO(),
-			&proto_audio.EnrichDatasourceRequest{
-				Id: "test_id",
-			},
-			&proto_audio.EnrichDatasourceResponse{},
-			&proto_audio.EnrichDatasourceResponse{},
-		},
-	}
-
-	for _, tt := range enrinchDatasourceTestData {
-		if err := srv.EnrichDatasource(tt.ctx, tt.req, tt.rsp); err != nil {
+		if err := srv.AnalyzeFile(tt.ctx, tt.req, tt.rsp); err != nil {
 			t.Fatal(err)
 		}
 
@@ -101,18 +71,18 @@ func TestEnrichDatasource(t *testing.T) {
 func TestHealth(t *testing.T) {
 	var healthTestData = []struct {
 		ctx         context.Context
-		req         *proto_audio.HealthRequest
-		expectedRsp *proto_audio.HealthResponse
-		rsp         *proto_audio.HealthResponse
+		req         *proto_sentiment.HealthRequest
+		expectedRsp *proto_sentiment.HealthResponse
+		rsp         *proto_sentiment.HealthResponse
 	}{
 		// Assert service returns HTTP 200 OK
 		{
 			context.TODO(),
-			&proto_audio.HealthRequest{},
-			&proto_audio.HealthResponse{
+			&proto_sentiment.HealthRequest{},
+			&proto_sentiment.HealthResponse{
 				Status: 200,
 			},
-			&proto_audio.HealthResponse{},
+			&proto_sentiment.HealthResponse{},
 		},
 	}
 

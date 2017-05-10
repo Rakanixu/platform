@@ -60,6 +60,12 @@ func NewFileFromString(s string) (File, error) {
 			return nil, err
 		}
 		return kbf, nil
+	case globals.Mock:
+		kmf := &KazoupMockFile{}
+		if err := json.Unmarshal([]byte(s), kmf); err != nil {
+			return nil, err
+		}
+		return kmf, nil
 	default:
 		return nil, errors.New("Error constructing file type")
 	}
@@ -301,6 +307,18 @@ func NewKazoupFileFromGmailFile(m gmailhelper.GmailFile, dsId, uId, dsURL, index
 		Index:        index,
 	}
 	return &KazoupGmailFile{*kf, &m}
+}
+
+// NewKazoupFileFromMockFile constructor
+func NewKazoupFileFromMockFile() *KazoupMockFile {
+	return &KazoupMockFile{KazoupFile: KazoupFile{
+		ID:           globals.Mock,
+		UserId:       globals.Mock,
+		Name:         globals.Mock,
+		FileType:     globals.Mock,
+		DatasourceId: globals.Mock,
+		Index:        globals.Mock,
+	}}
 }
 
 func UrlDepth(str string) int64 {

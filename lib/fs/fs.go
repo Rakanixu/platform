@@ -59,6 +59,8 @@ func NewFsFromEndpoint(e *proto_datasource.Endpoint) (Fs, error) {
 		return NewDropboxFsFromEndpoint(e), nil
 	case globals.Box:
 		return NewBoxFsFromEndpoint(e), nil
+	case globals.Mock:
+		return NewMockFsFromEndpoint(e), nil
 	default:
 		return nil, errors.New("Not such file system (fs)")
 	}

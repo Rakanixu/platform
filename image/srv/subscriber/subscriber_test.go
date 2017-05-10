@@ -123,14 +123,6 @@ func TestprocessEnrichMsg(t *testing.T) {
 			enrichMsgChan{},
 			nil,
 		},
-		/*		{
-					enrichMsgChan{},
-					nil,
-				},
-				{
-					enrichMsgChan{},
-					nil,
-				},*/
 	}
 
 	for _, tt := range enrichMsgTestData {

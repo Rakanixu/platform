@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/kazoup/platform/audio/srv/proto/audio"
+	"github.com/kazoup/platform/image/srv/proto/image"
 	kazoup_context "github.com/kazoup/platform/lib/context"
 	_ "github.com/kazoup/platform/lib/quota/mock"
 	"github.com/micro/go-micro/metadata"
@@ -25,37 +25,37 @@ var (
 func TestEnrichFile(t *testing.T) {
 	var enrinchFilesTestData = []struct {
 		ctx         context.Context
-		req         *proto_audio.EnrichFileRequest
-		expectedRsp *proto_audio.EnrichFileResponse
-		rsp         *proto_audio.EnrichFileResponse
+		req         *proto_image.EnrichFileRequest
+		expectedRsp *proto_image.EnrichFileResponse
+		rsp         *proto_image.EnrichFileResponse
 	}{
 		// Quota has been excedded
 		{
 			metadata.NewContext(ctx, map[string]string{
 				"Quota-Exceeded": "true",
 			}),
-			&proto_audio.EnrichFileRequest{
+			&proto_image.EnrichFileRequest{
 				Index: "test_index",
 				Id:    "test_id",
 			},
-			&proto_audio.EnrichFileResponse{
+			&proto_image.EnrichFileResponse{
 				Info: QUOTA_EXCEEDED_MSG,
 			},
-			&proto_audio.EnrichFileResponse{},
+			&proto_image.EnrichFileResponse{},
 		},
 		// Quota has not been exceeded
 		{
 			metadata.NewContext(ctx, map[string]string{
 				"Quota-Exceeded": "false",
 			}),
-			&proto_audio.EnrichFileRequest{
+			&proto_image.EnrichFileRequest{
 				Index: "test_index",
 				Id:    "test_id",
 			},
-			&proto_audio.EnrichFileResponse{
+			&proto_image.EnrichFileResponse{
 				Info: "",
 			},
-			&proto_audio.EnrichFileResponse{},
+			&proto_image.EnrichFileResponse{},
 		},
 	}
 
@@ -73,17 +73,17 @@ func TestEnrichFile(t *testing.T) {
 func TestEnrichDatasource(t *testing.T) {
 	var enrinchDatasourceTestData = []struct {
 		ctx         context.Context
-		req         *proto_audio.EnrichDatasourceRequest
-		expectedRsp *proto_audio.EnrichDatasourceResponse
-		rsp         *proto_audio.EnrichDatasourceResponse
+		req         *proto_image.EnrichDatasourceRequest
+		expectedRsp *proto_image.EnrichDatasourceResponse
+		rsp         *proto_image.EnrichDatasourceResponse
 	}{
 		{
 			context.TODO(),
-			&proto_audio.EnrichDatasourceRequest{
+			&proto_image.EnrichDatasourceRequest{
 				Id: "test_id",
 			},
-			&proto_audio.EnrichDatasourceResponse{},
-			&proto_audio.EnrichDatasourceResponse{},
+			&proto_image.EnrichDatasourceResponse{},
+			&proto_image.EnrichDatasourceResponse{},
 		},
 	}
 
@@ -101,18 +101,18 @@ func TestEnrichDatasource(t *testing.T) {
 func TestHealth(t *testing.T) {
 	var healthTestData = []struct {
 		ctx         context.Context
-		req         *proto_audio.HealthRequest
-		expectedRsp *proto_audio.HealthResponse
-		rsp         *proto_audio.HealthResponse
+		req         *proto_image.HealthRequest
+		expectedRsp *proto_image.HealthResponse
+		rsp         *proto_image.HealthResponse
 	}{
 		// Assert service returns HTTP 200 OK
 		{
 			context.TODO(),
-			&proto_audio.HealthRequest{},
-			&proto_audio.HealthResponse{
+			&proto_image.HealthRequest{},
+			&proto_image.HealthResponse{
 				Status: 200,
 			},
-			&proto_audio.HealthResponse{},
+			&proto_image.HealthResponse{},
 		},
 	}
 

@@ -91,6 +91,7 @@ const (
 	OneDrive    = "onedrive"
 	Dropbox     = "dropbox"
 	Box         = "box"
+	Mock        = "mock"
 
 	DOCUMENT     = "document"
 	PRESENTATION = "presentation"

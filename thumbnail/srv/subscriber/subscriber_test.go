@@ -1,11 +1,24 @@
 package subscriber
 
 import (
+	kazoup_context "github.com/kazoup/platform/lib/context"
 	_ "github.com/kazoup/platform/lib/db/operations/mock"
 	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
 	"github.com/micro/go-micro/metadata"
 	"golang.org/x/net/context"
 	"testing"
+)
+
+const (
+	TEST_USER_ID = "test_user"
+)
+
+var (
+	ctx = context.WithValue(
+		context.TODO(),
+		kazoup_context.UserIdCtxKey{},
+		kazoup_context.UserIdCtxValue(TEST_USER_ID),
+	)
 )
 
 func TestNewTaskHandler(t *testing.T) {
@@ -17,7 +30,7 @@ func TestNewTaskHandler(t *testing.T) {
 	}
 }
 
-func TestTaskHandler_Enrich(t *testing.T) {
+func TestTaskHandler_Thumbnail(t *testing.T) {
 	workers := 1
 	th := NewTaskHandler(workers)
 
@@ -34,7 +47,7 @@ func TestTaskHandler_Enrich(t *testing.T) {
 	}
 
 	for _, tt := range enrichTestData {
-		result := th.Enrich(tt.ctx, tt.msg)
+		result := th.Thumbnail(tt.ctx, tt.msg)
 
 		if tt.result != result {
 			t.Errorf("Expected '%v', got: '%v'", tt.result, result)
@@ -45,8 +58,8 @@ func TestTaskHandler_Enrich(t *testing.T) {
 func TestTaskHandler_queueListener(t *testing.T) {
 	workers := 3
 	th := &taskHandler{
-		enrichMsgChan: make(chan enrichMsgChan, 1000000),
-		workers:       workers,
+		thumbnailMsgChan: make(chan thumbnailMsgChan, 1000000),
+		workers:          workers,
 	}
 
 	for i := 0; i < th.workers; i++ {
@@ -54,87 +67,79 @@ func TestTaskHandler_queueListener(t *testing.T) {
 	}
 
 	var queueListenerTestData = []struct {
-		msg enrichMsgChan
+		msg thumbnailMsgChan
 	}{
 		{
-			enrichMsgChan{
+			thumbnailMsgChan{
 				msg: &enrich_proto.EnrichMessage{},
 			},
 		},
 		{
-			enrichMsgChan{
+			thumbnailMsgChan{
 				msg: &enrich_proto.EnrichMessage{},
 			},
 		},
 		{
-			enrichMsgChan{
+			thumbnailMsgChan{
 				msg: &enrich_proto.EnrichMessage{},
 			},
 		},
 	}
 
 	for _, tt := range queueListenerTestData {
-		th.enrichMsgChan <- tt.msg
+		th.thumbnailMsgChan <- tt.msg
 	}
 
-	if len(queueListenerTestData) != len(th.enrichMsgChan) {
-		t.Errorf("Expected %d, got %d", len(queueListenerTestData), len(th.enrichMsgChan))
+	if len(queueListenerTestData) != len(th.thumbnailMsgChan) {
+		t.Error("Expected %v, got %v", len(queueListenerTestData), len(th.thumbnailMsgChan))
 	}
 }
 
 func TeststartWorkers(t *testing.T) {
 	workers := 5
 	th := &taskHandler{
-		enrichMsgChan: make(chan enrichMsgChan, 1000000),
-		workers:       workers,
+		thumbnailMsgChan: make(chan thumbnailMsgChan, 1000000),
+		workers:          workers,
 	}
 
 	var queueListenerTestData = []struct {
-		msg enrichMsgChan
+		msg thumbnailMsgChan
 	}{
 		{
-			enrichMsgChan{},
+			thumbnailMsgChan{},
 		},
 		{
-			enrichMsgChan{},
+			thumbnailMsgChan{},
 		},
 		{
-			enrichMsgChan{},
+			thumbnailMsgChan{},
 		},
 	}
 
 	startWorkers(th)
 
 	for _, tt := range queueListenerTestData {
-		th.enrichMsgChan <- tt.msg
+		th.thumbnailMsgChan <- tt.msg
 	}
 
-	if len(queueListenerTestData) != len(th.enrichMsgChan) {
-		t.Error("Expected %v, got %v", len(queueListenerTestData), len(th.enrichMsgChan))
+	if len(queueListenerTestData) != len(th.thumbnailMsgChan) {
+		t.Error("Expected %v, got %v", len(queueListenerTestData), len(th.thumbnailMsgChan))
 	}
 }
 
 func TestprocessEnrichMsg(t *testing.T) {
 	var enrichMsgTestData = []struct {
-		msg    enrichMsgChan
+		msg    thumbnailMsgChan
 		result error
 	}{
 		{
-			enrichMsgChan{},
+			thumbnailMsgChan{},
 			nil,
 		},
-		/*		{
-					enrichMsgChan{},
-					nil,
-				},
-				{
-					enrichMsgChan{},
-					nil,
-				},*/
 	}
 
 	for _, tt := range enrichMsgTestData {
-		result := processEnrichMsg(tt.msg)
+		result := processThumbnailMsg(tt.msg)
 
 		if tt.result != result {
 			t.Errorf("Expected '%v', got: '%v'", tt.result, result)

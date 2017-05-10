@@ -2,12 +2,11 @@ package mock
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/lib/db/operations"
 	"github.com/kazoup/platform/lib/db/operations/proto/operations"
 	"github.com/kazoup/platform/lib/file"
-	"github.com/micro/go-micro/metadata"
+	"github.com/kazoup/platform/lib/globals"
 	"golang.org/x/net/context"
 )
 
@@ -28,19 +27,8 @@ func (e *mock) Create(ctx context.Context, req *proto_operations.CreateRequest) 
 
 // Read record
 func (e *mock) Read(ctx context.Context, req *proto_operations.ReadRequest) (*proto_operations.ReadResponse, error) {
-	md, ok := metadata.FromContext(ctx)
-	if !ok {
-		return nil, errors.New("Invalid context")
-	}
-
-	if len(md["Wanted-Type"]) == 0 {
-		return nil, errors.New("Wanted-Type not set in context")
-	}
-
-	if md["Wanted-Type"] == "file" {
-		f := &file.KazoupFile{}
-
-		b, err := json.Marshal(f)
+	if req.Type == globals.FileType {
+		b, err := json.Marshal(file.NewKazoupFileFromMockFile())
 		if err != nil {
 			return nil, err
 		}
@@ -50,8 +38,10 @@ func (e *mock) Read(ctx context.Context, req *proto_operations.ReadRequest) (*pr
 		}, nil
 	}
 
-	if md["Wanted-Type"] == "datasource" {
-		e := &proto_datasource.Endpoint{}
+	if req.Type == globals.TypeDatasource {
+		e := &proto_datasource.Endpoint{
+			Url: globals.Mock,
+		}
 
 		b, err := json.Marshal(e)
 		if err != nil {
@@ -79,8 +69,31 @@ func (e *mock) DeleteByQuery(ctx context.Context, req *proto_operations.DeleteBy
 }
 
 func (e *mock) Search(ctx context.Context, req *proto_operations.SearchRequest) (*proto_operations.SearchResponse, error) {
-	return &proto_operations.SearchResponse{
-	//Result: rstr,
-	//Info:   info.String(),
-	}, nil
+	if req.Type == globals.FileType {
+		b, err := json.Marshal(file.NewKazoupFileFromMockFile())
+		if err != nil {
+			return nil, err
+		}
+
+		return &proto_operations.SearchResponse{
+			Result: "[" + string(b) + "]",
+		}, nil
+	}
+
+	if req.Type == globals.TypeDatasource {
+		e := &proto_datasource.Endpoint{
+			Url: globals.Mock,
+		}
+
+		b, err := json.Marshal(e)
+		if err != nil {
+			return nil, err
+		}
+
+		return &proto_operations.SearchResponse{
+			Result: "[" + string(b) + "]",
+		}, nil
+	}
+
+	return &proto_operations.SearchResponse{}, nil
 }

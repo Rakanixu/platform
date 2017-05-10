@@ -15,12 +15,15 @@ import (
 )
 
 func NewTaskHandler(workers int) *taskHandler {
+	var i initTaskHandler
+	i = startWorkers
+
 	t := &taskHandler{
 		enrichMsgChan: make(chan enrichMsgChan, 1000000),
 		workers:       workers,
 	}
 
-	startWorkers(t)
+	i(t)
 
 	return t
 }
@@ -35,6 +38,8 @@ type enrichMsgChan struct {
 	ctx context.Context
 	err chan error
 }
+
+type initTaskHandler func(t *taskHandler)
 
 // Enrich subscriber, receive EnrichMessage to get the file and process it
 func (e *taskHandler) Enrich(ctx context.Context, enrichmsg *enrich_proto.EnrichMessage) error {

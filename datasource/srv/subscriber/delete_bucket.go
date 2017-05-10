@@ -12,8 +12,7 @@ func NewDeleteBucketHandler() *deleteBucket {
 
 type deleteBucket struct{}
 
-// SubscribeDeleteBucket subscribes to DeleteBucket Message to clean un a bicket in GC storage
+// SubscribeDeleteBucket subscribes to DeleteBucket Message to clean up a bucket
 func (d *deleteBucket) SubscribeDeleteBucket(ctx context.Context, msg *deletebucket.DeleteBucketMsg) error {
-	objectstorage.DeleteBucket(msg.Index)
 	return objectstorage.DeleteBucket(msg.Index)
 }

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/kazoup/platform/datasource/srv/proto/datasource"
-	"github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/db/operations"
 	"github.com/kazoup/platform/lib/db/operations/proto/operations"
 	"github.com/kazoup/platform/lib/errors"
@@ -211,11 +210,6 @@ func (a *AnnounceHandler) OnCrawlerFinished(ctx context.Context, msg *announce.A
 func (a *AnnounceHandler) OnFileDeleted(ctx context.Context, msg *announce.AnnounceMessage) error {
 	// After file has been deleted, remove its thumbnail from our GCS account
 	if globals.HANDLER_FILE_DELETE == msg.Handler {
-		var r *proto_file.DeleteRequest
-		if err := json.Unmarshal([]byte(msg.Data), &r); err != nil {
-			return err
-		}
-
 		srv, ok := micro.FromContext(ctx)
 		if !ok {
 			return errors.ErrInvalidCtx
