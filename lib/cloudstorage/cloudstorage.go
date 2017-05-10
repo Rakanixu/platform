@@ -2,7 +2,7 @@ package cloudstorage
 
 import (
 	"errors"
-	datasource_proto "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/lib/globals"
 	"io"
 )
@@ -27,7 +27,7 @@ type CloudStorageUtils interface {
 }
 
 // NewCloudStorageFromEndpoint constructor
-func NewCloudStorageFromEndpoint(e *datasource_proto.Endpoint, connector string) (CloudStorage, error) {
+func NewCloudStorageFromEndpoint(e *proto_datasource.Endpoint, connector string) (CloudStorage, error) {
 	switch connector {
 	case globals.Slack:
 		return NewSlackCloudStorage(e), nil
