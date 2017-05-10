@@ -47,5 +47,5 @@ func NewDiscoveryError(entity interface{}, detail string, err error) error {
 func (e *DiscoveryError) Error() string {
 	t := reflect.TypeOf(e.Entity)
 
-	return fmt.Sprintf("%s %s %s ", t.Name(), e.Detail, e.Err.Error())
+	return fmt.Sprintf("%s %s %s", t.Name(), e.Detail, e.Err.Error())
 }
