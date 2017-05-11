@@ -2,11 +2,11 @@ package file
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/kazoup/platform/lib/box"
 	"github.com/kazoup/platform/lib/categories"
 	"github.com/kazoup/platform/lib/dropbox"
+	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/globals"
 	gmailhelper "github.com/kazoup/platform/lib/gmail"
 	"github.com/kazoup/platform/lib/onedrive"
@@ -67,7 +67,7 @@ func NewFileFromString(s string) (File, error) {
 		}
 		return kmf, nil
 	default:
-		return nil, errors.New("Error constructing file type")
+		return nil, errors.ErrInvalidFile
 	}
 }
 
@@ -319,8 +319,4 @@ func NewKazoupFileFromMockFile() *KazoupMockFile {
 		DatasourceId: globals.Mock,
 		Index:        globals.Mock,
 	}}
-}
-
-func UrlDepth(str string) int64 {
-	return int64(len(strings.Split(str, "/")) - 1)
 }
