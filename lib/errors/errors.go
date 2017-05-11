@@ -10,6 +10,7 @@ var (
 	ErrInvalidCtx          = micro_errors.New("Cant get srv from context", "", 500)
 	ErrInvalidCloudStorage = micro_errors.New("Not such cloud storage", "", 500)
 	ErrInvalidFile         = micro_errors.New("Not such file", "", 500)
+	ErrInvalidFileSystem   = micro_errors.New("Not such file system", "", 500)
 )
 
 type PlatformError struct {
