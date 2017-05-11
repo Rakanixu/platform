@@ -8,6 +8,7 @@ import (
 	"github.com/kazoup/platform/lib/db/operations"
 	"github.com/kazoup/platform/lib/db/operations/proto/operations"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/utils"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
 	"strings"
@@ -112,7 +113,7 @@ func GenerateEndpoint(ctx context.Context, endpoint proto_datasource.Endpoint) (
 	}
 
 	if len(endpoint.Index) == 0 {
-		str, err := globals.NewUUID()
+		str, err := utils.NewUUID()
 		if err != nil {
 			return endpoint, err
 		}
@@ -121,7 +122,7 @@ func GenerateEndpoint(ctx context.Context, endpoint proto_datasource.Endpoint) (
 	}
 
 	if len(endpoint.Id) == 0 {
-		endpoint.Id = globals.GetMD5Hash(endpoint.Url + endpoint.UserId)
+		endpoint.Id = utils.GetMD5Hash(endpoint.Url + endpoint.UserId)
 	}
 
 	return endpoint, nil
@@ -194,7 +195,7 @@ func CreateIndexWithAlias(ctx context.Context, endpoint *proto_datasource.Endpoi
 	// Create specific "files" alias
 	_, err = config.AddAlias(ctx, &proto_config.AddAliasRequest{
 		Index: endpoint.Index,
-		Alias: globals.GetMD5Hash(endpoint.UserId),
+		Alias: utils.GetMD5Hash(endpoint.UserId),
 	})
 	if err != nil {
 		return err

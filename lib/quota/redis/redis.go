@@ -6,6 +6,7 @@ import (
 	rate "github.com/go-redis/redis_rate"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/quota"
+	"github.com/kazoup/platform/lib/utils"
 	"golang.org/x/net/context"
 	timerate "golang.org/x/time/rate"
 	"time"
@@ -32,7 +33,7 @@ func init() {
 
 // Check returns quota info: srvLabel, icon, rate, resetTimestamp, quota, and if was OK
 func (r *Redis) Check(ctx context.Context, srvName, uID string) (string, string, int64, int64, int64, bool) {
-	rol, err := globals.ParseRolesFromContext(ctx)
+	rol, err := utils.ParseRolesFromContext(ctx)
 	if err != nil {
 		return "", "", 0, 0, 0, false
 	}

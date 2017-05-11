@@ -11,6 +11,7 @@ import (
 	"github.com/kazoup/platform/lib/objectstorage"
 	sttlib "github.com/kazoup/platform/lib/speechtotext"
 	"github.com/kazoup/platform/lib/tika"
+	"github.com/kazoup/platform/lib/utils"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"google.golang.org/api/drive/v3"
@@ -139,7 +140,7 @@ func (gfs *GoogleDriveFs) processDocument(f *file.KazoupGoogleFile) (file.File, 
 	var opts [2]string
 	if strings.Contains(f.MimeType, "vnd.google-apps.") {
 		opts[0] = "export"
-		opts[1] = globals.GoogleDriveExportAs(f.MimeType)
+		opts[1] = utils.GoogleDriveExportAs(f.MimeType)
 	} else {
 		opts[0] = "download"
 		opts[1] = ""
@@ -181,7 +182,7 @@ func (gfs *GoogleDriveFs) processAudio(f *file.KazoupGoogleFile) (file.File, err
 	var opts [2]string
 	if strings.Contains(f.MimeType, "vnd.google-apps.") {
 		opts[0] = "export"
-		opts[1] = globals.GoogleDriveExportAs(f.MimeType)
+		opts[1] = utils.GoogleDriveExportAs(f.MimeType)
 	} else {
 		opts[0] = "download"
 		opts[1] = ""

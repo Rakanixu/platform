@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/utils"
 	"golang.org/x/oauth2"
 	"io/ioutil"
 	"log"
@@ -28,7 +29,7 @@ type GoogleUserInfo struct {
 //HandleGoogleLogin hanldes Google ouath2
 func HandleGoogleLogin(w http.ResponseWriter, r *http.Request) {
 	jwt := r.URL.Query().Get("jwt")
-	uuid, err := globals.NewUUID()
+	uuid, err := utils.NewUUID()
 	if err != nil {
 		fmt.Printf("UUID generation failed with '%s'\n", err)
 		CloseBrowserWindow(w, r)
@@ -42,7 +43,7 @@ func HandleGoogleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send uuid encrypted
-	nt, err := globals.Encrypt([]byte(globals.ENCRYTION_KEY_32), []byte(uuid)) // Encryption
+	nt, err := utils.Encrypt([]byte(globals.ENCRYTION_KEY_32), []byte(uuid)) // Encryption
 	if err != nil {
 		log.Printf("Encryption failed with '%s'\n", err)
 		CloseBrowserWindow(w, r)
@@ -58,8 +59,8 @@ func HandleGoogleLogin(w http.ResponseWriter, r *http.Request) {
 func HandleGoogleCallback(w http.ResponseWriter, r *http.Request) {
 	userInfo := new(GoogleUserInfo)
 
-	euID, err := hex.DecodeString(r.FormValue("state"))                  // Convert the code we sent in hex format to bytes
-	uuid, err := globals.Decrypt([]byte(globals.ENCRYTION_KEY_32), euID) // Decrypt the bytes into bytes --> string(bytes) was the encrypted string
+	euID, err := hex.DecodeString(r.FormValue("state"))                // Convert the code we sent in hex format to bytes
+	uuid, err := utils.Decrypt([]byte(globals.ENCRYTION_KEY_32), euID) // Decrypt the bytes into bytes --> string(bytes) was the encrypted string
 	if err != nil {
 		log.Printf("Decryption failed with '%s'\n", err)
 		CloseBrowserWindow(w, r)

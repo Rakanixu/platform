@@ -11,6 +11,7 @@ import (
 	announce "github.com/kazoup/platform/lib/protomsg/announce"
 	crawler "github.com/kazoup/platform/lib/protomsg/crawler"
 	enrich "github.com/kazoup/platform/lib/protomsg/enrich"
+	"github.com/kazoup/platform/lib/utils"
 	"github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro"
 	"golang.org/x/net/context"
@@ -216,7 +217,7 @@ func (a *AnnounceHandler) OnFileDeleted(ctx context.Context, msg *announce.Annou
 		}
 
 		// Get userId
-		uId, err := globals.ParseUserIdFromContext(ctx)
+		uId, err := utils.ParseUserIdFromContext(ctx)
 		if err != nil {
 			return err
 		}

@@ -6,6 +6,7 @@ import (
 	platform_errors "github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/quota"
+	"github.com/kazoup/platform/lib/utils"
 	"github.com/kazoup/platform/lib/validate"
 	"golang.org/x/net/context"
 )
@@ -23,7 +24,7 @@ func (s *Service) EnrichFile(ctx context.Context, req *proto_audio.EnrichFileReq
 		return err
 	}
 
-	uID, err := globals.ParseUserIdFromContext(ctx)
+	uID, err := utils.ParseUserIdFromContext(ctx)
 	if err != nil {
 		return err
 	}

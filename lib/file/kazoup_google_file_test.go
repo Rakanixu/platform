@@ -51,7 +51,7 @@ func TestKazoupGoogleFile_PreviewURL(t *testing.T) {
 }
 
 func TestKazoupGoogleFile_GetID(t *testing.T) {
-	expected := globals.GetMD5Hash(kazoupGoogleFile.Original.WebViewLink)
+	expected := utils.GetMD5Hash(kazoupGoogleFile.Original.WebViewLink)
 	result := kazoupGoogleFile.GetID()
 
 	if expected != result {

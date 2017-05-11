@@ -1,9 +1,9 @@
 package file
 
 import (
-	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/onedrive"
 	"github.com/kazoup/platform/lib/rossete"
+	"github.com/kazoup/platform/lib/utils"
 	"strings"
 	"time"
 )
@@ -18,7 +18,7 @@ func (kf *KazoupOneDriveFile) PreviewURL(width, height, mode, quality string) st
 }
 
 func (kf *KazoupOneDriveFile) GetID() string {
-	return globals.GetMD5Hash(kf.Original.WebURL)
+	return utils.GetMD5Hash(kf.Original.WebURL)
 }
 
 func (kf *KazoupOneDriveFile) GetName() string {

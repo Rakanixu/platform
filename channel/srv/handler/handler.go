@@ -5,6 +5,7 @@ import (
 	"github.com/kazoup/platform/lib/db/operations"
 	"github.com/kazoup/platform/lib/db/operations/proto/operations"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/utils"
 	"github.com/kazoup/platform/lib/validate"
 	"github.com/micro/go-micro/errors"
 	"golang.org/x/net/context"
@@ -21,7 +22,7 @@ func (s *Service) Read(ctx context.Context, req *proto_channel.ReadRequest, rsp 
 	res, err := operations.Read(ctx, &proto_operations.ReadRequest{
 		Index: req.Index,
 		Type:  globals.ChannelType,
-		Id:    globals.GetMD5Hash(req.Id),
+		Id:    utils.GetMD5Hash(req.Id),
 	})
 
 	if err != nil {

@@ -6,6 +6,7 @@ import (
 	proto_datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/objectstorage"
+	"github.com/kazoup/platform/lib/utils"
 	notification_proto "github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/errors"
@@ -50,7 +51,7 @@ func SaveDatasource(ctx context.Context, user string, url string, token *oauth2.
 
 // SaveTmpToken saves JWT in GCS
 func SaveTmpToken(uuid, jwt string) error {
-	_, err := globals.ParseJWTToken(jwt) // Parse JWT to be sure was signed by us
+	_, err := utils.ParseJWTToken(jwt) // Parse JWT to be sure was signed by us
 	if err != nil {
 		return err
 	}
@@ -78,7 +79,7 @@ func RetrieveUserAndContextFromUUID(uuid string) (string, context.Context, error
 	}
 
 	// Parse JWT as a way to validate it, and retrieve user_id associated with that JWT
-	uID, err := globals.ParseJWTToken(string(jwt))
+	uID, err := utils.ParseJWTToken(string(jwt))
 	if err != nil {
 		return "", nil, err
 	}

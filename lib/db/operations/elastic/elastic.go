@@ -2,18 +2,18 @@ package elastic
 
 import (
 	"encoding/json"
-	"log"
-	"os"
-	"time"
-
 	"github.com/cenkalti/backoff"
 	"github.com/kazoup/gabs"
 	"github.com/kazoup/platform/lib/db/operations"
 	"github.com/kazoup/platform/lib/db/operations/proto/operations"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/utils"
 	"golang.org/x/net/context"
 	elib "gopkg.in/olivere/elastic.v5"
+	"log"
+	"os"
+	"time"
 )
 
 type elastic struct {
@@ -172,7 +172,7 @@ func (e *elastic) Search(ctx context.Context, req *proto_operations.SearchReques
 	var uID string
 
 	// Get user id from context
-	uID, err = globals.ParseUserIdFromContext(ctx)
+	uID, err = utils.ParseUserIdFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}

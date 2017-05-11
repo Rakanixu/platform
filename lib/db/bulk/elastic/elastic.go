@@ -10,6 +10,7 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
 	"github.com/kazoup/platform/lib/slack"
+	"github.com/kazoup/platform/lib/utils"
 	"github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro"
 	"golang.org/x/net/context"
@@ -71,7 +72,7 @@ func (e *elastic) Init(srv micro.Service) error {
 		return err
 	}
 
-	rs, err := globals.NewUUID()
+	rs, err := utils.NewUUID()
 	if err != nil {
 		return err
 	}
@@ -228,7 +229,7 @@ func processSlackUsers(e *elastic) {
 			}
 
 			// Use bulk processor as we will index groups of documents
-			r := elib.NewBulkUpdateRequest().Index(v.Index).Type(globals.UserType).Id(globals.GetMD5Hash(u.UserID)).DocAsUpsert(true).Doc(u)
+			r := elib.NewBulkUpdateRequest().Index(v.Index).Type(globals.UserType).Id(utils.GetMD5Hash(u.UserID)).DocAsUpsert(true).Doc(u)
 			e.BulkProcessor.Add(r)
 		}
 
@@ -245,7 +246,7 @@ func processSlackChannels(e *elastic) {
 			}
 
 			// Use bulk processor as we will index groups of documents
-			r := elib.NewBulkUpdateRequest().Index(v.Index).Type(globals.ChannelType).Id(globals.GetMD5Hash(ch.ChannelID)).DocAsUpsert(true).Doc(ch)
+			r := elib.NewBulkUpdateRequest().Index(v.Index).Type(globals.ChannelType).Id(utils.GetMD5Hash(ch.ChannelID)).DocAsUpsert(true).Doc(ch)
 			e.BulkProcessor.Add(r)
 		}
 

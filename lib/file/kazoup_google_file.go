@@ -1,8 +1,8 @@
 package file
 
 import (
-	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/rossete"
+	"github.com/kazoup/platform/lib/utils"
 	googledrive "google.golang.org/api/drive/v3"
 	"strings"
 	"time"
@@ -18,7 +18,7 @@ func (kf *KazoupGoogleFile) PreviewURL(width, height, mode, quality string) stri
 }
 
 func (kf *KazoupGoogleFile) GetID() string {
-	return globals.GetMD5Hash(kf.Original.WebViewLink)
+	return utils.GetMD5Hash(kf.Original.WebViewLink)
 }
 
 func (kf *KazoupGoogleFile) GetName() string {

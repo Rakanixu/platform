@@ -4,6 +4,7 @@ import (
 	"github.com/kazoup/platform/lib/db/operations"
 	"github.com/kazoup/platform/lib/db/operations/proto/operations"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/utils"
 	"github.com/kazoup/platform/lib/validate"
 	"github.com/kazoup/platform/user/srv/proto/user"
 	"github.com/micro/go-micro/errors"
@@ -21,7 +22,7 @@ func (s *Service) Read(ctx context.Context, req *proto_user.ReadRequest, rsp *pr
 	res, err := operations.Read(ctx, &proto_operations.ReadRequest{
 		Index: req.Index,
 		Type:  globals.UserType,
-		Id:    globals.GetMD5Hash(req.Id),
+		Id:    utils.GetMD5Hash(req.Id),
 	})
 
 	if err != nil {

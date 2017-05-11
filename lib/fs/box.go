@@ -11,6 +11,7 @@ import (
 	"github.com/kazoup/platform/lib/box"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/utils"
 	"io"
 	"log"
 	"mime/multipart"
@@ -117,7 +118,7 @@ func (bfs *BoxFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 		}
 
 		// File template path
-		t := fmt.Sprintf("%s%s%s", folderPath, "/doc_templates/", globals.GetDocumentTemplate(rq.MimeType, true))
+		t := fmt.Sprintf("%s%s%s", folderPath, "/doc_templates/", utils.GetDocumentTemplate(rq.MimeType, true))
 		buf := &bytes.Buffer{}
 		mw := multipart.NewWriter(buf)
 		defer mw.Close()
@@ -143,7 +144,7 @@ func (bfs *BoxFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 		// Add extra fields required by API
 		mw.WriteField(
 			"attributes",
-			`{"name":"`+rq.FileName+`.`+globals.GetDocumentTemplate(rq.MimeType, false)+`", "parent":{"id":"0"}}`,
+			`{"name":"`+rq.FileName+`.`+utils.GetDocumentTemplate(rq.MimeType, false)+`", "parent":{"id":"0"}}`,
 		)
 		if err := mw.Close(); err != nil {
 			bfs.FilesChan <- NewFileMsg(nil, err)

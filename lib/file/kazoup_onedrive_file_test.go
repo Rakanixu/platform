@@ -51,7 +51,7 @@ func TestKazoupOneDriveFile_PreviewURL(t *testing.T) {
 }
 
 func TestKazoupOneDriveFile_GetID(t *testing.T) {
-	expected := globals.GetMD5Hash(kazoupOneDriveFile.Original.WebURL)
+	expected := utils.GetMD5Hash(kazoupOneDriveFile.Original.WebURL)
 	result := kazoupOneDriveFile.GetID()
 
 	if expected != result {

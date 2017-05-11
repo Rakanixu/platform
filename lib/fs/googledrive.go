@@ -6,6 +6,7 @@ import (
 	file_proto "github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/utils"
 	"google.golang.org/api/drive/v3"
 	"log"
 )
@@ -76,7 +77,7 @@ func (gfs *GoogleDriveFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 
 		f, err := srv.Files.Create(&drive.File{
 			Name:     rq.FileName,
-			MimeType: globals.GetMimeType(globals.GoogleDrive, rq.MimeType),
+			MimeType: utils.GetMimeType(globals.GoogleDrive, rq.MimeType),
 		}).Fields("*").Do()
 		if err != nil {
 			gfs.FilesChan <- NewFileMsg(nil, err)
