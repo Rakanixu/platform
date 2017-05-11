@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/kazoup/platform/lib/box"
 	"github.com/kazoup/platform/lib/globals"
-	rossetelib "github.com/kazoup/platform/lib/rossete"
+	"github.com/kazoup/platform/lib/rossete"
 	"strings"
 	"time"
 )
@@ -90,10 +90,10 @@ func (kf *KazoupBoxFile) SetContentCategory(c *KazoupCategorization) {
 	kf.KazoupCategorization = c
 }
 
-func (kf *KazoupBoxFile) SetEntities(entities *rossetelib.RosseteEntities) {
+func (kf *KazoupBoxFile) SetEntities(entities *rossete.RosseteEntities) {
 	kf.Entities = entities
 }
 
-func (kf *KazoupBoxFile) SetSentiment(sentiment *rossetelib.RosseteSentiment) {
+func (kf *KazoupBoxFile) SetSentiment(sentiment *rossete.RosseteSentiment) {
 	kf.Sentiment = sentiment
 }

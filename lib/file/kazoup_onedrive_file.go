@@ -3,7 +3,7 @@ package file
 import (
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/onedrive"
-	rossetelib "github.com/kazoup/platform/lib/rossete"
+	"github.com/kazoup/platform/lib/rossete"
 	"strings"
 	"time"
 )
@@ -87,10 +87,10 @@ func (kf *KazoupOneDriveFile) SetContentCategory(c *KazoupCategorization) {
 	kf.KazoupCategorization = c
 }
 
-func (kf *KazoupOneDriveFile) SetEntities(entities *rossetelib.RosseteEntities) {
+func (kf *KazoupOneDriveFile) SetEntities(entities *rossete.RosseteEntities) {
 	kf.Entities = entities
 }
 
-func (kf *KazoupOneDriveFile) SetSentiment(sentiment *rossetelib.RosseteSentiment) {
+func (kf *KazoupOneDriveFile) SetSentiment(sentiment *rossete.RosseteSentiment) {
 	kf.Sentiment = sentiment
 }

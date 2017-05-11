@@ -2,7 +2,7 @@ package file
 
 import (
 	"github.com/kazoup/platform/lib/globals"
-	rossetelib "github.com/kazoup/platform/lib/rossete"
+	"github.com/kazoup/platform/lib/rossete"
 	googledrive "google.golang.org/api/drive/v3"
 	"strings"
 	"time"
@@ -87,10 +87,10 @@ func (kf *KazoupGoogleFile) SetContentCategory(c *KazoupCategorization) {
 	kf.KazoupCategorization = c
 }
 
-func (kf *KazoupGoogleFile) SetEntities(entities *rossetelib.RosseteEntities) {
+func (kf *KazoupGoogleFile) SetEntities(entities *rossete.RosseteEntities) {
 	kf.Entities = entities
 }
 
-func (kf *KazoupGoogleFile) SetSentiment(sentiment *rossetelib.RosseteSentiment) {
+func (kf *KazoupGoogleFile) SetSentiment(sentiment *rossete.RosseteSentiment) {
 	kf.Sentiment = sentiment
 }
