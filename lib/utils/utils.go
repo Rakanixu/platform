@@ -11,8 +11,8 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	kazoup_context "github.com/kazoup/platform/lib/context"
+	platform_errors "github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/globals"
-	micro_errors "github.com/micro/go-micro/errors"
 	"github.com/micro/go-micro/metadata"
 	"golang.org/x/net/context"
 	"io"
@@ -21,12 +21,12 @@ import (
 // ParseUserIdFromContext returns user_id from context
 func ParseUserIdFromContext(ctx context.Context) (string, error) {
 	if ctx.Value(kazoup_context.UserIdCtxKey{}) == nil {
-		return "", micro_errors.Unauthorized("ParseUserIdFromContext", "Unable to retrieve user from context")
+		return "", platform_errors.ErrInvalidUserInCtx
 	}
 
 	id := string(ctx.Value(kazoup_context.UserIdCtxKey{}).(kazoup_context.UserIdCtxValue))
 	if len(id) == 0 {
-		return "", micro_errors.Unauthorized("ParseUserIdFromContext", "No user for given context")
+		return "", platform_errors.ErrNoUserInCtx
 	}
 
 	return id, nil
@@ -35,11 +35,11 @@ func ParseUserIdFromContext(ctx context.Context) (string, error) {
 func ParseRolesFromContext(ctx context.Context) ([]string, error) {
 	md, ok := metadata.FromContext(ctx)
 	if !ok {
-		return []string{}, errors.New("Unable to retrieve metadata")
+		return []string{}, platform_errors.ErrInvalidMetadata
 	}
 
 	if len(md["Authorization"]) == 0 {
-		return []string{}, errors.New("No Auth header")
+		return []string{}, platform_errors.ErrNoAuthHeader
 	}
 
 	// We will read claim to know if public user, or paying or whatever
@@ -61,7 +61,7 @@ func ParseRolesFromContext(ctx context.Context) ([]string, error) {
 	}
 
 	if token.Claims.(jwt.MapClaims)["roles"] == nil {
-		return []string{}, errors.New("Roles not found.")
+		return []string{}, platform_errors.ErrNoRolesInCtx
 	}
 
 	var roles []string
@@ -78,7 +78,7 @@ func ParseJWTToken(str string) (string, error) {
 		// Don't forget to validate the alg is what you expect:
 
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, micro_errors.InternalServerError("Unexpected signing method", token.Header["alg"].(string))
+			return nil, platform_errors.NewPlatformError("", "ParseJWTToken", "Unexpected signing method", nil)
 		}
 
 		decoded, err := base64.URLEncoding.DecodeString(globals.CLIENT_ID_SECRET)
@@ -90,11 +90,11 @@ func ParseJWTToken(str string) (string, error) {
 	})
 
 	if err != nil {
-		return "", micro_errors.Unauthorized("Token", err.Error())
+		return "", platform_errors.NewPlatformError("", "ParseJWTToken", "", err)
 	}
 
 	if !token.Valid {
-		return "", micro_errors.Unauthorized("", "Invalid token")
+		return "", platform_errors.NewPlatformError("", "ParseJWTToken", "Invalid token", err)
 	}
 
 	return token.Claims.(jwt.MapClaims)["sub"].(string), nil
