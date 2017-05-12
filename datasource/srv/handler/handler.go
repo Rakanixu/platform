@@ -19,7 +19,7 @@ type service struct{}
 
 // Create datasource handler
 func (s *service) Create(ctx context.Context, req *proto_datasource.CreateRequest, rsp *proto_datasource.CreateResponse) error {
-	if err := validate.Exists(ctx, req.Endpoint.Url); err != nil {
+	if err := validate.Exists(req.Endpoint.Url); err != nil {
 		return errors.BadRequest(globals.DATASOURCE_SERVICE_NAME, err.Error())
 	}
 
@@ -67,7 +67,7 @@ func (s *service) Create(ctx context.Context, req *proto_datasource.CreateReques
 
 // Read datasource handler
 func (s *service) Read(ctx context.Context, req *proto_datasource.ReadRequest, rsp *proto_datasource.ReadResponse) error {
-	if err := validate.Exists(ctx, req.Id); err != nil {
+	if err := validate.Exists(req.Id); err != nil {
 		return errors.BadRequest(globals.DATASOURCE_SERVICE_NAME, err.Error())
 	}
 
@@ -89,7 +89,7 @@ func (s *service) Read(ctx context.Context, req *proto_datasource.ReadRequest, r
 
 // Delete datasource handler
 func (s *service) Delete(ctx context.Context, req *proto_datasource.DeleteRequest, rsp *proto_datasource.DeleteResponse) error {
-	if err := validate.Exists(ctx, req.Id); err != nil {
+	if err := validate.Exists(req.Id); err != nil {
 		return errors.BadRequest(globals.DATASOURCE_SERVICE_NAME, err.Error())
 	}
 
@@ -132,7 +132,7 @@ func (s *service) Search(ctx context.Context, req *proto_datasource.SearchReques
 
 // Scan datasources handler, will publish to scan topic to be pick up by crawler srv
 func (s *service) Scan(ctx context.Context, req *proto_datasource.ScanRequest, rsp *proto_datasource.ScanResponse) error {
-	if err := validate.Exists(ctx, req.Id); err != nil {
+	if err := validate.Exists(req.Id); err != nil {
 		return errors.BadRequest(globals.DATASOURCE_SERVICE_NAME, err.Error())
 	}
 

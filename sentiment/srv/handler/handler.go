@@ -19,7 +19,7 @@ type Service struct{}
 
 // AnalyzeFile handler
 func (s *Service) AnalyzeFile(ctx context.Context, req *proto_sentiment.AnalyzeFileRequest, rsp *proto_sentiment.AnalyzeFileResponse) error {
-	if err := validate.Exists(ctx, req.Id, req.Index); err != nil {
+	if err := validate.Exists(req.Id, req.Index); err != nil {
 		return err
 	}
 

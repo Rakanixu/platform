@@ -18,7 +18,7 @@ const (
 type Service struct{}
 
 func (de *Service) EnrichFile(ctx context.Context, req *proto_document.EnrichFileRequest, rsp *proto_document.EnrichFileResponse) error {
-	if err := validate.Exists(ctx, req.Id, req.Index); err != nil {
+	if err := validate.Exists(req.Id, req.Index); err != nil {
 		return err
 	}
 
@@ -43,7 +43,7 @@ func (de *Service) EnrichFile(ctx context.Context, req *proto_document.EnrichFil
 }
 
 func (s *Service) EnrichDatasource(ctx context.Context, req *proto_document.EnrichDatasourceRequest, rsp *proto_document.EnrichDatasourceResponse) error {
-	if err := validate.Exists(ctx, req.Id); err != nil {
+	if err := validate.Exists(req.Id); err != nil {
 		return err
 	}
 

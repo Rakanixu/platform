@@ -15,7 +15,7 @@ type Service struct{}
 
 // Create File handler
 func (s *Service) Read(ctx context.Context, req *proto_channel.ReadRequest, rsp *proto_channel.ReadResponse) error {
-	if err := validate.Exists(ctx, req.Index, req.Id); err != nil {
+	if err := validate.Exists(req.Index, req.Id); err != nil {
 		return err
 	}
 

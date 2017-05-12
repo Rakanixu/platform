@@ -19,7 +19,7 @@ type Service struct{}
 
 // ExtractFile handler
 func (s *Service) ExtractFile(ctx context.Context, req *proto_entities.ExtractFileRequest, rsp *proto_entities.ExtractFileResponse) error {
-	if err := validate.Exists(ctx, req.Id, req.Index); err != nil {
+	if err := validate.Exists(req.Id, req.Index); err != nil {
 		return err
 	}
 

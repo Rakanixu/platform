@@ -16,6 +16,7 @@ var (
 	ErrNoUserInCtx         = micro_errors.Unauthorized("ParseUserIdFromContext", "No user for given context")
 	ErrNoRolesInCtx        = micro_errors.New("No roles in context", "", 500)
 	ErrNoAuthHeader        = micro_errors.New("No Authorization header", "", 500)
+	ErrMissingParams       = micro_errors.BadRequest("Missing parameter", "")
 )
 
 type PlatformError struct {
