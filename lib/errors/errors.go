@@ -17,6 +17,7 @@ var (
 	ErrNoRolesInCtx        = micro_errors.New("No roles in context", "", 500)
 	ErrNoAuthHeader        = micro_errors.New("No Authorization header", "", 500)
 	ErrMissingParams       = micro_errors.BadRequest("Missing parameter", "")
+	ErrQuotaLimitExceeded  = micro_errors.Forbidden("User Rate Limit", "User rate limit exceeded.")
 )
 
 type PlatformError struct {
