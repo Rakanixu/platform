@@ -14,12 +14,10 @@ import (
 	"time"
 )
 
-var callbackURLs []string
-
 func TestHandleBoxLogin(t *testing.T) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": "test_user",
-		"exp": time.Date(2017, 10, 10, 12, 0, 0, 0, time.UTC).Unix(),
+		"exp": time.Date(2050, 10, 10, 12, 0, 0, 0, time.UTC).Unix(),
 	})
 
 	// RPC API ClientID can be found in https://manage.auth0.com/#/clients
