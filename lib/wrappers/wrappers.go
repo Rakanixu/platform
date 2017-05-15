@@ -80,7 +80,7 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 				NewAuthSubscriberWrapper(),
 				NewAfterSubscriberWrapper(),
 				NewQuotaSubscriberWrapper(sn),
-				LogSubscriberWrapper(),
+				NewLogSubscriberWrapper(),
 			),
 			micro.WrapHandler(
 				NewContextHandlerWrapper(service),
@@ -88,7 +88,7 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 				NewAuthHandlerWrapper(),
 				NewAfterHandlerWrapper(),
 				NewQuotaHandlerWrapper(sn),
-				LogHandlerWrapper(),
+				NewLogHandlerWrapper(),
 			),
 		)
 
@@ -125,7 +125,7 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			NewAuthSubscriberWrapper(),
 			NewAfterSubscriberWrapper(),
 			NewQuotaSubscriberWrapper(sn),
-			LogSubscriberWrapper(),
+			NewLogSubscriberWrapper(),
 		),
 		micro.WrapHandler(
 			NewContextHandlerWrapper(service),
@@ -133,7 +133,7 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			NewAuthHandlerWrapper(),
 			NewAfterHandlerWrapper(),
 			NewQuotaHandlerWrapper(sn),
-			LogHandlerWrapper(),
+			NewLogHandlerWrapper(),
 		),
 	)
 
