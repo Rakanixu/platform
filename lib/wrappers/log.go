@@ -3,6 +3,7 @@ package wrappers
 import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/utils"
 	"github.com/micro/go-micro/server"
 	"golang.org/x/net/context"
 )
@@ -47,7 +48,7 @@ func logSubscriberWrapper(fn server.SubscriberFunc) server.SubscriberFunc {
 		var err error
 		err = fn(ctx, msg)
 
-		uID, uErr := globals.ParseUserIdFromContext(ctx)
+		uID, uErr := utils.ParseUserIdFromContext(ctx)
 		if uErr != nil {
 			log.WithFields(log.Fields{
 				"topic": msg.Topic(),

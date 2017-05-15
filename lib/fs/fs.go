@@ -2,11 +2,11 @@ package fs
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/file/srv/proto/file"
 	"github.com/kazoup/platform/lib/db/operations"
 	"github.com/kazoup/platform/lib/db/operations/proto/operations"
+	"github.com/kazoup/platform/lib/errors"
 	file "github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	"golang.org/x/net/context"
@@ -62,7 +62,7 @@ func NewFsFromEndpoint(e *proto_datasource.Endpoint) (Fs, error) {
 	case globals.Mock:
 		return NewMockFsFromEndpoint(e), nil
 	default:
-		return nil, errors.New("Not such file system (fs)")
+		return nil, errors.ErrInvalidFileSystem
 	}
 }
 

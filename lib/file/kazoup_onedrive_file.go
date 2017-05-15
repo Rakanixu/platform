@@ -1,9 +1,9 @@
 package file
 
 import (
-	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/onedrive"
-	rossetelib "github.com/kazoup/platform/lib/rossete"
+	"github.com/kazoup/platform/lib/rossete"
+	"github.com/kazoup/platform/lib/utils"
 	"strings"
 	"time"
 )
@@ -18,7 +18,7 @@ func (kf *KazoupOneDriveFile) PreviewURL(width, height, mode, quality string) st
 }
 
 func (kf *KazoupOneDriveFile) GetID() string {
-	return globals.GetMD5Hash(kf.Original.WebURL)
+	return utils.GetMD5Hash(kf.Original.WebURL)
 }
 
 func (kf *KazoupOneDriveFile) GetName() string {
@@ -87,10 +87,10 @@ func (kf *KazoupOneDriveFile) SetContentCategory(c *KazoupCategorization) {
 	kf.KazoupCategorization = c
 }
 
-func (kf *KazoupOneDriveFile) SetEntities(entities *rossetelib.RosseteEntities) {
+func (kf *KazoupOneDriveFile) SetEntities(entities *rossete.RosseteEntities) {
 	kf.Entities = entities
 }
 
-func (kf *KazoupOneDriveFile) SetSentiment(sentiment *rossetelib.RosseteSentiment) {
+func (kf *KazoupOneDriveFile) SetSentiment(sentiment *rossete.RosseteSentiment) {
 	kf.Sentiment = sentiment
 }

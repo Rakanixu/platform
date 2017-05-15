@@ -11,6 +11,7 @@ import (
 	"github.com/kazoup/platform/lib/dropbox"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/utils"
 	"log"
 	"net/http"
 	"os"
@@ -83,7 +84,7 @@ func (dfs *DropboxFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 			return
 		}
 
-		p := fmt.Sprintf("%s%s%s", folderPath, "/doc_templates/", globals.GetDocumentTemplate(rq.MimeType, true))
+		p := fmt.Sprintf("%s%s%s", folderPath, "/doc_templates/", utils.GetDocumentTemplate(rq.MimeType, true))
 		t, err := os.Open(p)
 		if err != nil {
 			dfs.FilesChan <- NewFileMsg(nil, err)
@@ -98,7 +99,7 @@ func (dfs *DropboxFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 			return
 		}
 		req.Header.Set("Authorization", dfs.token())
-		req.Header.Set("Dropbox-API-Arg", `{"path": "/`+rq.FileName+`.`+globals.GetDocumentTemplate(rq.MimeType, false)+`","mode": "add","autorename": true,"mute": false}`)
+		req.Header.Set("Dropbox-API-Arg", `{"path": "/`+rq.FileName+`.`+utils.GetDocumentTemplate(rq.MimeType, false)+`","mode": "add","autorename": true,"mute": false}`)
 		req.Header.Set("Content-Type", "application/octet-stream")
 		rsp, err := hc.Do(req)
 		if err != nil {

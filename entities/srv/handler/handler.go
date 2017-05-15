@@ -6,6 +6,7 @@ import (
 	platform_errors "github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/quota"
+	"github.com/kazoup/platform/lib/utils"
 	"github.com/kazoup/platform/lib/validate"
 	"golang.org/x/net/context"
 )
@@ -18,11 +19,11 @@ type Service struct{}
 
 // ExtractFile handler
 func (s *Service) ExtractFile(ctx context.Context, req *proto_entities.ExtractFileRequest, rsp *proto_entities.ExtractFileResponse) error {
-	if err := validate.Exists(ctx, req.Id, req.Index); err != nil {
+	if err := validate.Exists(req.Id, req.Index); err != nil {
 		return err
 	}
 
-	uID, err := globals.ParseUserIdFromContext(ctx)
+	uID, err := utils.ParseUserIdFromContext(ctx)
 	if err != nil {
 		return err
 	}

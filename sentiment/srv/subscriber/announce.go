@@ -6,6 +6,7 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	announce "github.com/kazoup/platform/lib/protomsg/announce"
 	enrich "github.com/kazoup/platform/lib/protomsg/enrich"
+	"github.com/kazoup/platform/lib/utils"
 	"github.com/kazoup/platform/sentiment/srv/proto/sentiment"
 	"github.com/micro/go-micro"
 	"golang.org/x/net/context"
@@ -72,7 +73,7 @@ func (s *SentimentHandler) OnAnalyzeFile(ctx context.Context, msg *announce.Anno
 			return err
 		}
 
-		uID, err := globals.ParseUserIdFromContext(ctx)
+		uID, err := utils.ParseUserIdFromContext(ctx)
 		if err != nil {
 			return err
 		}

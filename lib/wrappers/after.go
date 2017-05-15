@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	log "github.com/Sirupsen/logrus"
+	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/globals"
 	announce_msg "github.com/kazoup/platform/lib/protomsg/announce"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-micro/server"
-	"github.com/pkg/errors"
 	"golang.org/x/net/context"
 )
 
@@ -28,7 +28,7 @@ func afterHandlerWrapper(fn server.HandlerFunc) server.HandlerFunc {
 
 		srv, ok := micro.FromContext(ctx)
 		if !ok {
-			return errors.New("Cannot get service from context")
+			return errors.ErrInvalidCtx
 		}
 
 		defer func() {
@@ -69,7 +69,7 @@ func afterSubscriberWrapper(fn server.SubscriberFunc) server.SubscriberFunc {
 
 		srv, ok := micro.FromContext(ctx)
 		if !ok {
-			return errors.New("Cannot get service from context")
+			return errors.ErrInvalidCtx
 		}
 
 		// Announce if topic is not an announcement, we do not want to announce that an announcement was announce..

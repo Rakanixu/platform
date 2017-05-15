@@ -4,18 +4,18 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"log"
-	"net/http"
-
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/onedrive"
+	"github.com/kazoup/platform/lib/utils"
 	"golang.org/x/oauth2"
+	"log"
+	"net/http"
 )
 
 //HandleMicrosoftLogin Microsoft oauth2 redirect
 func HandleMicrosoftLogin(w http.ResponseWriter, r *http.Request) {
 	jwt := r.URL.Query().Get("jwt")
-	uuid, err := globals.NewUUID()
+	uuid, err := utils.NewUUID()
 	if err != nil {
 		fmt.Printf("UUID generation failed with '%s'\n", err)
 		CloseBrowserWindow(w, r)
@@ -28,7 +28,7 @@ func HandleMicrosoftLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	nt, err := globals.Encrypt([]byte(globals.ENCRYTION_KEY_32), []byte(uuid)) // Encryption
+	nt, err := utils.Encrypt([]byte(globals.ENCRYTION_KEY_32), []byte(uuid)) // Encryption
 	if err != nil {
 		log.Printf("Encryption failed with '%s'\n", err)
 		CloseBrowserWindow(w, r)
@@ -42,8 +42,8 @@ func HandleMicrosoftLogin(w http.ResponseWriter, r *http.Request) {
 
 //HandleMicrosoftCallback M$ response handler
 func HandleMicrosoftCallback(w http.ResponseWriter, r *http.Request) {
-	euID, err := hex.DecodeString(r.FormValue("state"))                  // Convert the code we sent in hex format to bytes
-	uuid, err := globals.Decrypt([]byte(globals.ENCRYTION_KEY_32), euID) // Decrypt the bytes into bytes --> string(bytes) was the encrypted string
+	euID, err := hex.DecodeString(r.FormValue("state"))                // Convert the code we sent in hex format to bytes
+	uuid, err := utils.Decrypt([]byte(globals.ENCRYTION_KEY_32), euID) // Decrypt the bytes into bytes --> string(bytes) was the encrypted string
 	if err != nil {
 		log.Printf("Decryption failed with '%s'\n", err)
 		CloseBrowserWindow(w, r)

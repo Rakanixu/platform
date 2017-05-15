@@ -1,8 +1,8 @@
 package file
 
 import (
-	"github.com/kazoup/platform/lib/globals"
-	rossetelib "github.com/kazoup/platform/lib/rossete"
+	"github.com/kazoup/platform/lib/rossete"
+	"github.com/kazoup/platform/lib/utils"
 	googledrive "google.golang.org/api/drive/v3"
 	"strings"
 	"time"
@@ -18,7 +18,7 @@ func (kf *KazoupGoogleFile) PreviewURL(width, height, mode, quality string) stri
 }
 
 func (kf *KazoupGoogleFile) GetID() string {
-	return globals.GetMD5Hash(kf.Original.WebViewLink)
+	return utils.GetMD5Hash(kf.Original.WebViewLink)
 }
 
 func (kf *KazoupGoogleFile) GetName() string {
@@ -87,10 +87,10 @@ func (kf *KazoupGoogleFile) SetContentCategory(c *KazoupCategorization) {
 	kf.KazoupCategorization = c
 }
 
-func (kf *KazoupGoogleFile) SetEntities(entities *rossetelib.RosseteEntities) {
+func (kf *KazoupGoogleFile) SetEntities(entities *rossete.RosseteEntities) {
 	kf.Entities = entities
 }
 
-func (kf *KazoupGoogleFile) SetSentiment(sentiment *rossetelib.RosseteSentiment) {
+func (kf *KazoupGoogleFile) SetSentiment(sentiment *rossete.RosseteSentiment) {
 	kf.Sentiment = sentiment
 }

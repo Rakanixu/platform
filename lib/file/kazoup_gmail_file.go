@@ -3,8 +3,8 @@ package file
 import (
 	"fmt"
 	"github.com/kazoup/platform/lib/globals"
-	gmail "github.com/kazoup/platform/lib/gmail"
-	rossetelib "github.com/kazoup/platform/lib/rossete"
+	"github.com/kazoup/platform/lib/gmail"
+	"github.com/kazoup/platform/lib/rossete"
 	"strings"
 	"time"
 )
@@ -15,7 +15,7 @@ type KazoupGmailFile struct {
 }
 
 func (kf *KazoupGmailFile) PreviewURL(width, height, mode, quality string) string {
-	url := fmt.Sprintf("%s/%s", globals.GmailEndpoint, kf.Original.Id)
+	url := fmt.Sprintf("%s%s", globals.GmailEndpoint, kf.Original.Id)
 
 	return url
 }
@@ -90,10 +90,10 @@ func (kf *KazoupGmailFile) SetContentCategory(c *KazoupCategorization) {
 	kf.KazoupCategorization = c
 }
 
-func (kf *KazoupGmailFile) SetEntities(entities *rossetelib.RosseteEntities) {
+func (kf *KazoupGmailFile) SetEntities(entities *rossete.RosseteEntities) {
 	kf.Entities = entities
 }
 
-func (kf *KazoupGmailFile) SetSentiment(sentiment *rossetelib.RosseteSentiment) {
+func (kf *KazoupGmailFile) SetSentiment(sentiment *rossete.RosseteSentiment) {
 	kf.Sentiment = sentiment
 }

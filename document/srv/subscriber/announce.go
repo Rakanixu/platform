@@ -13,6 +13,7 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	announce "github.com/kazoup/platform/lib/protomsg/announce"
 	enrich "github.com/kazoup/platform/lib/protomsg/enrich"
+	"github.com/kazoup/platform/lib/utils"
 	"github.com/micro/go-micro"
 	"golang.org/x/net/context"
 	"log"
@@ -79,7 +80,7 @@ func (a *AnnounceHandler) OnEnrichFile(ctx context.Context, msg *announce.Announ
 			return err
 		}
 
-		uID, err := globals.ParseUserIdFromContext(ctx)
+		uID, err := utils.ParseUserIdFromContext(ctx)
 		if err != nil {
 			return err
 		}

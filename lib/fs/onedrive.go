@@ -10,6 +10,7 @@ import (
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/onedrive"
+	"github.com/kazoup/platform/lib/utils"
 	"log"
 	"net/http"
 	"os"
@@ -115,7 +116,7 @@ func (ofs *OneDriveFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 			return
 		}
 
-		p := fmt.Sprintf("%s%s%s", folderPath, "/doc_templates/", globals.GetDocumentTemplate(rq.MimeType, true))
+		p := fmt.Sprintf("%s%s%s", folderPath, "/doc_templates/", utils.GetDocumentTemplate(rq.MimeType, true))
 		t, err := os.Open(p)
 		if err != nil {
 			ofs.FilesChan <- NewFileMsg(nil, err)
@@ -125,7 +126,7 @@ func (ofs *OneDriveFs) Create(rq file_proto.CreateRequest) chan FileMsg {
 
 		hc := &http.Client{}
 		// https://dev.onedrive.com/items/upload_put.htm
-		url := fmt.Sprintf("%sroot:/%s.%s:/content", globals.OneDriveEndpoint+Drive, rq.FileName, globals.GetDocumentTemplate(rq.MimeType, false))
+		url := fmt.Sprintf("%sroot:/%s.%s:/content", globals.OneDriveEndpoint+Drive, rq.FileName, utils.GetDocumentTemplate(rq.MimeType, false))
 		req, err := http.NewRequest("PUT", url, t) // We require a template to be able to open / edit this files online
 		req.Header.Set("Authorization", ofs.token())
 		req.Header.Set("Content-Type", globals.ONEDRIVE_TEXT)

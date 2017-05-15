@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/quota"
+	"github.com/kazoup/platform/lib/utils"
 	proto "github.com/kazoup/platform/quota/srv/proto/quota"
 	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/cmd"
@@ -18,7 +19,7 @@ type Quota struct {
 
 // Search quota handler
 func (q *Quota) Read(ctx context.Context, req *proto.ReadRequest, rsp *proto.ReadResponse) error {
-	uID, err := globals.ParseUserIdFromContext(ctx)
+	uID, err := utils.ParseUserIdFromContext(ctx)
 	if err != nil {
 		return errors.InternalServerError("com.kazoup.srv.quota.Read", err.Error())
 	}
@@ -49,7 +50,7 @@ func (q *Quota) Read(ctx context.Context, req *proto.ReadRequest, rsp *proto.Rea
 
 // Search quota handler
 func (q *Quota) Search(ctx context.Context, req *proto.SearchRequest, rsp *proto.SearchResponse) error {
-	uID, err := globals.ParseUserIdFromContext(ctx)
+	uID, err := utils.ParseUserIdFromContext(ctx)
 	if err != nil {
 		return errors.InternalServerError("com.kazoup.srv.quota.Search", err.Error())
 	}

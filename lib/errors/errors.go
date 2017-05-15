@@ -7,7 +7,16 @@ import (
 )
 
 var (
-	ErrInvalidCtx = micro_errors.New("Cant get srv from context", "", 500)
+	ErrInvalidCtx          = micro_errors.New("Cant get srv from context", "", 500)
+	ErrInvalidCloudStorage = micro_errors.New("Not such cloud storage", "", 500)
+	ErrInvalidFile         = micro_errors.New("Not such file", "", 500)
+	ErrInvalidFileSystem   = micro_errors.New("Not such file system", "", 500)
+	ErrInvalidMetadata     = micro_errors.New("Unable to retrieve metadata", "", 500)
+	ErrInvalidUserInCtx    = micro_errors.Unauthorized("ParseUserIdFromContext", "Unable to retrieve user from context")
+	ErrNoUserInCtx         = micro_errors.Unauthorized("ParseUserIdFromContext", "No user for given context")
+	ErrNoRolesInCtx        = micro_errors.New("No roles in context", "", 500)
+	ErrNoAuthHeader        = micro_errors.New("No Authorization header", "", 500)
+	ErrMissingParams       = micro_errors.BadRequest("Missing parameter", "")
 )
 
 type PlatformError struct {
@@ -47,5 +56,5 @@ func NewDiscoveryError(entity interface{}, detail string, err error) error {
 func (e *DiscoveryError) Error() string {
 	t := reflect.TypeOf(e.Entity)
 
-	return fmt.Sprintf("%s %s %s ", t.Name(), e.Detail, e.Err.Error())
+	return fmt.Sprintf("%s %s %s", t.Name(), e.Detail, e.Err.Error())
 }

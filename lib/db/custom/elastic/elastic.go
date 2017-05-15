@@ -5,6 +5,7 @@ import (
 	"github.com/kazoup/platform/lib/db/custom"
 	"github.com/kazoup/platform/lib/db/custom/proto/custom"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/utils"
 	"golang.org/x/net/context"
 	elib "gopkg.in/olivere/elastic.v5"
 	"io"
@@ -53,7 +54,7 @@ func (e *elastic) ScrollUnprocessedFiles(ctx context.Context, req *proto_custom.
 	done := false
 
 	// Get user id from context
-	uID, err = globals.ParseUserIdFromContext(ctx)
+	uID, err = utils.ParseUserIdFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}

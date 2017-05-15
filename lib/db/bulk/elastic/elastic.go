@@ -10,6 +10,7 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
 	"github.com/kazoup/platform/lib/slack"
+	"github.com/kazoup/platform/lib/utils"
 	"github.com/kazoup/platform/notification/srv/proto/notification"
 	"github.com/micro/go-micro"
 	"golang.org/x/net/context"
@@ -37,6 +38,8 @@ type bulkableKazoupRequest struct {
 	context.Context
 	elib.BulkableRequest
 }
+
+type processData func(e *elastic)
 
 func init() {
 	bulk.Register(&elastic{
@@ -69,7 +72,7 @@ func (e *elastic) Init(srv micro.Service) error {
 		return err
 	}
 
-	rs, err := globals.NewUUID()
+	rs, err := utils.NewUUID()
 	if err != nil {
 		return err
 	}
@@ -137,88 +140,11 @@ func (e *elastic) Init(srv micro.Service) error {
 	}
 
 	// Files
-	go func() {
-		for {
-			select {
-			case v := <-e.FilesChannel:
-				// File message can be notified, when a file is create, deleted or shared within kazoup
-				if v.FileMessage.Notify {
-					// We do not use bulk, as is just one element
-					_, err := e.Client.Index().Index(v.FileMessage.Index).Type(globals.FileType).Id(v.FileMessage.Id).BodyString(v.FileMessage.Data).Do(context.Background())
-					if err != nil {
-						log.Printf("Indexer error %s", err)
-					}
-
-					srv, ok := micro.FromContext(v.Ctx)
-					if !ok {
-						log.Printf("%v", errors.ErrInvalidCtx)
-					}
-
-					n := &proto_notification.NotificationMessage{
-						Method: globals.NOTIFY_REFRESH_SEARCH,
-						UserId: v.FileMessage.UserId,
-					}
-
-					// Publish scan topic, crawlers should pick up message
-					if err := srv.Client().Publish(v.Ctx, srv.Client().NewPublication(globals.NotificationTopic, n)); err != nil {
-						log.Printf("Publishing (notify file) error %s", err)
-					}
-				} else {
-					f, err := file.NewFileFromString(v.FileMessage.Data)
-					if err != nil {
-						log.Printf("Error creating file from string error %s", err)
-					}
-
-					// Use bulk processor as we will index groups of documents
-					// We need to build the file to be able to update JSON like obj, and not string
-					// We use helper BulkableKazoupRequest interface to do  not lose context on the after commit function
-					r := bulkableKazoupRequest{
-						v.Ctx,
-						elib.NewBulkUpdateRequest().Index(v.FileMessage.Index).Type(globals.FileType).Id(v.FileMessage.Id).DocAsUpsert(true).Doc(f),
-					}
-
-					e.BulkFilesProcessor.Add(r)
-				}
-			}
-
-		}
-	}()
-
+	go processFiles(e)
 	// Slack users
-	go func() {
-		for {
-			select {
-			case v := <-e.SlackUsersChannel:
-				var u slack.ESSlackUser
-				if err := json.Unmarshal([]byte(v.Data), &u); err != nil {
-					log.Printf("Error unmarshalling channel %s", err)
-				}
-
-				// Use bulk processor as we will index groups of documents
-				r := elib.NewBulkUpdateRequest().Index(v.Index).Type(globals.UserType).Id(globals.GetMD5Hash(u.UserID)).DocAsUpsert(true).Doc(u)
-				e.BulkProcessor.Add(r)
-			}
-
-		}
-	}()
-
+	go processSlackUsers(e)
 	// Slack channels
-	go func() {
-		for {
-			select {
-			case v := <-e.SlackChannelsChannel:
-				var ch slack.ESSlackChannel
-				if err := json.Unmarshal([]byte(v.Data), &ch); err != nil {
-					log.Printf("Error unmarshalling channel %s", err)
-				}
-
-				// Use bulk processor as we will index groups of documents
-				r := elib.NewBulkUpdateRequest().Index(v.Index).Type(globals.ChannelType).Id(globals.GetMD5Hash(ch.ChannelID)).DocAsUpsert(true).Doc(ch)
-				e.BulkProcessor.Add(r)
-			}
-
-		}
-	}()
+	go processSlackChannels(e)
 
 	return nil
 }
@@ -245,4 +171,84 @@ func (e *elastic) SlackChannels(ctx context.Context, msg *crawler.SlackChannelMe
 	e.SlackChannelsChannel <- msg
 
 	return nil
+}
+
+func processFiles(e *elastic) {
+	for {
+		select {
+		case v := <-e.FilesChannel:
+			// File message can be notified, when a file is create, deleted or shared within kazoup
+			if v.FileMessage.Notify {
+				// We do not use bulk, as is just one element
+				_, err := e.Client.Index().Index(v.FileMessage.Index).Type(globals.FileType).Id(v.FileMessage.Id).BodyString(v.FileMessage.Data).Do(context.Background())
+				if err != nil {
+					log.Printf("Indexer error %s", err)
+				}
+
+				srv, ok := micro.FromContext(v.Ctx)
+				if !ok {
+					log.Printf("%v", errors.ErrInvalidCtx)
+				}
+
+				n := &proto_notification.NotificationMessage{
+					Method: globals.NOTIFY_REFRESH_SEARCH,
+					UserId: v.FileMessage.UserId,
+				}
+
+				// Publish scan topic, crawlers should pick up message
+				if err := srv.Client().Publish(v.Ctx, srv.Client().NewPublication(globals.NotificationTopic, n)); err != nil {
+					log.Printf("Publishing (notify file) error %s", err)
+				}
+			} else {
+				f, err := file.NewFileFromString(v.FileMessage.Data)
+				if err != nil {
+					log.Printf("Error creating file from string error %s", err)
+				}
+
+				// Use bulk processor as we will index groups of documents
+				// We need to build the file to be able to update JSON like obj, and not string
+				// We use helper BulkableKazoupRequest interface to do  not lose context on the after commit function
+				r := bulkableKazoupRequest{
+					v.Ctx,
+					elib.NewBulkUpdateRequest().Index(v.FileMessage.Index).Type(globals.FileType).Id(v.FileMessage.Id).DocAsUpsert(true).Doc(f),
+				}
+
+				e.BulkFilesProcessor.Add(r)
+			}
+		}
+	}
+}
+
+func processSlackUsers(e *elastic) {
+	for {
+		select {
+		case v := <-e.SlackUsersChannel:
+			var u slack.ESSlackUser
+			if err := json.Unmarshal([]byte(v.Data), &u); err != nil {
+				log.Printf("Error unmarshalling user %s", err)
+			}
+
+			// Use bulk processor as we will index groups of documents
+			r := elib.NewBulkUpdateRequest().Index(v.Index).Type(globals.UserType).Id(utils.GetMD5Hash(u.UserID)).DocAsUpsert(true).Doc(u)
+			e.BulkProcessor.Add(r)
+		}
+
+	}
+}
+
+func processSlackChannels(e *elastic) {
+	for {
+		select {
+		case v := <-e.SlackChannelsChannel:
+			var ch slack.ESSlackChannel
+			if err := json.Unmarshal([]byte(v.Data), &ch); err != nil {
+				log.Printf("Error unmarshalling channel %s", err)
+			}
+
+			// Use bulk processor as we will index groups of documents
+			r := elib.NewBulkUpdateRequest().Index(v.Index).Type(globals.ChannelType).Id(utils.GetMD5Hash(ch.ChannelID)).DocAsUpsert(true).Doc(ch)
+			e.BulkProcessor.Add(r)
+		}
+
+	}
 }

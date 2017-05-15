@@ -2,15 +2,16 @@ package file
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/kazoup/platform/lib/box"
 	"github.com/kazoup/platform/lib/categories"
 	"github.com/kazoup/platform/lib/dropbox"
+	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/globals"
 	gmailhelper "github.com/kazoup/platform/lib/gmail"
 	"github.com/kazoup/platform/lib/onedrive"
 	"github.com/kazoup/platform/lib/slack"
+	"github.com/kazoup/platform/lib/utils"
 	googledrive "google.golang.org/api/drive/v3"
 	"net/url"
 	"strings"
@@ -67,7 +68,7 @@ func NewFileFromString(s string) (File, error) {
 		}
 		return kmf, nil
 	default:
-		return nil, errors.New("Error constructing file type")
+		return nil, errors.ErrInvalidFile
 	}
 }
 
@@ -114,7 +115,7 @@ func NewKazoupFileFromGoogleDriveFile(g googledrive.File, dsId, uId, index strin
 	}
 
 	kf := &KazoupFile{
-		ID:           globals.GetMD5Hash(url),
+		ID:           utils.GetMD5Hash(url),
 		UserId:       uId,
 		Name:         g.Name,
 		URL:          url,
@@ -147,7 +148,7 @@ func NewKazoupFileFromSlackFile(s slack.SlackFile, dsId, uId, index string) *Kaz
 	}
 
 	kf := &KazoupFile{
-		ID:           globals.GetMD5Hash(s.URLPrivate),
+		ID:           utils.GetMD5Hash(s.URLPrivate),
 		UserId:       uId,
 		Name:         s.Name,
 		URL:          s.URLPrivate,
@@ -179,7 +180,7 @@ func NewKazoupFileFromOneDriveFile(o onedrive.OneDriveFile, dsId, uId, index str
 	}
 
 	kf := &KazoupFile{
-		ID:           globals.GetMD5Hash(o.WebURL),
+		ID:           utils.GetMD5Hash(o.WebURL),
 		UserId:       uId,
 		Name:         o.Name,
 		URL:          o.WebURL,
@@ -220,7 +221,7 @@ func NewKazoupFileFromDropboxFile(d dropbox.DropboxFile, dsId, uId, index string
 	}
 
 	kf := &KazoupFile{
-		ID:           globals.GetMD5Hash(url),
+		ID:           utils.GetMD5Hash(url),
 		UserId:       uId,
 		Name:         d.Name,
 		URL:          url,
@@ -260,7 +261,7 @@ func NewKazoupFileFromBoxFile(d box.BoxFileMeta, dsId, uId, index string) *Kazou
 	}
 
 	kf := &KazoupFile{
-		ID:           globals.GetMD5Hash(url),
+		ID:           utils.GetMD5Hash(url),
 		UserId:       uId,
 		Name:         d.Name,
 		URL:          url,
@@ -290,7 +291,7 @@ func NewKazoupFileFromGmailFile(m gmailhelper.GmailFile, dsId, uId, dsURL, index
 	t := time.Unix(m.InternalDate/1000, 0)
 
 	kf := &KazoupFile{
-		ID:           globals.GetMD5Hash(url),
+		ID:           utils.GetMD5Hash(url),
 		UserId:       uId,
 		Name:         m.Name,
 		URL:          url,
@@ -319,8 +320,4 @@ func NewKazoupFileFromMockFile() *KazoupMockFile {
 		DatasourceId: globals.Mock,
 		Index:        globals.Mock,
 	}}
-}
-
-func UrlDepth(str string) int64 {
-	return int64(len(strings.Split(str, "/")) - 1)
 }

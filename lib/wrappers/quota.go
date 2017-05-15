@@ -4,14 +4,14 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/go-redis/redis"
+	rate "github.com/go-redis/redis_rate"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/micro/go-micro/errors"
 	"github.com/micro/go-micro/metadata"
 	"github.com/micro/go-micro/server"
 	"golang.org/x/net/context"
 	timerate "golang.org/x/time/rate"
-	"gopkg.in/go-redis/rate.v5"
-	"gopkg.in/redis.v5"
 	"time"
 )
 
@@ -75,8 +75,9 @@ func NewQuotaHandlerWrapper(srvName string) server.HandlerWrapper {
 			"server1": "redis:6379",
 		},
 	})
-	fallbackLimiter := timerate.NewLimiter(timerate.Every(time.Second), 1000)
-	limiter := rate.NewLimiter(ring, fallbackLimiter)
+
+	limiter := rate.NewLimiter(ring)
+	limiter.Fallback = timerate.NewLimiter(timerate.Every(time.Second), 1000)
 
 	return func(h server.HandlerFunc) server.HandlerFunc {
 		return quotaHandlerWrapper(h, limiter, srvName)
@@ -149,8 +150,8 @@ func NewQuotaSubscriberWrapper(srvName string) server.SubscriberWrapper {
 			"server1": "redis:6379",
 		},
 	})
-	fallbackLimiter := timerate.NewLimiter(timerate.Every(time.Second), 1000)
-	limiter := rate.NewLimiter(ring, fallbackLimiter)
+	limiter := rate.NewLimiter(ring)
+	limiter.Fallback = timerate.NewLimiter(timerate.Every(time.Second), 1000)
 
 	return func(fn server.SubscriberFunc) server.SubscriberFunc {
 		return quotaSubscriberWrapper(fn, limiter, srvName)

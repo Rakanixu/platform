@@ -83,7 +83,7 @@ var create_file_tests_data = testTable{
 		"service":"com.kazoup.srv.file",
 		"method":"Service.Create",
 		"request":{
-			"datasource_id":"` + globals.GetMD5Hash(DROPBOX_URL+USER_ID) + `",
+			"datasource_id":"` + utils.GetMD5Hash(DROPBOX_URL+USER_ID) + `",
 			"mime_type":"document",
 			"file_name":"test"
 		}
@@ -92,7 +92,7 @@ var create_file_tests_data = testTable{
 		"service":"com.kazoup.srv.file",
 		"method":"Service.Create",
 		"request":{
-			"datasource_id":"` + globals.GetMD5Hash(GOOGLE_DRIVE_URL+USER_ID) + `",
+			"datasource_id":"` + utils.GetMD5Hash(GOOGLE_DRIVE_URL+USER_ID) + `",
 			"mime_type":"document",
 			"file_name":"test"
 		}
@@ -101,7 +101,7 @@ var create_file_tests_data = testTable{
 		"service":"com.kazoup.srv.file",
 		"method":"Service.Create",
 		"request":{
-			"datasource_id":"` + globals.GetMD5Hash(ONE_DRIVE_URL+USER_ID) + `",
+			"datasource_id":"` + utils.GetMD5Hash(ONE_DRIVE_URL+USER_ID) + `",
 			"mime_type":"document",
 			"file_name":"test"
 		}
@@ -114,7 +114,7 @@ var ds_delete_tests_data = testTable{
 		"service": "com.kazoup.srv.datasource",
 		"method": "Service.Delete",
 		"request": {
-			"id": "` + globals.GetMD5Hash(DROPBOX_URL+USER_ID) + `"
+			"id": "` + utils.GetMD5Hash(DROPBOX_URL+USER_ID) + `"
 		}
 	}`), &http.Response{StatusCode: 200}, noDuration},
 	// GoogleDrive
@@ -122,7 +122,7 @@ var ds_delete_tests_data = testTable{
 		"service": "com.kazoup.srv.datasource",
 		"method": "Service.Delete",
 		"request": {
-			"id": "` + globals.GetMD5Hash(GOOGLE_DRIVE_URL+USER_ID) + `"
+			"id": "` + utils.GetMD5Hash(GOOGLE_DRIVE_URL+USER_ID) + `"
 		}
 	}`), &http.Response{StatusCode: 200}, noDuration},
 	// Onedrive
@@ -130,7 +130,7 @@ var ds_delete_tests_data = testTable{
 		"service": "com.kazoup.srv.datasource",
 		"method": "Service.Delete",
 		"request": {
-			"id": "` + globals.GetMD5Hash(ONE_DRIVE_URL+USER_ID) + `"
+			"id": "` + utils.GetMD5Hash(ONE_DRIVE_URL+USER_ID) + `"
 		}
 	}`), &http.Response{StatusCode: 200}, noDuration},
 }

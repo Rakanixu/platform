@@ -149,7 +149,7 @@ var search_for_crawled_files = testTable{
 		"service": "com.kazoup.srv.db",
 		"method": "DB.Search",
 		"request": {
-			"index": "` + globals.GetMD5Hash(USER_ID) + `",
+			"index": "` + utils.GetMD5Hash(USER_ID) + `",
 			"type": "file",
 			"file_type": "files",
 			"from": 0,
@@ -164,7 +164,7 @@ var delete_datasources_test_data = testTable{
 		"service": "com.kazoup.srv.datasource",
 		"method": "Service.Delete",
 		"request": {
-			"id": "` + globals.GetMD5Hash(BOX_URL+USER_ID) + `"
+			"id": "` + utils.GetMD5Hash(BOX_URL+USER_ID) + `"
 		}
 	}`), &http.Response{StatusCode: 200}, noDuration},
 	// Dropbox
@@ -172,7 +172,7 @@ var delete_datasources_test_data = testTable{
 		"service": "com.kazoup.srv.datasource",
 		"method": "Service.Delete",
 		"request": {
-			"id": "` + globals.GetMD5Hash(DROPBOX_URL+USER_ID) + `"
+			"id": "` + utils.GetMD5Hash(DROPBOX_URL+USER_ID) + `"
 		}
 	}`), &http.Response{StatusCode: 200}, noDuration},
 	// GoogleDrive
@@ -180,7 +180,7 @@ var delete_datasources_test_data = testTable{
 		"service": "com.kazoup.srv.datasource",
 		"method": "Service.Delete",
 		"request": {
-			"id": "` + globals.GetMD5Hash(GOOGLE_DRIVE_URL+USER_ID) + `"
+			"id": "` + utils.GetMD5Hash(GOOGLE_DRIVE_URL+USER_ID) + `"
 		}
 	}`), &http.Response{StatusCode: 200}, noDuration},
 	// Onedrive
@@ -188,7 +188,7 @@ var delete_datasources_test_data = testTable{
 		"service": "com.kazoup.srv.datasource",
 		"method": "Service.Delete",
 		"request": {
-			"id": "` + globals.GetMD5Hash(ONE_DRIVE_URL+USER_ID) + `"
+			"id": "` + utils.GetMD5Hash(ONE_DRIVE_URL+USER_ID) + `"
 		}
 	}`), &http.Response{StatusCode: 200}, noDuration},
 	// Gmail
@@ -196,7 +196,7 @@ var delete_datasources_test_data = testTable{
 		"service": "com.kazoup.srv.datasource",
 		"method": "Service.Delete",
 		"request": {
-			"id": "` + globals.GetMD5Hash(GMAIL_URL+USER_ID) + `"
+			"id": "` + utils.GetMD5Hash(GMAIL_URL+USER_ID) + `"
 		}
 	}`), &http.Response{StatusCode: 200}, noDuration},
 	// Slack
@@ -204,7 +204,7 @@ var delete_datasources_test_data = testTable{
 		"service": "com.kazoup.srv.datasource",
 		"method": "Service.Delete",
 		"request": {
-			"id": "` + globals.GetMD5Hash(SLACK_URL+USER_ID) + `"
+			"id": "` + utils.GetMD5Hash(SLACK_URL+USER_ID) + `"
 		}
 	}`), &http.Response{StatusCode: 200}, noDuration},
 }

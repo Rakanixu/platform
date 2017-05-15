@@ -6,6 +6,7 @@ import (
 	platform_errors "github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/quota"
+	"github.com/kazoup/platform/lib/utils"
 	"github.com/kazoup/platform/lib/validate"
 	"golang.org/x/net/context"
 )
@@ -19,11 +20,11 @@ type Service struct {
 }
 
 func (s *Service) EnrichFile(ctx context.Context, req *proto_audio.EnrichFileRequest, rsp *proto_audio.EnrichFileResponse) error {
-	if err := validate.Exists(ctx, req.Id, req.Index); err != nil {
+	if err := validate.Exists(req.Id, req.Index); err != nil {
 		return err
 	}
 
-	uID, err := globals.ParseUserIdFromContext(ctx)
+	uID, err := utils.ParseUserIdFromContext(ctx)
 	if err != nil {
 		return err
 	}
@@ -43,7 +44,7 @@ func (s *Service) EnrichFile(ctx context.Context, req *proto_audio.EnrichFileReq
 }
 
 func (s *Service) EnrichDatasource(ctx context.Context, req *proto_audio.EnrichDatasourceRequest, rsp *proto_audio.EnrichDatasourceResponse) error {
-	if err := validate.Exists(ctx, req.Id); err != nil {
+	if err := validate.Exists(req.Id); err != nil {
 		return err
 	}
 

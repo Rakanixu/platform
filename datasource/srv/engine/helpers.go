@@ -6,6 +6,7 @@ import (
 	"github.com/kazoup/platform/lib/db/operations"
 	"github.com/kazoup/platform/lib/db/operations/proto/operations"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/utils"
 	"golang.org/x/net/context"
 	"strings"
 )
@@ -93,7 +94,7 @@ func deleteZombieRecords(ctx context.Context, datasources []*proto_datasource.En
 		_, err := operations.Delete(ctx, &proto_operations.DeleteRequest{
 			Index: globals.IndexHelper,
 			Type:  globals.FileType,
-			Id:    globals.GetMD5Hash(urlToDelete[len(localEndpoint):]),
+			Id:    utils.GetMD5Hash(urlToDelete[len(localEndpoint):]),
 		})
 		if err != nil {
 			return

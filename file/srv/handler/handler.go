@@ -18,7 +18,7 @@ type Service struct{}
 
 // Create File handler
 func (s *Service) Create(ctx context.Context, req *proto_file.CreateRequest, rsp *proto_file.CreateResponse) error {
-	if err := validate.Exists(ctx, req.DatasourceId); err != nil {
+	if err := validate.Exists(req.DatasourceId); err != nil {
 		return err
 	}
 
@@ -73,7 +73,7 @@ func (s *Service) Create(ctx context.Context, req *proto_file.CreateRequest, rsp
 
 // Create File handler
 func (s *Service) Read(ctx context.Context, req *proto_file.ReadRequest, rsp *proto_file.ReadResponse) error {
-	if err := validate.Exists(ctx, req.Index, req.Id); err != nil {
+	if err := validate.Exists(req.Index, req.Id); err != nil {
 		return err
 	}
 
@@ -93,7 +93,7 @@ func (s *Service) Read(ctx context.Context, req *proto_file.ReadRequest, rsp *pr
 
 // Delete File handler
 func (s *Service) Delete(ctx context.Context, req *proto_file.DeleteRequest, rsp *proto_file.DeleteResponse) error {
-	if err := validate.Exists(ctx, req.DatasourceId); err != nil {
+	if err := validate.Exists(req.DatasourceId); err != nil {
 		return err
 	}
 
@@ -139,7 +139,7 @@ func (s *Service) Delete(ctx context.Context, req *proto_file.DeleteRequest, rsp
 
 // Search File handler
 func (s *Service) Search(ctx context.Context, req *proto_file.SearchRequest, rsp *proto_file.SearchResponse) error {
-	if err := validate.Exists(ctx, req.Index); err != nil {
+	if err := validate.Exists(req.Index); err != nil {
 		return err
 	}
 
@@ -169,7 +169,7 @@ func (s *Service) Search(ctx context.Context, req *proto_file.SearchRequest, rsp
 
 // Share file handler
 func (s *Service) Share(ctx context.Context, req *proto_file.ShareRequest, rsp *proto_file.ShareResponse) error {
-	if err := validate.Exists(ctx, req.OriginalId, req.DatasourceId); err != nil {
+	if err := validate.Exists(req.OriginalId, req.DatasourceId); err != nil {
 		return err
 	}
 
