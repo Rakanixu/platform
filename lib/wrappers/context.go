@@ -24,22 +24,30 @@ func ContextClientWrapper(service micro.Service) client.Wrapper {
 	}
 }
 
-func ContextHandlerWrapper(service micro.Service) server.HandlerWrapper {
+func NewContextHandlerWrapper(service micro.Service) server.HandlerWrapper {
 	return func(h server.HandlerFunc) server.HandlerFunc {
-		return func(ctx context.Context, req server.Request, rsp interface{}) error {
-			ctx = micro.NewContext(ctx, service)
-
-			return h(ctx, req, rsp)
-		}
+		return contextHandlerWrapper(h, service)
 	}
 }
 
-func ContextSubscriberWrapper(service micro.Service) server.SubscriberWrapper {
-	return func(fn server.SubscriberFunc) server.SubscriberFunc {
-		return func(ctx context.Context, msg server.Publication) error {
-			ctx = micro.NewContext(ctx, service)
+func contextHandlerWrapper(h server.HandlerFunc, srv micro.Service) server.HandlerFunc {
+	return func(ctx context.Context, req server.Request, rsp interface{}) error {
+		ctx = micro.NewContext(ctx, srv)
 
-			return fn(ctx, msg)
-		}
+		return h(ctx, req, rsp)
+	}
+}
+
+func NewContextSubscriberWrapper(service micro.Service) server.SubscriberWrapper {
+	return func(fn server.SubscriberFunc) server.SubscriberFunc {
+		return contextSubscriberWrapper(fn, service)
+	}
+}
+
+func contextSubscriberWrapper(fn server.SubscriberFunc, srv micro.Service) server.SubscriberFunc {
+	return func(ctx context.Context, msg server.Publication) error {
+		ctx = micro.NewContext(ctx, srv)
+
+		return fn(ctx, msg)
 	}
 }

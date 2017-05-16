@@ -76,19 +76,19 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 				/*awsxray.NewClientWrapper(opts...),*/
 			),
 			micro.WrapSubscriber(
-				ContextSubscriberWrapper(service),
-				AuthSubscriberWrapper,
+				NewContextSubscriberWrapper(service),
+				NewAuthSubscriberWrapper(),
 				NewAfterSubscriberWrapper(),
 				NewQuotaSubscriberWrapper(sn),
-				LogSubscriberWrapper(),
+				NewLogSubscriberWrapper(),
 			),
 			micro.WrapHandler(
-				ContextHandlerWrapper(service),
+				NewContextHandlerWrapper(service),
 				/*awsxray.NewHandlerWrapper(opts...), */
-				AuthHandlerWrapper,
+				NewAuthHandlerWrapper(),
 				NewAfterHandlerWrapper(),
 				NewQuotaHandlerWrapper(sn),
-				LogHandlerWrapper(),
+				NewLogHandlerWrapper(),
 			),
 		)
 
@@ -121,19 +121,19 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 			/*awsxray.NewClientWrapper(opts...),*/
 		),
 		micro.WrapSubscriber(
-			ContextSubscriberWrapper(service),
-			AuthSubscriberWrapper,
+			NewContextSubscriberWrapper(service),
+			NewAuthSubscriberWrapper(),
 			NewAfterSubscriberWrapper(),
 			NewQuotaSubscriberWrapper(sn),
-			LogSubscriberWrapper(),
+			NewLogSubscriberWrapper(),
 		),
 		micro.WrapHandler(
-			ContextHandlerWrapper(service),
+			NewContextHandlerWrapper(service),
 			/*awsxray.NewHandlerWrapper(opts...), */
-			AuthHandlerWrapper,
+			NewAuthHandlerWrapper(),
 			NewAfterHandlerWrapper(),
 			NewQuotaHandlerWrapper(sn),
-			LogHandlerWrapper(),
+			NewLogHandlerWrapper(),
 		),
 	)
 

@@ -56,12 +56,12 @@ func TestMain(m *testing.M) {
 		//micro.WrapClient(wrappers.ContextClientWrapper(service)),
 		micro.WrapHandler(
 			wrappers.UserTestHandlerWrapper,
-			wrappers.ContextHandlerWrapper(service),
+			wrappers.NewContextHandlerWrapper(service),
 			wrappers.NewAfterHandlerWrapper(),
 		),
 		micro.WrapSubscriber(
 			wrappers.UserTestSubscriberWrapper,
-			wrappers.ContextSubscriberWrapper(service),
+			wrappers.NewContextSubscriberWrapper(service),
 			wrappers.NewAfterSubscriberWrapper(),
 		),
 	)

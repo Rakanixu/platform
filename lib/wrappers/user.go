@@ -6,6 +6,10 @@ import (
 	"golang.org/x/net/context"
 )
 
+/*
+	This file can be deleted if we do not have to run tests for services (main.go).
+*/
+
 const (
 	TEST_USER_ID = "test_user"
 )

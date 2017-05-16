@@ -2,27 +2,32 @@ package wrappers
 
 import (
 	"encoding/base64"
-	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	kazoup_context "github.com/kazoup/platform/lib/context"
+	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/globals"
-	"github.com/micro/go-micro/errors"
 	"github.com/micro/go-micro/metadata"
 	"github.com/micro/go-micro/server"
 	"golang.org/x/net/context"
 )
 
-func AuthHandlerWrapper(fn server.HandlerFunc) server.HandlerFunc {
+func NewAuthHandlerWrapper() server.HandlerWrapper {
+	return func(h server.HandlerFunc) server.HandlerFunc {
+		return authHandlerWrapper(h)
+	}
+}
+
+func authHandlerWrapper(fn server.HandlerFunc) server.HandlerFunc {
 	return func(ctx context.Context, req server.Request, rsp interface{}) error {
 		var f error
 
 		md, ok := metadata.FromContext(ctx)
 		if !ok {
-			return errors.InternalServerError("AuthHandlerWrapper", "Unable to retrieve metadata")
+			return errors.ErrInvalidCtx
 		}
 
 		if len(md["Authorization"]) == 0 {
-			return errors.Unauthorized("", "Authorization required")
+			return errors.ErrNoAuthHeader
 		}
 
 		// Authentication
@@ -30,7 +35,7 @@ func AuthHandlerWrapper(fn server.HandlerFunc) server.HandlerFunc {
 			token, err := jwt.Parse(md["Authorization"], func(token *jwt.Token) (interface{}, error) {
 				// Don't forget to validate the alg is what you expect:
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-					return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+					return nil, errors.NewPlatformError("", "AuthHandlerWrapper", "Unexpected signing method", nil)
 				}
 
 				decoded, err := base64.URLEncoding.DecodeString(globals.CLIENT_ID_SECRET)
@@ -42,11 +47,11 @@ func AuthHandlerWrapper(fn server.HandlerFunc) server.HandlerFunc {
 			})
 
 			if err != nil {
-				return errors.Unauthorized("Token", err.Error())
+				return errors.NewPlatformError("", "ParseJWTToken", "", err)
 			}
 
 			if !token.Valid {
-				return errors.Unauthorized("", "Invalid token")
+				return errors.NewPlatformError("", "ParseJWTToken", "Invalid token", err)
 			}
 
 			ctx = context.WithValue(
@@ -62,17 +67,23 @@ func AuthHandlerWrapper(fn server.HandlerFunc) server.HandlerFunc {
 	}
 }
 
-func AuthSubscriberWrapper(fn server.SubscriberFunc) server.SubscriberFunc {
+func NewAuthSubscriberWrapper() server.SubscriberWrapper {
+	return func(fn server.SubscriberFunc) server.SubscriberFunc {
+		return authSubscriberWrapper(fn)
+	}
+}
+
+func authSubscriberWrapper(fn server.SubscriberFunc) server.SubscriberFunc {
 	return func(ctx context.Context, msg server.Publication) error {
 		var f error
 
 		md, ok := metadata.FromContext(ctx)
 		if !ok {
-			return errors.InternalServerError("AuthSubscriberWrapper", "Unable to retrieve metadata")
+			return errors.ErrInvalidCtx
 		}
 
 		if len(md["Authorization"]) == 0 {
-			return errors.Unauthorized("", "Authorization required")
+			return errors.ErrNoAuthHeader
 		}
 
 		// Authentication
@@ -80,7 +91,7 @@ func AuthSubscriberWrapper(fn server.SubscriberFunc) server.SubscriberFunc {
 			token, err := jwt.Parse(md["Authorization"], func(token *jwt.Token) (interface{}, error) {
 				// Don't forget to validate the alg is what you expect:
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-					return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+					return nil, errors.NewPlatformError("", "AuthHandlerWrapper", "Unexpected signing method", nil)
 				}
 
 				decoded, err := base64.URLEncoding.DecodeString(globals.CLIENT_ID_SECRET)
@@ -92,11 +103,11 @@ func AuthSubscriberWrapper(fn server.SubscriberFunc) server.SubscriberFunc {
 			})
 
 			if err != nil {
-				return errors.Unauthorized("Token", err.Error())
+				return errors.NewPlatformError("", "ParseJWTToken", "", err)
 			}
 
 			if !token.Valid {
-				return errors.Unauthorized("", "Invalid token")
+				return errors.NewPlatformError("", "ParseJWTToken", "Invalid token", err)
 			}
 
 			ctx = context.WithValue(

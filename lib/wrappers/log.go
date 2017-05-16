@@ -8,8 +8,8 @@ import (
 	"golang.org/x/net/context"
 )
 
-// LogHandlerWrapper returns a HandlerWrappers that logs all requests
-func LogHandlerWrapper() server.HandlerWrapper {
+// NewLogHandlerWrapper returns a HandlerWrappers that logs all requests
+func NewLogHandlerWrapper() server.HandlerWrapper {
 	return func(h server.HandlerFunc) server.HandlerFunc {
 		return logHandlerWrapper(h)
 	}
@@ -36,8 +36,8 @@ func logHandlerWrapper(fn server.HandlerFunc) server.HandlerFunc {
 	}
 }
 
-// LogHandlerWrapper returns a HandlerWrappers that logs all requests
-func LogSubscriberWrapper() server.SubscriberWrapper {
+// NewLogHandlerWrapper returns a HandlerWrappers that logs all requests
+func NewLogSubscriberWrapper() server.SubscriberWrapper {
 	return func(h server.SubscriberFunc) server.SubscriberFunc {
 		return logSubscriberWrapper(h)
 	}
@@ -52,7 +52,7 @@ func logSubscriberWrapper(fn server.SubscriberFunc) server.SubscriberFunc {
 		if uErr != nil {
 			log.WithFields(log.Fields{
 				"topic": msg.Topic(),
-				"task":  "LogSubscriberWrapper",
+				"task":  "NewLogSubscriberWrapper",
 			}).Error("Unable to retrieve user")
 		}
 

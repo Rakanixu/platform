@@ -1,9 +1,9 @@
 package file
 
 import (
-	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/onedrive"
 	"github.com/kazoup/platform/lib/rossete"
+	"github.com/kazoup/platform/lib/utils"
 	"reflect"
 	"testing"
 	"time"

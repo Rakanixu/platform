@@ -17,9 +17,7 @@ import (
 )
 
 //SaveDatasource call datasource-srv and save new data source
-func SaveDatasource(ctx context.Context, user string, url string, token *oauth2.Token) error {
-	c := client.NewClient()
-
+func SaveDatasource(ctx context.Context, c client.Client, user string, url string, token *oauth2.Token) error {
 	srvReq := c.NewRequest(
 		globals.DATASOURCE_SERVICE_NAME,
 		"Service.Create",

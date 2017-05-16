@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/utils"
+	"github.com/micro/go-micro/client"
 	"golang.org/x/oauth2"
 	"io/ioutil"
 	"net/http"
@@ -109,7 +110,7 @@ func HandleSlackCallback(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	url := fmt.Sprintf("slack://%s", sr.Team.Name)
-	if err := SaveDatasource(uCtx, uID, url, token); err != nil {
+	if err := SaveDatasource(uCtx, client.NewClient(), uID, url, token); err != nil {
 		fmt.Fprintf(w, err.Error())
 		CloseBrowserWindow(w, r)
 		return
