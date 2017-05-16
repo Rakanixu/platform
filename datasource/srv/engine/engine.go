@@ -15,7 +15,6 @@ import (
 )
 
 const (
-	localEndpoint      = "local://"
 	googledriveEnpoint = "googledrive://"
 	gmailEnpoint       = "gmail://"
 	onedriveEndpoint   = "onedrive://"
@@ -34,12 +33,6 @@ type Engine interface {
 
 // NewDataSourceEngine returns a Engine interface
 func NewDataSourceEngine(endpoint *proto_datasource.Endpoint) (Engine, error) {
-	if strings.Contains(endpoint.Url, localEndpoint) {
-		return &Local{
-			Endpoint: *endpoint,
-		}, nil
-	}
-
 	if strings.Contains(endpoint.Url, googledriveEnpoint) {
 		return &Googledrive{
 			Endpoint: *endpoint,

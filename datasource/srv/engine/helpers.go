@@ -6,9 +6,7 @@ import (
 	"github.com/kazoup/platform/lib/db/operations"
 	"github.com/kazoup/platform/lib/db/operations/proto/operations"
 	"github.com/kazoup/platform/lib/globals"
-	"github.com/kazoup/platform/lib/utils"
 	"golang.org/x/net/context"
-	"strings"
 )
 
 // ReadDataSource returns the endpoint with given id
@@ -53,57 +51,4 @@ func SearchDataSources(ctx context.Context, req *proto_datasource.SearchRequest)
 	}
 
 	return ds, nil
-}
-
-func cleanFilesHelperIndex(ctx context.Context, endpoint *proto_datasource.Endpoint) error {
-	var datasources []*proto_datasource.Endpoint
-
-	// FIXME: pagination
-	rsp, err := SearchDataSources(ctx, &proto_datasource.SearchRequest{
-		Index: globals.IndexDatasources,
-		Type:  globals.TypeDatasource,
-		From:  0,
-		Size:  9999,
-	})
-	if err != nil {
-		return err
-	}
-
-	if err := json.Unmarshal([]byte(rsp.Result), &datasources); err != nil {
-		return err
-	}
-
-	idx := strings.LastIndex(endpoint.Url, "/")
-	if idx > 0 {
-		deleteZombieRecords(ctx, datasources, endpoint.Url[:idx])
-	}
-
-	return nil
-}
-
-func deleteZombieRecords(ctx context.Context, datasources []*proto_datasource.Endpoint, urlToDelete string) {
-	delete := 0
-
-	for _, v := range datasources {
-		if !strings.Contains(v.Url, urlToDelete) {
-			delete++
-		}
-	}
-
-	if delete >= len(datasources)-1 {
-		_, err := operations.Delete(ctx, &proto_operations.DeleteRequest{
-			Index: globals.IndexHelper,
-			Type:  globals.FileType,
-			Id:    utils.GetMD5Hash(urlToDelete[len(localEndpoint):]),
-		})
-		if err != nil {
-			return
-		}
-
-		idx := strings.LastIndex(urlToDelete, "/")
-
-		if idx > 0 && urlToDelete[:idx] != "local:/" {
-			deleteZombieRecords(ctx, datasources, urlToDelete[:idx])
-		}
-	}
 }
