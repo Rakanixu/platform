@@ -7,6 +7,7 @@ import (
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/onedrive"
 	"github.com/kazoup/platform/lib/utils"
+	"github.com/micro/go-micro/client"
 	"golang.org/x/oauth2"
 	"log"
 	"net/http"
@@ -100,7 +101,7 @@ func HandleMicrosoftCallback(w http.ResponseWriter, r *http.Request) {
 
 	url := fmt.Sprintf("onedrive://%s", drivesRsp.Value[0].Owner.User.DisplayName)
 
-	if err := SaveDatasource(uCtx, uID, url, token); err != nil {
+	if err := SaveDatasource(uCtx, client.NewClient(), uID, url, token); err != nil {
 		fmt.Fprintf(w, "Error adding data source %s \n", err.Error())
 	}
 
