@@ -1,7 +1,6 @@
 package file
 
 import (
-	"github.com/kazoup/platform/lib/gmail"
 	"github.com/kazoup/platform/lib/rossete"
 	"reflect"
 	"testing"
@@ -12,6 +11,7 @@ var (
 	kazoupGmailFile = &KazoupGmailFile{
 		KazoupFile: KazoupFile{
 			ID:           "KazoupFile_ID",
+			OriginalID:   "original_id",
 			UserId:       babbler.Babble(),
 			Name:         "KazoupFile_name.extension",
 			URL:          babbler.Babble(),
@@ -28,9 +28,6 @@ var (
 			Index:        babbler.Babble(),
 			Content:      babbler.Babble(),
 			Highlight:    babbler.Babble(),
-		},
-		Original: &gmail.GmailFile{
-			Id: "original_id",
 		},
 	}
 )
@@ -75,8 +72,8 @@ func TestKazoupGmailFile_GetUserID(t *testing.T) {
 func TestKazoupGmailFile_GetIDFromOriginal(t *testing.T) {
 	result := kazoupGmailFile.GetIDFromOriginal()
 
-	if kazoupGmailFile.Original.Id != result {
-		t.Errorf("Expected %v, got %v", kazoupGmailFile.Original.Id, result)
+	if kazoupGmailFile.OriginalID != result {
+		t.Errorf("Expected %v, got %v", kazoupGmailFile.OriginalID, result)
 	}
 }
 
@@ -104,14 +101,6 @@ func TestKazoupGmailFile_GetFileType(t *testing.T) {
 	}
 }
 
-func TestKazoupGmailFile_GetPathDisplay(t *testing.T) {
-	result := kazoupGmailFile.GetPathDisplay()
-
-	if "" != result {
-		t.Errorf("Expected %v, got %v", "", result)
-	}
-}
-
 func TestKazoupGmailFile_GetURL(t *testing.T) {
 	result := kazoupGmailFile.GetURL()
 
@@ -123,15 +112,6 @@ func TestKazoupGmailFile_GetURL(t *testing.T) {
 func TestKazoupGmailFile_GetExtension(t *testing.T) {
 	expected := "extension"
 	result := kazoupGmailFile.GetExtension()
-
-	if expected != result {
-		t.Errorf("Expected %v, got %v", expected, result)
-	}
-}
-
-func TestKazoupGmailFile_GetBase64(t *testing.T) {
-	expected := ""
-	result := kazoupGmailFile.GetBase64()
 
 	if expected != result {
 		t.Errorf("Expected %v, got %v", expected, result)
