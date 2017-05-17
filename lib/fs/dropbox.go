@@ -165,6 +165,7 @@ func (dfs *DropboxFs) Delete(rq file_proto.DeleteRequest) chan FileMsg {
 					ID: rq.FileId,
 				},
 				nil,
+				nil,
 			},
 			nil,
 		)

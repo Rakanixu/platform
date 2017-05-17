@@ -19,10 +19,8 @@ type File interface {
 	GetIndex() string
 	GetDatasourceID() string
 	GetFileType() string
-	GetPathDisplay() string
 	GetURL() string
 	GetExtension() string
-	GetBase64() string
 	GetModifiedTime() time.Time
 	GetContent() string
 	GetOptsTimestamps() *OptsKazoupFile

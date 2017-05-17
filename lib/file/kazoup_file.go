@@ -21,6 +21,9 @@ type KazoupCategorization struct {
 // KazoupFile represents all different types
 type KazoupFile struct {
 	ID                   string                       `json:"id"`
+	OriginalID           string                       `json:"original_id"`
+	OriginalDownloadRef  string                       `json:"original_download_ref"`
+	PreviewUrl           string                       `json:"preview_url"`
 	UserId               string                       `json:"user_id"`
 	Name                 string                       `json:"name"`
 	URL                  string                       `json:"url"`

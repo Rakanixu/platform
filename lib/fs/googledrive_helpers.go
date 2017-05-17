@@ -94,7 +94,7 @@ func (gfs *GoogleDriveFs) processImage(f *file.KazoupGoogleFile) (file.File, err
 
 	if err := backoff.Retry(func() error {
 		// Not great, but check implementation for details about variadic params
-		rc, err = gdcs.Download(f.Original.Id, "download", "")
+		rc, err = gdcs.Download(f.OriginalID, "download", "")
 
 		if err != nil {
 			return err
@@ -146,7 +146,7 @@ func (gfs *GoogleDriveFs) processDocument(f *file.KazoupGoogleFile) (file.File, 
 		opts[1] = ""
 	}
 
-	rc, err := gcs.Download(f.Original.Id, opts[0], opts[1])
+	rc, err := gcs.Download(f.OriginalID, opts[0], opts[1])
 	if err != nil {
 		return nil, err
 	}
@@ -188,7 +188,7 @@ func (gfs *GoogleDriveFs) processAudio(f *file.KazoupGoogleFile) (file.File, err
 		opts[1] = ""
 	}
 
-	rc, err := gdcs.Download(f.Original.Id, opts[0], opts[1])
+	rc, err := gdcs.Download(f.OriginalID, opts[0], opts[1])
 	if err != nil {
 		return nil, err
 	}
@@ -228,7 +228,7 @@ func (gfs *GoogleDriveFs) processThumbnail(f *file.KazoupGoogleFile) (file.File,
 
 	if err := backoff.Retry(func() error {
 		// Not great, but check implementation for details about variadic params
-		rc, err = gdcs.Download(f.Original.Id, "download", "")
+		rc, err = gdcs.Download(f.OriginalID, "download", "")
 
 		if err != nil {
 			return err

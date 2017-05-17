@@ -1,24 +1,23 @@
 package file
 
 import (
-	"github.com/kazoup/platform/lib/onedrive"
+	//"github.com/kazoup/platform/lib/onedrive"
 	"github.com/kazoup/platform/lib/rossete"
-	"github.com/kazoup/platform/lib/utils"
 	"strings"
 	"time"
 )
 
 type KazoupOneDriveFile struct {
 	KazoupFile
-	Original *onedrive.OneDriveFile `json:"original,omitempty"`
+	//Original *onedrive.OneDriveFile `json:"original,omitempty"`
 }
 
 func (kf *KazoupOneDriveFile) PreviewURL(width, height, mode, quality string) string {
-	return DEFAULT_IMAGE_PREVIEW_URL
+	return kf.PreviewUrl
 }
 
 func (kf *KazoupOneDriveFile) GetID() string {
-	return utils.GetMD5Hash(kf.Original.WebURL)
+	return kf.ID
 }
 
 func (kf *KazoupOneDriveFile) GetName() string {
@@ -30,7 +29,7 @@ func (kf *KazoupOneDriveFile) GetUserID() string {
 }
 
 func (kf *KazoupOneDriveFile) GetIDFromOriginal() string {
-	return kf.Original.ID
+	return kf.OriginalID
 }
 
 func (kf *KazoupOneDriveFile) GetIndex() string {
@@ -45,10 +44,6 @@ func (kf *KazoupOneDriveFile) GetFileType() string {
 	return kf.FileType
 }
 
-func (kf *KazoupOneDriveFile) GetPathDisplay() string {
-	return ""
-}
-
 func (kf *KazoupOneDriveFile) GetURL() string {
 	return kf.URL
 }
@@ -57,10 +52,6 @@ func (kf *KazoupOneDriveFile) GetExtension() string {
 	ext := strings.Split(strings.Replace(kf.Name, " ", "-", 1), ".")
 
 	return ext[len(ext)-1]
-}
-
-func (kf *KazoupOneDriveFile) GetBase64() string {
-	return ""
 }
 
 func (kf *KazoupOneDriveFile) GetModifiedTime() time.Time {

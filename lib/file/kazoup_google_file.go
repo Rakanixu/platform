@@ -2,23 +2,22 @@ package file
 
 import (
 	"github.com/kazoup/platform/lib/rossete"
-	"github.com/kazoup/platform/lib/utils"
-	googledrive "google.golang.org/api/drive/v3"
+	//googledrive "google.golang.org/api/drive/v3"
 	"strings"
 	"time"
 )
 
 type KazoupGoogleFile struct {
 	KazoupFile
-	Original *googledrive.File `json:"original,omitempty"`
+	//Original *googledrive.File `json:"original,omitempty"`
 }
 
 func (kf *KazoupGoogleFile) PreviewURL(width, height, mode, quality string) string {
-	return ""
+	return kf.PreviewUrl
 }
 
 func (kf *KazoupGoogleFile) GetID() string {
-	return utils.GetMD5Hash(kf.Original.WebViewLink)
+	return kf.ID
 }
 
 func (kf *KazoupGoogleFile) GetName() string {
@@ -30,7 +29,7 @@ func (kf *KazoupGoogleFile) GetUserID() string {
 }
 
 func (kf *KazoupGoogleFile) GetIDFromOriginal() string {
-	return kf.Original.Id
+	return kf.OriginalID
 }
 
 func (kf *KazoupGoogleFile) GetIndex() string {
@@ -45,10 +44,6 @@ func (kf *KazoupGoogleFile) GetFileType() string {
 	return kf.FileType
 }
 
-func (kf *KazoupGoogleFile) GetPathDisplay() string {
-	return ""
-}
-
 func (kf *KazoupGoogleFile) GetURL() string {
 	return kf.URL
 }
@@ -57,10 +52,6 @@ func (kf *KazoupGoogleFile) GetExtension() string {
 	ext := strings.Split(strings.Replace(kf.Name, " ", "-", 1), ".")
 
 	return ext[len(ext)-1]
-}
-
-func (kf *KazoupGoogleFile) GetBase64() string {
-	return ""
 }
 
 func (kf *KazoupGoogleFile) GetModifiedTime() time.Time {
