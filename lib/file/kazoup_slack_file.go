@@ -2,14 +2,14 @@ package file
 
 import (
 	rossetelib "github.com/kazoup/platform/lib/rossete"
-	//"github.com/kazoup/platform/lib/slack"
 	"strings"
 	"time"
 )
 
 type KazoupSlackFile struct {
 	KazoupFile
-	//Original *slack.SlackFile `json:"original,omitempty"`
+	User     string   `json:"user"`
+	Channels []string `json:"channels"`
 }
 
 func (kf *KazoupSlackFile) PreviewURL(width, height, mode, quality string) string {

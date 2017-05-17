@@ -191,7 +191,12 @@ func NewKazoupFileFromSlackFile(s slack.SlackFile, dsId, uId, index string) *Kaz
 		DatasourceId:        dsId,
 		Index:               index,
 	}
-	return &KazoupSlackFile{*kf /*, &s*/}
+
+	return &KazoupSlackFile{
+		*kf,
+		s.User,
+		s.Channels,
+	}
 }
 
 // NewKazoupFileFromOneDriveFile constructor
