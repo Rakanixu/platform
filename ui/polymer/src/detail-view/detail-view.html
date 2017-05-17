@@ -175,7 +175,7 @@
       </mat-item>
     </template>
 
-    <template is="dom-if" if="[[isGoogleDrive(item.file_type)]]" restamp="true">
+<!--    <template is="dom-if" if="[[isGoogleDrive(item.file_type)]]" restamp="true">
       <mat-item label="Shared with"
                 class="no-ui-action overflow-visible"
                 tabindex="-1">
@@ -202,7 +202,8 @@
                 description="[[googleDriveInfo.createdDateTime]]"
                 tabindex="-1">
       </mat-item>
-    </template>
+    </template>-->
+<!--
 
     <template is="dom-if" if="[[isOneDrive(item.file_type)]]" restamp="true">
       <mat-item label="Owner"
@@ -218,6 +219,7 @@
       </mat-item>
     </template>
 
+-->
     <template is="dom-if" if="[[isDropboxFileShared(item.file_type, dropboxInfo.sharedFile)]]" restamp="true">
       <mat-item label="Shared with"
                 class="no-ui-action overflow-visible"
@@ -311,6 +313,7 @@
       </mat-item>
     </template>
 
+<!--
     <template is="dom-if" if="[[isOneDrive(item.file_type)]]" restamp="true">
       <mat-item label="Last modified by"
                 class="no-ui-action"
@@ -319,6 +322,7 @@
 
       </mat-item>
     </template>
+    -->
 
     <template is="dom-if" if="[[showSize(item.file_size)]]" restamp="true">
       <mat-item label="Size"
@@ -469,7 +473,7 @@
           this.$.rpcRead.generateRequest();
         },
         getMoreInfoFromGoogleDrive: function() {
-          var people = (this.item.original.permissions && this.item.original.permissions.length) ?
+/*          var people = (this.item.original.permissions && this.item.original.permissions.length) ?
             this.item.original.permissions :
             this.item.original.owners;
 
@@ -500,22 +504,22 @@
             lastModifiedBy: this.item.original.lastModifyingUser.displayName,
             lastModifiedDateTime: this.timestampToHumanTime(this.item.original.modifiedTime),
             trashed: this.item.original.trashed ? true : false
-          });
+          });*/
         },
         getMoreInfoFromOneDrive: function() {
-          this.set('oneDriveInfo', {
+/*          this.set('oneDriveInfo', {
             publicUrl: this.item.original.publicUrl ? this.item.original.publicUrl : '',
             createdBy: this.item.original.createdBy.user.displayName,
             createdDateTime: this.timestampToHumanTime(this.item.original.createdDateTime),
             lastModifiedBy: this.item.original.lastModifiedBy.user.displayName,
             lastModifiedDateTime: this.timestampToHumanTime(this.item.original.lastModifiedDateTime)
-          });
+          });*/
         },
-        getMoreInfoFromDropbox: function() {
+        getMoreInfoFromDropbox: function(dropbox_users, dropbox_invitee) {
           var people = [];
           var id = 1;
 
-          _.forEach(this.item.original.dropbox_users, function(el) {
+          _.forEach(dropbox_users, function(el) {
             people.push({
               id: id,
               displayName: el.name.display_name,
@@ -525,7 +529,7 @@
             id++;
           }.bind(this));
 
-          _.forEach(this.item.original.dropbox_invitee, function(el) {
+          _.forEach(dropbox_invitee, function(el) {
             people.push({
               id: id,
               displayName: el.invitee.email,
@@ -538,8 +542,8 @@
           this.set('dropboxInfo', {
             people: people,
             sharedFile: people.length ? true : false,
-            publicUrl: this.item.original.public_url ? this.item.original.public_url : '',
-            dropboxTag: this.item.original.dropbox_tag
+            //publicUrl: this.item.original.public_url ? this.item.original.public_url : '',
+            //dropboxTag: this.item.original.dropbox_tag
           });
         },
         getMoreInfoFromSlack: function(user, channel) {
@@ -566,9 +570,9 @@
           this.$.rpcSearchSlackChannels.generateRequest();
         },
         getMoreInfoFromBox: function() {
-          this.set('boxInfo', {
+/*          this.set('boxInfo', {
             shared_link: this.item.original.shared_link.url ? this.item.original.shared_link.url : ''
-          });
+          });*/
         },
         openFileFromDetailView: function(e) {
           this.openFile(this.item.url);
@@ -621,7 +625,7 @@
                 this.getMoreInfoFromGoogleDrive();
                 break;
               case 'dropbox':
-                this.getMoreInfoFromDropbox();
+                this.getMoreInfoFromDropbox(doc.dropbox_users, doc.dropbox_invitees);
                 break;
               case 'box':
                 this.getMoreInfoFromBox();
