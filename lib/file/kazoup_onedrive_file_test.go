@@ -1,9 +1,7 @@
 package file
 
 import (
-	"github.com/kazoup/platform/lib/onedrive"
 	"github.com/kazoup/platform/lib/rossete"
-	"github.com/kazoup/platform/lib/utils"
 	"reflect"
 	"testing"
 	"time"
@@ -13,6 +11,7 @@ var (
 	kazoupOneDriveFile = &KazoupOneDriveFile{
 		KazoupFile: KazoupFile{
 			ID:           "KazoupFile_ID",
+			OriginalID:   "original_id",
 			UserId:       babbler.Babble(),
 			Name:         "KazoupFile_name.extension",
 			URL:          babbler.Babble(),
@@ -30,10 +29,6 @@ var (
 			Content:      babbler.Babble(),
 			Highlight:    babbler.Babble(),
 		},
-		Original: &onedrive.OneDriveFile{
-			ID:     "original_id",
-			WebURL: "https://a.b.c",
-		},
 	}
 )
 
@@ -42,7 +37,7 @@ func TestKazoupOneDriveFile(t *testing.T) {
 }
 
 func TestKazoupOneDriveFile_PreviewURL(t *testing.T) {
-	expected := DEFAULT_IMAGE_PREVIEW_URL
+	expected := kazoupOneDriveFile.PreviewUrl
 	result := kazoupOneDriveFile.PreviewURL("", "", "", "")
 
 	if expected != result {
@@ -51,7 +46,7 @@ func TestKazoupOneDriveFile_PreviewURL(t *testing.T) {
 }
 
 func TestKazoupOneDriveFile_GetID(t *testing.T) {
-	expected := utils.GetMD5Hash(kazoupOneDriveFile.Original.WebURL)
+	expected := kazoupOneDriveFile.ID
 	result := kazoupOneDriveFile.GetID()
 
 	if expected != result {
@@ -78,8 +73,8 @@ func TestKazoupOneDriveFile_GetUserID(t *testing.T) {
 func TestKazoupOneDriveFile_GetIDFromOriginal(t *testing.T) {
 	result := kazoupOneDriveFile.GetIDFromOriginal()
 
-	if kazoupOneDriveFile.Original.ID != result {
-		t.Errorf("Expected %v, got %v", kazoupOneDriveFile.Original.ID, result)
+	if kazoupOneDriveFile.OriginalID != result {
+		t.Errorf("Expected %v, got %v", kazoupOneDriveFile.OriginalID, result)
 	}
 }
 
@@ -107,14 +102,6 @@ func TestKazoupOneDriveFile_GetFileType(t *testing.T) {
 	}
 }
 
-func TestKazoupOneDriveFile_GetPathDisplay(t *testing.T) {
-	result := kazoupOneDriveFile.GetPathDisplay()
-
-	if "" != result {
-		t.Errorf("Expected %v, got %v", "", result)
-	}
-}
-
 func TestKazoupOneDriveFile_GetURL(t *testing.T) {
 	result := kazoupOneDriveFile.GetURL()
 
@@ -126,15 +113,6 @@ func TestKazoupOneDriveFile_GetURL(t *testing.T) {
 func TestKazoupOneDriveFile_GetExtension(t *testing.T) {
 	expected := "extension"
 	result := kazoupOneDriveFile.GetExtension()
-
-	if expected != result {
-		t.Errorf("Expected %v, got %v", expected, result)
-	}
-}
-
-func TestKazoupOneDriveFile_GetBase64(t *testing.T) {
-	expected := ""
-	result := kazoupOneDriveFile.GetBase64()
 
 	if expected != result {
 		t.Errorf("Expected %v, got %v", expected, result)

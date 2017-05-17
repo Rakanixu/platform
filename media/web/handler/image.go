@@ -140,21 +140,15 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-	case globals.GoogleDrive, globals.OneDrive:
-		url, err = fSys.GetThumbnail(f.GetIDFromOriginal())
-		if err != nil {
-			log.Println("ERROR", err.Error())
-		}
-		http.Redirect(w, r, url, http.StatusSeeOther)
-	case globals.Dropbox:
-		url, err = fSys.GetThumbnail(f.GetPathDisplay())
+	case globals.GoogleDrive, globals.OneDrive, globals.Dropbox:
+		url, err = fSys.GetThumbnail(url)
 		if err != nil {
 			log.Println("ERROR", err.Error())
 		}
 		http.Redirect(w, r, url, http.StatusSeeOther)
 	case globals.Gmail:
 		// This is not used in frontend due to tag not able to render base 64 when comes from network request
-		b := []byte(`data:image/` + f.GetExtension() + `;base64,` + f.GetBase64())
+		b := []byte(url)
 		_, err := w.Write(b)
 		if err != nil {
 			log.Println("ERROR", err.Error())

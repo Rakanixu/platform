@@ -17,20 +17,20 @@ var window = self;
   };
 
   self.checkTime = function() {
-    self.initTime = parseInt((Date.now() / 1000), 10);
+    self.now = parseInt((Date.now() / 1000), 10);
     self.pool = [];
 
     for (var i = 0; i < self.datasources.length; i++) {
       // Something wrong happened, kick off scan to fix it
       if (self.datasources[i].last_scan > self.datasources[i].last_scan_started) {
-        if (self.datasources[i].last_scan < self.initTime - day) {
+        if (self.datasources[i].last_scan < self.now - day) {
           self.pool.push(self.datasources[i].id);
         }
       }
 
       // Las scan has to be prior elapsed time, but we have to know if last scan happen a few time ago
       // This avoid to kick off several scan while previous one is running
-      if (self.datasources[i].last_scan < self.initTime - elapsedTime &&
+      if (self.datasources[i].last_scan < self.now - elapsedTime &&
         self.datasources[i].last_scan + elapsedTime > self.datasources[i].last_scan_started) {
         self.pool.push(self.datasources[i].id);
       }

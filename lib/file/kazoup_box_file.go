@@ -2,7 +2,7 @@ package file
 
 import (
 	"fmt"
-	"github.com/kazoup/platform/lib/box"
+	//"github.com/kazoup/platform/lib/box"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/rossete"
 	"strings"
@@ -11,11 +11,11 @@ import (
 
 type KazoupBoxFile struct {
 	KazoupFile
-	Original *box.BoxFileMeta `json:"original,omitempty"`
+	//Original *box.BoxFileMeta `json:"original,omitempty"`
 }
 
 func (kf *KazoupBoxFile) PreviewURL(width, height, mode, quality string) string {
-	url := fmt.Sprintf("%s%s%s", globals.BoxFileMetadataEndpoint, kf.Original.ID, "/thumbnail.png?min_height=256&min_width=256")
+	url := fmt.Sprintf("%s%s%s", globals.BoxFileMetadataEndpoint, kf.OriginalID, "/thumbnail.png?min_height=256&min_width=256")
 
 	return url
 }
@@ -33,7 +33,7 @@ func (kf *KazoupBoxFile) GetUserID() string {
 }
 
 func (kf *KazoupBoxFile) GetIDFromOriginal() string {
-	return kf.Original.ID
+	return kf.OriginalID
 }
 
 func (kf *KazoupBoxFile) GetIndex() string {
@@ -46,10 +46,6 @@ func (kf *KazoupBoxFile) GetDatasourceID() string {
 
 func (kf *KazoupBoxFile) GetFileType() string {
 	return kf.FileType
-}
-
-func (kf *KazoupBoxFile) GetPathDisplay() string {
-	return ""
 }
 
 func (kf *KazoupBoxFile) GetURL() string {

@@ -93,7 +93,6 @@ func TestNewFileFromString(t *testing.T) {
 					KazoupFile{
 						FileType: globals.Slack,
 					},
-					nil,
 				},
 				nil,
 			},
@@ -105,7 +104,6 @@ func TestNewFileFromString(t *testing.T) {
 					KazoupFile{
 						FileType: globals.GoogleDrive,
 					},
-					nil,
 				},
 				nil,
 			},
@@ -117,7 +115,8 @@ func TestNewFileFromString(t *testing.T) {
 					KazoupFile{
 						FileType: globals.Gmail,
 					},
-					nil,
+					"",
+					"",
 				},
 				nil,
 			},
@@ -129,7 +128,6 @@ func TestNewFileFromString(t *testing.T) {
 					KazoupFile{
 						FileType: globals.OneDrive,
 					},
-					nil,
 				},
 				nil,
 			},
@@ -142,6 +140,7 @@ func TestNewFileFromString(t *testing.T) {
 						FileType: globals.Dropbox,
 					},
 					nil,
+					nil,
 				},
 				nil,
 			},
@@ -153,7 +152,6 @@ func TestNewFileFromString(t *testing.T) {
 					KazoupFile{
 						FileType: globals.Box,
 					},
-					nil,
 				},
 				nil,
 			},
@@ -220,9 +218,6 @@ func TestNewKazoupFileFromGoogleDriveFile(t *testing.T) {
 					Index:        index,
 					Access:       globals.ACCESS_PRIVATE,
 				},
-				Original: &googledrive.File{
-					Id: "googledrive_id",
-				},
 			},
 		},
 		{
@@ -281,9 +276,6 @@ func TestNewKazoupFileFromSlackFile(t *testing.T) {
 					Index:        index,
 					Access:       globals.ACCESS_PRIVATE,
 				},
-				Original: &slack.SlackFile{
-					ID: "slack_id",
-				},
 			},
 		},
 	}
@@ -330,9 +322,6 @@ func TestNewKazoupFileFromOneDriveFile(t *testing.T) {
 					Index:        index,
 					Access:       globals.ACCESS_PRIVATE,
 				},
-				Original: &onedrive.OneDriveFile{
-					ID: "onedrive_id",
-				},
 			},
 		},
 	}
@@ -378,9 +367,6 @@ func TestNewKazoupFileFromDropboxFile(t *testing.T) {
 					UserId:       userId,
 					Index:        index,
 					Access:       globals.ACCESS_PRIVATE,
-				},
-				Original: &dropbox.DropboxFile{
-					ID: "dropbox_id",
 				},
 			},
 		},
@@ -441,9 +427,6 @@ func TestNewKazoupFileFromBoxFile(t *testing.T) {
 					Index:        index,
 					Access:       globals.ACCESS_PRIVATE,
 				},
-				Original: &box.BoxFileMeta{
-					ID: "box_id",
-				},
 			},
 		},
 	}
@@ -489,9 +472,6 @@ func TestNewKazoupFileFromGmailFile(t *testing.T) {
 					UserId:       userId,
 					Index:        index,
 					Access:       globals.ACCESS_PRIVATE,
-				},
-				Original: &gmailhelper.GmailFile{
-					Id: "gmail_id",
 				},
 			},
 		},

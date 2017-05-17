@@ -3,7 +3,7 @@ package file
 import (
 	"fmt"
 	"github.com/kazoup/platform/lib/globals"
-	"github.com/kazoup/platform/lib/gmail"
+	//"github.com/kazoup/platform/lib/gmail"
 	"github.com/kazoup/platform/lib/rossete"
 	"strings"
 	"time"
@@ -11,11 +11,13 @@ import (
 
 type KazoupGmailFile struct {
 	KazoupFile
-	Original *gmail.GmailFile `json:"original,omitempty"`
+	MessageId    string `json:"message_id,omitempty"`
+	AttachmentId string `json:"attachment_id,omitempty"`
+	//Original *gmail.GmailFile `json:"original,omitempty"`
 }
 
 func (kf *KazoupGmailFile) PreviewURL(width, height, mode, quality string) string {
-	url := fmt.Sprintf("%s%s", globals.GmailEndpoint, kf.Original.Id)
+	url := fmt.Sprintf("%s%s", globals.GmailEndpoint, kf.OriginalID)
 
 	return url
 }
@@ -33,7 +35,7 @@ func (kf *KazoupGmailFile) GetUserID() string {
 }
 
 func (kf *KazoupGmailFile) GetIDFromOriginal() string {
-	return kf.Original.Id
+	return kf.OriginalID
 }
 
 func (kf *KazoupGmailFile) GetIndex() string {
@@ -48,10 +50,6 @@ func (kf *KazoupGmailFile) GetFileType() string {
 	return kf.FileType
 }
 
-func (kf *KazoupGmailFile) GetPathDisplay() string {
-	return ""
-}
-
 func (kf *KazoupGmailFile) GetURL() string {
 	return kf.URL
 }
@@ -60,10 +58,6 @@ func (kf *KazoupGmailFile) GetExtension() string {
 	ext := strings.Split(strings.Replace(kf.Name, " ", "-", 1), ".")
 
 	return ext[len(ext)-1]
-}
-
-func (kf *KazoupGmailFile) GetBase64() string {
-	return kf.Original.Base64
 }
 
 func (kf *KazoupGmailFile) GetModifiedTime() time.Time {

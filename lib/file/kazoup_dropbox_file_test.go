@@ -1,7 +1,6 @@
 package file
 
 import (
-	"github.com/kazoup/platform/lib/dropbox"
 	"github.com/kazoup/platform/lib/rossete"
 	"reflect"
 	"testing"
@@ -28,9 +27,6 @@ var (
 			Index:        babbler.Babble(),
 			Content:      babbler.Babble(),
 			Highlight:    babbler.Babble(),
-		},
-		Original: &dropbox.DropboxFile{
-			ID: "original_id",
 		},
 	}
 )
@@ -75,8 +71,8 @@ func TestKazoupDropboxFile_GetUserID(t *testing.T) {
 func TestKazoupDropboxFile_GetIDFromOriginal(t *testing.T) {
 	result := kazoupDropboxFile.GetIDFromOriginal()
 
-	if kazoupDropboxFile.Original.ID != result {
-		t.Errorf("Expected %v, got %v", kazoupDropboxFile.Original.ID, result)
+	if kazoupDropboxFile.OriginalID != result {
+		t.Errorf("Expected %v, got %v", kazoupDropboxFile.OriginalID, result)
 	}
 }
 
@@ -104,14 +100,6 @@ func TestKazoupDropboxFile_GetFileType(t *testing.T) {
 	}
 }
 
-func TestKazoupDropboxFile_GetPathDisplay(t *testing.T) {
-	result := kazoupDropboxFile.GetPathDisplay()
-
-	if "" != result {
-		t.Errorf("Expected %v, got %v", "", result)
-	}
-}
-
 func TestKazoupDropboxFile_GetURL(t *testing.T) {
 	result := kazoupDropboxFile.GetURL()
 
@@ -123,15 +111,6 @@ func TestKazoupDropboxFile_GetURL(t *testing.T) {
 func TestKazoupDropboxFile_GetExtension(t *testing.T) {
 	expected := "extension"
 	result := kazoupDropboxFile.GetExtension()
-
-	if expected != result {
-		t.Errorf("Expected %v, got %v", expected, result)
-	}
-}
-
-func TestKazoupDropboxFile_GetBase64(t *testing.T) {
-	expected := ""
-	result := kazoupDropboxFile.GetBase64()
 
 	if expected != result {
 		t.Errorf("Expected %v, got %v", expected, result)

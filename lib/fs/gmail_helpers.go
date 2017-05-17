@@ -132,7 +132,7 @@ func (gfs *GmailFs) processImage(f *file.KazoupGmailFile) (file.File, error) {
 	var rc io.ReadCloser
 
 	if err := backoff.Retry(func() error {
-		rc, err = gmcs.Download(f.Original.MessageId, f.Original.AttachmentId)
+		rc, err = gmcs.Download(f.MessageId, f.AttachmentId)
 		if err != nil {
 			return err
 		}
@@ -173,7 +173,7 @@ func (gfs *GmailFs) processDocument(f *file.KazoupGmailFile) (file.File, error) 
 		return nil, err
 	}
 
-	rc, err := gcs.Download(f.Original.MessageId, f.Original.AttachmentId)
+	rc, err := gcs.Download(f.MessageId, f.AttachmentId)
 	if err != nil {
 		return nil, err
 	}
@@ -205,7 +205,7 @@ func (gfs *GmailFs) processAudio(f *file.KazoupGmailFile) (file.File, error) {
 		return nil, err
 	}
 
-	rc, err := gmcs.Download(f.Original.MessageId, f.Original.AttachmentId)
+	rc, err := gmcs.Download(f.MessageId, f.AttachmentId)
 	if err != nil {
 		return nil, err
 	}
@@ -244,7 +244,7 @@ func (gfs *GmailFs) processThumbnail(f *file.KazoupGmailFile) (file.File, error)
 	var rc io.ReadCloser
 
 	if err := backoff.Retry(func() error {
-		rc, err = gmcs.Download(f.Original.MessageId, f.Original.AttachmentId)
+		rc, err = gmcs.Download(f.MessageId, f.AttachmentId)
 		if err != nil {
 			return err
 		}

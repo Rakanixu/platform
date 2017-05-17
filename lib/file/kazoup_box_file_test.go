@@ -1,7 +1,6 @@
 package file
 
 import (
-	"github.com/kazoup/platform/lib/box"
 	"github.com/kazoup/platform/lib/rossete"
 	"github.com/tjarratt/babble"
 	"reflect"
@@ -14,6 +13,7 @@ var (
 	kazoupBoxFile = &KazoupBoxFile{
 		KazoupFile: KazoupFile{
 			ID:           "KazoupFile_ID",
+			OriginalID:   "original_id",
 			UserId:       babbler.Babble(),
 			Name:         "KazoupFile_name.extension",
 			URL:          babbler.Babble(),
@@ -30,9 +30,6 @@ var (
 			Index:        babbler.Babble(),
 			Content:      babbler.Babble(),
 			Highlight:    babbler.Babble(),
-		},
-		Original: &box.BoxFileMeta{
-			ID: "original_id",
 		},
 	}
 )
@@ -77,8 +74,8 @@ func TestKazoupBoxFile_GetUserID(t *testing.T) {
 func TestKazoupBoxFile_GetIDFromOriginal(t *testing.T) {
 	result := kazoupBoxFile.GetIDFromOriginal()
 
-	if kazoupBoxFile.Original.ID != result {
-		t.Errorf("Expected %v, got %v", kazoupBoxFile.Original.ID, result)
+	if kazoupBoxFile.OriginalID != result {
+		t.Errorf("Expected %v, got %v", kazoupBoxFile.OriginalID, result)
 	}
 }
 
@@ -106,14 +103,6 @@ func TestKazoupBoxFile_GetFileType(t *testing.T) {
 	}
 }
 
-func TestKazoupBoxFile_GetPathDisplay(t *testing.T) {
-	result := kazoupBoxFile.GetPathDisplay()
-
-	if "" != result {
-		t.Errorf("Expected %v, got %v", "", result)
-	}
-}
-
 func TestKazoupBoxFile_GetURL(t *testing.T) {
 	result := kazoupBoxFile.GetURL()
 
@@ -125,15 +114,6 @@ func TestKazoupBoxFile_GetURL(t *testing.T) {
 func TestKazoupBoxFile_GetExtension(t *testing.T) {
 	expected := "extension"
 	result := kazoupBoxFile.GetExtension()
-
-	if expected != result {
-		t.Errorf("Expected %v, got %v", expected, result)
-	}
-}
-
-func TestKazoupBoxFile_GetBase64(t *testing.T) {
-	expected := ""
-	result := kazoupBoxFile.GetBase64()
 
 	if expected != result {
 		t.Errorf("Expected %v, got %v", expected, result)

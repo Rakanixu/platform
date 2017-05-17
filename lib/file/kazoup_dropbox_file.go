@@ -2,18 +2,20 @@ package file
 
 import (
 	"github.com/kazoup/platform/lib/dropbox"
-	rossetelib "github.com/kazoup/platform/lib/rossete"
+	"github.com/kazoup/platform/lib/rossete"
 	"strings"
 	"time"
 )
 
 type KazoupDropboxFile struct {
 	KazoupFile
-	Original *dropbox.DropboxFile `json:"original,omitempty"`
+	DropboxUsers    []dropbox.DropboxUser    `json:"dropbox_users,omitempty"`
+	DropboxInvitees []dropbox.DropboxInvitee `json:"dropbox_invitees,omitempty"`
+	//Original *dropbox.DropboxFile `json:"original,omitempty"`
 }
 
 func (kf *KazoupDropboxFile) PreviewURL(width, height, mode, quality string) string {
-	return ""
+	return kf.PreviewUrl
 }
 
 func (kf *KazoupDropboxFile) GetID() string {
@@ -29,7 +31,7 @@ func (kf *KazoupDropboxFile) GetUserID() string {
 }
 
 func (kf *KazoupDropboxFile) GetIDFromOriginal() string {
-	return kf.Original.ID
+	return kf.OriginalID
 }
 
 func (kf *KazoupDropboxFile) GetIndex() string {
@@ -44,10 +46,6 @@ func (kf *KazoupDropboxFile) GetFileType() string {
 	return kf.FileType
 }
 
-func (kf *KazoupDropboxFile) GetPathDisplay() string {
-	return kf.Original.PathDisplay
-}
-
 func (kf *KazoupDropboxFile) GetURL() string {
 	return kf.URL
 }
@@ -56,10 +54,6 @@ func (kf *KazoupDropboxFile) GetExtension() string {
 	ext := strings.Split(strings.Replace(kf.Name, " ", "-", 1), ".")
 
 	return ext[len(ext)-1]
-}
-
-func (kf *KazoupDropboxFile) GetBase64() string {
-	return ""
 }
 
 func (kf *KazoupDropboxFile) GetModifiedTime() time.Time {
@@ -86,10 +80,10 @@ func (kf *KazoupDropboxFile) SetContentCategory(c *KazoupCategorization) {
 	kf.KazoupCategorization = c
 }
 
-func (kf *KazoupDropboxFile) SetEntities(entities *rossetelib.RosseteEntities) {
+func (kf *KazoupDropboxFile) SetEntities(entities *rossete.RosseteEntities) {
 	kf.Entities = entities
 }
 
-func (kf *KazoupDropboxFile) SetSentiment(sentiment *rossetelib.RosseteSentiment) {
+func (kf *KazoupDropboxFile) SetSentiment(sentiment *rossete.RosseteSentiment) {
 	kf.Sentiment = sentiment
 }
