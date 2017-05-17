@@ -1,7 +1,7 @@
 package file
 
 import (
-	rossetelib "github.com/kazoup/platform/lib/rossete"
+	"github.com/kazoup/platform/lib/rossete"
 	"strings"
 	"time"
 )
@@ -78,10 +78,10 @@ func (kf *KazoupSlackFile) SetContentCategory(c *KazoupCategorization) {
 	kf.KazoupCategorization = c
 }
 
-func (kf *KazoupSlackFile) SetEntities(entities *rossetelib.RosseteEntities) {
+func (kf *KazoupSlackFile) SetEntities(entities *rossete.RosseteEntities) {
 	kf.Entities = entities
 }
 
-func (kf *KazoupSlackFile) SetSentiment(sentiment *rossetelib.RosseteSentiment) {
+func (kf *KazoupSlackFile) SetSentiment(sentiment *rossete.RosseteSentiment) {
 	kf.Sentiment = sentiment
 }
