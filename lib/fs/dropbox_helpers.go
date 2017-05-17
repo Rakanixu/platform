@@ -112,7 +112,7 @@ func (dfs *DropboxFs) processImage(f *file.KazoupDropboxFile) (file.File, error)
 	var rc io.ReadCloser
 
 	if err = backoff.Retry(func() error {
-		rc, err = dcs.Download(f.Original.ID)
+		rc, err = dcs.Download(f.OriginalID)
 		if err != nil {
 			return err
 		}
@@ -154,7 +154,7 @@ func (dfs *DropboxFs) processDocument(f *file.KazoupDropboxFile) (file.File, err
 		return nil, err
 	}
 
-	rc, err := dcs.Download(f.Original.ID)
+	rc, err := dcs.Download(f.OriginalID)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +186,7 @@ func (dfs *DropboxFs) processAudio(f *file.KazoupDropboxFile) (file.File, error)
 		return nil, err
 	}
 
-	rc, err := bcs.Download(f.Original.ID)
+	rc, err := bcs.Download(f.OriginalID)
 	if err != nil {
 		return nil, err
 	}
@@ -225,7 +225,7 @@ func (dfs *DropboxFs) processThumbnail(f *file.KazoupDropboxFile) (file.File, er
 	var rc io.ReadCloser
 
 	if err = backoff.Retry(func() error {
-		rc, err = dcs.Download(f.Original.ID)
+		rc, err = dcs.Download(f.OriginalID)
 		if err != nil {
 			return err
 		}
@@ -300,7 +300,7 @@ func (dfs *DropboxFs) getNextPage(cursor string) error {
 func (dfs *DropboxFs) getFileMembers(f *file.KazoupDropboxFile) (*file.KazoupDropboxFile, error) {
 	// https://www.dropbox.com/developers/documentation/http/documentation#sharing-list_file_members
 	b := []byte(`{
-		"file":"` + f.Original.ID + `",
+		"file":"` + f.OriginalID + `",
 		"include_inherited": true,
 		"limit": 250
 	}`)
@@ -324,7 +324,7 @@ func (dfs *DropboxFs) getFileMembers(f *file.KazoupDropboxFile) (*file.KazoupDro
 	}
 
 	if len(membersRsp.Users) > 0 {
-		f.Original.DropboxUsers = make([]dropbox.DropboxUser, 0)
+		f.DropboxUsers = make([]dropbox.DropboxUser, 0)
 
 		for _, v := range membersRsp.Users {
 			a, err := dfs.getAccount(v.User.AccountID)
@@ -332,12 +332,12 @@ func (dfs *DropboxFs) getFileMembers(f *file.KazoupDropboxFile) (*file.KazoupDro
 				return f, err
 			}
 
-			f.Original.DropboxUsers = append(f.Original.DropboxUsers, *a)
+			f.DropboxUsers = append(f.DropboxUsers, *a)
 		}
 	}
 
 	if len(membersRsp.Invitees) > 0 {
-		f.Original.DropboxInvitees = membersRsp.Invitees
+		f.DropboxInvitees = membersRsp.Invitees
 	}
 
 	// TODO: membersRsp.Groups, I just ignore, we can attach them to the DropboxFile, so can be used in front
@@ -394,7 +394,7 @@ func (dfs *DropboxFs) pushFilesToChannel(list *dropbox.FilesListResponse) {
 			f.Access = globals.ACCESS_PRIVATE
 
 			// File is shared, lets get Users and Invitees to this file
-			if f.Original.HasExplicitSharedMembers {
+			if v.HasExplicitSharedMembers {
 				f.Access = globals.ACCESS_SHARED
 
 				// Error will be send over the channel withing the file
@@ -403,8 +403,7 @@ func (dfs *DropboxFs) pushFilesToChannel(list *dropbox.FilesListResponse) {
 				// File is not share, but that means to dropbox that can be private, or public (everyone with link can access the file)
 				for k, v := range dfs.PublicFiles {
 					// Found
-					if f.Original.ID == v.ID {
-						f.Original.PublicURL = v.URL
+					if f.OriginalID == v.ID {
 						f.Access = globals.ACCESS_PUBLIC
 
 						// Remove found for performance and break

@@ -5,6 +5,7 @@ import (
 	enrich_proto "github.com/kazoup/platform/lib/protomsg/enrich"
 	"github.com/micro/go-micro/metadata"
 	"golang.org/x/net/context"
+	"sync"
 	"testing"
 )
 
@@ -59,27 +60,43 @@ func TestTaskHandler_queueListener(t *testing.T) {
 		{
 			enrichMsgChan{
 				msg: &enrich_proto.EnrichMessage{},
+				err: make(chan error),
 			},
 		},
 		{
 			enrichMsgChan{
 				msg: &enrich_proto.EnrichMessage{},
+				err: make(chan error),
 			},
 		},
 		{
 			enrichMsgChan{
 				msg: &enrich_proto.EnrichMessage{},
+				err: make(chan error),
 			},
 		},
 	}
 
-	for _, tt := range queueListenerTestData {
-		th.enrichMsgChan <- tt.msg
+	for i := 0; i < th.workers; i++ {
+		go th.queueListener(i)
 	}
+	var wg sync.WaitGroup
+	wg.Add(len(queueListenerTestData))
 
-	if len(queueListenerTestData) != len(th.enrichMsgChan) {
-		t.Errorf("Expected %d, got %d", len(queueListenerTestData), len(th.enrichMsgChan))
-	}
+	go func() {
+		for _, tt := range queueListenerTestData {
+			th.enrichMsgChan <- tt.msg
+
+			result := <-tt.msg.err
+			if result != nil {
+				t.Errorf("Unexpected error %v", result)
+			}
+
+			wg.Done()
+		}
+	}()
+
+	wg.Wait()
 }
 
 func TeststartWorkers(t *testing.T) {

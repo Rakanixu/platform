@@ -99,7 +99,7 @@ func (bfs *BoxFs) processImage(f *file.KazoupBoxFile) (file.File, error) {
 	var rc io.ReadCloser
 
 	if err := backoff.Retry(func() error {
-		rc, err = bcs.Download(f.Original.ID)
+		rc, err = bcs.Download(f.OriginalID)
 		if err != nil {
 			return err
 		}
@@ -143,7 +143,7 @@ func (bfs *BoxFs) processThumbnail(f *file.KazoupBoxFile) (file.File, error) {
 	var rc io.ReadCloser
 
 	if err := backoff.Retry(func() error {
-		rc, err = bcs.Download(f.Original.ID)
+		rc, err = bcs.Download(f.OriginalID)
 		if err != nil {
 			return err
 		}
@@ -188,7 +188,7 @@ func (bfs *BoxFs) processDocument(f *file.KazoupBoxFile) (file.File, error) {
 		return nil, err
 	}
 
-	rc, err := bcs.Download(f.Original.ID)
+	rc, err := bcs.Download(f.OriginalID)
 	if err != nil {
 		return nil, err
 	}
@@ -220,7 +220,7 @@ func (bfs *BoxFs) processAudio(f *file.KazoupBoxFile) (file.File, error) {
 		return nil, err
 	}
 
-	rc, err := bcs.Download(f.Original.ID)
+	rc, err := bcs.Download(f.OriginalID)
 	if err != nil {
 		return nil, err
 	}

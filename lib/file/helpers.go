@@ -115,29 +115,33 @@ func NewKazoupFileFromGoogleDriveFile(g googledrive.File, dsId, uId, index strin
 	}
 
 	kf := &KazoupFile{
-		ID:           utils.GetMD5Hash(url),
-		UserId:       uId,
-		Name:         g.Name,
-		URL:          url,
-		Modified:     t,
-		FileSize:     g.Size,
-		IsDir:        d,
-		Category:     c,
-		MimeType:     g.MimeType,
-		Depth:        0,
-		FileType:     globals.GoogleDrive,
-		LastSeen:     time.Now().Unix(),
-		Access:       access,
-		DatasourceId: dsId,
-		Index:        index,
+		ID:                  utils.GetMD5Hash(url),
+		OriginalID:          g.Id,
+		OriginalDownloadRef: g.Id,
+		PreviewUrl:          g.Id,
+		UserId:              uId,
+		Name:                g.Name,
+		URL:                 url,
+		Modified:            t,
+		FileSize:            g.Size,
+		IsDir:               d,
+		Category:            c,
+		MimeType:            g.MimeType,
+		Depth:               0,
+		FileType:            globals.GoogleDrive,
+		LastSeen:            time.Now().Unix(),
+		Access:              access,
+		DatasourceId:        dsId,
+		Index:               index,
 	}
-	return &KazoupGoogleFile{*kf, &g}
+	return &KazoupGoogleFile{*kf /*, &g*/}
 }
 
 // NewKazoupFileFromSlackFile constructor
 func NewKazoupFileFromSlackFile(s slack.SlackFile, dsId, uId, index string) *KazoupSlackFile {
 	t := time.Unix(s.Timestamp, 0)
 	access := globals.ACCESS_PRIVATE
+	previewUrl := ""
 
 	if s.IsPublic { // Is public to the the team, not globally
 		access = globals.ACCESS_SHARED
@@ -147,24 +151,52 @@ func NewKazoupFileFromSlackFile(s slack.SlackFile, dsId, uId, index string) *Kaz
 		access = globals.ACCESS_PUBLIC
 	}
 
-	kf := &KazoupFile{
-		ID:           utils.GetMD5Hash(s.URLPrivate),
-		UserId:       uId,
-		Name:         s.Name,
-		URL:          s.URLPrivate,
-		Modified:     t,
-		FileSize:     s.Size,
-		IsDir:        false,
-		Category:     categories.GetDocType("." + s.Filetype),
-		MimeType:     s.Mimetype,
-		Depth:        0,
-		FileType:     globals.Slack,
-		LastSeen:     time.Now().Unix(),
-		Access:       access,
-		DatasourceId: dsId,
-		Index:        index,
+	// Not all files falling into pictures has all thumbX attrs
+	if len(s.Thumb360) > 0 {
+		previewUrl = s.Thumb360
 	}
-	return &KazoupSlackFile{*kf, &s}
+	if len(s.Thumb480) > 0 {
+		previewUrl = s.Thumb480
+	}
+
+	if len(s.Thumb720) > 0 {
+		previewUrl = s.Thumb720
+	}
+
+	if len(s.Thumb960) > 0 {
+		previewUrl = s.Thumb960
+	}
+
+	if len(s.Thumb1024) > 0 {
+		previewUrl = s.Thumb1024
+	}
+
+	kf := &KazoupFile{
+		ID:                  utils.GetMD5Hash(s.URLPrivate),
+		OriginalID:          s.ID,
+		OriginalDownloadRef: s.URLPrivateDownload,
+		PreviewUrl:          previewUrl,
+		UserId:              uId,
+		Name:                s.Name,
+		URL:                 s.URLPrivate,
+		Modified:            t,
+		FileSize:            s.Size,
+		IsDir:               false,
+		Category:            categories.GetDocType("." + s.Filetype),
+		MimeType:            s.Mimetype,
+		Depth:               0,
+		FileType:            globals.Slack,
+		LastSeen:            time.Now().Unix(),
+		Access:              access,
+		DatasourceId:        dsId,
+		Index:               index,
+	}
+
+	return &KazoupSlackFile{
+		*kf,
+		s.User,
+		s.Channels,
+	}
 }
 
 // NewKazoupFileFromOneDriveFile constructor
@@ -180,23 +212,26 @@ func NewKazoupFileFromOneDriveFile(o onedrive.OneDriveFile, dsId, uId, index str
 	}
 
 	kf := &KazoupFile{
-		ID:           utils.GetMD5Hash(o.WebURL),
-		UserId:       uId,
-		Name:         o.Name,
-		URL:          o.WebURL,
-		Modified:     o.LastModifiedDateTime,
-		FileSize:     o.Size,
-		IsDir:        isDir,
-		Category:     categories.GetDocType("." + name[len(name)-1]),
-		MimeType:     mimeType,
-		Depth:        0,
-		FileType:     globals.OneDrive,
-		LastSeen:     time.Now().Unix(),
-		Access:       access,
-		DatasourceId: dsId,
-		Index:        index,
+		ID:                  utils.GetMD5Hash(o.WebURL),
+		OriginalID:          o.ID,
+		OriginalDownloadRef: o.ID,
+		PreviewUrl:          o.ID,
+		UserId:              uId,
+		Name:                o.Name,
+		URL:                 o.WebURL,
+		Modified:            o.LastModifiedDateTime,
+		FileSize:            o.Size,
+		IsDir:               isDir,
+		Category:            categories.GetDocType("." + name[len(name)-1]),
+		MimeType:            mimeType,
+		Depth:               0,
+		FileType:            globals.OneDrive,
+		LastSeen:            time.Now().Unix(),
+		Access:              access,
+		DatasourceId:        dsId,
+		Index:               index,
 	}
-	return &KazoupOneDriveFile{*kf, &o}
+	return &KazoupOneDriveFile{*kf /*, &o*/}
 }
 
 // NewKazoupFileFromDropboxFile constructor
@@ -222,6 +257,8 @@ func NewKazoupFileFromDropboxFile(d dropbox.DropboxFile, dsId, uId, index string
 
 	kf := &KazoupFile{
 		ID:           utils.GetMD5Hash(url),
+		OriginalID:   d.ID,
+		PreviewUrl:   d.PathDisplay,
 		UserId:       uId,
 		Name:         d.Name,
 		URL:          url,
@@ -238,7 +275,7 @@ func NewKazoupFileFromDropboxFile(d dropbox.DropboxFile, dsId, uId, index string
 		Index:        index,
 	}
 
-	return &KazoupDropboxFile{*kf, &d}
+	return &KazoupDropboxFile{*kf, nil, nil}
 }
 
 // NewKazoupFileFromDropboxFile constructor
@@ -262,6 +299,7 @@ func NewKazoupFileFromBoxFile(d box.BoxFileMeta, dsId, uId, index string) *Kazou
 
 	kf := &KazoupFile{
 		ID:           utils.GetMD5Hash(url),
+		OriginalID:   d.ID,
 		UserId:       uId,
 		Name:         d.Name,
 		URL:          url,
@@ -278,7 +316,7 @@ func NewKazoupFileFromBoxFile(d box.BoxFileMeta, dsId, uId, index string) *Kazou
 		Index:        index,
 	}
 
-	return &KazoupBoxFile{*kf, &d}
+	return &KazoupBoxFile{*kf /*, &d*/}
 }
 
 // NewKazoupFileFromGmailFile constructor
@@ -289,9 +327,12 @@ func NewKazoupFileFromGmailFile(m gmailhelper.GmailFile, dsId, uId, dsURL, index
 
 	url := fmt.Sprintf("%s%s/#inbox/%s", globals.GmailEndpoint, strings.Replace(dsURL, globals.Gmail+"://", "", 1), m.MessageId)
 	t := time.Unix(m.InternalDate/1000, 0)
+	ext := strings.Split(strings.Replace(m.Name, " ", "-", 1), ".")
 
 	kf := &KazoupFile{
 		ID:           utils.GetMD5Hash(url),
+		OriginalID:   m.Id,
+		PreviewUrl:   `data:image/` + ext[len(ext)-1] + `;base64,` + m.Base64,
 		UserId:       uId,
 		Name:         m.Name,
 		URL:          url,
@@ -307,7 +348,11 @@ func NewKazoupFileFromGmailFile(m gmailhelper.GmailFile, dsId, uId, dsURL, index
 		DatasourceId: dsId,
 		Index:        index,
 	}
-	return &KazoupGmailFile{*kf, &m}
+	return &KazoupGmailFile{
+		*kf,
+		m.MessageId,
+		m.AttachmentId,
+	}
 }
 
 // NewKazoupFileFromMockFile constructor

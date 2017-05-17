@@ -140,7 +140,7 @@ func (ofs *OneDriveFs) getDirChildren(id string) error {
 
 func (ofs *OneDriveFs) getPermisions(f *file.KazoupOneDriveFile) error {
 	c := &http.Client{}
-	url := globals.OneDriveEndpoint + Drive + "items/" + f.Original.ID + "/permissions"
+	url := globals.OneDriveEndpoint + Drive + "items/" + f.OriginalID + "/permissions"
 	req, err := http.NewRequest("GET", url, nil)
 	req.Header.Set("Authorization", ofs.token())
 	if err != nil {
@@ -159,7 +159,6 @@ func (ofs *OneDriveFs) getPermisions(f *file.KazoupOneDriveFile) error {
 
 	for _, v := range pRsp.Value {
 		if v.GrantedTo == nil {
-			f.Original.PublicURL = v.Link.WebURL
 			f.Access = globals.ACCESS_PUBLIC
 			break
 		}
@@ -190,7 +189,7 @@ func (ofs *OneDriveFs) processImage(f *file.KazoupOneDriveFile) (file.File, erro
 	var rc io.ReadCloser
 
 	if err := backoff.Retry(func() error {
-		rc, err = ocs.Download(f.Original.ID)
+		rc, err = ocs.Download(f.OriginalID)
 		if err != nil {
 			return err
 		}
@@ -231,7 +230,7 @@ func (ofs *OneDriveFs) processDocument(f *file.KazoupOneDriveFile) (file.File, e
 		return nil, err
 	}
 
-	rc, err := ocs.Download(f.Original.ID)
+	rc, err := ocs.Download(f.OriginalID)
 	if err != nil {
 		return nil, err
 	}
@@ -263,7 +262,7 @@ func (ofs *OneDriveFs) processAudio(f *file.KazoupOneDriveFile) (file.File, erro
 		return nil, err
 	}
 
-	rc, err := ocs.Download(f.Original.ID)
+	rc, err := ocs.Download(f.OriginalID)
 	if err != nil {
 		return nil, err
 	}
@@ -302,7 +301,7 @@ func (ofs *OneDriveFs) processThumbnail(f *file.KazoupOneDriveFile) (file.File, 
 	var rc io.ReadCloser
 
 	if err := backoff.Retry(func() error {
-		rc, err = ocs.Download(f.Original.ID)
+		rc, err = ocs.Download(f.OriginalID)
 		if err != nil {
 			return err
 		}

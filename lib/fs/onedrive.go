@@ -186,7 +186,6 @@ func (ofs *OneDriveFs) Delete(rq file_proto.DeleteRequest) chan FileMsg {
 				file.KazoupFile{
 					ID: rq.FileId,
 				},
-				nil,
 			},
 			nil,
 		)

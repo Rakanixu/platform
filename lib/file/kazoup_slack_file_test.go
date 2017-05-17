@@ -2,7 +2,6 @@ package file
 
 import (
 	"github.com/kazoup/platform/lib/rossete"
-	"github.com/kazoup/platform/lib/slack"
 	"reflect"
 	"testing"
 	"time"
@@ -28,9 +27,6 @@ var (
 			Index:        babbler.Babble(),
 			Content:      babbler.Babble(),
 			Highlight:    babbler.Babble(),
-		},
-		Original: &slack.SlackFile{
-			ID: "original_id",
 		},
 	}
 )
@@ -75,8 +71,8 @@ func TestKazoupSlackFile_GetUserID(t *testing.T) {
 func TestKazoupSlackFile_GetIDFromOriginal(t *testing.T) {
 	result := kazoupSlackFile.GetIDFromOriginal()
 
-	if kazoupSlackFile.Original.ID != result {
-		t.Errorf("Expected %v, got %v", kazoupSlackFile.Original.ID, result)
+	if kazoupSlackFile.OriginalID != result {
+		t.Errorf("Expected %v, got %v", kazoupSlackFile.OriginalID, result)
 	}
 }
 
@@ -104,14 +100,6 @@ func TestKazoupSlackFile_GetFileType(t *testing.T) {
 	}
 }
 
-func TestKazoupSlackFile_GetPathDisplay(t *testing.T) {
-	result := kazoupSlackFile.GetPathDisplay()
-
-	if "" != result {
-		t.Errorf("Expected %v, got %v", "", result)
-	}
-}
-
 func TestKazoupSlackFile_GetURL(t *testing.T) {
 	result := kazoupSlackFile.GetURL()
 
@@ -123,15 +111,6 @@ func TestKazoupSlackFile_GetURL(t *testing.T) {
 func TestKazoupSlackFile_GetExtension(t *testing.T) {
 	expected := "extension"
 	result := kazoupSlackFile.GetExtension()
-
-	if expected != result {
-		t.Errorf("Expected %v, got %v", expected, result)
-	}
-}
-
-func TestKazoupSlackFile_GetBase64(t *testing.T) {
-	expected := ""
-	result := kazoupSlackFile.GetBase64()
 
 	if expected != result {
 		t.Errorf("Expected %v, got %v", expected, result)

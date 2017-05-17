@@ -175,7 +175,7 @@
       </mat-item>
     </template>
 
-    <template is="dom-if" if="[[isGoogleDrive(item.file_type)]]" restamp="true">
+<!--    <template is="dom-if" if="[[isGoogleDrive(item.file_type)]]" restamp="true">
       <mat-item label="Shared with"
                 class="no-ui-action overflow-visible"
                 tabindex="-1">
@@ -202,7 +202,8 @@
                 description="[[googleDriveInfo.createdDateTime]]"
                 tabindex="-1">
       </mat-item>
-    </template>
+    </template>-->
+<!--
 
     <template is="dom-if" if="[[isOneDrive(item.file_type)]]" restamp="true">
       <mat-item label="Owner"
@@ -218,6 +219,7 @@
       </mat-item>
     </template>
 
+-->
     <template is="dom-if" if="[[isDropboxFileShared(item.file_type, dropboxInfo.sharedFile)]]" restamp="true">
       <mat-item label="Shared with"
                 class="no-ui-action overflow-visible"
@@ -260,7 +262,7 @@
               tabindex="-1"></mat-item>
 
     <!-- Second parameter force expression to be reevaluated -->
-    <template is="dom-if" if$="[[hasSlackComments(item.original, item.original.id)]]" restamp="true">
+<!--    <template is="dom-if" if$="[[hasSlackComments(item.original, item.original.id)]]" restamp="true">
       <mat-item label="Description"
                 description="[[item.original.initial_comment.comment]]"
                 class="no-ui-action"
@@ -269,13 +271,13 @@
       </mat-item>
     </template>
 
-    <!-- Second parameter force expression to be reevaluated -->
+    &lt;!&ndash; Second parameter force expression to be reevaluated &ndash;&gt;
     <template id="hasSlackPublicUrl" is="dom-if" if$="[[hasSlackPublicUrl(item.file_type, item.original, item.original.id)]]" restamp="true">
       <mat-item label="Public Location"
                 description="[[item.original.permalink_public]]"
                 on-xp-activate="openPublicFileFromDetailView"
                 tabindex="-1"></mat-item>
-    </template>
+    </template>-->
 
     <template id="hasBoxPublicUrl" is="dom-if" if$="[[hasBoxPublicUrl(item.file_type, boxInfo.shared_link)]]" restamp="true">
       <mat-item label="Public Location"
@@ -311,6 +313,7 @@
       </mat-item>
     </template>
 
+<!--
     <template is="dom-if" if="[[isOneDrive(item.file_type)]]" restamp="true">
       <mat-item label="Last modified by"
                 class="no-ui-action"
@@ -319,6 +322,7 @@
 
       </mat-item>
     </template>
+    -->
 
     <template is="dom-if" if="[[showSize(item.file_size)]]" restamp="true">
       <mat-item label="Size"
@@ -469,7 +473,7 @@
           this.$.rpcRead.generateRequest();
         },
         getMoreInfoFromGoogleDrive: function() {
-          var people = (this.item.original.permissions && this.item.original.permissions.length) ?
+/*          var people = (this.item.original.permissions && this.item.original.permissions.length) ?
             this.item.original.permissions :
             this.item.original.owners;
 
@@ -500,22 +504,22 @@
             lastModifiedBy: this.item.original.lastModifyingUser.displayName,
             lastModifiedDateTime: this.timestampToHumanTime(this.item.original.modifiedTime),
             trashed: this.item.original.trashed ? true : false
-          });
+          });*/
         },
         getMoreInfoFromOneDrive: function() {
-          this.set('oneDriveInfo', {
+/*          this.set('oneDriveInfo', {
             publicUrl: this.item.original.publicUrl ? this.item.original.publicUrl : '',
             createdBy: this.item.original.createdBy.user.displayName,
             createdDateTime: this.timestampToHumanTime(this.item.original.createdDateTime),
             lastModifiedBy: this.item.original.lastModifiedBy.user.displayName,
             lastModifiedDateTime: this.timestampToHumanTime(this.item.original.lastModifiedDateTime)
-          });
+          });*/
         },
-        getMoreInfoFromDropbox: function() {
+        getMoreInfoFromDropbox: function(dropbox_users, dropbox_invitee) {
           var people = [];
           var id = 1;
 
-          _.forEach(this.item.original.dropbox_users, function(el) {
+          _.forEach(dropbox_users, function(el) {
             people.push({
               id: id,
               displayName: el.name.display_name,
@@ -525,7 +529,7 @@
             id++;
           }.bind(this));
 
-          _.forEach(this.item.original.dropbox_invitee, function(el) {
+          _.forEach(dropbox_invitee, function(el) {
             people.push({
               id: id,
               displayName: el.invitee.email,
@@ -538,15 +542,15 @@
           this.set('dropboxInfo', {
             people: people,
             sharedFile: people.length ? true : false,
-            publicUrl: this.item.original.public_url ? this.item.original.public_url : '',
-            dropboxTag: this.item.original.dropbox_tag
+            //publicUrl: this.item.original.public_url ? this.item.original.public_url : '',
+            //dropboxTag: this.item.original.dropbox_tag
           });
         },
-        getMoreInfoFromSlack: function() {
+        getMoreInfoFromSlack: function(user, channel) {
           var slackInfoEl = this.$$('#slackChannelInfo');
 
-          this.rpcSearchSlackUsersParams.request.id = this.item.original.user;
-          this.rpcSearchSlackChannelsParams.request.id = this.item.original.channels[0];
+          this.rpcSearchSlackUsersParams.request.id = user;
+          this.rpcSearchSlackChannelsParams.request.id = channel;
 
           this.rpcSearchSlackUsersParams.request.index = this.item.index;
           this.rpcSearchSlackChannelsParams.request.index = this.item.index;
@@ -566,9 +570,9 @@
           this.$.rpcSearchSlackChannels.generateRequest();
         },
         getMoreInfoFromBox: function() {
-          this.set('boxInfo', {
+/*          this.set('boxInfo', {
             shared_link: this.item.original.shared_link.url ? this.item.original.shared_link.url : ''
-          });
+          });*/
         },
         openFileFromDetailView: function(e) {
           this.openFile(this.item.url);
@@ -601,7 +605,6 @@
           if (e.detail.response && e.detail.response.result) {
             var doc = JSON.parse(e.detail.response.result);
 
-            this.set('item.original', doc.original);
             this.set('item.tags', doc.tags);
             this.set('item.entities', (doc.entities && doc.entities.entities) ? doc.entities.entities : []);
             if (doc.sentiment && doc.sentiment.document) {
@@ -613,7 +616,7 @@
 
             switch(this.item.file_type) {
               case 'slack':
-                this.getMoreInfoFromSlack();
+                this.getMoreInfoFromSlack(doc.user, doc.channels[0]);
                 break;
               case 'onedrive':
                 this.getMoreInfoFromOneDrive();
@@ -622,7 +625,7 @@
                 this.getMoreInfoFromGoogleDrive();
                 break;
               case 'dropbox':
-                this.getMoreInfoFromDropbox();
+                this.getMoreInfoFromDropbox(doc.dropbox_users, doc.dropbox_invitees);
                 break;
               case 'box':
                 this.getMoreInfoFromBox();

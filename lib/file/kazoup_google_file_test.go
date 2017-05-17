@@ -2,8 +2,6 @@ package file
 
 import (
 	"github.com/kazoup/platform/lib/rossete"
-	"github.com/kazoup/platform/lib/utils"
-	googledrive "google.golang.org/api/drive/v3"
 	"reflect"
 	"testing"
 	"time"
@@ -30,10 +28,6 @@ var (
 			Content:      babbler.Babble(),
 			Highlight:    babbler.Babble(),
 		},
-		Original: &googledrive.File{
-			Id:          "original_id",
-			WebViewLink: "https://a.b.c",
-		},
 	}
 )
 
@@ -51,7 +45,7 @@ func TestKazoupGoogleFile_PreviewURL(t *testing.T) {
 }
 
 func TestKazoupGoogleFile_GetID(t *testing.T) {
-	expected := utils.GetMD5Hash(kazoupGoogleFile.Original.WebViewLink)
+	expected := kazoupGoogleFile.ID
 	result := kazoupGoogleFile.GetID()
 
 	if expected != result {
@@ -78,8 +72,8 @@ func TestKazoupGoogleFile_GetUserID(t *testing.T) {
 func TestKazoupGoogleFile_GetIDFromOriginal(t *testing.T) {
 	result := kazoupGoogleFile.GetIDFromOriginal()
 
-	if kazoupGoogleFile.Original.Id != result {
-		t.Errorf("Expected %v, got %v", kazoupGoogleFile.Original.Id, result)
+	if kazoupGoogleFile.OriginalID != result {
+		t.Errorf("Expected %v, got %v", kazoupGoogleFile.OriginalID, result)
 	}
 }
 
@@ -107,14 +101,6 @@ func TestKazoupGoogleFile_GetFileType(t *testing.T) {
 	}
 }
 
-func TestKazoupGoogleFile_GetPathDisplay(t *testing.T) {
-	result := kazoupGoogleFile.GetPathDisplay()
-
-	if "" != result {
-		t.Errorf("Expected %v, got %v", "", result)
-	}
-}
-
 func TestKazoupGoogleFile_GetURL(t *testing.T) {
 	result := kazoupGoogleFile.GetURL()
 
@@ -126,15 +112,6 @@ func TestKazoupGoogleFile_GetURL(t *testing.T) {
 func TestKazoupGoogleFile_GetExtension(t *testing.T) {
 	expected := "extension"
 	result := kazoupGoogleFile.GetExtension()
-
-	if expected != result {
-		t.Errorf("Expected %v, got %v", expected, result)
-	}
-}
-
-func TestKazoupGoogleFile_GetBase64(t *testing.T) {
-	expected := ""
-	result := kazoupGoogleFile.GetBase64()
 
 	if expected != result {
 		t.Errorf("Expected %v, got %v", expected, result)

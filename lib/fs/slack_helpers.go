@@ -144,7 +144,7 @@ func (sfs *SlackFs) processImage(f *file.KazoupSlackFile) (file.File, error) {
 	var rc io.ReadCloser
 
 	if err := backoff.Retry(func() error {
-		rc, err = scs.Download(f.Original.URLPrivateDownload)
+		rc, err = scs.Download(f.OriginalDownloadRef)
 		if err != nil {
 			return err
 		}
@@ -185,7 +185,7 @@ func (sfs *SlackFs) processDocument(f *file.KazoupSlackFile) (file.File, error) 
 		return nil, err
 	}
 
-	rc, err := scs.Download(f.Original.URLPrivateDownload)
+	rc, err := scs.Download(f.OriginalDownloadRef)
 	if err != nil {
 		return nil, err
 	}
@@ -217,7 +217,7 @@ func (sfs *SlackFs) processAudio(f *file.KazoupSlackFile) (file.File, error) {
 		return nil, err
 	}
 
-	rc, err := scs.Download(f.Original.URLPrivateDownload)
+	rc, err := scs.Download(f.OriginalDownloadRef)
 	if err != nil {
 		return nil, err
 	}
@@ -257,7 +257,7 @@ func (sfs *SlackFs) processThumbnail(f *file.KazoupSlackFile) (file.File, error)
 	var rc io.ReadCloser
 
 	if err := backoff.Retry(func() error {
-		rc, err = scs.Download(f.Original.URLPrivateDownload)
+		rc, err = scs.Download(f.OriginalDownloadRef)
 		if err != nil {
 			return err
 		}
@@ -321,13 +321,13 @@ func (sfs *SlackFs) shareFileInsideTeam(f *file.KazoupSlackFile, destId string) 
 	data := make(url.Values)
 	data.Add("token", sfs.Endpoint.Token.AccessToken)
 	data.Add("channel", destId)
-	data.Add("attachments", `[
+	/*	data.Add("attachments", `[
 		{
-		    "title": "`+f.Original.Name+`",
+		    "title": "`+f.Name+`",
 		    "title_link": "`+f.Original.Permalink+`",
 		    "color": "#21a9f5"
 		}
-	]`)
+	]`)*/
 
 	c := &http.Client{}
 	rsp, err := c.PostForm(globals.SlackPostMessageEndpoint, data)

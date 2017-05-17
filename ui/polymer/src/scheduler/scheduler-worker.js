@@ -21,9 +21,17 @@ var window = self;
     self.pool = [];
 
     for (var i = 0; i < self.datasources.length; i++) {
+
+      console.log(self.datasources[i])
+
       // Something wrong happened, kick off scan to fix it
       if (self.datasources[i].last_scan > self.datasources[i].last_scan_started) {
         if (self.datasources[i].last_scan < self.initTime - day) {
+          self.pool.push(self.datasources[i].id);
+        }
+        
+        // Scan was stopped, probably because a new deployment while crawler was running
+        if (self.datasources[i].last_scan_started < (parseInt(new Date().getTime() / 1000) + elapsedTime)) {
           self.pool.push(self.datasources[i].id);
         }
       }
