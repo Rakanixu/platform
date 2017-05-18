@@ -12,6 +12,7 @@ type DBCustom interface {
 
 type Custom interface {
 	ScrollUnprocessedFiles(ctx context.Context, req *proto_custom.ScrollUnprocessedFilesRequest) (*proto_custom.ScrollUnprocessedFilesResponse, error)
+	ScrollDatasources(ctx context.Context, req *proto_custom.ScrollDatasourcesRequest) (*proto_custom.ScrollDatasourcesResponse, error)
 }
 
 var (
@@ -28,4 +29,8 @@ func Init() error {
 
 func ScrollUnprocessedFiles(ctx context.Context, req *proto_custom.ScrollUnprocessedFilesRequest) (*proto_custom.ScrollUnprocessedFilesResponse, error) {
 	return custom.ScrollUnprocessedFiles(ctx, req)
+}
+
+func ScrollDatasources(ctx context.Context, req *proto_custom.ScrollDatasourcesRequest) (*proto_custom.ScrollDatasourcesResponse, error) {
+	return custom.ScrollDatasources(ctx, req)
 }

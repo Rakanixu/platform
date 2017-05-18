@@ -2,7 +2,11 @@ package elastic
 
 import (
 	"bytes"
+	"encoding/json"
+	"github.com/kazoup/platform/datasource/srv/proto/datasource"
+	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/file"
+	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/normalization/text"
 	"golang.org/x/net/context"
 	elib "gopkg.in/olivere/elastic.v5"
@@ -68,6 +72,25 @@ func (e *ElasticQuery) ScrollUnprocessedFile() (string, error) {
 	return text.ReplaceNewLines(strings.Replace(q, " ", "", -1))
 }
 
+// ScrollDatasources generates a query to retrieve all datasources
+func (e *ElasticQuery) ScrollDatasources() (string, error) {
+	var buffer bytes.Buffer
+
+	buffer.WriteString(`{`)
+	buffer.WriteString(`"size": 1000,`)
+	buffer.WriteString(`"query": {"bool":{"must":{`)
+	buffer.WriteString(`}, "filter":[`)
+	buffer.WriteString(e.filterUser())
+	buffer.WriteString(`]}}}`)
+
+	q, err := text.ReplaceTabs(buffer.String())
+	if err != nil {
+		return "", err
+	}
+
+	return text.ReplaceNewLines(strings.Replace(q, " ", "", -1))
+}
+
 func (e *ElasticQuery) filterUser() string {
 	var buffer bytes.Buffer
 
@@ -93,7 +116,7 @@ func (e *ElasticQuery) filterCategory() string {
 }
 
 // scroll recursively paginate over scroll service until retrieves all documents
-func scroll(results []interface{}, scrollSrv *elib.ScrollService, scrollId string) ([]interface{}, error) {
+func scroll(docType string, results []interface{}, scrollSrv *elib.ScrollService, scrollId string) ([]interface{}, error) {
 	done := false
 	out, err := scrollSrv.ScrollId(scrollId).Do(context.Background())
 	if err == io.EOF {
@@ -105,20 +128,32 @@ func scroll(results []interface{}, scrollSrv *elib.ScrollService, scrollId strin
 		return nil, err
 	}
 
-	results, err = attachResults(results, out.Hits)
-	if err != nil {
-		return nil, err
+	switch docType {
+	case globals.FileType:
+		results, err = attachFiles(results, out.Hits)
+		if err != nil {
+			return nil, err
+		}
+	case globals.TypeDatasource:
+		results, err = attachDatasources(results, out.Hits)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		// Nothing to scroll
+		return nil, errors.ErrInvalidDocType
+
 	}
 
 	if !done {
-		return scroll(results, scrollSrv, out.ScrollId)
+		return scroll(docType, results, scrollSrv, out.ScrollId)
 	}
 
 	return results, nil
 }
 
-// attachResults helps to appends matched documents
-func attachResults(results []interface{}, hits *elib.SearchHits) ([]interface{}, error) {
+// attachFiles helps to appends matched file documents
+func attachFiles(results []interface{}, hits *elib.SearchHits) ([]interface{}, error) {
 	for _, v := range hits.Hits {
 		data, err := v.Source.MarshalJSON()
 		if err != nil {
@@ -126,12 +161,30 @@ func attachResults(results []interface{}, hits *elib.SearchHits) ([]interface{},
 		}
 
 		f, err := file.NewFileFromString(string(data))
-
 		if err != nil {
 			return nil, err
 		}
 
 		results = append(results, f)
+	}
+
+	return results, nil
+}
+
+// attachDatasources helps to appends matched datasource documents
+func attachDatasources(results []interface{}, hits *elib.SearchHits) ([]interface{}, error) {
+	for _, v := range hits.Hits {
+		data, err := v.Source.MarshalJSON()
+		if err != nil {
+			return nil, err
+		}
+
+		var e *proto_datasource.Endpoint
+		if err := json.Unmarshal(data, &e); err != nil {
+			return nil, err
+		}
+
+		results = append(results, e)
 	}
 
 	return results, nil

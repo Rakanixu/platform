@@ -11,3 +11,11 @@ message ScrollUnprocessedFilesRequest {
 message ScrollUnprocessedFilesResponse {
     string result = 1;
 }
+
+message ScrollDatasourcesRequest {
+
+}
+
+message ScrollDatasourcesResponse {
+    string result = 1;
+}

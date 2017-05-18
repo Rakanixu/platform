@@ -12,6 +12,7 @@ var (
 	ErrInvalidCtx              = micro_errors.New("Cant get srv from context", "", 500)
 	ErrInvalidCloudStorage     = micro_errors.New("Not such cloud storage", "", 500)
 	ErrInvalidFile             = micro_errors.New("Not such file", "", 500)
+	ErrInvalidDocType          = micro_errors.New("Not such document type", "", 500)
 	ErrInvalidFileSystem       = micro_errors.New("Not such file system", "", 500)
 	ErrInvalidDatasourceEngine = micro_errors.New("Not such datasource engine", "", 500)
 	ErrInvalidMetadata         = micro_errors.New("Unable to retrieve metadata", "", 500)
