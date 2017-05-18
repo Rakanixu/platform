@@ -78,7 +78,7 @@ func ParseJWTToken(str string) (string, error) {
 		// Don't forget to validate the alg is what you expect:
 
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, platform_errors.NewPlatformError("", "ParseJWTToken", "Unexpected signing method", nil)
+			return nil, platform_errors.NewPlatformError("", "ParseJWTToken", "Unexpected signing method", 401, nil)
 		}
 
 		decoded, err := base64.URLEncoding.DecodeString(globals.CLIENT_ID_SECRET)
@@ -90,11 +90,11 @@ func ParseJWTToken(str string) (string, error) {
 	})
 
 	if err != nil {
-		return "", platform_errors.NewPlatformError("", "ParseJWTToken", "", err)
+		return "", platform_errors.NewPlatformError("", "ParseJWTToken", "", 401, err)
 	}
 
 	if !token.Valid {
-		return "", platform_errors.NewPlatformError("", "ParseJWTToken", "Invalid token", err)
+		return "", platform_errors.NewPlatformError("", "ParseJWTToken", "Invalid token", 401, err)
 	}
 
 	return token.Claims.(jwt.MapClaims)["sub"].(string), nil

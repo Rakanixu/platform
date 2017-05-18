@@ -1,8 +1,10 @@
 package errors
 
 import (
+	"encoding/json"
 	"fmt"
 	micro_errors "github.com/micro/go-micro/errors"
+	"net/http"
 	"reflect"
 )
 
@@ -25,20 +27,28 @@ type PlatformError struct {
 	Service string
 	Task    string
 	Detail  string
+	Code    int32
+	Status  string
 	Err     error
 }
 
-func NewPlatformError(service, task, detail string, err error) error {
+func NewPlatformError(service, task, detail string, code int32, err error) error {
 	return &PlatformError{
 		Service: service,
 		Task:    task,
 		Detail:  detail,
+		Code:    code,
+		Status:  http.StatusText(int(code)),
 		Err:     err,
 	}
 }
 
 func (e *PlatformError) Error() string {
-	return fmt.Sprintf("%s %s %s %s", e.Service, e.Task, e.Detail, e.Err.Error())
+	e.Detail = fmt.Sprintf("%s %s %s %s", e.Service, e.Task, e.Detail, e.Err.Error())
+
+	b, _ := json.Marshal(e)
+
+	return string(b)
 }
 
 type DiscoveryError struct {

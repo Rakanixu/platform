@@ -11,7 +11,7 @@ import (
 )
 
 func RegisterQuotaHealthChecks(srv micro.Service, m monitor.Monitor) {
-	searchSrvHealthCheck(srv, m)
+	quotaSrvHealthCheck(srv, m)
 }
 
 func quotaSrvHealthCheck(srv micro.Service, m monitor.Monitor) {

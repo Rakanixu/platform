@@ -58,11 +58,11 @@ func quotaHandlerWrapper(fn server.HandlerFunc, limiter *rate.Limiter, srv strin
 			return decoded, nil
 		})
 		if err != nil {
-			return errors.NewPlatformError("", "ParseJWTToken", "", err)
+			return errors.NewPlatformError("", "ParseJWTToken", "", 401, err)
 		}
 
 		if token.Claims.(jwt.MapClaims)["roles"] == nil {
-			return errors.NewPlatformError("", "ParseJWTToken", "Invalid token", err)
+			return errors.NewPlatformError("", "ParseJWTToken", "Invalid token", 401, err)
 		}
 
 		var quotaLimit int64
@@ -132,11 +132,11 @@ func quotaSubscriberWrapper(fn server.SubscriberFunc, limiter *rate.Limiter, srv
 			return decoded, nil
 		})
 		if err != nil {
-			return errors.NewPlatformError("", "ParseJWTToken", "", err)
+			return errors.NewPlatformError("", "ParseJWTToken", "", 401, err)
 		}
 
 		if token.Claims.(jwt.MapClaims)["roles"] == nil {
-			return errors.NewPlatformError("", "ParseJWTToken", "Invalid token", err)
+			return errors.NewPlatformError("", "ParseJWTToken", "Invalid token", 401, err)
 		}
 
 		var quotaLimit int64

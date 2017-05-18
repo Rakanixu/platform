@@ -54,7 +54,7 @@ func (t *taskHandler) Enrich(ctx context.Context, enrichmsg *enrich.EnrichMessag
 func (t *taskHandler) queueListener(wID int) {
 	for m := range t.enrichMsgChan {
 		if err := processEnrichMsg(m); err != nil {
-			m.err <- errors.NewPlatformError(globals.IMAGE_SERVICE_NAME, "processEnrichMsg", fmt.Sprintf("worker %d", wID), err)
+			m.err <- errors.NewPlatformError(globals.IMAGE_SERVICE_NAME, "processEnrichMsg", fmt.Sprintf("worker %d", wID), 500, err)
 		}
 		// Successful
 		m.err <- nil
