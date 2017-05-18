@@ -93,6 +93,8 @@ func TestNewFileFromString(t *testing.T) {
 					KazoupFile{
 						FileType: globals.Slack,
 					},
+					"",
+					nil,
 				},
 				nil,
 			},

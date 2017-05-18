@@ -44,6 +44,8 @@ func NewPlatformError(service, task, detail string, code int32, err error) error
 }
 
 func (e *PlatformError) Error() string {
+	e.Detail = fmt.Sprintf("%s %s %s %s", e.Service, e.Task, e.Detail, e.Err.Error())
+
 	b, _ := json.Marshal(e)
 
 	return string(b)
