@@ -30,7 +30,7 @@ func (de *Service) EnrichFile(ctx context.Context, req *proto_document.EnrichFil
 	// Check Quota first
 	_, _, rate, _, quota, ok := quota.Check(ctx, globals.DOCUMENT_SERVICE_NAME, uID)
 	if !ok {
-		return platform_errors.NewPlatformError(globals.DOCUMENT_SERVICE_NAME, "EnrichFile", "", errors.New("quota.Check"))
+		return platform_errors.NewPlatformError(globals.DOCUMENT_SERVICE_NAME, "EnrichFile", "", 403, errors.New("quota.Check"))
 	}
 
 	// Quota exceded, respond sync and do not initiate go routines

@@ -31,7 +31,7 @@ func (s *Service) EnrichFile(ctx context.Context, req *proto_audio.EnrichFileReq
 
 	_, _, rate, _, quota, ok := quota.Check(ctx, globals.AUDIO_SERVICE_NAME, uID)
 	if !ok {
-		return platform_errors.NewPlatformError(globals.AUDIO_SERVICE_NAME, "EnrichFile", "", errors.New("quota.Check"))
+		return platform_errors.NewPlatformError(globals.AUDIO_SERVICE_NAME, "EnrichFile", "", 403, errors.New("quota.Check"))
 	}
 
 	// Quota exceded, respond sync and do not initiate go routines

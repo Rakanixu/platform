@@ -53,7 +53,7 @@ func (t *taskHandler) Thumbnail(ctx context.Context, enrichmsg *enrich.EnrichMes
 func (t *taskHandler) queueListener(wID int) {
 	for m := range t.thumbnailMsgChan {
 		if err := processThumbnailMsg(m); err != nil {
-			m.err <- errors.NewPlatformError(globals.THUMBNAIL_SERVICE_NAME, "processEnrichMsg", fmt.Sprintf("worker %d", wID), err)
+			m.err <- errors.NewPlatformError(globals.THUMBNAIL_SERVICE_NAME, "processEnrichMsg", fmt.Sprintf("worker %d", wID), 500, err)
 		}
 		// Successful
 		m.err <- nil

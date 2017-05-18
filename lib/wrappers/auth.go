@@ -35,7 +35,7 @@ func authHandlerWrapper(fn server.HandlerFunc) server.HandlerFunc {
 			token, err := jwt.Parse(md["Authorization"], func(token *jwt.Token) (interface{}, error) {
 				// Don't forget to validate the alg is what you expect:
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-					return nil, errors.NewPlatformError("", "AuthHandlerWrapper", "Unexpected signing method", nil)
+					return nil, errors.NewPlatformError("", "AuthHandlerWrapper", "Unexpected signing method", 401, nil)
 				}
 
 				decoded, err := base64.URLEncoding.DecodeString(globals.CLIENT_ID_SECRET)
@@ -47,11 +47,11 @@ func authHandlerWrapper(fn server.HandlerFunc) server.HandlerFunc {
 			})
 
 			if err != nil {
-				return errors.NewPlatformError("", "ParseJWTToken", "", err)
+				return errors.NewPlatformError("", "ParseJWTToken", "", 401, err)
 			}
 
 			if !token.Valid {
-				return errors.NewPlatformError("", "ParseJWTToken", "Invalid token", err)
+				return errors.NewPlatformError("", "ParseJWTToken", "Invalid token", 401, err)
 			}
 
 			ctx = context.WithValue(
@@ -91,7 +91,7 @@ func authSubscriberWrapper(fn server.SubscriberFunc) server.SubscriberFunc {
 			token, err := jwt.Parse(md["Authorization"], func(token *jwt.Token) (interface{}, error) {
 				// Don't forget to validate the alg is what you expect:
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-					return nil, errors.NewPlatformError("", "AuthHandlerWrapper", "Unexpected signing method", nil)
+					return nil, errors.NewPlatformError("", "AuthHandlerWrapper", "Unexpected signing method", 401, nil)
 				}
 
 				decoded, err := base64.URLEncoding.DecodeString(globals.CLIENT_ID_SECRET)
@@ -103,11 +103,11 @@ func authSubscriberWrapper(fn server.SubscriberFunc) server.SubscriberFunc {
 			})
 
 			if err != nil {
-				return errors.NewPlatformError("", "ParseJWTToken", "", err)
+				return errors.NewPlatformError("", "ParseJWTToken", "", 401, err)
 			}
 
 			if !token.Valid {
-				return errors.NewPlatformError("", "ParseJWTToken", "Invalid token", err)
+				return errors.NewPlatformError("", "ParseJWTToken", "Invalid token", 401, err)
 			}
 
 			ctx = context.WithValue(

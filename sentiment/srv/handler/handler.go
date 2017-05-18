@@ -31,7 +31,7 @@ func (s *Service) AnalyzeFile(ctx context.Context, req *proto_sentiment.AnalyzeF
 	// Check Quota first
 	_, _, rate, _, quota, ok := quota.Check(ctx, globals.SENTIMENT_SERVICE_NAME, uID)
 	if !ok {
-		return platform_errors.NewPlatformError(globals.SENTIMENT_SERVICE_NAME, "AnalyzeFile", "", errors.New("quota.Check"))
+		return platform_errors.NewPlatformError(globals.SENTIMENT_SERVICE_NAME, "AnalyzeFile", "", 403, errors.New("quota.Check"))
 	}
 
 	// Quota exceded, respond sync and do not initiate go routines
