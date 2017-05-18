@@ -18,7 +18,7 @@ func datasourceSrvHealthCheck(srv micro.Service, m monitor.Monitor) {
 	url := "https://web.kazoup.io:8082/rpc"
 	body := []byte(`{
 		"service":"` + srv.Server().Options().Name + `",
-		"method":"DataSource.Health",
+		"method":"Service.Health",
 		"request":{}
 	}`)
 	n := fmt.Sprintf("%s.health", srv.Server().Options().Name)
