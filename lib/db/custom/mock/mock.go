@@ -2,9 +2,11 @@ package mock
 
 import (
 	"encoding/json"
+	"github.com/kazoup/platform/datasource/srv/proto/datasource"
 	"github.com/kazoup/platform/lib/db/custom"
 	"github.com/kazoup/platform/lib/db/custom/proto/custom"
 	"github.com/kazoup/platform/lib/file"
+	"github.com/kazoup/platform/lib/globals"
 	"golang.org/x/net/context"
 )
 
@@ -24,7 +26,7 @@ func (e *mock) Init() error {
 	return nil
 }
 
-// ScrollUnprocessedAudio mock
+// ScrollUnprocessedFiles mock
 func (e *mock) ScrollUnprocessedFiles(ctx context.Context, req *proto_custom.ScrollUnprocessedFilesRequest) (*proto_custom.ScrollUnprocessedFilesResponse, error) {
 	f := &file.KazoupFile{
 		Index:  MOCK_INDEX,
@@ -38,6 +40,24 @@ func (e *mock) ScrollUnprocessedFiles(ctx context.Context, req *proto_custom.Scr
 	}
 
 	return &proto_custom.ScrollUnprocessedFilesResponse{
+		Result: `[` + string(b) + `]`,
+	}, nil
+}
+
+func (e *mock) ScrollDatasources(ctx context.Context, req *proto_custom.ScrollDatasourcesRequest) (*proto_custom.ScrollDatasourcesResponse, error) {
+	f := &proto_datasource.Endpoint{
+		Index:  MOCK_INDEX,
+		Id:     globals.Mock,
+		UserId: MOCK_USER_ID,
+		Url:    globals.Mock,
+	}
+
+	b, err := json.Marshal(f)
+	if err != nil {
+		return nil, err
+	}
+
+	return &proto_custom.ScrollDatasourcesResponse{
 		Result: `[` + string(b) + `]`,
 	}, nil
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/kazoup/platform/lib/db/custom"
 	"github.com/kazoup/platform/lib/db/operations"
 	"github.com/kazoup/platform/lib/healthchecks"
 	"github.com/kazoup/platform/lib/objectstorage"
@@ -15,6 +16,11 @@ import (
 func main() {
 	// Init DB operations
 	if err := operations.Init(); err != nil {
+		log.Fatal(err)
+	}
+
+	// Init custom DB operations
+	if err := custom.Init(); err != nil {
 		log.Fatal(err)
 	}
 

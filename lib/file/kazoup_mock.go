@@ -1,6 +1,7 @@
 package file
 
 import (
+	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/rossete"
 	"time"
 )
@@ -35,7 +36,7 @@ func (kf *KazoupMockFile) GetIndex() string {
 }
 
 func (kf *KazoupMockFile) GetDatasourceID() string {
-	return "GetDatasourceID"
+	return globals.Mock
 }
 
 func (kf *KazoupMockFile) GetFileType() string {

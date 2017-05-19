@@ -4,12 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	datasource "github.com/kazoup/platform/datasource/srv/proto/datasource"
+	kazoup_context "github.com/kazoup/platform/lib/context"
+	"github.com/kazoup/platform/lib/db/custom"
+	"github.com/kazoup/platform/lib/db/custom/proto/custom"
 	"github.com/kazoup/platform/lib/db/operations"
 	"github.com/kazoup/platform/lib/db/operations/proto/operations"
+	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/file"
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
-	"github.com/micro/go-micro/client"
+	"github.com/kazoup/platform/lib/utils"
 	"github.com/micro/go-micro/metadata"
 	"golang.org/x/net/context"
 	"io/ioutil"
@@ -58,8 +62,20 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		quality = "50"
 	}
 
+	userId, err := utils.ParseJWTToken(token)
+	if err != nil {
+		http.Error(w, errors.ErrInvalidUserInCtx.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	// Build context
-	ctx := metadata.NewContext(context.TODO(), map[string]string{
+	ctx := context.WithValue(
+		context.TODO(),
+		kazoup_context.UserIdCtxKey{},
+		kazoup_context.UserIdCtxValue(userId),
+	)
+
+	ctx = metadata.NewContext(ctx, map[string]string{
 		"Authorization":  token,
 		"X-Kazoup-Token": globals.DB_ACCESS_TOKEN,
 	})
@@ -161,26 +177,13 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ih *ImageHandler) loadDatasources(ctx context.Context) {
-	//FIXME: mazimun of 9999 datasources. paginate
-	req := client.DefaultClient.NewRequest(
-		globals.DATASOURCE_SERVICE_NAME,
-		"Service.Search",
-		&datasource.SearchRequest{
-			Index: "datasources",
-			Type:  "datasource",
-			From:  0,
-			Size:  9999,
-		},
-	)
-	rsp := &datasource.SearchResponse{}
-
-	if err := client.DefaultClient.Call(ctx, req, rsp); err != nil {
+	rsp, err := custom.ScrollDatasources(ctx, &proto_custom.ScrollDatasourcesRequest{})
+	if err != nil {
 		log.Println("ERROR retrieveing datasources for image server", err)
 		return
 	}
 
 	var endpoints []*datasource.Endpoint
-
 	if err := json.Unmarshal([]byte(rsp.Result), &endpoints); err != nil {
 		log.Println(err.Error())
 	}
@@ -190,13 +193,14 @@ func (ih *ImageHandler) loadDatasources(ctx context.Context) {
 		if err != nil {
 			log.Println(err.Error())
 		}
-		//FIXME: we are appending to existing ones, so we end up with many copies of same data in memory. just dump and append new data
+
 		ih.fs = append(ih.fs, fsfe)
 	}
 }
 
 func (ih *ImageHandler) getFs(f file.File) fs.Fs {
 	for _, v := range ih.fs {
+		log.Println(v.GetDatasourceId(), f.GetDatasourceID())
 		if v.GetDatasourceId() == f.GetDatasourceID() {
 			return v
 		}
