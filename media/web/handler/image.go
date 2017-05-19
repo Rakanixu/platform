@@ -14,7 +14,6 @@ import (
 	"github.com/kazoup/platform/lib/fs"
 	"github.com/kazoup/platform/lib/globals"
 	"github.com/kazoup/platform/lib/utils"
-	"github.com/micro/go-micro/client"
 	"github.com/micro/go-micro/metadata"
 	"golang.org/x/net/context"
 	"io/ioutil"
@@ -104,7 +103,7 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Datasource is not on memory yet, (was created after the srv started to run)
 	// Lets reload the datasources in memory
 	if fSys == nil {
-		ih.loadDatasources(ctx, client.DefaultClient)
+		ih.loadDatasources(ctx)
 		fSys = ih.getFs(f)
 	}
 
@@ -177,7 +176,7 @@ func (ih *ImageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func (ih *ImageHandler) loadDatasources(ctx context.Context, c client.Client) {
+func (ih *ImageHandler) loadDatasources(ctx context.Context) {
 	rsp, err := custom.ScrollDatasources(ctx, &proto_custom.ScrollDatasourcesRequest{})
 	if err != nil {
 		log.Println("ERROR retrieveing datasources for image server", err)
@@ -201,6 +200,7 @@ func (ih *ImageHandler) loadDatasources(ctx context.Context, c client.Client) {
 
 func (ih *ImageHandler) getFs(f file.File) fs.Fs {
 	for _, v := range ih.fs {
+		log.Println(v.GetDatasourceId(), f.GetDatasourceID())
 		if v.GetDatasourceId() == f.GetDatasourceID() {
 			return v
 		}

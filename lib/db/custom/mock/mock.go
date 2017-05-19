@@ -47,6 +47,7 @@ func (e *mock) ScrollUnprocessedFiles(ctx context.Context, req *proto_custom.Scr
 func (e *mock) ScrollDatasources(ctx context.Context, req *proto_custom.ScrollDatasourcesRequest) (*proto_custom.ScrollDatasourcesResponse, error) {
 	f := &proto_datasource.Endpoint{
 		Index:  MOCK_INDEX,
+		Id:     globals.Mock,
 		UserId: MOCK_USER_ID,
 		Url:    globals.Mock,
 	}
