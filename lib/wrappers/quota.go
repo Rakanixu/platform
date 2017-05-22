@@ -65,6 +65,11 @@ func quotaHandlerWrapper(fn server.HandlerFunc, limiter *rate.Limiter, srv strin
 			return errors.NewPlatformError("", "ParseJWTToken", "Invalid token", 401, err)
 		}
 
+		// Exec subscriber
+		if err := fn(ctx, req, rsp); err != nil {
+			return err
+		}
+
 		var quotaLimit int64
 		for _, v := range token.Claims.(jwt.MapClaims)["roles"].([]interface{}) {
 			switch v.(string) {
@@ -73,6 +78,7 @@ func quotaHandlerWrapper(fn server.HandlerFunc, limiter *rate.Limiter, srv strin
 			}
 		}
 
+		// Update quota once subscriber was succesful
 		if quotaLimit > 0 {
 			_, _, allowed := limiter.AllowN(fmt.Sprintf("%s-handler-%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, globals.QUOTA_TIME_LIMITER, 1)
 			if !allowed {
@@ -80,7 +86,7 @@ func quotaHandlerWrapper(fn server.HandlerFunc, limiter *rate.Limiter, srv strin
 			}
 		}
 
-		return fn(ctx, req, rsp)
+		return nil
 	}
 }
 
@@ -139,6 +145,11 @@ func quotaSubscriberWrapper(fn server.SubscriberFunc, limiter *rate.Limiter, srv
 			return errors.NewPlatformError("", "ParseJWTToken", "Invalid token", 401, err)
 		}
 
+		// Exec subscriber
+		if err := fn(ctx, msg); err != nil {
+			return err
+		}
+
 		var quotaLimit int64
 		for _, v := range token.Claims.(jwt.MapClaims)["roles"].([]interface{}) {
 			switch v.(string) {
@@ -147,6 +158,7 @@ func quotaSubscriberWrapper(fn server.SubscriberFunc, limiter *rate.Limiter, srv
 			}
 		}
 
+		// Update quota once subscriber task was succesful
 		if quotaLimit > 0 {
 			_, _, allowed := limiter.AllowN(fmt.Sprintf("%s-subs-%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, globals.QUOTA_TIME_LIMITER, 1)
 			if !allowed {
@@ -154,6 +166,6 @@ func quotaSubscriberWrapper(fn server.SubscriberFunc, limiter *rate.Limiter, srv
 			}
 		}
 
-		return fn(ctx, msg)
+		return nil
 	}
 }
