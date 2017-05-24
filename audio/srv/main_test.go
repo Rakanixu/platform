@@ -1,5 +1,6 @@
 package main
 
+/*
 import (
 	"github.com/kazoup/platform/audio/srv/handler"
 	"github.com/kazoup/platform/audio/srv/proto/audio"
@@ -24,6 +25,7 @@ var (
 	client  proto_audio.ServiceClient
 )
 
+*/
 /*func subscriber(ctx context.Context, msg *example.Message) error {
 
 	var err error
@@ -34,7 +36,8 @@ var (
 	}
 	close(waitForMsg)
 	return err
-}*/
+}*/ /*
+
 
 func TestMain(m *testing.M) {
 	// Tests Setup
@@ -72,12 +75,14 @@ func TestMain(m *testing.M) {
 	client = proto_audio.NewServiceClient(SRV_NAME, service.Client())
 
 	// Register function as subscriber
-	/*	err := service.Server().Subscribe(
-			service.Server().NewSubscriber("topic.go.micro.srv.test", subscriber),
-		)
-		if err != nil {
-			os.Exit(1)
-		}*/
+*/
+/*	err := service.Server().Subscribe(
+		service.Server().NewSubscriber("topic.go.micro.srv.test", subscriber),
+	)
+	if err != nil {
+		os.Exit(1)
+	}*/ /*
+
 	//start service TODO handle returned error
 	go service.Run()
 
@@ -183,6 +188,7 @@ func TestHandlerHealth(t *testing.T) {
 }
 
 //TestTestServiceSubscriber tests subscribers
+*/
 /*func TestTestServiceSubscriber(t *testing.T) {
 
 	// //Test publish subscribe

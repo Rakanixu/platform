@@ -10,9 +10,10 @@ import (
 	platform_errors "github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/globals"
 	announce "github.com/kazoup/platform/lib/protomsg/announce"
-	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/micro/go-micro"
+	broker_mock "github.com/micro/go-micro/broker/mock"
 	"github.com/micro/go-micro/metadata"
+	registry_mock "github.com/micro/go-micro/registry/mock"
 	"golang.org/x/net/context"
 	"testing"
 )
@@ -23,8 +24,12 @@ const (
 
 var (
 	announceHandler = new(AnnounceHandler)
-	srv             = wrappers.NewKazoupService("test-service")
-	ctx             = context.WithValue(
+	srv             = micro.NewService(
+		micro.Name("test-service"),
+		micro.Broker(broker_mock.NewBroker()),
+		micro.Registry(registry_mock.NewRegistry()),
+	)
+	ctx = context.WithValue(
 		context.TODO(),
 		kazoup_context.UserIdCtxKey{},
 		kazoup_context.UserIdCtxValue(TEST_USER_ID),
