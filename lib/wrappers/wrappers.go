@@ -3,7 +3,6 @@ package wrappers
 import (
 	"fmt"
 	"github.com/kazoup/platform/lib/globals"
-	"github.com/micro/cli"
 	"github.com/micro/go-micro"
 	"github.com/micro/go-os/monitor"
 	"log"
@@ -46,54 +45,6 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 	}
 
 	sn := fmt.Sprintf("%s.srv.%s", globals.NAMESPACE, name)
-
-	if name == "db" {
-		service := micro.NewService(
-			micro.Name(sn),
-			micro.Version("latest"),
-			micro.Metadata(md),
-			micro.RegisterTTL(time.Minute),
-			micro.RegisterInterval(time.Second*30),
-			//micro.Client(NewKazoupClientWithXrayTrace(sess)),
-			micro.Flags(
-				cli.StringFlag{
-					Name:   "elasticsearch_hosts",
-					EnvVar: "ELASTICSEARCH_HOSTS",
-					Usage:  "Comma separated list of elasticsearch hosts",
-					Value:  "localhost:9200",
-				},
-			),
-			micro.Action(func(c *cli.Context) {
-				//parts := strings.Split(c.String("elasticsearch_hosts"), ",")
-				//elastic.Hosts = parts
-			}),
-		)
-
-		service.Init(
-			//micro.Client(NewKazoupClientWithXrayTrace(sess)),
-			micro.WrapClient(
-				ContextClientWrapper(service),
-				/*awsxray.NewClientWrapper(opts...),*/
-			),
-			micro.WrapSubscriber(
-				NewContextSubscriberWrapper(service),
-				NewAuthSubscriberWrapper(),
-				NewAfterSubscriberWrapper(),
-				NewQuotaSubscriberWrapper(sn),
-				NewLogSubscriberWrapper(),
-			),
-			micro.WrapHandler(
-				NewContextHandlerWrapper(service),
-				/*awsxray.NewHandlerWrapper(opts...), */
-				NewAuthHandlerWrapper(),
-				NewAfterHandlerWrapper(),
-				NewQuotaHandlerWrapper(sn),
-				NewLogHandlerWrapper(),
-			),
-		)
-
-		return service
-	}
 
 	var service micro.Service
 	if m == nil {
