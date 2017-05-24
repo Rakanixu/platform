@@ -60,7 +60,7 @@ func NewKazoupService(name string, mntr ...monitor.Monitor) micro.Service {
 					Name:   "elasticsearch_hosts",
 					EnvVar: "ELASTICSEARCH_HOSTS",
 					Usage:  "Comma separated list of elasticsearch hosts",
-					Value:  "elasticsearch:9200",
+					Value:  "localhost:9200",
 				},
 			),
 			micro.Action(func(c *cli.Context) {
