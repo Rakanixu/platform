@@ -96,6 +96,7 @@ services:
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - TIKA_URL=http://tika:9998
     volumes:
       - "./cmd/kazoup/ssl:/ssl"
       - "../../../:/go/src/"
