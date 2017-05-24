@@ -22,7 +22,7 @@ func Test_quotaHandlerWrapper(t *testing.T) {
 	fn := func(h server.HandlerFunc) server.HandlerFunc {
 		ring := redis.NewRing(&redis.RingOptions{
 			Addrs: map[string]string{
-				"server1": "redis:6379",
+				"server1": "localhost:6379",
 			},
 		})
 

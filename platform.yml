@@ -12,6 +12,7 @@ services:
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - REDIS_URL=redis:6379
     volumes:
       - "./cmd/kazoup/ssl:/ssl"
       - "../../../:/go/src/"
@@ -28,6 +29,7 @@ services:
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - REDIS_URL=redis:6379
     volumes:
       - "./cmd/kazoup/ssl:/ssl"
       - "../../../:/go/src/"
@@ -44,6 +46,7 @@ services:
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - REDIS_URL=redis:6379
     volumes:
       - "./cmd/kazoup/ssl:/ssl"
       - "../../../:/go/src/"
@@ -61,6 +64,7 @@ services:
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - REDIS_URL=redis:6379
     volumes:
       - "./cmd/kazoup/ssl:/ssl"
       - "../../../:/go/src/"
@@ -78,6 +82,7 @@ services:
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - REDIS_URL=redis:6379
     volumes:
       - "./cmd/kazoup/ssl:/ssl"
       - "../../../:/go/src/"
@@ -96,6 +101,7 @@ services:
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - REDIS_URL=redis:6379
       - TIKA_URL=http://tika:9998
     volumes:
       - "./cmd/kazoup/ssl:/ssl"
@@ -114,6 +120,7 @@ services:
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - REDIS_URL=redis:6379
     volumes:
       - "./cmd/kazoup/ssl:/ssl"
       - "../../../:/go/src/"
@@ -131,6 +138,7 @@ services:
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - REDIS_URL=redis:6379
     volumes:
       - "./cmd/kazoup/ssl:/ssl"
       - "../../../:/go/src/"
@@ -148,6 +156,7 @@ services:
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - REDIS_URL=redis:6379
     volumes:
       - "./cmd/kazoup/ssl:/ssl"
       - "../../../:/go/src/"
@@ -165,6 +174,7 @@ services:
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - REDIS_URL=redis:6379
     volumes:
       - "./cmd/kazoup/ssl:/ssl"
       - "../../../:/go/src/"
@@ -181,6 +191,7 @@ services:
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - REDIS_URL=redis:6379
     volumes:
       - "./cmd/kazoup/ssl:/ssl"
       - "../../../:/go/src/"
@@ -198,6 +209,7 @@ services:
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - REDIS_URL=redis:6379
     volumes:
       - "./cmd/kazoup/ssl:/ssl"
       - "../../../:/go/src/"
@@ -214,6 +226,7 @@ services:
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - REDIS_URL=redis:6379
     volumes:
       - "./cmd/kazoup/ssl:/ssl"
       - "../../../:/go/src/"
@@ -231,6 +244,7 @@ services:
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - REDIS_URL=redis:6379
     volumes:
       - "./cmd/kazoup/ssl:/ssl"
       - "../../../:/go/src/"
@@ -247,6 +261,7 @@ services:
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - REDIS_URL=redis:6379
     volumes:
       - "./cmd/kazoup/ssl:/ssl"
       - "../../../:/go/src/"
@@ -264,6 +279,7 @@ services:
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - REDIS_URL=redis:6379
     volumes:
       - "./cmd/kazoup/ssl:/ssl"
       - "../../../:/go/src/"
@@ -281,6 +297,7 @@ services:
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - REDIS_URL=redis:6379
     volumes:
       - "./cmd/kazoup/ssl:/ssl"
       - "../../../:/go/src/"
@@ -298,6 +315,7 @@ services:
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - REDIS_URL=redis:6379
     volumes:
       - "./cmd/kazoup/ssl:/ssl"
       - "../../../:/go/src/"
@@ -315,6 +333,7 @@ services:
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - REDIS_URL=redis:6379
     volumes:
       - "./cmd/kazoup/ssl:/ssl"
       - "../../../:/go/src/"
@@ -332,6 +351,7 @@ services:
     environment:
       - GOOGLE_APPLICATION_CREDENTIALS=/srv/google-app-credentials/google-cloud-service-account.json
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - REDIS_URL=redis:6379
     volumes:
       - "./cmd/kazoup/ssl:/ssl"
       - "../../../:/go/src/"

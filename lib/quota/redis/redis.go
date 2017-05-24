@@ -9,6 +9,7 @@ import (
 	"github.com/kazoup/platform/lib/utils"
 	"golang.org/x/net/context"
 	timerate "golang.org/x/time/rate"
+	"os"
 	"time"
 )
 
@@ -17,9 +18,14 @@ type Redis struct {
 }
 
 func init() {
+	url := os.Getenv("REDIS_URL")
+	if url == "" {
+		url = "localhost:6379"
+	}
+
 	ring := redis.NewRing(&redis.RingOptions{
 		Addrs: map[string]string{
-			"server1": "redis:6379",
+			"server1": url,
 		},
 	})
 

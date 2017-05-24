@@ -12,14 +12,20 @@ import (
 	"github.com/micro/go-micro/server"
 	"golang.org/x/net/context"
 	timerate "golang.org/x/time/rate"
+	"os"
 	"time"
 )
 
 // NewQuotaHandlerWrapper returns a handler quota limit per user wrapper
 func NewQuotaHandlerWrapper(srvName string) server.HandlerWrapper {
+	url := os.Getenv("REDIS_URL")
+	if url == "" {
+		url = "localhost:6379"
+	}
+
 	ring := redis.NewRing(&redis.RingOptions{
 		Addrs: map[string]string{
-			"server1": "redis:6379",
+			"server1": url,
 		},
 	})
 
@@ -92,9 +98,14 @@ func quotaHandlerWrapper(fn server.HandlerFunc, limiter *rate.Limiter, srv strin
 
 // NewQuotaSubscriberWrapper returns a subscriber quota limit per user wrapper
 func NewQuotaSubscriberWrapper(srvName string) server.SubscriberWrapper {
+	url := os.Getenv("REDIS_URL")
+	if url == "" {
+		url = "localhost:6379"
+	}
+
 	ring := redis.NewRing(&redis.RingOptions{
 		Addrs: map[string]string{
-			"server1": "redis:6379",
+			"server1": url,
 		},
 	})
 	limiter := rate.NewLimiter(ring)
