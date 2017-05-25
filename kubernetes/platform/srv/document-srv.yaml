@@ -30,6 +30,10 @@ spec:
             value: "admin"
           - name: ES_PASSWORD
             value: "9svne8f655h"
+          - name: TIKA_URL
+            value: "http://tika:9998"
+          - name: REDIS_URL
+            value: "redis:6379"
         imagePullPolicy: Always
         ports:
         - containerPort: 9090
