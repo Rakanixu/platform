@@ -2,11 +2,13 @@ package tika
 
 import (
 	"encoding/json"
+	"fmt"
 	normalize_text "github.com/kazoup/platform/lib/normalization/text"
 	"github.com/pkg/errors"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 )
 
 type Tika interface {
@@ -29,7 +31,12 @@ func (tc *TikaContent) Content() string {
 func ExtractContent(rc io.ReadCloser) (Tika, error) {
 	defer rc.Close()
 
-	req, err := http.NewRequest(http.MethodPut, "http://tika:9998/rmeta", rc)
+	url := os.Getenv("TIKA_URL")
+	if url == "" {
+		url = "http://localhost:9998"
+	}
+
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/rmeta", url), rc)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +70,12 @@ func ExtractContent(rc io.ReadCloser) (Tika, error) {
 func ExtractPlainContent(rc io.ReadCloser) (Tika, error) {
 	defer rc.Close()
 
-	req, err := http.NewRequest(http.MethodPut, "http://tika:9998/tika", rc)
+	url := os.Getenv("TIKA_URL")
+	if url == "" {
+		url = "http://localhost:9998"
+	}
+
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/tika", url), rc)
 	if err != nil {
 		return nil, err
 	}

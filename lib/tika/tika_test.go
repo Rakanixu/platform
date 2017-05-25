@@ -32,8 +32,6 @@ func TestExtractContent(t *testing.T) {
 		if tika == nil {
 			t.Fatalf("Interface is nil: %v", err)
 		}
-
-		log.Println(tika.Content())
 	}
 }
 
@@ -52,7 +50,5 @@ func TestExtractPlainContent(t *testing.T) {
 		if tika == nil {
 			t.Fatalf("Interface is nil: %v", err)
 		}
-
-		log.Println(tika.Content())
 	}
 }

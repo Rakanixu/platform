@@ -4,6 +4,8 @@ import (
 	kazoup_context "github.com/kazoup/platform/lib/context"
 	platform_errors "github.com/kazoup/platform/lib/errors"
 	"github.com/micro/go-micro"
+	broker_mock "github.com/micro/go-micro/broker/mock"
+	registry_mock "github.com/micro/go-micro/registry/mock"
 	"github.com/micro/go-micro/server"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
@@ -11,7 +13,11 @@ import (
 )
 
 var (
-	srv = NewKazoupService("test-service")
+	srv = micro.NewService(
+		micro.Name("test-service"),
+		micro.Broker(broker_mock.NewBroker()),
+		micro.Registry(registry_mock.NewRegistry()),
+	)
 	ctx = context.WithValue(
 		context.TODO(),
 		kazoup_context.UserIdCtxKey{},

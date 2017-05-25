@@ -57,7 +57,7 @@ func (e *elastic) Init(srv micro.Service) error {
 	// Set ES details from env variables
 	url := os.Getenv("ELASTICSEARCH_URL")
 	if url == "" {
-		url = "http://elasticsearch:9200"
+		url = "http://localhost:9200"
 	}
 	username := os.Getenv("ES_USERNAME")
 	password := os.Getenv("ES_PASSWORD")

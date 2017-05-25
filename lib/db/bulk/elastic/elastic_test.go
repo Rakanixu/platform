@@ -85,7 +85,7 @@ func Test_processFiles(t *testing.T) {
 		SlackChannelsChannel: make(chan *crawler.SlackChannelMessage),
 	}
 	e.Client, err = elib.NewSimpleClient(
-		elib.SetURL("http://elasticsearch:9200"),
+		elib.SetURL("http://localhost:9200"),
 		elib.SetBasicAuth("", ""),
 		elib.SetMaxRetries(3),
 	)
@@ -205,7 +205,7 @@ func Test_processSlackUsers(t *testing.T) {
 		SlackChannelsChannel: make(chan *crawler.SlackChannelMessage),
 	}
 	e.Client, err = elib.NewSimpleClient(
-		elib.SetURL("http://elasticsearch:9200"),
+		elib.SetURL("http://localhost:9200"),
 		elib.SetBasicAuth("", ""),
 		elib.SetMaxRetries(3),
 	)
@@ -283,7 +283,7 @@ func Test_processSlackChannels(t *testing.T) {
 		SlackChannelsChannel: make(chan *crawler.SlackChannelMessage),
 	}
 	e.Client, err = elib.NewSimpleClient(
-		elib.SetURL("http://elasticsearch:9200"),
+		elib.SetURL("http://localhost:9200"),
 		elib.SetBasicAuth("", ""),
 		elib.SetMaxRetries(3),
 	)

@@ -12,14 +12,20 @@ import (
 	"github.com/micro/go-micro/server"
 	"golang.org/x/net/context"
 	timerate "golang.org/x/time/rate"
+	"os"
 	"time"
 )
 
 // NewQuotaHandlerWrapper returns a handler quota limit per user wrapper
 func NewQuotaHandlerWrapper(srvName string) server.HandlerWrapper {
+	url := os.Getenv("REDIS_URL")
+	if url == "" {
+		url = "localhost:6379"
+	}
+
 	ring := redis.NewRing(&redis.RingOptions{
 		Addrs: map[string]string{
-			"server1": "redis:6379",
+			"server1": url,
 		},
 	})
 
@@ -65,6 +71,11 @@ func quotaHandlerWrapper(fn server.HandlerFunc, limiter *rate.Limiter, srv strin
 			return errors.NewPlatformError("", "ParseJWTToken", "Invalid token", 401, err)
 		}
 
+		// Exec subscriber
+		if err := fn(ctx, req, rsp); err != nil {
+			return err
+		}
+
 		var quotaLimit int64
 		for _, v := range token.Claims.(jwt.MapClaims)["roles"].([]interface{}) {
 			switch v.(string) {
@@ -73,6 +84,7 @@ func quotaHandlerWrapper(fn server.HandlerFunc, limiter *rate.Limiter, srv strin
 			}
 		}
 
+		// Update quota once subscriber was succesful
 		if quotaLimit > 0 {
 			_, _, allowed := limiter.AllowN(fmt.Sprintf("%s-handler-%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, globals.QUOTA_TIME_LIMITER, 1)
 			if !allowed {
@@ -80,15 +92,20 @@ func quotaHandlerWrapper(fn server.HandlerFunc, limiter *rate.Limiter, srv strin
 			}
 		}
 
-		return fn(ctx, req, rsp)
+		return nil
 	}
 }
 
 // NewQuotaSubscriberWrapper returns a subscriber quota limit per user wrapper
 func NewQuotaSubscriberWrapper(srvName string) server.SubscriberWrapper {
+	url := os.Getenv("REDIS_URL")
+	if url == "" {
+		url = "localhost:6379"
+	}
+
 	ring := redis.NewRing(&redis.RingOptions{
 		Addrs: map[string]string{
-			"server1": "redis:6379",
+			"server1": url,
 		},
 	})
 	limiter := rate.NewLimiter(ring)
@@ -139,6 +156,11 @@ func quotaSubscriberWrapper(fn server.SubscriberFunc, limiter *rate.Limiter, srv
 			return errors.NewPlatformError("", "ParseJWTToken", "Invalid token", 401, err)
 		}
 
+		// Exec subscriber
+		if err := fn(ctx, msg); err != nil {
+			return err
+		}
+
 		var quotaLimit int64
 		for _, v := range token.Claims.(jwt.MapClaims)["roles"].([]interface{}) {
 			switch v.(string) {
@@ -147,6 +169,7 @@ func quotaSubscriberWrapper(fn server.SubscriberFunc, limiter *rate.Limiter, srv
 			}
 		}
 
+		// Update quota once subscriber task was succesful
 		if quotaLimit > 0 {
 			_, _, allowed := limiter.AllowN(fmt.Sprintf("%s-subs-%s", srv, token.Claims.(jwt.MapClaims)["sub"].(string)), quotaLimit, globals.QUOTA_TIME_LIMITER, 1)
 			if !allowed {
@@ -154,6 +177,6 @@ func quotaSubscriberWrapper(fn server.SubscriberFunc, limiter *rate.Limiter, srv
 			}
 		}
 
-		return fn(ctx, msg)
+		return nil
 	}
 }
