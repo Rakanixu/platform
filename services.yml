@@ -60,7 +60,7 @@ services:
     image: nats:0.9.6
     networks:
       - kazoup-platform
-    entrypoint: "/gnatsd"
+    entrypoint: "/gnatsd -m 8222"
     expose:
       - "4222"
     ports:
