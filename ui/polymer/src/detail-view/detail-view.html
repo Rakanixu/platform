@@ -470,7 +470,10 @@
           this.rpcReadParams.request.id = newVal.id;
 
           this.$.rpcRead.body = this.rpcReadParams;
-          this.$.rpcRead.generateRequest();
+
+          if (!_.isEmpty(this.$.rpcRead.body.request)) {
+            this.$.rpcRead.generateRequest();
+          }
         },
         getMoreInfoFromGoogleDrive: function() {
 /*          var people = (this.item.original.permissions && this.item.original.permissions.length) ?
