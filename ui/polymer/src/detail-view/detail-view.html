@@ -470,7 +470,10 @@
           this.rpcReadParams.request.id = newVal.id;
 
           this.$.rpcRead.body = this.rpcReadParams;
-          this.$.rpcRead.generateRequest();
+
+          if (!_.isEmpty(this.$.rpcRead.body.request)) {
+            this.$.rpcRead.generateRequest();
+          }
         },
         getMoreInfoFromGoogleDrive: function() {
 /*          var people = (this.item.original.permissions && this.item.original.permissions.length) ?
@@ -566,8 +569,13 @@
           this.$.rpcSearchSlackUsers.body = this.rpcSearchSlackUsersParams;
           this.$.rpcSearchSlackChannels.body = this.rpcSearchSlackChannelsParams;
 
-          this.$.rpcSearchSlackUsers.generateRequest();
-          this.$.rpcSearchSlackChannels.generateRequest();
+          if (user !== undefined) {
+            this.$.rpcSearchSlackUsers.generateRequest();
+          }
+
+          if (channel !== undefined) {
+            this.$.rpcSearchSlackChannels.generateRequest();
+          }
         },
         getMoreInfoFromBox: function() {
 /*          this.set('boxInfo', {

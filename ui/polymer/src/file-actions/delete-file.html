@@ -105,10 +105,10 @@
           this.rpcDeleteFileParams.request.datasource_id = this.item.datasource_id;
           this.rpcDeleteFileParams.request.index = this.item.index;
           this.rpcDeleteFileParams.request.file_id = this.item.id;
-          this.rpcDeleteFileParams.request.original_id = this.item.original.id;
+          this.rpcDeleteFileParams.request.original_id = this.item.original_id;
 
           if (this.item.file_type === "dropbox") {
-            this.rpcDeleteFileParams.request.original_file_path = this.item.original.path_display;
+            this.rpcDeleteFileParams.request.original_file_path = this.item.preview_url;
           } else {
             this.rpcDeleteFileParams.request.original_file_path = '';
           }

@@ -270,6 +270,9 @@ func (e *ElasticQuery) setSource() string {
 	if e.NoKazoupFileOriginal {
 		buffer.WriteString(`"_source": [
 			"id",
+			"original_id",
+			"original_download_ref",
+			"preview_url",
 			"user_id",
 			"name",
 			"url",

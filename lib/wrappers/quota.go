@@ -8,6 +8,7 @@ import (
 	rate "github.com/go-redis/redis_rate"
 	"github.com/kazoup/platform/lib/errors"
 	"github.com/kazoup/platform/lib/globals"
+	"github.com/kazoup/platform/lib/quota"
 	"github.com/micro/go-micro/metadata"
 	"github.com/micro/go-micro/server"
 	"golang.org/x/net/context"
@@ -71,17 +72,29 @@ func quotaHandlerWrapper(fn server.HandlerFunc, limiter *rate.Limiter, srv strin
 			return errors.NewPlatformError("", "ParseJWTToken", "Invalid token", 401, err)
 		}
 
-		// Exec subscriber
-		if err := fn(ctx, req, rsp); err != nil {
-			return err
-		}
-
 		var quotaLimit int64
 		for _, v := range token.Claims.(jwt.MapClaims)["roles"].([]interface{}) {
 			switch v.(string) {
 			case globals.PRODUCT_TYPE_PERSONAL, globals.PRODUCT_TYPE_TEAM, globals.PRODUCT_TYPE_ENTERPRISE:
 				quotaLimit = int64(globals.PRODUCT_QUOTAS.M[v.(string)][srv]["handler"].(int))
 			}
+		}
+
+		if quotaLimit > 0 {
+			_, _, rate, _, quota, ok := quota.Check(ctx, req.Service(), token.Claims.(jwt.MapClaims)["sub"].(string))
+			if !ok {
+				return errors.ErrQuotaLimitExceeded
+			}
+
+			// Quota exceded, respond sync and do not initiate go routines
+			if rate-quota > 0 {
+				return errors.ErrQuotaLimitExceeded
+			}
+		}
+
+		// Exec subscriber
+		if err := fn(ctx, req, rsp); err != nil {
+			return err
 		}
 
 		// Update quota once subscriber was succesful
@@ -156,17 +169,29 @@ func quotaSubscriberWrapper(fn server.SubscriberFunc, limiter *rate.Limiter, srv
 			return errors.NewPlatformError("", "ParseJWTToken", "Invalid token", 401, err)
 		}
 
-		// Exec subscriber
-		if err := fn(ctx, msg); err != nil {
-			return err
-		}
-
 		var quotaLimit int64
 		for _, v := range token.Claims.(jwt.MapClaims)["roles"].([]interface{}) {
 			switch v.(string) {
 			case globals.PRODUCT_TYPE_PERSONAL, globals.PRODUCT_TYPE_TEAM, globals.PRODUCT_TYPE_ENTERPRISE:
 				quotaLimit = int64(globals.PRODUCT_QUOTAS.M[v.(string)][srv]["subscriber"].(int))
 			}
+		}
+
+		if quotaLimit > 0 {
+			_, _, rate, _, quota, ok := quota.Check(ctx, srv, token.Claims.(jwt.MapClaims)["sub"].(string))
+			if !ok {
+				return errors.ErrQuotaLimitExceeded
+			}
+
+			// Quota exceded, respond sync and do not initiate go routines
+			if rate-quota > 0 {
+				return errors.ErrQuotaLimitExceeded
+			}
+		}
+
+		// Exec subscriber
+		if err := fn(ctx, msg); err != nil {
+			return err
 		}
 
 		// Update quota once subscriber task was succesful
