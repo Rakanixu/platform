@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package proto.translate;
+
+service Service {
+    rpc Translate(TranslateRequest) returns (TranslateResponse) {}
+}
+
+message TranslateRequest {
+    repeated string text = 1;
+    string sourceLang = 2;
+    string destLang = 3;
+}
+
+message TranslateResponse {
+    repeated string translations = 1;
+    string Info = 2;
+}

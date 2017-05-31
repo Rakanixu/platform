@@ -100,6 +100,13 @@ var PRODUCT_QUOTAS = struct {
 				"handler":    0,
 				"subscriber": 10,
 			},
+			TRANSLATE_SERVICE_NAME: map[string]interface{}{
+				"label":      "Translation service",
+				// TODO: change this
+				"icon":       "social:mood",
+				"handler":    20,
+				"subscriber": 20,
+			},
 		},
 		PRODUCT_TYPE_TEAM: map[string]map[string]interface{}{
 			DATASOURCE_SERVICE_NAME: map[string]interface{}{
@@ -185,6 +192,13 @@ var PRODUCT_QUOTAS = struct {
 				"icon":       "social:mood",
 				"handler":    0,
 				"subscriber": 50,
+			},
+			TRANSLATE_SERVICE_NAME: map[string]interface{}{
+				"label":      "Translation service",
+				// TODO: change this
+				"icon":       "social:mood",
+				"handler":    20,
+				"subscriber": 20,
 			},
 		},
 	},
