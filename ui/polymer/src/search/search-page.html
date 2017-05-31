@@ -533,8 +533,6 @@
                 },
                 _routeData: function(data) {
                     this.async(function() {
-                        this._calcPageSize();
-
                         // merge whatever is coming plus sane defaults into custom state
                         // if user adds bullshit, his problem
                         // backend + context secures data per user
@@ -579,7 +577,10 @@
                             this.set('bigVideoClass', '');
                         }
 
+                        this._calcPageSize();
                         this.refreshView();
+
+                        filters.size = this.size;
 
                         if (!filters.index) {
                             filters.index = Auth.getMD5UserId();
