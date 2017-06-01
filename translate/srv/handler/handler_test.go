@@ -8,6 +8,7 @@ import (
 	"github.com/kazoup/platform/translate/srv/proto/translate"
 	"github.com/micro/go-micro/metadata"
 	"golang.org/x/net/context"
+	_ "github.com/kazoup/platform/lib/quota/mock"
 )
 
 const (
