@@ -14,7 +14,7 @@ services:
    environment:
       - cluster.name=docker-cluster
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms2024m -Xmx2024m"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
       - "http.cors.enabled=true"
       - "http.cors.allow-origin=\"*\""
       - "http.cors.allow-headers=Authorization"
@@ -26,7 +26,7 @@ services:
       nofile:
         soft: 65536
         hard: 65536
-   mem_limit: 3g
+   mem_limit: 1g
    cap_add:
    - IPC_LOCK
 
