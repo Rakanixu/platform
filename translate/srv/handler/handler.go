@@ -46,7 +46,7 @@ func (s *Service) Translate(
 			"Translate",
 			"",
 			403,
-			errors.New("quota.Check"),
+			errors.New("quota.Check failed"),
 		)
 	}
 
@@ -60,9 +60,9 @@ func (s *Service) Translate(
 		return platform_errors.NewPlatformError(
 			globals.TRANSLATE_SERVICE_NAME,
 			"Translate",
-			"",
+			"translate.NewClient failed",
 			403,
-			errors.New("translate.NewClient"),
+			err,
 		)
 	}
 
@@ -71,9 +71,9 @@ func (s *Service) Translate(
 		return platform_errors.NewPlatformError(
 			globals.TRANSLATE_SERVICE_NAME,
 			"Translate",
-			"",
+			`language.Parse("`+req.GetSourceLang()+`") failed`,
 			403,
-			errors.New(`language.Parse("`+req.GetSourceLang()+`")`),
+			err,
 		)
 	}
 
@@ -82,9 +82,9 @@ func (s *Service) Translate(
 		return platform_errors.NewPlatformError(
 			globals.TRANSLATE_SERVICE_NAME,
 			"Translate",
-			"",
+			`language.Parse("`+req.GetDestLang()+`") failed`,
 			403,
-			errors.New(`language.Parse("`+req.GetDestLang()+`")`),
+			err,
 		)
 	}
 
@@ -102,9 +102,9 @@ func (s *Service) Translate(
 		return platform_errors.NewPlatformError(
 			globals.TRANSLATE_SERVICE_NAME,
 			"Translate",
-			"",
+			"client.Translate failed",
 			403,
-			errors.New(`client.Translate`),
+			err,
 		)
 	}
 
@@ -116,9 +116,9 @@ func (s *Service) Translate(
 		return platform_errors.NewPlatformError(
 			globals.TRANSLATE_SERVICE_NAME,
 			"Translate",
-			"",
+			"client.Close failed",
 			403,
-			errors.New(`client.Close`),
+			err,
 		)
 	}
 
