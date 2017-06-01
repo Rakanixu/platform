@@ -26,6 +26,7 @@ const (
 	IMAGE_SERVICE_NAME        string = NAMESPACE + ".srv.image"
 	ENTITIES_SERVICE_NAME     string = NAMESPACE + ".srv.entities"
 	SENTIMENT_SERVICE_NAME    string = NAMESPACE + ".srv.sentiment"
+	TRANSLATE_SERVICE_NAME    string = NAMESPACE + ".srv.translate"
 
 	HANDLER_DATASOURCE_CREATE  = DATASOURCE_SERVICE_NAME + ".Service.Create"
 	HANDLER_DATASOURCE_DELETE  = DATASOURCE_SERVICE_NAME + ".Service.Delete"
@@ -48,6 +49,8 @@ const (
 	HANDLER_SENTIMENT_ENRICH_FILE = SENTIMENT_SERVICE_NAME + ".Service.AnalyzeFile"
 
 	HANDLER_ENTITIES_EXTRACT_FILE = ENTITIES_SERVICE_NAME + ".Service.ExtractFile"
+
+	HANDLER_TRANSLATE_TRANSLATE = TRANSLATE_SERVICE_NAME + ".Service.Translate"
 
 	AnnounceTopic           string = NAMESPACE + ".topic.announce"
 	DiscoverTopic           string = NAMESPACE + ".topic.discover.files"
