@@ -1,3 +1,4 @@
 vendor/*/
 build
 ui/web/html
+node_modules
