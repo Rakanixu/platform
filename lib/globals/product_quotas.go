@@ -101,7 +101,7 @@ var PRODUCT_QUOTAS = struct {
 				"subscriber": 10,
 			},
 			TRANSLATE_SERVICE_NAME: map[string]interface{}{
-				"label":      "Translation service",
+				"label": "Translation service",
 				// TODO: change this
 				"icon":       "social:mood",
 				"handler":    20,
@@ -194,7 +194,7 @@ var PRODUCT_QUOTAS = struct {
 				"subscriber": 50,
 			},
 			TRANSLATE_SERVICE_NAME: map[string]interface{}{
-				"label":      "Translation service",
+				"label": "Translation service",
 				// TODO: change this
 				"icon":       "social:mood",
 				"handler":    20,

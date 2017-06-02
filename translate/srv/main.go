@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/kazoup/platform/translate/srv/proto/translate"
-	"github.com/kazoup/platform/translate/srv/handler"
-	"github.com/kazoup/platform/lib/wrappers"
 	"github.com/kazoup/platform/lib/healthchecks"
 	_ "github.com/kazoup/platform/lib/plugins"
+	"github.com/kazoup/platform/lib/wrappers"
+	"github.com/kazoup/platform/translate/srv/handler"
+	"github.com/kazoup/platform/translate/srv/proto/translate"
 	"github.com/micro/go-os/monitor"
 	"log"
 	"time"
