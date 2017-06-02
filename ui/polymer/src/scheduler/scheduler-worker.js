@@ -34,6 +34,12 @@ var window = self;
         self.datasources[i].last_scan + elapsedTime > self.datasources[i].last_scan_started) {
         self.pool.push(self.datasources[i].id);
       }
+
+      // Last scan started 1h ago and did not finish, scan again
+      if (self.datasources[i].last_scan_started + elapsedTime - 10 < self.now &&
+        self.datasources[i].crawler_running === true) {
+        self.pool.push(self.datasources[i].id);
+      }
     }
 
     // Send DS that requires to be scan
