@@ -24,3 +24,13 @@ find * -type d -maxdepth 1 -print | while read dir; do
 
 	popd >/dev/null
 done
+
+# Frontend tests
+
+# dependencies, add if required
+npm install unit.js
+npm install mocha
+npm install mock-browser
+npm install workerjs
+
+mocha ui/polymer/src/**/*-test.js
