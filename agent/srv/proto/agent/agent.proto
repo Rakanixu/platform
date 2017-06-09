@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package proto.agent;
+
+service Service {
+    rpc Save(SaveRequest) returns (SaveResponse){}
+}
+
+message SaveRequest {
+    string data = 1;
+}
+
+message SaveResponse {
+    string info = 1;
+}
