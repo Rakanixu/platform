@@ -1,18 +1,18 @@
 package handler
 
 import (
-    "github.com/kazoup/platform/agent/srv/proto/agent"
-	"golang.org/x/net/context"
+	"github.com/kazoup/platform/agent/srv/proto/agent"
 	kazoup_context "github.com/kazoup/platform/lib/context"
-    "testing"
+	_ "github.com/kazoup/platform/lib/quota/mock"
 	"github.com/micro/go-micro/metadata"
-    _ "github.com/kazoup/platform/lib/quota/mock"
+	"golang.org/x/net/context"
+	"testing"
 )
 
 // Constants
 const (
-    TEST_USER_ID = "test_user"
-    TEST_JSON_OBJECT = `
+	TEST_USER_ID     = "test_user"
+	TEST_JSON_OBJECT = `
 		{
 			"id" : "a716f1408cfff7afd943acd45dcfa0a4",
             "original_id" : "id:lXWZMx78s2AAAAAAAAAAPw",
@@ -38,59 +38,59 @@ const (
 
 // Helping variables
 var (
-    srv = new(Service)
-    ctx = context.WithValue(
-        context.TODO(),
+	srv = new(Service)
+	ctx = context.WithValue(
+		context.TODO(),
 		kazoup_context.UserIdCtxKey{},
 		kazoup_context.UserIdCtxValue(TEST_USER_ID),
-    )
+	)
 )
 
 // Handler Save method unit test
 func TestSave(t *testing.T) {
-    // Test data
-    var saveTestData = []struct{
+	// Test data
+	var saveTestData = []struct {
 		ctx         context.Context
 		req         *proto_agent.SaveRequest
 		expectedRsp *proto_agent.SaveResponse
 		rsp         *proto_agent.SaveResponse
-    }{
-        {
-            // Quota has been exceeded
-            metadata.NewContext(ctx, map[string]string{
-                "Quota-Exceeded": "true",
-            }),
-            &proto_agent.SaveRequest{
-                Data: TEST_JSON_OBJECT,
-            },
-            &proto_agent.SaveResponse{
-                Info: QUOTA_EXCEEDED_MSG,
-            },
-            &proto_agent.SaveResponse{},
-        },
-        {
-            // Quota has been exceeded
-            metadata.NewContext(ctx, map[string]string{
-                "Quota-Exceeded": "false",
-            }),
-            &proto_agent.SaveRequest{
-                Data: TEST_JSON_OBJECT,
-            },
-            &proto_agent.SaveResponse{
-                Info: "",
-            },
-            &proto_agent.SaveResponse{},
-        },
-    }
+	}{
+		{
+			// Quota has been exceeded
+			metadata.NewContext(ctx, map[string]string{
+				"Quota-Exceeded": "true",
+			}),
+			&proto_agent.SaveRequest{
+				Data: TEST_JSON_OBJECT,
+			},
+			&proto_agent.SaveResponse{
+				Info: QUOTA_EXCEEDED_MSG,
+			},
+			&proto_agent.SaveResponse{},
+		},
+		{
+			// Quota has been exceeded
+			metadata.NewContext(ctx, map[string]string{
+				"Quota-Exceeded": "false",
+			}),
+			&proto_agent.SaveRequest{
+				Data: TEST_JSON_OBJECT,
+			},
+			&proto_agent.SaveResponse{
+				Info: "",
+			},
+			&proto_agent.SaveResponse{},
+		},
+	}
 
-    // Run tests and check responses
-    for _, tt := range saveTestData {
-        if err := srv.Save(tt.ctx, tt.req, tt.rsp); err != nil {
-            t.Fatal(err)
-        }
+	// Run tests and check responses
+	for _, tt := range saveTestData {
+		if err := srv.Save(tt.ctx, tt.req, tt.rsp); err != nil {
+			t.Fatal(err)
+		}
 
-        if tt.expectedRsp.Info != tt.rsp.Info {
-            t.Errorf("Expected '%v', got: '%v'", tt.expectedRsp.Info, tt.rsp.Info)
-        }
-    }
+		if tt.expectedRsp.Info != tt.rsp.Info {
+			t.Errorf("Expected '%v', got: '%v'", tt.expectedRsp.Info, tt.rsp.Info)
+		}
+	}
 }

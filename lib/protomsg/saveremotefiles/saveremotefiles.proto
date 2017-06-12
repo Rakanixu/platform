@@ -3,21 +3,7 @@ syntax = "proto3";
 package message;
 
 message SaveRemoteFilesMessage {
-    string id = 1;
-    string original_id = 2;
-    string original_download_ref = 3;
-    string preview_url = 4;
-    string user_id = 5;
-    string name = 6;
-    string url = 7;
-    string modified = 8;
-    int64 file_size = 9;
-    bool is_dir = 10;
-    string category = 11;
-    string mime_type = 12;
-    int64 depth = 13;
-    string file_type = 14;
-    int64 last_seen = 15;
-    string access = 16;
-    string datasource_id = 17;
+    string user_id = 1;
+    string index = 2;
+    string data = 3;
 }
