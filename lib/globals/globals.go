@@ -27,6 +27,7 @@ const (
 	ENTITIES_SERVICE_NAME     string = NAMESPACE + ".srv.entities"
 	SENTIMENT_SERVICE_NAME    string = NAMESPACE + ".srv.sentiment"
 	TRANSLATE_SERVICE_NAME    string = NAMESPACE + ".srv.translate"
+	AGENT_SERVICE_NAME        string = NAMESPACE + ".srv.agent"
 
 	HANDLER_DATASOURCE_CREATE  = DATASOURCE_SERVICE_NAME + ".Service.Create"
 	HANDLER_DATASOURCE_DELETE  = DATASOURCE_SERVICE_NAME + ".Service.Delete"
@@ -51,6 +52,7 @@ const (
 	HANDLER_ENTITIES_EXTRACT_FILE = ENTITIES_SERVICE_NAME + ".Service.ExtractFile"
 
 	HANDLER_TRANSLATE_TRANSLATE = TRANSLATE_SERVICE_NAME + ".Service.Translate"
+	HANDLER_AGENT_SAVE          = AGENT_SERVICE_NAME + ".Service.Save"
 
 	AnnounceTopic           string = NAMESPACE + ".topic.announce"
 	DiscoverTopic           string = NAMESPACE + ".topic.discover.files"
@@ -65,6 +67,7 @@ const (
 	NotificationProxyTopic  string = NAMESPACE + ".topic.notificationproxy"
 	DeleteBucketTopic       string = NAMESPACE + ".topic.deletebucket"
 	DeleteFileInBucketTopic string = NAMESPACE + ".topic.deletefileinbucket"
+	SaveRemoteFilesTopic    string = NAMESPACE + ".topic.saveremotefiles"
 
 	IndexDatasources  = "datasources"
 	IndexHelper       = "files_helper"

@@ -2,3 +2,4 @@ vendor/*/
 build
 ui/web/html
 node_modules
+.DS_Store
